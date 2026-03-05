@@ -1,9 +1,11 @@
-import { Suspense } from 'react';
+import { Suspense, type ComponentProps } from 'react';
 import { PageHeader } from '@/components/shared/page-header';
 import { getKbCategories } from '@/lib/actions/kb-categories';
 import { getKbArticles } from '@/lib/actions/kb-articles';
 import { UniversityOverview } from '@/components/admin/university/university-overview';
 import { LoadingSpinner } from '@/components/shared/loading-spinner';
+
+type OverviewProps = ComponentProps<typeof UniversityOverview>;
 
 async function UniversityContent() {
   const [categoriesResult, articlesResult] = await Promise.all([
@@ -12,11 +14,11 @@ async function UniversityContent() {
   ]);
 
   const categories = categoriesResult.data ?? [];
-  const articles = articlesResult.data as any[] ?? [];
+  const articles = (articlesResult.data as OverviewProps['articles']) ?? [];
 
   return (
     <UniversityOverview
-      categories={categories as any[]}
+      categories={categories as OverviewProps['categories']}
       articles={articles}
     />
   );

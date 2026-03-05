@@ -12,12 +12,19 @@ const eslintConfig = defineConfig([
     "out/**",
     "build/**",
     "next-env.d.ts",
+    // Claude Code hooks (CommonJS scripts, not part of the app)
+    ".claude/**",
   ]),
   {
     rules: {
       // Disable React Compiler rules that are too strict for this project
       "react-hooks/set-state-in-effect": "off",
       "react-hooks/purity": "off",
+      // Allow underscore-prefixed unused vars (common in destructuring and callbacks)
+      "@typescript-eslint/no-unused-vars": [
+        "warn",
+        { argsIgnorePattern: "^_", varsIgnorePattern: "^_" },
+      ],
     },
   },
 ]);

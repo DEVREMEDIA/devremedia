@@ -1,11 +1,11 @@
-'use client'
+'use client';
 
-import { useState } from 'react'
-import { useRouter } from 'next/navigation'
-import { toast } from 'sonner'
-import { useTranslations } from 'next-intl'
-import { Loader2, UserCheck } from 'lucide-react'
-import { Button } from '@/components/ui/button'
+import { useState } from 'react';
+import { useRouter } from 'next/navigation';
+import { toast } from 'sonner';
+import { useTranslations } from 'next-intl';
+import { Loader2, UserCheck } from 'lucide-react';
+import { Button } from '@/components/ui/button';
 import {
   Dialog,
   DialogContent,
@@ -14,42 +14,41 @@ import {
   DialogHeader,
   DialogTitle,
   DialogTrigger,
-} from '@/components/ui/dialog'
-import { convertLeadToClient } from '@/lib/actions/leads'
-import type { Lead } from '@/types'
+} from '@/components/ui/dialog';
+import { convertLeadToClient } from '@/lib/actions/leads';
+import type { Lead } from '@/types';
 
 type LeadConvertDialogProps = {
-  lead: Lead
-}
+  lead: Lead;
+};
 
 export function LeadConvertDialog({ lead }: LeadConvertDialogProps) {
-  const router = useRouter()
-  const t = useTranslations('leads')
-  const tToast = useTranslations('toast')
-  const tCommon = useTranslations('common')
-  const [isOpen, setIsOpen] = useState(false)
-  const [isLoading, setIsLoading] = useState(false)
+  const router = useRouter();
+  const t = useTranslations('leads');
+  const tToast = useTranslations('toast');
+  const [isOpen, setIsOpen] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
 
   const handleConvert = async () => {
-    setIsLoading(true)
+    setIsLoading(true);
 
     try {
-      const result = await convertLeadToClient(lead.id)
+      const result = await convertLeadToClient(lead.id);
 
       if (result.error) {
         toast.error(tToast('updateError'), {
           description: result.error,
-        })
+        });
       } else {
-        toast.success(tToast('updateSuccess'))
-        setIsOpen(false)
-        router.push('/salesman/leads')
-        router.refresh()
+        toast.success(tToast('updateSuccess'));
+        setIsOpen(false);
+        router.push('/salesman/leads');
+        router.refresh();
       }
     } finally {
-      setIsLoading(false)
+      setIsLoading(false);
     }
-  }
+  };
 
   return (
     <Dialog open={isOpen} onOpenChange={setIsOpen}>
@@ -62,9 +61,7 @@ export function LeadConvertDialog({ lead }: LeadConvertDialogProps) {
       <DialogContent>
         <DialogHeader>
           <DialogTitle>{t('convertToClient')}</DialogTitle>
-          <DialogDescription>
-            {t('convertDescription')}
-          </DialogDescription>
+          <DialogDescription>{t('convertDescription')}</DialogDescription>
         </DialogHeader>
 
         <div className="space-y-4 py-4">
@@ -91,17 +88,11 @@ export function LeadConvertDialog({ lead }: LeadConvertDialogProps) {
             )}
           </div>
 
-          <p className="text-sm text-muted-foreground">
-            {t('confirmConvert')}
-          </p>
+          <p className="text-sm text-muted-foreground">{t('confirmConvert')}</p>
         </div>
 
         <DialogFooter>
-          <Button
-            variant="outline"
-            onClick={() => setIsOpen(false)}
-            disabled={isLoading}
-          >
+          <Button variant="outline" onClick={() => setIsOpen(false)} disabled={isLoading}>
             Cancel
           </Button>
           <Button onClick={handleConvert} disabled={isLoading}>
@@ -111,5 +102,5 @@ export function LeadConvertDialog({ lead }: LeadConvertDialogProps) {
         </DialogFooter>
       </DialogContent>
     </Dialog>
-  )
+  );
 }

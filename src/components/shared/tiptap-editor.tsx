@@ -52,8 +52,8 @@ export function TiptapEditor({ content, onChange, placeholder }: TiptapEditorPro
       }),
     ],
     content,
-    onUpdate: ({ editor }) => {
-      onChange(editor.getHTML());
+    onUpdate: ({ editor: updatedEditor }) => {
+      onChange(updatedEditor.getHTML());
     },
     editorProps: {
       attributes: {

@@ -1,5 +1,10 @@
-import { chromium, FullConfig } from '@playwright/test';
-import { setupAuthSession, ADMIN_STORAGE_STATE, CLIENT_STORAGE_STATE, TEST_USERS } from './helpers/auth';
+import { chromium } from '@playwright/test';
+import {
+  setupAuthSession,
+  ADMIN_STORAGE_STATE,
+  CLIENT_STORAGE_STATE,
+  TEST_USERS,
+} from './helpers/auth';
 
 /**
  * Global setup for Playwright tests
@@ -8,7 +13,7 @@ import { setupAuthSession, ADMIN_STORAGE_STATE, CLIENT_STORAGE_STATE, TEST_USERS
  *
  * To use this, uncomment the globalSetup line in playwright.config.ts
  */
-async function globalSetup(_config: FullConfig) {
+async function globalSetup() {
   // Skip authentication setup if test users aren't ready
   if (!process.env.E2E_TEST_USERS_READY) {
     console.log('⚠️  E2E test users not configured. Skipping authentication setup.');
@@ -29,7 +34,7 @@ async function globalSetup(_config: FullConfig) {
       adminPage,
       TEST_USERS.admin.email,
       TEST_USERS.admin.password,
-      ADMIN_STORAGE_STATE
+      ADMIN_STORAGE_STATE,
     );
 
     await adminBrowser.close();
@@ -45,7 +50,7 @@ async function globalSetup(_config: FullConfig) {
       clientPage,
       TEST_USERS.client.email,
       TEST_USERS.client.password,
-      CLIENT_STORAGE_STATE
+      CLIENT_STORAGE_STATE,
     );
 
     await clientBrowser.close();

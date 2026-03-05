@@ -97,14 +97,16 @@ export async function createInvoice(input: unknown): Promise<ActionResult<Invoic
     const validated = createInvoiceSchema.parse(input);
     const supabase = await createClient();
 
-    const { data: { user } } = await supabase.auth.getUser();
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
     if (!user) return { data: null, error: 'User not authenticated' };
 
     const invoiceNumber = await getNextInvoiceNumber();
 
     const subtotal = validated.line_items.reduce(
       (sum: number, item: LineItem) => sum + item.quantity * item.unit_price,
-      0
+      0,
     );
     const taxAmount = subtotal * (validated.tax_rate / 100);
     const total = subtotal + taxAmount;
@@ -127,15 +129,18 @@ export async function createInvoice(input: unknown): Promise<ActionResult<Invoic
 
     revalidatePath('/admin/invoices');
     return { data, error: null };
-  } catch (error) {
-    if (error instanceof Error) {
-      return { data: null, error: error.message };
+  } catch (err: unknown) {
+    if (err instanceof Error) {
+      return { data: null, error: err.message };
     }
     return { data: null, error: 'Failed to create invoice' };
   }
 }
 
-export async function updateInvoice(id: string, input: unknown): Promise<ActionResult<InvoiceWithRelations>> {
+export async function updateInvoice(
+  id: string,
+  input: unknown,
+): Promise<ActionResult<InvoiceWithRelations>> {
   try {
     const validated = updateInvoiceSchema.parse(input);
     const supabase = await createClient();
@@ -145,7 +150,7 @@ export async function updateInvoice(id: string, input: unknown): Promise<ActionR
     if (validated.line_items) {
       const subtotal = validated.line_items.reduce(
         (sum: number, item: LineItem) => sum + item.quantity * item.unit_price,
-        0
+        0,
       );
       const taxRate = validated.tax_rate || 24;
       const taxAmount = subtotal * (taxRate / 100);
@@ -171,15 +176,18 @@ export async function updateInvoice(id: string, input: unknown): Promise<ActionR
     revalidatePath('/admin/invoices');
     revalidatePath(`/admin/invoices/${id}`);
     return { data, error: null };
-  } catch (error) {
-    if (error instanceof Error) {
-      return { data: null, error: error.message };
+  } catch (err: unknown) {
+    if (err instanceof Error) {
+      return { data: null, error: err.message };
     }
     return { data: null, error: 'Failed to update invoice' };
   }
 }
 
-export async function updateInvoiceStatus(id: string, status: InvoiceStatus): Promise<ActionResult<unknown>> {
+export async function updateInvoiceStatus(
+  id: string,
+  status: InvoiceStatus,
+): Promise<ActionResult<unknown>> {
   try {
     const supabase = await createClient();
 
@@ -205,17 +213,17 @@ export async function updateInvoiceStatus(id: string, status: InvoiceStatus): Pr
     revalidatePath(`/admin/invoices/${id}`);
     return { data, error: null };
   } catch (err: unknown) {
-    return { data: null, error: err instanceof Error ? err.message : 'Failed to update invoice status' };
+    return {
+      data: null,
+      error: err instanceof Error ? err.message : 'Failed to update invoice status',
+    };
   }
 }
 
 export async function deleteInvoice(id: string): Promise<ActionResult<void>> {
   try {
     const supabase = await createClient();
-    const { error } = await supabase
-      .from('invoices')
-      .delete()
-      .eq('id', id);
+    const { error } = await supabase.from('invoices').delete().eq('id', id);
 
     if (error) return { data: null, error: error.message };
 

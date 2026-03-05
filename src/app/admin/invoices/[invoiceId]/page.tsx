@@ -3,6 +3,7 @@ import { InvoiceDetail } from './invoice-detail';
 import { notFound } from 'next/navigation';
 import { getTranslations } from 'next-intl/server';
 import type { Metadata } from 'next';
+import type { ComponentProps } from 'react';
 
 interface InvoicePageProps {
   params: Promise<{ invoiceId: string }>;
@@ -30,5 +31,5 @@ export default async function InvoicePage({ params }: InvoicePageProps) {
     notFound();
   }
 
-  return <InvoiceDetail invoice={result.data as any} />;
+  return <InvoiceDetail invoice={result.data as ComponentProps<typeof InvoiceDetail>['invoice']} />;
 }

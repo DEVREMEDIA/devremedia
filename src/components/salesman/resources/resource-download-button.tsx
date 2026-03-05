@@ -12,7 +12,7 @@ interface ResourceDownloadButtonProps {
   fileName: string;
 }
 
-export function ResourceDownloadButton({ filePath, fileName }: ResourceDownloadButtonProps) {
+export function ResourceDownloadButton({ filePath }: ResourceDownloadButtonProps) {
   const [isLoading, setIsLoading] = useState(false);
 
   const handleDownload = async () => {

@@ -1,6 +1,6 @@
 'use client';
 
-import { FileIcon, ImageIcon, Download } from 'lucide-react';
+import { FileIcon, Download } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 import { Attachment } from '@/lib/schemas/message';
@@ -17,7 +17,7 @@ function formatFileSize(bytes: number): string {
   const k = 1024;
   const sizes = ['Bytes', 'KB', 'MB', 'GB'];
   const i = Math.floor(Math.log(bytes) / Math.log(k));
-  return Math.round(bytes / Math.pow(k, i) * 100) / 100 + ' ' + sizes[i];
+  return Math.round((bytes / Math.pow(k, i)) * 100) / 100 + ' ' + sizes[i];
 }
 
 function isImageFile(fileType: string): boolean {
@@ -77,7 +77,7 @@ export function MessageAttachment({ attachment, className }: MessageAttachmentPr
     <div
       className={cn(
         'flex items-center gap-3 p-3 rounded-lg border bg-muted hover:bg-muted/80 transition-colors',
-        className
+        className,
       )}
     >
       <div className="flex-shrink-0">
@@ -85,16 +85,9 @@ export function MessageAttachment({ attachment, className }: MessageAttachmentPr
       </div>
       <div className="flex-1 min-w-0">
         <div className="text-sm font-medium truncate">{attachment.file_name}</div>
-        <div className="text-xs text-muted-foreground">
-          {formatFileSize(attachment.file_size)}
-        </div>
+        <div className="text-xs text-muted-foreground">{formatFileSize(attachment.file_size)}</div>
       </div>
-      <Button
-        variant="ghost"
-        size="sm"
-        onClick={handleDownload}
-        className="flex-shrink-0"
-      >
+      <Button variant="ghost" size="sm" onClick={handleDownload} className="flex-shrink-0">
         <Download className="h-4 w-4" />
       </Button>
     </div>

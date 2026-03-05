@@ -3,6 +3,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { AllLeadsTable } from '@/components/admin/leads/all-leads-table';
 import { SalesReport } from '@/components/admin/leads/sales-report';
 import { getLeads } from '@/lib/actions/leads';
+import type { ComponentProps } from 'react';
 import {
   getLeadsByStage,
   getConversionRate,
@@ -12,21 +13,15 @@ import {
 } from '@/lib/queries/leads';
 
 export default async function AdminLeadsPage() {
-  const [
-    leadsResult,
-    stageData,
-    conversionRate,
-    forecast,
-    salesmanData,
-    sourceData,
-  ] = await Promise.all([
-    getLeads(),
-    getLeadsByStage(),
-    getConversionRate(),
-    getPipelineForecast(),
-    getLeadsBySalesman(),
-    getLeadsBySource(),
-  ]);
+  const [leadsResult, stageData, conversionRate, forecast, salesmanData, sourceData] =
+    await Promise.all([
+      getLeads(),
+      getLeadsByStage(),
+      getConversionRate(),
+      getPipelineForecast(),
+      getLeadsBySalesman(),
+      getLeadsBySource(),
+    ]);
 
   const leads = leadsResult.data ?? [];
 
@@ -44,7 +39,7 @@ export default async function AdminLeadsPage() {
         </TabsList>
 
         <TabsContent value="leads">
-          <AllLeadsTable leads={leads as any[]} />
+          <AllLeadsTable leads={leads as ComponentProps<typeof AllLeadsTable>['leads']} />
         </TabsContent>
 
         <TabsContent value="reports">

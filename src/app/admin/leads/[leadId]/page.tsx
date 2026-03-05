@@ -4,6 +4,7 @@ import { AdminLeadDetail } from '@/components/admin/leads/lead-detail';
 import { getLead } from '@/lib/actions/leads';
 import { getLeadActivities } from '@/lib/actions/lead-activities';
 import { createClient } from '@/lib/supabase/server';
+import type { ComponentProps } from 'react';
 
 export default async function AdminLeadDetailPage({
   params,
@@ -34,14 +35,11 @@ export default async function AdminLeadDetailPage({
 
   return (
     <div className="space-y-6">
-      <PageHeader
-        title={lead.contact_name}
-        description={lead.company_name ?? lead.email}
-      />
+      <PageHeader title={lead.contact_name} description={lead.company_name ?? lead.email} />
       <AdminLeadDetail
-        lead={lead as any}
-        activities={activities as any}
-        salesmen={salesmen as any[] ?? []}
+        lead={lead as unknown as ComponentProps<typeof AdminLeadDetail>['lead']}
+        activities={activities as unknown as ComponentProps<typeof AdminLeadDetail>['activities']}
+        salesmen={(salesmen as unknown as ComponentProps<typeof AdminLeadDetail>['salesmen']) ?? []}
       />
     </div>
   );

@@ -1,15 +1,15 @@
-'use client'
+'use client';
 
-import { useState } from 'react'
-import { useForm } from 'react-hook-form'
-import { zodResolver } from '@hookform/resolvers/zod'
-import { useRouter } from 'next/navigation'
-import { toast } from 'sonner'
-import { useTranslations } from 'next-intl'
-import { Loader2 } from 'lucide-react'
-import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
-import { Textarea } from '@/components/ui/textarea'
+import { useState } from 'react';
+import { useForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { useRouter } from 'next/navigation';
+import { toast } from 'sonner';
+import { useTranslations } from 'next-intl';
+import { Loader2 } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Textarea } from '@/components/ui/textarea';
 import {
   Form,
   FormControl,
@@ -17,31 +17,31 @@ import {
   FormItem,
   FormLabel,
   FormMessage,
-} from '@/components/ui/form'
+} from '@/components/ui/form';
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from '@/components/ui/select'
-import { createLeadSchema, type CreateLeadInput } from '@/lib/schemas/lead'
-import { createLead, updateLead } from '@/lib/actions/leads'
-import { LEAD_SOURCES, LEAD_SOURCE_LABELS } from '@/lib/constants'
-import { z } from 'zod'
-import type { Lead } from '@/types'
+} from '@/components/ui/select';
+import { createLeadSchema } from '@/lib/schemas/lead';
+import { createLead, updateLead } from '@/lib/actions/leads';
+import { LEAD_SOURCES, LEAD_SOURCE_LABELS } from '@/lib/constants';
+import { z } from 'zod';
+import type { Lead } from '@/types';
 
 type LeadFormProps = {
-  lead?: Lead
-  defaultAssignedTo: string
-}
+  lead?: Lead;
+  defaultAssignedTo: string;
+};
 
 export function LeadForm({ lead, defaultAssignedTo }: LeadFormProps) {
-  const router = useRouter()
-  const t = useTranslations('leads')
-  const tToast = useTranslations('toast')
-  const tCommon = useTranslations('common')
-  const [isLoading, setIsLoading] = useState(false)
+  const router = useRouter();
+  const t = useTranslations('leads');
+  const tToast = useTranslations('toast');
+  const tCommon = useTranslations('common');
+  const [isLoading, setIsLoading] = useState(false);
 
   const form = useForm<z.input<typeof createLeadSchema>>({
     resolver: zodResolver(createLeadSchema),
@@ -70,29 +70,27 @@ export function LeadForm({ lead, defaultAssignedTo }: LeadFormProps) {
           notes: undefined,
           assigned_to: defaultAssignedTo,
         },
-  })
+  });
 
   const onSubmit = async (data: z.input<typeof createLeadSchema>) => {
-    setIsLoading(true)
+    setIsLoading(true);
 
     try {
-      const result = lead
-        ? await updateLead(lead.id, data)
-        : await createLead(data)
+      const result = lead ? await updateLead(lead.id, data) : await createLead(data);
 
       if (result.error) {
         toast.error(lead ? tToast('updateError') : tToast('createError'), {
           description: result.error,
-        })
+        });
       } else {
-        toast.success(lead ? tToast('updateSuccess') : tToast('createSuccess'))
-        router.push('/salesman/leads')
-        router.refresh()
+        toast.success(lead ? tToast('updateSuccess') : tToast('createSuccess'));
+        router.push('/salesman/leads');
+        router.refresh();
       }
     } finally {
-      setIsLoading(false)
+      setIsLoading(false);
     }
-  }
+  };
 
   return (
     <Form {...form}>
@@ -190,7 +188,9 @@ export function LeadForm({ lead, defaultAssignedTo }: LeadFormProps) {
                     type="number"
                     placeholder="5000"
                     onChange={(e) => field.onChange(e.target.value ? Number(e.target.value) : null)}
-                    value={field.value !== null && field.value !== undefined ? String(field.value) : ''}
+                    value={
+                      field.value !== null && field.value !== undefined ? String(field.value) : ''
+                    }
                     name={field.name}
                     onBlur={field.onBlur}
                     ref={field.ref}
@@ -275,5 +275,5 @@ export function LeadForm({ lead, defaultAssignedTo }: LeadFormProps) {
         </div>
       </form>
     </Form>
-  )
+  );
 }

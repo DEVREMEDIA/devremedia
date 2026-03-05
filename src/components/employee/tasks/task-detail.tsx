@@ -3,7 +3,6 @@
 import { Calendar, AlertCircle, FileText } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { StatusBadge } from '@/components/shared/status-badge';
 import { TaskStatusUpdate } from './task-status-update';
 import { PRIORITY_LABELS } from '@/lib/constants';
 import type { Task, Priority } from '@/types/index';
@@ -24,10 +23,7 @@ export function TaskDetail({ task }: TaskDetailProps) {
   const t = useTranslations('employee.tasks');
   const tCommon = useTranslations('common');
 
-  const isOverdue =
-    task.due_date &&
-    task.status !== 'done' &&
-    new Date(task.due_date) < new Date();
+  const isOverdue = task.due_date && task.status !== 'done' && new Date(task.due_date) < new Date();
 
   return (
     <div className="space-y-6">
@@ -68,7 +64,7 @@ export function TaskDetail({ task }: TaskDetailProps) {
               <span
                 className={cn(
                   'inline-flex items-center text-sm font-medium px-3 py-1.5 rounded-md bg-gray-100',
-                  priorityColorMap[task.priority]
+                  priorityColorMap[task.priority],
                 )}
               >
                 {PRIORITY_LABELS[task.priority]}
@@ -83,7 +79,7 @@ export function TaskDetail({ task }: TaskDetailProps) {
               <div
                 className={cn(
                   'flex items-center gap-2 text-sm',
-                  isOverdue ? 'text-red-600 font-semibold' : 'text-foreground'
+                  isOverdue ? 'text-red-600 font-semibold' : 'text-foreground',
                 )}
               >
                 {isOverdue && <AlertCircle className="h-4 w-4" />}

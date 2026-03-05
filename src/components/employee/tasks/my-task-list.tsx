@@ -11,13 +11,8 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import {
-  TASK_STATUSES,
-  TASK_STATUS_LABELS,
-  PRIORITIES,
-  PRIORITY_LABELS,
-} from '@/lib/constants';
-import type { Task, TaskStatus, Priority } from '@/types/index';
+import { TASK_STATUSES, TASK_STATUS_LABELS, PRIORITIES, PRIORITY_LABELS } from '@/lib/constants';
+import type { Task } from '@/types/index';
 import { CheckSquare } from 'lucide-react';
 
 interface MyTaskListProps {

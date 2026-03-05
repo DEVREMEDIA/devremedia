@@ -1,42 +1,37 @@
-'use client'
+'use client';
 
-import { Button } from '@/components/ui/button'
-import { Badge } from '@/components/ui/badge'
-import { CheckCircle2, Circle, Clock } from 'lucide-react'
-import { cn } from '@/lib/utils'
-import { useTranslations } from 'next-intl'
+import { Badge } from '@/components/ui/badge';
+import { CheckCircle2, Circle, Clock } from 'lucide-react';
+import { cn } from '@/lib/utils';
+import { useTranslations } from 'next-intl';
 
 type VideoAnnotation = {
-  id: string
-  deliverable_id: string
-  created_by: string | null
-  timestamp_seconds: number
-  content: string
-  resolved: boolean
-  created_at: string
-}
+  id: string;
+  deliverable_id: string;
+  created_by: string | null;
+  timestamp_seconds: number;
+  content: string;
+  resolved: boolean;
+  created_at: string;
+};
 
 type AnnotationListProps = {
-  annotations: VideoAnnotation[]
-  onAnnotationClick: (annotation: VideoAnnotation) => void
-  onResolve: (id: string) => void
-}
+  annotations: VideoAnnotation[];
+  onAnnotationClick: (annotation: VideoAnnotation) => void;
+  onResolve: (id: string) => void;
+};
 
 const formatTimestamp = (seconds: number) => {
-  const mins = Math.floor(seconds / 60)
-  const secs = Math.floor(seconds % 60)
-  return `${mins}:${secs.toString().padStart(2, '0')}`
-}
+  const mins = Math.floor(seconds / 60);
+  const secs = Math.floor(seconds % 60);
+  return `${mins}:${secs.toString().padStart(2, '0')}`;
+};
 
-export function AnnotationList({
-  annotations,
-  onAnnotationClick,
-  onResolve,
-}: AnnotationListProps) {
+export function AnnotationList({ annotations, onAnnotationClick, onResolve }: AnnotationListProps) {
   const t = useTranslations('deliverables');
   const sortedAnnotations = [...annotations].sort(
-    (a, b) => a.timestamp_seconds - b.timestamp_seconds
-  )
+    (a, b) => a.timestamp_seconds - b.timestamp_seconds,
+  );
 
   if (annotations.length === 0) {
     return (
@@ -45,13 +40,11 @@ export function AnnotationList({
           <Circle className="h-8 w-8 text-muted-foreground" />
           <div className="space-y-1">
             <p className="text-sm font-medium">{t('annotations')}</p>
-            <p className="text-xs text-muted-foreground">
-              {t('clickTimelineToAdd')}
-            </p>
+            <p className="text-xs text-muted-foreground">{t('clickTimelineToAdd')}</p>
           </div>
         </div>
       </div>
-    )
+    );
   }
 
   return (
@@ -63,7 +56,7 @@ export function AnnotationList({
             'rounded-lg border p-4 space-y-3 transition-colors',
             annotation.resolved
               ? 'bg-muted/30 opacity-75'
-              : 'bg-card hover:bg-accent cursor-pointer'
+              : 'bg-card hover:bg-accent cursor-pointer',
           )}
           onClick={() => !annotation.resolved && onAnnotationClick(annotation)}
         >
@@ -71,8 +64,8 @@ export function AnnotationList({
             <div className="flex items-start gap-3 flex-1">
               <button
                 onClick={(e) => {
-                  e.stopPropagation()
-                  onResolve(annotation.id)
+                  e.stopPropagation();
+                  onResolve(annotation.id);
                 }}
                 className="mt-0.5 shrink-0"
               >
@@ -89,7 +82,10 @@ export function AnnotationList({
                     {formatTimestamp(annotation.timestamp_seconds)}
                   </Badge>
                   {annotation.resolved && (
-                    <Badge variant="outline" className="text-xs bg-green-500/10 text-green-700 dark:text-green-400 border-green-500/20">
+                    <Badge
+                      variant="outline"
+                      className="text-xs bg-green-500/10 text-green-700 dark:text-green-400 border-green-500/20"
+                    >
                       {t('resolved')}
                     </Badge>
                   )}
@@ -97,7 +93,7 @@ export function AnnotationList({
                 <p
                   className={cn(
                     'text-sm',
-                    annotation.resolved && 'line-through text-muted-foreground'
+                    annotation.resolved && 'line-through text-muted-foreground',
                   )}
                 >
                   {annotation.content}
@@ -108,5 +104,5 @@ export function AnnotationList({
         </div>
       ))}
     </div>
-  )
+  );
 }

@@ -416,6 +416,7 @@ export function ContractPDFTemplate({
             {/* Client */}
             <View style={styles.sigBlock}>
               <Text style={styles.sigLabel}>CLIENT</Text>
+              {/* eslint-disable-next-line jsx-a11y/alt-text -- @react-pdf/renderer Image has no alt prop */}
               {contract.status === 'signed' && signatureImage ? (
                 <Image src={signatureImage} style={styles.sigImage} />
               ) : (

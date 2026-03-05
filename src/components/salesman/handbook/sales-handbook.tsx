@@ -2,7 +2,6 @@
 
 import { useState } from 'react';
 import {
-  BookOpen,
   Package,
   ListChecks,
   MessageSquareWarning,
@@ -56,7 +55,15 @@ function CopyButton({ text, label }: { text: string; label?: string }) {
   );
 }
 
-function SectionHeader({ icon: Icon, title, description }: { icon: React.ComponentType<{ className?: string }>; title: string; description?: string }) {
+function SectionHeader({
+  icon: Icon,
+  title,
+  description,
+}: {
+  icon: React.ComponentType<{ className?: string }>;
+  title: string;
+  description?: string;
+}) {
   return (
     <div className="flex items-start gap-3 mb-6">
       <div className="rounded-lg bg-primary/10 p-2.5">
@@ -76,7 +83,11 @@ function SectionHeader({ icon: Icon, title, description }: { icon: React.Compone
 function PitchTab() {
   return (
     <div className="space-y-8">
-      <SectionHeader icon={Megaphone} title="Ποιοι Είμαστε & Τι Κάνουμε" description="Η ταυτότητα της Devre Media" />
+      <SectionHeader
+        icon={Megaphone}
+        title="Ποιοι Είμαστε & Τι Κάνουμε"
+        description="Η ταυτότητα της Devre Media"
+      />
 
       {/* One-liner */}
       <Card>
@@ -85,10 +96,14 @@ function PitchTab() {
         </CardHeader>
         <CardContent>
           <blockquote className="border-l-4 border-primary pl-4 italic text-lg">
-            Η Devre Media είναι η ομάδα που αναλαμβάνει να χτίσει ολοκληρωμένα την εικόνα της επιχείρησης με video &ndash; από τα καθημερινά social μέχρι τα μεγάλα διαφημιστικά.
+            Η Devre Media είναι η ομάδα που αναλαμβάνει να χτίσει ολοκληρωμένα την εικόνα της
+            επιχείρησης με video &ndash; από τα καθημερινά social μέχρι τα μεγάλα διαφημιστικά.
           </blockquote>
           <div className="mt-3">
-            <CopyButton text="Η Devre Media είναι η ομάδα που αναλαμβάνει να χτίσει ολοκληρωμένα την εικόνα της επιχείρησης με video – από τα καθημερινά social μέχρι τα μεγάλα διαφημιστικά." label="Copy One-Liner" />
+            <CopyButton
+              text="Η Devre Media είναι η ομάδα που αναλαμβάνει να χτίσει ολοκληρωμένα την εικόνα της επιχείρησης με video – από τα καθημερινά social μέχρι τα μεγάλα διαφημιστικά."
+              label="Copy One-Liner"
+            />
           </div>
         </CardContent>
       </Card>
@@ -100,7 +115,9 @@ function PitchTab() {
         </CardHeader>
         <CardContent className="space-y-4 text-sm leading-relaxed">
           <p>
-            Η Devre Media είναι μια εταιρία παραγωγής video και διαφημιστικού περιεχομένου που ειδικεύεται στο να χτίζει ολόκληρη την εικόνα μιας επιχείρησης, όχι απλά να βγάζει μερικά βιντεάκια.
+            Η Devre Media είναι μια εταιρία παραγωγής video και διαφημιστικού περιεχομένου που
+            ειδικεύεται στο να χτίζει ολόκληρη την εικόνα μιας επιχείρησης, όχι απλά να βγάζει
+            μερικά βιντεάκια.
           </p>
           <p>Στην αγορά σήμερα υπάρχουν δύο άκρα:</p>
           <ul className="list-disc list-inside space-y-1 ml-2">
@@ -110,20 +127,35 @@ function PitchTab() {
           <p className="font-medium">Εμείς είμαστε στη μέση:</p>
           <ul className="list-disc list-inside space-y-1 ml-2">
             <li>δουλεύουμε με mobile περιβάλλον & ελαφρύ εξοπλισμό για να είμαστε πολύ γρήγοροι</li>
-            <li>αλλά ακολουθούμε όλους τους κανόνες του cinematography, ώστε το content να είναι αισθητικά ανώτερο</li>
+            <li>
+              αλλά ακολουθούμε όλους τους κανόνες του cinematography, ώστε το content να είναι
+              αισθητικά ανώτερο
+            </li>
           </ul>
           <p>
-            Αναλαμβάνουμε μηνιαία πακέτα για social, podcasts, vlog, αλλά και μεγαλύτερες παραγωγές όπως εταιρικά video και διαφημιστικά. Δεν ερχόμαστε απλώς να τραβήξουμε πλάνα &ndash; σχεδιάζουμε μαζί με τον πελάτη θεματολογία, γυρίσματα και στρατηγική εικόνας.
+            Αναλαμβάνουμε μηνιαία πακέτα για social, podcasts, vlog, αλλά και μεγαλύτερες παραγωγές
+            όπως εταιρικά video και διαφημιστικά. Δεν ερχόμαστε απλώς να τραβήξουμε πλάνα &ndash;
+            σχεδιάζουμε μαζί με τον πελάτη θεματολογία, γυρίσματα και στρατηγική εικόνας.
           </p>
           <p>
-            Δουλεύουμε ήδη με brands όπως <strong>Μαύρη Θάλασσα</strong> (60 reels, 3 vlog, 6 podcasts/μήνα), <strong>Almeco</strong>, <strong>Technomat</strong>, <strong>Ophthalmica</strong>, <strong>MotoMarket</strong>, <strong>Sky Venue</strong>, καθώς και <strong>UFC</strong>, <strong>AJP</strong>, <strong>REMAX Hellas</strong>.
+            Δουλεύουμε ήδη με brands όπως <strong>Μαύρη Θάλασσα</strong> (60 reels, 3 vlog, 6
+            podcasts/μήνα), <strong>Almeco</strong>, <strong>Technomat</strong>,{' '}
+            <strong>Ophthalmica</strong>, <strong>MotoMarket</strong>, <strong>Sky Venue</strong>,
+            καθώς και <strong>UFC</strong>, <strong>AJP</strong>, <strong>REMAX Hellas</strong>.
           </p>
           <div className="rounded-lg bg-muted p-4 mt-4">
             <p className="font-medium mb-1">Φιλοσοφία:</p>
-            <p className="italic">&laquo;Είμαστε δίπλα στον πελάτη σαν άνθρωποι και συνεργάτες, αλλά δουλεύουμε με ξεκάθαρους κανόνες, συμβόλαια και χρόνους παράδοσης. Οι καλοί λογαριασμοί κάνουν τους καλούς φίλους.&raquo;</p>
+            <p className="italic">
+              &laquo;Είμαστε δίπλα στον πελάτη σαν άνθρωποι και συνεργάτες, αλλά δουλεύουμε με
+              ξεκάθαρους κανόνες, συμβόλαια και χρόνους παράδοσης. Οι καλοί λογαριασμοί κάνουν τους
+              καλούς φίλους.&raquo;
+            </p>
           </div>
           <div className="mt-2">
-            <CopyButton text={`Η Devre Media είναι μια εταιρία παραγωγής video και διαφημιστικού περιεχομένου που ειδικεύεται στο να χτίζει ολόκληρη την εικόνα μιας επιχείρησης, όχι απλά να βγάζει μερικά βιντεάκια.\n\nΣτην αγορά σήμερα υπάρχουν δύο άκρα: οι κλασικοί videographers με βαριά κάμερα, και οι content creators με το κινητό. Εμείς είμαστε στη μέση: δουλεύουμε με mobile περιβάλλον & ελαφρύ εξοπλισμό για να είμαστε πολύ γρήγοροι, αλλά ακολουθούμε όλους τους κανόνες του cinematography, ώστε το content να είναι αισθητικά ανώτερο.\n\nΑναλαμβάνουμε μηνιαία πακέτα για social, podcasts, vlog, αλλά και μεγαλύτερες παραγωγές. Δουλεύουμε ήδη με brands όπως Μαύρη Θάλασσα, Almeco, Technomat, Ophthalmica, MotoMarket, Sky Venue, UFC, AJP, REMAX Hellas.`} label="Copy Pitch" />
+            <CopyButton
+              text={`Η Devre Media είναι μια εταιρία παραγωγής video και διαφημιστικού περιεχομένου που ειδικεύεται στο να χτίζει ολόκληρη την εικόνα μιας επιχείρησης, όχι απλά να βγάζει μερικά βιντεάκια.\n\nΣτην αγορά σήμερα υπάρχουν δύο άκρα: οι κλασικοί videographers με βαριά κάμερα, και οι content creators με το κινητό. Εμείς είμαστε στη μέση: δουλεύουμε με mobile περιβάλλον & ελαφρύ εξοπλισμό για να είμαστε πολύ γρήγοροι, αλλά ακολουθούμε όλους τους κανόνες του cinematography, ώστε το content να είναι αισθητικά ανώτερο.\n\nΑναλαμβάνουμε μηνιαία πακέτα για social, podcasts, vlog, αλλά και μεγαλύτερες παραγωγές. Δουλεύουμε ήδη με brands όπως Μαύρη Θάλασσα, Almeco, Technomat, Ophthalmica, MotoMarket, Sky Venue, UFC, AJP, REMAX Hellas.`}
+              label="Copy Pitch"
+            />
           </div>
         </CardContent>
       </Card>
@@ -134,7 +166,10 @@ function PitchTab() {
           <CardTitle className="text-base">Όραμα</CardTitle>
         </CardHeader>
         <CardContent className="text-sm">
-          <p>Πηγαίνουμε προς agency μοντέλο. Θέλουμε καθολική ανάληψη της εικόνας (social, YouTube, website, TV, radio κ.λπ.) και προτιμάμε ετήσιες συνεργασίες αντί για one-off projects.</p>
+          <p>
+            Πηγαίνουμε προς agency μοντέλο. Θέλουμε καθολική ανάληψη της εικόνας (social, YouTube,
+            website, TV, radio κ.λπ.) και προτιμάμε ετήσιες συνεργασίες αντί για one-off projects.
+          </p>
         </CardContent>
       </Card>
 
@@ -142,7 +177,11 @@ function PitchTab() {
       <SectionHeader icon={Target} title="Ιδανικοί Πελάτες & Στόχευση" />
       <Card>
         <CardContent className="pt-6 space-y-4 text-sm">
-          <p>Θέλουμε <strong>high-end &laquo;κράχτες&raquo;</strong> που ανεβάζουν το portfolio και μπορούν να κλιμακώσουν τη συνεργασία σε μεγάλα πακέτα (εταιρικά, podcasts, διαφημιστικά).</p>
+          <p>
+            Θέλουμε <strong>high-end &laquo;κράχτες&raquo;</strong> που ανεβάζουν το portfolio και
+            μπορούν να κλιμακώσουν τη συνεργασία σε μεγάλα πακέτα (εταιρικά, podcasts,
+            διαφημιστικά).
+          </p>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-4">
             <div className="rounded-lg border p-4">
@@ -166,7 +205,10 @@ function PitchTab() {
 
           <div className="rounded-lg bg-destructive/10 p-4 mt-4">
             <p className="font-medium text-destructive mb-1">Δεν αναλαμβάνουμε:</p>
-            <p>Πορνογραφικό / adult περιεχόμενο. Για οτιδήποτε &laquo;γκρίζο&raquo;, ο πωλητής ρωτά πρώτα τον Άγγελο.</p>
+            <p>
+              Πορνογραφικό / adult περιεχόμενο. Για οτιδήποτε &laquo;γκρίζο&raquo;, ο πωλητής ρωτά
+              πρώτα τον Άγγελο.
+            </p>
           </div>
         </CardContent>
       </Card>
@@ -175,11 +217,17 @@ function PitchTab() {
       <SectionHeader icon={Users} title="Τόνος Φωνής Πωλητή" />
       <Card>
         <CardContent className="pt-6 space-y-3 text-sm">
-          <p><strong>Φιλικός, ανθρώπινος, αλλά επαγγελματικός και ξεκάθαρος.</strong></p>
+          <p>
+            <strong>Φιλικός, ανθρώπινος, αλλά επαγγελματικός και ξεκάθαρος.</strong>
+          </p>
           <blockquote className="border-l-4 border-primary pl-4 italic">
-            &laquo;Είμαστε δίπλα σου, είμαστε φίλοι σου, αλλά δουλεύουμε με συγκεκριμένο τρόπο &ndash; οι καλοί λογαριασμοί κάνουν τους καλούς φίλους.&raquo;
+            &laquo;Είμαστε δίπλα σου, είμαστε φίλοι σου, αλλά δουλεύουμε με συγκεκριμένο τρόπο
+            &ndash; οι καλοί λογαριασμοί κάνουν τους καλούς φίλους.&raquo;
           </blockquote>
-          <p>Αποφεύγεται το aggressive selling. Υπάρχει αυτοπεποίθηση και ήπιο FOMO (top πελάτες, περιορισμένα slots).</p>
+          <p>
+            Αποφεύγεται το aggressive selling. Υπάρχει αυτοπεποίθηση και ήπιο FOMO (top πελάτες,
+            περιορισμένα slots).
+          </p>
         </CardContent>
       </Card>
     </div>
@@ -192,7 +240,11 @@ function PitchTab() {
 function PackagesTab() {
   return (
     <div className="space-y-8">
-      <SectionHeader icon={Package} title="Πακέτα & Υπηρεσίες" description="Όλα τα πακέτα με τιμές και λεπτομέρειες" />
+      <SectionHeader
+        icon={Package}
+        title="Πακέτα & Υπηρεσίες"
+        description="Όλα τα πακέτα με τιμές και λεπτομέρειες"
+      />
 
       {/* Social Media Packages */}
       <div>
@@ -206,14 +258,31 @@ function PackagesTab() {
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-3">
-              <Badge variant="secondary" className="text-lg font-semibold">8 video / μήνα</Badge>
+              <Badge variant="secondary" className="text-lg font-semibold">
+                8 video / μήνα
+              </Badge>
               <ul className="space-y-2 text-sm">
-                <li className="flex items-center gap-2"><CheckCircle2 className="h-4 w-4 text-green-500 shrink-0" /> 2 ημέρες γυρισμάτων (έως 6 ώρες)</li>
-                <li className="flex items-center gap-2"><CheckCircle2 className="h-4 w-4 text-green-500 shrink-0" /> Brief με προτεινόμενη θεματολογία</li>
-                <li className="flex items-center gap-2"><CheckCircle2 className="h-4 w-4 text-green-500 shrink-0" /> Γύρισμα + μοντάζ</li>
-                <li className="flex items-center gap-2"><CheckCircle2 className="h-4 w-4 text-green-500 shrink-0" /> Copyright-free μουσική</li>
-                <li className="flex items-center gap-2"><CheckCircle2 className="h-4 w-4 text-green-500 shrink-0" /> Υπότιτλοι</li>
-                <li className="flex items-center gap-2"><CheckCircle2 className="h-4 w-4 text-green-500 shrink-0" /> Drone</li>
+                <li className="flex items-center gap-2">
+                  <CheckCircle2 className="h-4 w-4 text-green-500 shrink-0" /> 2 ημέρες γυρισμάτων
+                  (έως 6 ώρες)
+                </li>
+                <li className="flex items-center gap-2">
+                  <CheckCircle2 className="h-4 w-4 text-green-500 shrink-0" /> Brief με προτεινόμενη
+                  θεματολογία
+                </li>
+                <li className="flex items-center gap-2">
+                  <CheckCircle2 className="h-4 w-4 text-green-500 shrink-0" /> Γύρισμα + μοντάζ
+                </li>
+                <li className="flex items-center gap-2">
+                  <CheckCircle2 className="h-4 w-4 text-green-500 shrink-0" /> Copyright-free
+                  μουσική
+                </li>
+                <li className="flex items-center gap-2">
+                  <CheckCircle2 className="h-4 w-4 text-green-500 shrink-0" /> Υπότιτλοι
+                </li>
+                <li className="flex items-center gap-2">
+                  <CheckCircle2 className="h-4 w-4 text-green-500 shrink-0" /> Drone
+                </li>
               </ul>
               <p className="text-xs text-muted-foreground">~146,25&euro;/video</p>
             </CardContent>
@@ -230,14 +299,31 @@ function PackagesTab() {
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-3">
-              <Badge variant="secondary" className="text-lg font-semibold">12 video / μήνα</Badge>
+              <Badge variant="secondary" className="text-lg font-semibold">
+                12 video / μήνα
+              </Badge>
               <ul className="space-y-2 text-sm">
-                <li className="flex items-center gap-2"><CheckCircle2 className="h-4 w-4 text-green-500 shrink-0" /> 2 ημέρες γυρισμάτων (έως 6 ώρες/ημέρα)</li>
-                <li className="flex items-center gap-2"><CheckCircle2 className="h-4 w-4 text-green-500 shrink-0" /> Brief με προτεινόμενη θεματολογία</li>
-                <li className="flex items-center gap-2"><CheckCircle2 className="h-4 w-4 text-green-500 shrink-0" /> Γύρισμα + μοντάζ</li>
-                <li className="flex items-center gap-2"><CheckCircle2 className="h-4 w-4 text-green-500 shrink-0" /> Copyright-free μουσική</li>
-                <li className="flex items-center gap-2"><CheckCircle2 className="h-4 w-4 text-green-500 shrink-0" /> Υπότιτλοι</li>
-                <li className="flex items-center gap-2"><CheckCircle2 className="h-4 w-4 text-green-500 shrink-0" /> Drone</li>
+                <li className="flex items-center gap-2">
+                  <CheckCircle2 className="h-4 w-4 text-green-500 shrink-0" /> 2 ημέρες γυρισμάτων
+                  (έως 6 ώρες/ημέρα)
+                </li>
+                <li className="flex items-center gap-2">
+                  <CheckCircle2 className="h-4 w-4 text-green-500 shrink-0" /> Brief με προτεινόμενη
+                  θεματολογία
+                </li>
+                <li className="flex items-center gap-2">
+                  <CheckCircle2 className="h-4 w-4 text-green-500 shrink-0" /> Γύρισμα + μοντάζ
+                </li>
+                <li className="flex items-center gap-2">
+                  <CheckCircle2 className="h-4 w-4 text-green-500 shrink-0" /> Copyright-free
+                  μουσική
+                </li>
+                <li className="flex items-center gap-2">
+                  <CheckCircle2 className="h-4 w-4 text-green-500 shrink-0" /> Υπότιτλοι
+                </li>
+                <li className="flex items-center gap-2">
+                  <CheckCircle2 className="h-4 w-4 text-green-500 shrink-0" /> Drone
+                </li>
               </ul>
               <p className="text-xs text-muted-foreground">~112,5&euro;/video</p>
             </CardContent>
@@ -251,21 +337,39 @@ function PackagesTab() {
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-3">
-              <Badge variant="secondary" className="text-lg font-semibold">20 video / μήνα</Badge>
+              <Badge variant="secondary" className="text-lg font-semibold">
+                20 video / μήνα
+              </Badge>
               <ul className="space-y-2 text-sm">
-                <li className="flex items-center gap-2"><CheckCircle2 className="h-4 w-4 text-green-500 shrink-0" /> 4 ημέρες γυρισμάτων (έως 6 ώρες/ημέρα)</li>
-                <li className="flex items-center gap-2"><CheckCircle2 className="h-4 w-4 text-green-500 shrink-0" /> Brief με προτεινόμενη θεματολογία</li>
-                <li className="flex items-center gap-2"><CheckCircle2 className="h-4 w-4 text-green-500 shrink-0" /> Γύρισμα + μοντάζ</li>
-                <li className="flex items-center gap-2"><CheckCircle2 className="h-4 w-4 text-green-500 shrink-0" /> Copyright-free μουσική</li>
-                <li className="flex items-center gap-2"><CheckCircle2 className="h-4 w-4 text-green-500 shrink-0" /> Υπότιτλοι</li>
-                <li className="flex items-center gap-2"><CheckCircle2 className="h-4 w-4 text-green-500 shrink-0" /> Drone</li>
+                <li className="flex items-center gap-2">
+                  <CheckCircle2 className="h-4 w-4 text-green-500 shrink-0" /> 4 ημέρες γυρισμάτων
+                  (έως 6 ώρες/ημέρα)
+                </li>
+                <li className="flex items-center gap-2">
+                  <CheckCircle2 className="h-4 w-4 text-green-500 shrink-0" /> Brief με προτεινόμενη
+                  θεματολογία
+                </li>
+                <li className="flex items-center gap-2">
+                  <CheckCircle2 className="h-4 w-4 text-green-500 shrink-0" /> Γύρισμα + μοντάζ
+                </li>
+                <li className="flex items-center gap-2">
+                  <CheckCircle2 className="h-4 w-4 text-green-500 shrink-0" /> Copyright-free
+                  μουσική
+                </li>
+                <li className="flex items-center gap-2">
+                  <CheckCircle2 className="h-4 w-4 text-green-500 shrink-0" /> Υπότιτλοι
+                </li>
+                <li className="flex items-center gap-2">
+                  <CheckCircle2 className="h-4 w-4 text-green-500 shrink-0" /> Drone
+                </li>
               </ul>
               <p className="text-xs text-muted-foreground">~112&euro;/video</p>
             </CardContent>
           </Card>
         </div>
         <p className="text-sm text-muted-foreground mt-3">
-          <strong>Extras:</strong> Thumbnails (ως έξτρα χρέωση ή δώρο κατόπιν συνεννόησης). Στόχος πώλησης: 8 ή 12 video/μήνα.
+          <strong>Extras:</strong> Thumbnails (ως έξτρα χρέωση ή δώρο κατόπιν συνεννόησης). Στόχος
+          πώλησης: 8 ή 12 video/μήνα.
         </p>
       </div>
 
@@ -282,11 +386,18 @@ function PackagesTab() {
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-3">
-              <Badge variant="secondary" className="text-lg font-semibold">2 επεισόδια / μήνα</Badge>
+              <Badge variant="secondary" className="text-lg font-semibold">
+                2 επεισόδια / μήνα
+              </Badge>
               <p className="text-sm text-muted-foreground">400&euro;/episode</p>
               <ul className="space-y-2 text-sm">
-                <li className="flex items-center gap-2"><CheckCircle2 className="h-4 w-4 text-green-500 shrink-0" /> Γύρισμα με 3 κάμερες</li>
-                <li className="flex items-center gap-2"><CheckCircle2 className="h-4 w-4 text-green-500 shrink-0" /> Full μοντάζ επεισοδίων</li>
+                <li className="flex items-center gap-2">
+                  <CheckCircle2 className="h-4 w-4 text-green-500 shrink-0" /> Γύρισμα με 3 κάμερες
+                </li>
+                <li className="flex items-center gap-2">
+                  <CheckCircle2 className="h-4 w-4 text-green-500 shrink-0" /> Full μοντάζ
+                  επεισοδίων
+                </li>
               </ul>
             </CardContent>
           </Card>
@@ -297,11 +408,18 @@ function PackagesTab() {
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-3">
-              <Badge variant="secondary" className="text-lg font-semibold">4 επεισόδια / μήνα</Badge>
+              <Badge variant="secondary" className="text-lg font-semibold">
+                4 επεισόδια / μήνα
+              </Badge>
               <p className="text-sm text-muted-foreground">300&euro;/episode</p>
               <ul className="space-y-2 text-sm">
-                <li className="flex items-center gap-2"><CheckCircle2 className="h-4 w-4 text-green-500 shrink-0" /> Γύρισμα με 3 κάμερες</li>
-                <li className="flex items-center gap-2"><CheckCircle2 className="h-4 w-4 text-green-500 shrink-0" /> Full μοντάζ επεισοδίων</li>
+                <li className="flex items-center gap-2">
+                  <CheckCircle2 className="h-4 w-4 text-green-500 shrink-0" /> Γύρισμα με 3 κάμερες
+                </li>
+                <li className="flex items-center gap-2">
+                  <CheckCircle2 className="h-4 w-4 text-green-500 shrink-0" /> Full μοντάζ
+                  επεισοδίων
+                </li>
               </ul>
             </CardContent>
           </Card>
@@ -312,11 +430,18 @@ function PackagesTab() {
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-3">
-              <Badge variant="secondary" className="text-lg font-semibold">6 επεισόδια / μήνα</Badge>
+              <Badge variant="secondary" className="text-lg font-semibold">
+                6 επεισόδια / μήνα
+              </Badge>
               <p className="text-sm text-muted-foreground">250&euro;/episode</p>
               <ul className="space-y-2 text-sm">
-                <li className="flex items-center gap-2"><CheckCircle2 className="h-4 w-4 text-green-500 shrink-0" /> Γύρισμα με 3 κάμερες</li>
-                <li className="flex items-center gap-2"><CheckCircle2 className="h-4 w-4 text-green-500 shrink-0" /> Full μοντάζ επεισοδίων</li>
+                <li className="flex items-center gap-2">
+                  <CheckCircle2 className="h-4 w-4 text-green-500 shrink-0" /> Γύρισμα με 3 κάμερες
+                </li>
+                <li className="flex items-center gap-2">
+                  <CheckCircle2 className="h-4 w-4 text-green-500 shrink-0" /> Full μοντάζ
+                  επεισοδίων
+                </li>
               </ul>
             </CardContent>
           </Card>
@@ -339,8 +464,12 @@ function PackagesTab() {
               </CardTitle>
             </CardHeader>
             <CardContent>
-              <Badge variant="secondary" className="text-lg font-semibold">Πακέτο 3 video</Badge>
-              <p className="text-sm text-muted-foreground mt-2">Παράδοση: ίδια μέρα ή μέχρι το επόμενο πρωί</p>
+              <Badge variant="secondary" className="text-lg font-semibold">
+                Πακέτο 3 video
+              </Badge>
+              <p className="text-sm text-muted-foreground mt-2">
+                Παράδοση: ίδια μέρα ή μέχρι το επόμενο πρωί
+              </p>
             </CardContent>
           </Card>
           <Card>
@@ -350,8 +479,12 @@ function PackagesTab() {
               </CardTitle>
             </CardHeader>
             <CardContent>
-              <Badge variant="secondary" className="text-lg font-semibold">Πακέτο 5 video</Badge>
-              <p className="text-sm text-muted-foreground mt-2">Παράδοση: ίδια μέρα ή μέχρι το επόμενο πρωί</p>
+              <Badge variant="secondary" className="text-lg font-semibold">
+                Πακέτο 5 video
+              </Badge>
+              <p className="text-sm text-muted-foreground mt-2">
+                Παράδοση: ίδια μέρα ή μέχρι το επόμενο πρωί
+              </p>
             </CardContent>
           </Card>
         </div>
@@ -365,7 +498,9 @@ function PackagesTab() {
         <Card>
           <CardContent className="pt-6 space-y-3 text-sm">
             <p>Εταιρικά video, διαφημιστικά, μεγαλύτερες παραγωγές.</p>
-            <p><strong>Τιμολόγηση:</strong> από 800&euro; και πάνω, κατόπιν αναλυτικής προσφοράς.</p>
+            <p>
+              <strong>Τιμολόγηση:</strong> από 800&euro; και πάνω, κατόπιν αναλυτικής προσφοράς.
+            </p>
             <div className="mt-4">
               <p className="font-medium mb-2">Upsells:</p>
               <div className="flex flex-wrap gap-2">
@@ -394,13 +529,19 @@ function ProcessTab() {
 
   return (
     <div className="space-y-8">
-      <SectionHeader icon={ListChecks} title="Διαδικασία Πώλησης" description="Βήμα-βήμα από την πρώτη επαφή μέχρι το κλείσιμο" />
+      <SectionHeader
+        icon={ListChecks}
+        title="Διαδικασία Πώλησης"
+        description="Βήμα-βήμα από την πρώτη επαφή μέχρι το κλείσιμο"
+      />
 
       {/* Step 1: First Contact */}
       <Card>
         <CardHeader>
           <div className="flex items-center gap-3">
-            <div className="flex h-8 w-8 items-center justify-center rounded-full bg-primary text-primary-foreground text-sm font-bold">1</div>
+            <div className="flex h-8 w-8 items-center justify-center rounded-full bg-primary text-primary-foreground text-sm font-bold">
+              1
+            </div>
             <CardTitle className="text-base">Πρώτη Επαφή</CardTitle>
           </div>
           <CardDescription>Στόχος: να δείξουμε σοβαρότητα & οργάνωση</CardDescription>
@@ -411,7 +552,9 @@ function ProcessTab() {
             <p className="text-sm italic">&laquo;{miniScript}&raquo;</p>
           </div>
           <CopyButton text={miniScript} label="Copy Script" />
-          <p className="text-sm text-muted-foreground">Κλείνουμε Discovery Meeting 30&ndash;45 λεπτών (live ή online).</p>
+          <p className="text-sm text-muted-foreground">
+            Κλείνουμε Discovery Meeting 30&ndash;45 λεπτών (live ή online).
+          </p>
         </CardContent>
       </Card>
 
@@ -419,7 +562,9 @@ function ProcessTab() {
       <Card>
         <CardHeader>
           <div className="flex items-center gap-3">
-            <div className="flex h-8 w-8 items-center justify-center rounded-full bg-primary text-primary-foreground text-sm font-bold">2</div>
+            <div className="flex h-8 w-8 items-center justify-center rounded-full bg-primary text-primary-foreground text-sm font-bold">
+              2
+            </div>
             <CardTitle className="text-base">Discovery Meeting &ndash; Ερωτήσεις</CardTitle>
           </div>
         </CardHeader>
@@ -436,14 +581,17 @@ function ProcessTab() {
               'Τι budget έχετε στο μυαλό σας για σταθερή μηνιαία παραγωγή; (έστω ένα εύρος)',
             ].map((q, i) => (
               <li key={i} className="flex gap-3">
-                <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-primary/10 text-xs font-medium text-primary">{i + 1}</span>
+                <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-primary/10 text-xs font-medium text-primary">
+                  {i + 1}
+                </span>
                 <span>{q}</span>
               </li>
             ))}
           </ol>
           <div className="rounded-lg bg-muted p-4 mt-4">
             <p className="text-sm">
-              Στο τέλος ο πωλητής συνοψίζει (<em>&laquo;Άρα, αν κατάλαβα καλά...&raquo;</em>) και προτείνει 1&ndash;2 πακέτα (συνήθως 8 ή 12 video).
+              Στο τέλος ο πωλητής συνοψίζει (<em>&laquo;Άρα, αν κατάλαβα καλά...&raquo;</em>) και
+              προτείνει 1&ndash;2 πακέτα (συνήθως 8 ή 12 video).
             </p>
           </div>
         </CardContent>
@@ -453,7 +601,9 @@ function ProcessTab() {
       <Card>
         <CardHeader>
           <div className="flex items-center gap-3">
-            <div className="flex h-8 w-8 items-center justify-center rounded-full bg-primary text-primary-foreground text-sm font-bold">3</div>
+            <div className="flex h-8 w-8 items-center justify-center rounded-full bg-primary text-primary-foreground text-sm font-bold">
+              3
+            </div>
             <CardTitle className="text-base">Πρόταση / Email</CardTitle>
           </div>
         </CardHeader>
@@ -479,7 +629,9 @@ function ProcessTab() {
       <Card>
         <CardHeader>
           <div className="flex items-center gap-3">
-            <div className="flex h-8 w-8 items-center justify-center rounded-full bg-primary text-primary-foreground text-sm font-bold">4</div>
+            <div className="flex h-8 w-8 items-center justify-center rounded-full bg-primary text-primary-foreground text-sm font-bold">
+              4
+            </div>
             <CardTitle className="text-base">Follow-up (1&ndash;3 μέρες μετά)</CardTitle>
           </div>
         </CardHeader>
@@ -495,7 +647,9 @@ function ProcessTab() {
       <Card>
         <CardHeader>
           <div className="flex items-center gap-3">
-            <div className="flex h-8 w-8 items-center justify-center rounded-full bg-primary text-primary-foreground text-sm font-bold">5</div>
+            <div className="flex h-8 w-8 items-center justify-center rounded-full bg-primary text-primary-foreground text-sm font-bold">
+              5
+            </div>
             <CardTitle className="text-base">Κλείσιμο (Closing)</CardTitle>
           </div>
           <CardDescription>Φιλικό κλείσιμο με αυτοπεποίθηση & FOMO</CardDescription>
@@ -518,11 +672,13 @@ function ObjectionsTab() {
   const objections = [
     {
       question: 'Είναι ακριβό.',
-      answer: 'Εξηγούμε ότι δεν πουλάμε μεμονωμένα βιντεάκια αλλά μηχανή παραγωγής περιεχομένου και στρατηγική εικόνας. Αναφέρουμε case studies (Μαύρη Θάλασσα, Almeco, Technomat, Ophthalmica).',
+      answer:
+        'Εξηγούμε ότι δεν πουλάμε μεμονωμένα βιντεάκια αλλά μηχανή παραγωγής περιεχομένου και στρατηγική εικόνας. Αναφέρουμε case studies (Μαύρη Θάλασσα, Almeco, Technomat, Ophthalmica).',
     },
     {
       question: 'Έχουμε ήδη κάποιον που μας κάνει video.',
-      answer: 'Τονίζουμε ότι είναι θετικό, αλλά εμείς ερχόμαστε ως στρατηγικός συνεργάτης εικόνας, όχι απλά κάμερα. Μπορεί να τρέξει δοκιμαστικά παράλληλη συνεργασία για 2–3 μήνες.',
+      answer:
+        'Τονίζουμε ότι είναι θετικό, αλλά εμείς ερχόμαστε ως στρατηγικός συνεργάτης εικόνας, όχι απλά κάμερα. Μπορεί να τρέξει δοκιμαστικά παράλληλη συνεργασία για 2–3 μήνες.',
     },
     {
       question: 'Δεν έχουμε χρόνο για γύρισμα.',
@@ -530,7 +686,8 @@ function ObjectionsTab() {
     },
     {
       question: 'Δεν ξέρω αν τα video φέρνουν δουλειά.',
-      answer: 'Εξηγούμε τη σημασία brand, αναγνωρισιμότητας, engagement, followers και πωλήσεων σε βάθος χρόνου. Γι\' αυτό προτείνουμε minimum 3 μήνες.',
+      answer:
+        "Εξηγούμε τη σημασία brand, αναγνωρισιμότητας, engagement, followers και πωλήσεων σε βάθος χρόνου. Γι' αυτό προτείνουμε minimum 3 μήνες.",
     },
     {
       question: 'Να το σκεφτώ / να μιλήσω με τον συνέταιρο.',
@@ -540,21 +697,25 @@ function ObjectionsTab() {
 
   return (
     <div className="space-y-8">
-      <SectionHeader icon={MessageSquareWarning} title="Αντιρρήσεις & Απαντήσεις" description="Πώς απαντάμε στις πιο συνηθισμένες αντιρρήσεις" />
+      <SectionHeader
+        icon={MessageSquareWarning}
+        title="Αντιρρήσεις & Απαντήσεις"
+        description="Πώς απαντάμε στις πιο συνηθισμένες αντιρρήσεις"
+      />
 
       <Accordion type="single" collapsible className="w-full">
         {objections.map((obj, i) => (
           <AccordionItem key={i} value={`item-${i}`}>
             <AccordionTrigger className="text-left">
               <span className="flex items-center gap-3">
-                <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-orange-100 text-orange-700 text-xs font-bold dark:bg-orange-900 dark:text-orange-300">{i + 1}</span>
+                <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-orange-100 text-orange-700 text-xs font-bold dark:bg-orange-900 dark:text-orange-300">
+                  {i + 1}
+                </span>
                 <span>&laquo;{obj.question}&raquo;</span>
               </span>
             </AccordionTrigger>
             <AccordionContent>
-              <div className="pl-10 text-sm leading-relaxed">
-                {obj.answer}
-              </div>
+              <div className="pl-10 text-sm leading-relaxed">{obj.answer}</div>
             </AccordionContent>
           </AccordionItem>
         ))}
@@ -577,11 +738,17 @@ function ObjectionsTab() {
             </li>
             <li className="flex items-start gap-2">
               <span className="text-destructive mt-0.5">&#10005;</span>
-              <span>Δεν πουλά υπηρεσίες που δεν προσφέρουμε ακόμη χωρίς έγκριση (π.χ. full ads management)</span>
+              <span>
+                Δεν πουλά υπηρεσίες που δεν προσφέρουμε ακόμη χωρίς έγκριση (π.χ. full ads
+                management)
+              </span>
             </li>
             <li className="flex items-start gap-2">
               <span className="text-destructive mt-0.5">&#10005;</span>
-              <span>Για οτιδήποτε δεν είναι ξεκάθαρο, ενημερώνει τον πελάτη ότι θα το διευκρινίσει με τον Άγγελο και θα επανέλθει</span>
+              <span>
+                Για οτιδήποτε δεν είναι ξεκάθαρο, ενημερώνει τον πελάτη ότι θα το διευκρινίσει με
+                τον Άγγελο και θα επανέλθει
+              </span>
             </li>
           </ul>
         </CardContent>
@@ -596,7 +763,11 @@ function ObjectionsTab() {
 function PoliciesTab() {
   return (
     <div className="space-y-8">
-      <SectionHeader icon={FileText} title="Πολιτικές & Όροι" description="Revisions, χρόνοι, πληρωμές, ακυρώσεις" />
+      <SectionHeader
+        icon={FileText}
+        title="Πολιτικές & Όροι"
+        description="Revisions, χρόνοι, πληρωμές, ακυρώσεις"
+      />
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         {/* Revisions */}
@@ -649,11 +820,22 @@ function PoliciesTab() {
           <CardContent className="space-y-3 text-sm">
             <p className="font-medium">Γενικός κανόνας: 50% &ndash; 50%</p>
             <ul className="space-y-2">
-              <li><strong>Μηνιαία:</strong> 50% προκαταβολή για κλείδωμα ημερομηνιών, 50% στην τελική παράδοση</li>
-              <li><strong>Μεγάλες παραγωγές:</strong> 50% προκαταβολή με αποδοχή προσφοράς, 50% στην παράδοση</li>
-              <li><strong>Events:</strong> 50% για κλείδωμα ημερομηνίας, 50% εξόφληση την ημέρα του event</li>
+              <li>
+                <strong>Μηνιαία:</strong> 50% προκαταβολή για κλείδωμα ημερομηνιών, 50% στην τελική
+                παράδοση
+              </li>
+              <li>
+                <strong>Μεγάλες παραγωγές:</strong> 50% προκαταβολή με αποδοχή προσφοράς, 50% στην
+                παράδοση
+              </li>
+              <li>
+                <strong>Events:</strong> 50% για κλείδωμα ημερομηνίας, 50% εξόφληση την ημέρα του
+                event
+              </li>
             </ul>
-            <p className="text-muted-foreground">Τρόποι: τραπεζική κατάθεση, IRIS (μετρητά μόνο σε events)</p>
+            <p className="text-muted-foreground">
+              Τρόποι: τραπεζική κατάθεση, IRIS (μετρητά μόνο σε events)
+            </p>
           </CardContent>
         </Card>
 
@@ -666,8 +848,12 @@ function PoliciesTab() {
             </CardTitle>
           </CardHeader>
           <CardContent className="space-y-2 text-sm">
-            <p><strong>Minimum:</strong> 3 μήνες για μηνιαία πακέτα</p>
-            <p><strong>Ιδανικά:</strong> ετήσια συνεργασία για στρατηγική και σταθερή εικόνα</p>
+            <p>
+              <strong>Minimum:</strong> 3 μήνες για μηνιαία πακέτα
+            </p>
+            <p>
+              <strong>Ιδανικά:</strong> ετήσια συνεργασία για στρατηγική και σταθερή εικόνα
+            </p>
           </CardContent>
         </Card>
       </div>
@@ -684,14 +870,23 @@ function PoliciesTab() {
           <div>
             <p className="font-medium mb-1">Μηνιαία πακέτα:</p>
             <ul className="space-y-1">
-              <li>Αλλαγή ημερομηνίας &gt; 7 ημέρες πριν: <strong className="text-green-600">δωρεάν</strong>, ανάλογα με διαθεσιμότητα</li>
-              <li>Αλλαγή / ακύρωση &lt; 7 ημέρες πριν: <strong className="text-destructive">τέλος 150&euro; ανά ημέρα γυρίσματος</strong></li>
+              <li>
+                Αλλαγή ημερομηνίας &gt; 7 ημέρες πριν:{' '}
+                <strong className="text-green-600">δωρεάν</strong>, ανάλογα με διαθεσιμότητα
+              </li>
+              <li>
+                Αλλαγή / ακύρωση &lt; 7 ημέρες πριν:{' '}
+                <strong className="text-destructive">τέλος 150&euro; ανά ημέρα γυρίσματος</strong>
+              </li>
             </ul>
           </div>
           <div>
             <p className="font-medium mb-1">Events:</p>
             <ul className="space-y-1">
-              <li>Η προκαταβολή <strong className="text-destructive">δεν επιστρέφεται</strong> σε περίπτωση ακύρωσης</li>
+              <li>
+                Η προκαταβολή <strong className="text-destructive">δεν επιστρέφεται</strong> σε
+                περίπτωση ακύρωσης
+              </li>
               <li>Μεταφορά σε άλλη ημερομηνία μόνο κατόπιν συνεννόησης & διαθεσιμότητας</li>
             </ul>
           </div>
@@ -705,7 +900,10 @@ function PoliciesTab() {
         </CardHeader>
         <CardContent className="text-sm">
           <p>
-            Η Devre Media διατηρεί το δικαίωμα να χρησιμοποιεί επιλεγμένα αποσπάσματα από τις παραγωγές ως δείγμα δουλειάς (portfolio) σε website, social media & παρουσιάσεις, αφού πρώτα δημοσιευτεί το υλικό από τον πελάτη και πάντα με σεβασμό στο brand και την εικόνα του.
+            Η Devre Media διατηρεί το δικαίωμα να χρησιμοποιεί επιλεγμένα αποσπάσματα από τις
+            παραγωγές ως δείγμα δουλειάς (portfolio) σε website, social media & παρουσιάσεις, αφού
+            πρώτα δημοσιευτεί το υλικό από τον πελάτη και πάντα με σεβασμό στο brand και την εικόνα
+            του.
           </p>
         </CardContent>
       </Card>
@@ -720,7 +918,8 @@ function CaseStudiesTab() {
   const cases = [
     {
       name: 'Μαύρη Θάλασσα',
-      description: 'Ολοκληρωμένο πακέτο 60 reels, 3 vlog, 6 podcasts τον μήνα. Brand-κράχτης στη γαστρονομία.',
+      description:
+        'Ολοκληρωμένο πακέτο 60 reels, 3 vlog, 6 podcasts τον μήνα. Brand-κράχτης στη γαστρονομία.',
       tags: ['Γαστρονομία', '60 reels/μήνα', '3 vlog/μήνα', '6 podcasts/μήνα'],
       highlight: true,
     },
@@ -746,7 +945,11 @@ function CaseStudiesTab() {
 
   return (
     <div className="space-y-8">
-      <SectionHeader icon={Trophy} title="Case Studies" description="Social proof για να πείσεις τον πελάτη" />
+      <SectionHeader
+        icon={Trophy}
+        title="Case Studies"
+        description="Social proof για να πείσεις τον πελάτη"
+      />
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         {cases.map((cs, i) => (
@@ -763,7 +966,9 @@ function CaseStudiesTab() {
             <CardContent>
               <div className="flex flex-wrap gap-2">
                 {cs.tags.map((tag, j) => (
-                  <Badge key={j} variant="secondary">{tag}</Badge>
+                  <Badge key={j} variant="secondary">
+                    {tag}
+                  </Badge>
                 ))}
               </div>
             </CardContent>
@@ -776,7 +981,9 @@ function CaseStudiesTab() {
           <p className="font-medium mb-2">Επίσης δουλεύουμε με:</p>
           <div className="flex flex-wrap gap-2">
             {['MotoMarket', 'Sky Venue', 'UFC', 'AJP', 'REMAX Hellas'].map((name) => (
-              <Badge key={name} variant="outline">{name}</Badge>
+              <Badge key={name} variant="outline">
+                {name}
+              </Badge>
             ))}
           </div>
         </CardContent>
@@ -824,16 +1031,24 @@ Devre Media`;
 
   return (
     <div className="space-y-8">
-      <SectionHeader icon={Mail} title="Email Templates & Εργαλεία" description="Έτοιμα templates για αντιγραφή" />
+      <SectionHeader
+        icon={Mail}
+        title="Email Templates & Εργαλεία"
+        description="Έτοιμα templates για αντιγραφή"
+      />
 
       {/* Proposal Email */}
       <Card>
         <CardHeader>
           <CardTitle className="text-base">Template: Πρόταση Συνεργασίας</CardTitle>
-          <CardDescription>Subject: Πρόταση συνεργασίας Devre Media &ndash; [ΕΠΩΝΥΜΙΑ]</CardDescription>
+          <CardDescription>
+            Subject: Πρόταση συνεργασίας Devre Media &ndash; [ΕΠΩΝΥΜΙΑ]
+          </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
-          <pre className="whitespace-pre-wrap rounded-lg bg-muted p-4 text-sm font-mono leading-relaxed">{proposalTemplate}</pre>
+          <pre className="whitespace-pre-wrap rounded-lg bg-muted p-4 text-sm font-mono leading-relaxed">
+            {proposalTemplate}
+          </pre>
           <CopyButton text={proposalTemplate} label="Copy Template" />
         </CardContent>
       </Card>
@@ -845,7 +1060,9 @@ Devre Media`;
           <CardDescription>Subject: Επικοινωνία για την πρόταση συνεργασίας μας</CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
-          <pre className="whitespace-pre-wrap rounded-lg bg-muted p-4 text-sm font-mono leading-relaxed">{followUpTemplate}</pre>
+          <pre className="whitespace-pre-wrap rounded-lg bg-muted p-4 text-sm font-mono leading-relaxed">
+            {followUpTemplate}
+          </pre>
           <CopyButton text={followUpTemplate} label="Copy Template" />
         </CardContent>
       </Card>
@@ -853,33 +1070,66 @@ Devre Media`;
       <Separator />
 
       {/* Client Questionnaire */}
-      <SectionHeader icon={FileText} title="Ερωτηματολόγιο Νέου Πελάτη" description="Ενδεικτική δομή ερωτηματολογίου (Google Form)" />
+      <SectionHeader
+        icon={FileText}
+        title="Ερωτηματολόγιο Νέου Πελάτη"
+        description="Ενδεικτική δομή ερωτηματολογίου (Google Form)"
+      />
 
       <div className="space-y-4">
         {[
           {
             title: '1. Στοιχεία Επιχείρησης',
-            items: ['Επωνυμία', 'Υπεύθυνος επικοινωνίας', 'Τηλέφωνο', 'Email', 'Website', 'Social media links'],
+            items: [
+              'Επωνυμία',
+              'Υπεύθυνος επικοινωνίας',
+              'Τηλέφωνο',
+              'Email',
+              'Website',
+              'Social media links',
+            ],
           },
           {
             title: '2. Τρέχουσα Εικόνα & Στόχοι',
-            items: ['Περιγραφή επιχείρησης', 'Βασικός στόχος με video', 'Τι κάνουν σήμερα για social', 'Ανταγωνιστές', 'Brand που ζηλεύουν θετικά'],
+            items: [
+              'Περιγραφή επιχείρησης',
+              'Βασικός στόχος με video',
+              'Τι κάνουν σήμερα για social',
+              'Ανταγωνιστές',
+              'Brand που ζηλεύουν θετικά',
+            ],
           },
           {
             title: '3. Όραμα & Ταυτότητα',
-            items: ['Διαδικτυακή εικόνα σε 1–2 χρόνια', 'Πώς θέλουν να τους ξέρουν', 'Περιεχόμενο/creators που τους αντιπροσωπεύει'],
+            items: [
+              'Διαδικτυακή εικόνα σε 1–2 χρόνια',
+              'Πώς θέλουν να τους ξέρουν',
+              'Περιεχόμενο/creators που τους αντιπροσωπεύει',
+            ],
           },
           {
             title: '4. Πλατφόρμες & Συχνότητα',
-            items: ['Πλατφόρμες στόχευσης', 'Συχνότητα νέου content', 'Διαθεσιμότητα για γυρίσματα'],
+            items: [
+              'Πλατφόρμες στόχευσης',
+              'Συχνότητα νέου content',
+              'Διαθεσιμότητα για γυρίσματα',
+            ],
           },
           {
             title: '5. Budget & Είδος Συνεργασίας',
-            items: ['Εύρος budget μηνιαίας παραγωγής', 'Είδος περιεχομένου ενδιαφέροντος', 'Τύπος συνεργασίας (μηνιαία, δοκιμαστική, event)'],
+            items: [
+              'Εύρος budget μηνιαίας παραγωγής',
+              'Είδος περιεχομένου ενδιαφέροντος',
+              'Τύπος συνεργασίας (μηνιαία, δοκιμαστική, event)',
+            ],
           },
           {
             title: '6. Τεχνικά / Πρακτικά',
-            items: ['Σημαντικό για χώρο/προσωπικό', 'Τι ΔΕΝ θέλουν σε video', 'Ιδανική ημερομηνία έναρξης'],
+            items: [
+              'Σημαντικό για χώρο/προσωπικό',
+              'Τι ΔΕΝ θέλουν σε video',
+              'Ιδανική ημερομηνία έναρξης',
+            ],
           },
           {
             title: '7. Τελικές Σκέψεις',
@@ -918,7 +1168,9 @@ function CommissionTab() {
       {/* Commission Structure */}
       <Card>
         <CardHeader>
-          <CardTitle className="text-base">Βασική Προμήθεια (ανά νέο πελάτη μηνιαίου πακέτου)</CardTitle>
+          <CardTitle className="text-base">
+            Βασική Προμήθεια (ανά νέο πελάτη μηνιαίου πακέτου)
+          </CardTitle>
         </CardHeader>
         <CardContent>
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
@@ -953,7 +1205,10 @@ function CommissionTab() {
           </CardHeader>
           <CardContent className="text-sm">
             <p className="text-2xl font-bold text-green-600 mb-2">+250&euro;</p>
-            <p>Αν ο πωλητής φέρει <strong>5+ νέους πελάτες</strong> σε μηνιαία πακέτα μέσα στον ίδιο μήνα.</p>
+            <p>
+              Αν ο πωλητής φέρει <strong>5+ νέους πελάτες</strong> σε μηνιαία πακέτα μέσα στον ίδιο
+              μήνα.
+            </p>
           </CardContent>
         </Card>
         <Card className="border-blue-200 dark:border-blue-900">
@@ -965,7 +1220,10 @@ function CommissionTab() {
           </CardHeader>
           <CardContent className="text-sm">
             <p className="text-2xl font-bold text-blue-600 mb-2">+100&euro;</p>
-            <p>Αν ένας νέος πελάτης παραμείνει ενεργός για <strong>3 συνεχόμενους μήνες</strong> (ανά πελάτη, μία φορά).</p>
+            <p>
+              Αν ένας νέος πελάτης παραμείνει ενεργός για <strong>3 συνεχόμενους μήνες</strong> (ανά
+              πελάτη, μία φορά).
+            </p>
           </CardContent>
         </Card>
       </div>
@@ -1003,12 +1261,13 @@ function CommissionTab() {
             Δεν δίνουμε εκπτώσεις στις τιμές πακέτων
           </p>
           <p className="flex items-start gap-2">
-            <span className="text-destructive mt-0.5 shrink-0">&#10005;</span>
-            Ο πωλητής δεν αλλάζει τιμές χωρίς έγκριση
+            <span className="text-destructive mt-0.5 shrink-0">&#10005;</span>Ο πωλητής δεν αλλάζει
+            τιμές χωρίς έγκριση
           </p>
           <p className="flex items-start gap-2">
             <CheckCircle2 className="h-4 w-4 text-green-500 mt-0.5 shrink-0" />
-            Αντί για έκπτωση, μπορεί (με έγκριση Άγγελου) να προσφέρει μικρό δώρο υπηρεσίας (π.χ. thumbnails τον 1ο μήνα)
+            Αντί για έκπτωση, μπορεί (με έγκριση Άγγελου) να προσφέρει μικρό δώρο υπηρεσίας (π.χ.
+            thumbnails τον 1ο μήνα)
           </p>
         </CardContent>
       </Card>
@@ -1058,7 +1317,7 @@ function ChecklistTab() {
       title: 'Follow-up',
       items: [
         'Έκανα follow-up μέσα σε 1–3 ημέρες',
-        'Πρότεινα mini call 10\' αν χρειάζεται',
+        "Πρότεινα mini call 10' αν χρειάζεται",
         'Αν ο πελάτης είπε «να το σκεφτώ», κλείσαμε συγκεκριμένη μέρα & ώρα',
       ],
     },
@@ -1093,7 +1352,11 @@ function ChecklistTab() {
 
   return (
     <div className="space-y-8">
-      <SectionHeader icon={ListChecks} title="Checklist Πωλητή" description="Τσεκάρισε κάθε βήμα στη διαδικασία πώλησης" />
+      <SectionHeader
+        icon={ListChecks}
+        title="Checklist Πωλητή"
+        description="Τσεκάρισε κάθε βήμα στη διαδικασία πώλησης"
+      />
 
       {sections.map((section, si) => (
         <Card key={si}>
@@ -1114,7 +1377,9 @@ function ChecklistTab() {
                         onChange={() => toggle(key)}
                         className="mt-1 h-4 w-4 rounded border-gray-300 text-primary focus:ring-primary"
                       />
-                      <span className={`text-sm transition-colors ${isChecked ? 'text-muted-foreground line-through' : 'text-foreground'}`}>
+                      <span
+                        className={`text-sm transition-colors ${isChecked ? 'text-muted-foreground line-through' : 'text-foreground'}`}
+                      >
                         {item}
                       </span>
                     </label>
@@ -1179,15 +1444,33 @@ export function SalesHandbook() {
           </TabsList>
         </div>
 
-        <TabsContent value="pitch" className="mt-6"><PitchTab /></TabsContent>
-        <TabsContent value="packages" className="mt-6"><PackagesTab /></TabsContent>
-        <TabsContent value="process" className="mt-6"><ProcessTab /></TabsContent>
-        <TabsContent value="objections" className="mt-6"><ObjectionsTab /></TabsContent>
-        <TabsContent value="policies" className="mt-6"><PoliciesTab /></TabsContent>
-        <TabsContent value="cases" className="mt-6"><CaseStudiesTab /></TabsContent>
-        <TabsContent value="templates" className="mt-6"><TemplatesTab /></TabsContent>
-        <TabsContent value="checklist" className="mt-6"><ChecklistTab /></TabsContent>
-        <TabsContent value="commission" className="mt-6"><CommissionTab /></TabsContent>
+        <TabsContent value="pitch" className="mt-6">
+          <PitchTab />
+        </TabsContent>
+        <TabsContent value="packages" className="mt-6">
+          <PackagesTab />
+        </TabsContent>
+        <TabsContent value="process" className="mt-6">
+          <ProcessTab />
+        </TabsContent>
+        <TabsContent value="objections" className="mt-6">
+          <ObjectionsTab />
+        </TabsContent>
+        <TabsContent value="policies" className="mt-6">
+          <PoliciesTab />
+        </TabsContent>
+        <TabsContent value="cases" className="mt-6">
+          <CaseStudiesTab />
+        </TabsContent>
+        <TabsContent value="templates" className="mt-6">
+          <TemplatesTab />
+        </TabsContent>
+        <TabsContent value="checklist" className="mt-6">
+          <ChecklistTab />
+        </TabsContent>
+        <TabsContent value="commission" className="mt-6">
+          <CommissionTab />
+        </TabsContent>
       </Tabs>
     </div>
   );

@@ -26,7 +26,9 @@ export async function createMessage(input: unknown): Promise<ActionResult<unknow
     const validated = createMessageSchema.parse(input);
     const supabase = await createClient();
 
-    const { data: { user } } = await supabase.auth.getUser();
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
     if (!user) return { data: null, error: 'User not authenticated' };
 
     const { data, error } = await supabase
@@ -42,9 +44,9 @@ export async function createMessage(input: unknown): Promise<ActionResult<unknow
 
     revalidatePath(`/admin/projects/${validated.project_id}`);
     return { data, error: null };
-  } catch (error) {
-    if (error instanceof Error) {
-      return { data: null, error: error.message };
+  } catch (err: unknown) {
+    if (err instanceof Error) {
+      return { data: null, error: err.message };
     }
     return { data: null, error: 'Failed to create message' };
   }
@@ -54,7 +56,9 @@ export async function markMessagesAsRead(projectId: string): Promise<ActionResul
   try {
     const supabase = await createClient();
 
-    const { data: { user } } = await supabase.auth.getUser();
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
     if (!user) return { data: null, error: 'User not authenticated' };
 
     const { error } = await supabase
@@ -69,6 +73,9 @@ export async function markMessagesAsRead(projectId: string): Promise<ActionResul
     revalidatePath(`/admin/projects/${projectId}`);
     return { data: undefined, error: null };
   } catch (err: unknown) {
-    return { data: null, error: err instanceof Error ? err.message : 'Failed to mark messages as read' };
+    return {
+      data: null,
+      error: err instanceof Error ? err.message : 'Failed to mark messages as read',
+    };
   }
 }

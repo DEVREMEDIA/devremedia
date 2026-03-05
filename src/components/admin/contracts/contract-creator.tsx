@@ -86,7 +86,6 @@ export function ContractCreator({ project, onSuccess, onCancel }: ContractCreato
     trigger,
     control,
     getValues,
-    setValue,
     watch,
     formState: { errors },
   } = useForm<FormData>({

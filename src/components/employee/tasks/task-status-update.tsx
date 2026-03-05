@@ -21,11 +21,7 @@ interface TaskStatusUpdateProps {
   projectId: string;
 }
 
-export function TaskStatusUpdate({
-  taskId,
-  currentStatus,
-  projectId,
-}: TaskStatusUpdateProps) {
+export function TaskStatusUpdate({ taskId, currentStatus }: TaskStatusUpdateProps) {
   const t = useTranslations('employee.tasks');
   const [status, setStatus] = React.useState<TaskStatus>(currentStatus);
   const [isUpdating, setIsUpdating] = React.useState(false);
@@ -46,7 +42,7 @@ export function TaskStatusUpdate({
         toast.success(t('updateStatus'));
         router.refresh();
       }
-    } catch (error) {
+    } catch {
       toast.error(t('updateStatus'));
       setStatus(currentStatus);
     } finally {
@@ -55,11 +51,7 @@ export function TaskStatusUpdate({
   };
 
   return (
-    <Select
-      value={status}
-      onValueChange={handleStatusChange}
-      disabled={isUpdating}
-    >
+    <Select value={status} onValueChange={handleStatusChange} disabled={isUpdating}>
       <SelectTrigger size="sm" className="w-[140px]">
         <SelectValue />
       </SelectTrigger>

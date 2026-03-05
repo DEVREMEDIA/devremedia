@@ -5,8 +5,8 @@ import { Calendar, AlertCircle } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
 import { StatusBadge } from '@/components/shared/status-badge';
 import { TaskStatusUpdate } from './task-status-update';
-import { PRIORITY_LABELS, TASK_STATUS_LABELS } from '@/lib/constants';
-import type { Task, Priority, TaskStatus } from '@/types/index';
+import { PRIORITY_LABELS } from '@/lib/constants';
+import type { Task, Priority } from '@/types/index';
 import { cn } from '@/lib/utils';
 
 interface MyTaskCardProps {
@@ -21,10 +21,7 @@ const priorityColorMap: Record<Priority, string> = {
 };
 
 export function MyTaskCard({ task }: MyTaskCardProps) {
-  const isOverdue =
-    task.due_date &&
-    task.status !== 'done' &&
-    new Date(task.due_date) < new Date();
+  const isOverdue = task.due_date && task.status !== 'done' && new Date(task.due_date) < new Date();
 
   const projectTitle = task.project?.title ?? 'Unknown Project';
 
@@ -56,7 +53,7 @@ export function MyTaskCard({ task }: MyTaskCardProps) {
             <span
               className={cn(
                 'text-xs font-medium px-2 py-1 rounded-md bg-gray-100',
-                priorityColorMap[task.priority]
+                priorityColorMap[task.priority],
               )}
             >
               {PRIORITY_LABELS[task.priority]}
@@ -66,7 +63,7 @@ export function MyTaskCard({ task }: MyTaskCardProps) {
               <div
                 className={cn(
                   'flex items-center gap-1 text-xs',
-                  isOverdue ? 'text-red-600 font-semibold' : 'text-muted-foreground'
+                  isOverdue ? 'text-red-600 font-semibold' : 'text-muted-foreground',
                 )}
               >
                 {isOverdue && <AlertCircle className="h-3 w-3" />}

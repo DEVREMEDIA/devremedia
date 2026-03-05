@@ -5,6 +5,9 @@ import { InvoiceForm } from '@/components/admin/invoices/invoice-form';
 import { notFound } from 'next/navigation';
 import { getTranslations } from 'next-intl/server';
 import type { Metadata } from 'next';
+import type { ComponentProps } from 'react';
+
+type InvoiceFormProps = ComponentProps<typeof InvoiceForm>;
 
 interface EditInvoicePageProps {
   params: Promise<{ invoiceId: string }>;
@@ -41,7 +44,9 @@ export default async function EditInvoicePage({ params }: EditInvoicePageProps) 
   if (clientsResult.error) {
     return (
       <div className="p-8">
-        <p className="text-destructive">{tc('errorLoading')} {tc('clients').toLowerCase()}: {clientsResult.error}</p>
+        <p className="text-destructive">
+          {tc('errorLoading')} {tc('clients').toLowerCase()}: {clientsResult.error}
+        </p>
       </div>
     );
   }
@@ -49,7 +54,9 @@ export default async function EditInvoicePage({ params }: EditInvoicePageProps) 
   if (projectsResult.error) {
     return (
       <div className="p-8">
-        <p className="text-destructive">{tc('errorLoading')} {tc('projects').toLowerCase()}: {projectsResult.error}</p>
+        <p className="text-destructive">
+          {tc('errorLoading')} {tc('projects').toLowerCase()}: {projectsResult.error}
+        </p>
       </div>
     );
   }
@@ -63,9 +70,9 @@ export default async function EditInvoicePage({ params }: EditInvoicePageProps) 
         <p className="text-muted-foreground mt-2">{t('description')}</p>
       </div>
       <InvoiceForm
-        invoice={invoiceResult.data as any}
-        clients={clientsResult.data as any[] ?? []}
-        projects={projectsResult.data as any[] ?? []}
+        invoice={invoiceResult.data as InvoiceFormProps['invoice']}
+        clients={(clientsResult.data as InvoiceFormProps['clients']) ?? []}
+        projects={(projectsResult.data as InvoiceFormProps['projects']) ?? []}
         nextInvoiceNumber={invoiceResult.data.invoice_number}
       />
     </div>

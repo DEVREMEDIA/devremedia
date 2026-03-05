@@ -4,13 +4,7 @@ import { useState } from 'react';
 import Link from 'next/link';
 import { BookOpen, ChevronRight, Search } from 'lucide-react';
 import { useTranslations } from 'next-intl';
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from '@/components/ui/card';
+import { Card, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 
 interface Category {
@@ -32,7 +26,7 @@ export function UniversityBrowse({ categories }: UniversityBrowseProps) {
   const filteredCategories = categories.filter(
     (category) =>
       category.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      category.description?.toLowerCase().includes(searchQuery.toLowerCase())
+      category.description?.toLowerCase().includes(searchQuery.toLowerCase()),
   );
 
   return (
@@ -49,10 +43,7 @@ export function UniversityBrowse({ categories }: UniversityBrowseProps) {
 
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
         {filteredCategories.map((category) => (
-          <Link
-            key={category.id}
-            href={`/employee/university/${category.slug}`}
-          >
+          <Link key={category.id} href={`/employee/university/${category.slug}`}>
             <Card className="h-full transition-colors hover:bg-accent/50 cursor-pointer">
               <CardHeader>
                 <div className="flex items-start justify-between">
@@ -63,9 +54,7 @@ export function UniversityBrowse({ categories }: UniversityBrowseProps) {
                   <ChevronRight className="h-5 w-5 text-muted-foreground" />
                 </div>
                 {category.description && (
-                  <CardDescription className="line-clamp-3">
-                    {category.description}
-                  </CardDescription>
+                  <CardDescription className="line-clamp-3">{category.description}</CardDescription>
                 )}
               </CardHeader>
             </Card>

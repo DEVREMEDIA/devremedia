@@ -23,7 +23,6 @@ export function ProjectsContent({ projects }: ProjectsContentProps) {
   useEffect(() => {
     const savedView = localStorage.getItem('projects-view') as 'kanban' | 'list' | null;
     if (savedView) {
-      // eslint-disable-next-line react-hooks/set-state-in-effect
       setView(savedView);
     }
     setMounted(true);
@@ -36,10 +35,7 @@ export function ProjectsContent({ projects }: ProjectsContentProps) {
 
   return (
     <div className="space-y-6">
-      <PageHeader
-        title={t('title')}
-        description={t('description')}
-      >
+      <PageHeader title={t('title')} description={t('description')}>
         <div className="flex items-center gap-3">
           <ViewToggle view={view} onViewChange={handleViewChange} />
           <Button asChild>
@@ -51,11 +47,12 @@ export function ProjectsContent({ projects }: ProjectsContentProps) {
         </div>
       </PageHeader>
 
-      {mounted && (view === 'kanban' ? (
-        <ProjectBoard projects={projects} />
-      ) : (
-        <ProjectList projects={projects} />
-      ))}
+      {mounted &&
+        (view === 'kanban' ? (
+          <ProjectBoard projects={projects} />
+        ) : (
+          <ProjectList projects={projects} />
+        ))}
     </div>
   );
 }

@@ -13,8 +13,13 @@ import { Upload } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 
 interface ProfileFormProps {
-  user: any;
-  profile: any;
+  user: { id: string; email?: string };
+  profile: {
+    full_name?: string | null;
+    company_name?: string | null;
+    phone?: string | null;
+    avatar_url?: string | null;
+  } | null;
 }
 
 export function ProfileForm({ user, profile }: ProfileFormProps) {
@@ -34,10 +39,7 @@ export function ProfileForm({ user, profile }: ProfileFormProps) {
 
     const supabase = createClient();
 
-    const { error } = await supabase
-      .from('user_profiles')
-      .update(formData)
-      .eq('id', user.id);
+    const { error } = await supabase.from('user_profiles').update(formData).eq('id', user.id);
 
     if (error) {
       toast.error(t('profileUpdateFailed'));
@@ -78,9 +80,9 @@ export function ProfileForm({ user, profile }: ProfileFormProps) {
     }
 
     // Get public URL
-    const { data: { publicUrl } } = supabase.storage
-      .from('avatars')
-      .getPublicUrl(filePath);
+    const {
+      data: { publicUrl },
+    } = supabase.storage.from('avatars').getPublicUrl(filePath);
 
     // Update profile
     const { error: updateError } = await supabase
@@ -102,9 +104,7 @@ export function ProfileForm({ user, profile }: ProfileFormProps) {
     <Card>
       <CardHeader>
         <CardTitle>{t('profileTitle')}</CardTitle>
-        <CardDescription>
-          {t('profileDescription')}
-        </CardDescription>
+        <CardDescription>{t('profileDescription')}</CardDescription>
       </CardHeader>
       <CardContent>
         <form onSubmit={handleSubmit} className="space-y-6">
@@ -130,21 +130,14 @@ export function ProfileForm({ user, profile }: ProfileFormProps) {
                 disabled={loading}
                 className="hidden"
               />
-              <p className="text-xs text-muted-foreground mt-1">
-                {t('photoFormats')}
-              </p>
+              <p className="text-xs text-muted-foreground mt-1">{t('photoFormats')}</p>
             </div>
           </div>
 
           {/* Email (read-only) */}
           <div className="space-y-2">
             <Label htmlFor="email">{t('email')}</Label>
-            <Input
-              id="email"
-              type="email"
-              value={user.email}
-              disabled
-            />
+            <Input id="email" type="email" value={user.email} disabled />
           </div>
 
           {/* Full Name */}

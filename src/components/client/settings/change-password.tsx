@@ -11,7 +11,6 @@ import { useTranslations } from 'next-intl';
 
 export function ChangePassword() {
   const t = useTranslations('client.settings');
-  const tCommon = useTranslations('common');
   const [loading, setLoading] = useState(false);
   const [formData, setFormData] = useState({
     currentPassword: '',
@@ -59,9 +58,7 @@ export function ChangePassword() {
     <Card>
       <CardHeader>
         <CardTitle>{t('changePasswordTitle')}</CardTitle>
-        <CardDescription>
-          {t('changePasswordDescription')}
-        </CardDescription>
+        <CardDescription>{t('changePasswordDescription')}</CardDescription>
       </CardHeader>
       <CardContent>
         <form onSubmit={handleSubmit} className="space-y-4">
@@ -87,9 +84,7 @@ export function ChangePassword() {
               onChange={(e) => setFormData({ ...formData, newPassword: e.target.value })}
               required
             />
-            <p className="text-xs text-muted-foreground">
-              {t('passwordRequirements')}
-            </p>
+            <p className="text-xs text-muted-foreground">{t('passwordRequirements')}</p>
           </div>
 
           {/* Confirm Password */}

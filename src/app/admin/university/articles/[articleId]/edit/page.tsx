@@ -3,6 +3,9 @@ import { ArticleForm } from '@/components/admin/university/article-form';
 import { getKbCategories } from '@/lib/actions/kb-categories';
 import { getKbArticle } from '@/lib/actions/kb-articles';
 import { redirect, notFound } from 'next/navigation';
+import type { ComponentProps } from 'react';
+
+type ArticleFormProps = ComponentProps<typeof ArticleForm>;
 
 interface EditArticlePageProps {
   params: Promise<{
@@ -27,17 +30,14 @@ export default async function EditArticlePage({ params }: EditArticlePageProps) 
   }
 
   const categories = categoriesResult.data ?? [];
-  const article = articleResult.data as any;
+  const article = articleResult.data as ArticleFormProps['article'];
 
   return (
     <div className="flex flex-col gap-6 p-6">
-      <PageHeader
-        title="Edit Article"
-        description="Update knowledge base article"
-      />
+      <PageHeader title="Edit Article" description="Update knowledge base article" />
 
       <div className="max-w-4xl">
-        <ArticleForm article={article} categories={categories as any[]} />
+        <ArticleForm article={article} categories={categories as ArticleFormProps['categories']} />
       </div>
     </div>
   );
