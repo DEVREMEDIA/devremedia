@@ -1,13 +1,14 @@
 import { type NextRequest, NextResponse } from 'next/server';
 import { createServerClient } from '@supabase/ssr';
+import { createAdminClient } from '@/lib/supabase/admin';
 
 /**
  * Auth callback handler for Supabase authentication flows
  * Handles: email confirmation, magic link, OAuth redirects, invite links
  *
- * Uses explicit cookie handling so session cookies are included
- * on the redirect response (cookies() from next/headers does NOT
- * transfer to NextResponse.redirect).
+ * After code exchange, checks the user profile to determine redirect:
+ * - No display_name → /onboarding (user hasn't completed setup)
+ * - Otherwise → uses `next` param or role-based dashboard
  */
 export async function GET(request: NextRequest) {
   const { searchParams, origin } = new URL(request.url);
@@ -17,8 +18,8 @@ export async function GET(request: NextRequest) {
   const next = rawNext.startsWith('/') && !rawNext.startsWith('//') ? rawNext : '/';
 
   if (code) {
-    // Create redirect response first — cookies will be set directly on it
-    const redirectResponse = NextResponse.redirect(`${origin}${next}`);
+    // Collect cookies to set on the final redirect response
+    const responseCookies: { name: string; value: string; options: Record<string, unknown> }[] = [];
 
     const supabase = createServerClient(
       process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -29,18 +30,43 @@ export async function GET(request: NextRequest) {
             return request.cookies.getAll();
           },
           setAll(cookiesToSet) {
-            cookiesToSet.forEach(({ name, value, options }) => {
-              redirectResponse.cookies.set(name, value, options);
-            });
+            responseCookies.push(
+              ...cookiesToSet.map(({ name, value, options }) => ({
+                name,
+                value,
+                options: options as Record<string, unknown>,
+              })),
+            );
           },
         },
       },
     );
 
-    const { error } = await supabase.auth.exchangeCodeForSession(code);
+    const { data, error } = await supabase.auth.exchangeCodeForSession(code);
 
     if (!error) {
-      return redirectResponse;
+      let redirectPath = next;
+
+      // Check if user needs onboarding (no display_name = hasn't completed setup)
+      // Uses admin client since the session cookies aren't readable yet
+      if (data.user) {
+        const adminClient = createAdminClient();
+        const { data: profile } = await adminClient
+          .from('user_profiles')
+          .select('display_name')
+          .eq('id', data.user.id)
+          .single();
+
+        if (!profile?.display_name) {
+          redirectPath = '/onboarding';
+        }
+      }
+
+      const response = NextResponse.redirect(`${origin}${redirectPath}`);
+      for (const { name, value, options } of responseCookies) {
+        response.cookies.set(name, value, options);
+      }
+      return response;
     }
   }
 

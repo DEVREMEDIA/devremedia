@@ -1,5 +1,6 @@
 import { type NextRequest, NextResponse } from 'next/server';
 import { createServerClient } from '@supabase/ssr';
+import { createAdminClient } from '@/lib/supabase/admin';
 
 type OtpType = 'signup' | 'recovery' | 'email' | 'invite' | 'magiclink';
 
@@ -7,11 +8,12 @@ type OtpType = 'signup' | 'recovery' | 'email' | 'invite' | 'magiclink';
  * Email confirmation handler for Supabase
  * Handles: signup confirmation, password recovery, email change, invite
  *
- * Uses explicit cookie handling so session cookies are included
- * on the redirect response.
+ * After OTP verification, checks the user profile to determine redirect:
+ * - No display_name → /onboarding (user hasn't completed setup)
+ * - Otherwise → uses `next` param or home
  */
 export async function GET(request: NextRequest) {
-  const { searchParams } = new URL(request.url);
+  const { searchParams, origin } = new URL(request.url);
   const token_hash = searchParams.get('token_hash');
   const type = searchParams.get('type') as OtpType | null;
   const rawNext = searchParams.get('next') ?? '/';
@@ -19,8 +21,8 @@ export async function GET(request: NextRequest) {
   const next = rawNext.startsWith('/') && !rawNext.startsWith('//') ? rawNext : '/';
 
   if (token_hash && type) {
-    // Create redirect response first — cookies will be set directly on it
-    const redirectResponse = NextResponse.redirect(new URL(next, request.url));
+    // Collect cookies to set on the final redirect response
+    const responseCookies: { name: string; value: string; options: Record<string, unknown> }[] = [];
 
     const supabase = createServerClient(
       process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -31,21 +33,45 @@ export async function GET(request: NextRequest) {
             return request.cookies.getAll();
           },
           setAll(cookiesToSet) {
-            cookiesToSet.forEach(({ name, value, options }) => {
-              redirectResponse.cookies.set(name, value, options);
-            });
+            responseCookies.push(
+              ...cookiesToSet.map(({ name, value, options }) => ({
+                name,
+                value,
+                options: options as Record<string, unknown>,
+              })),
+            );
           },
         },
       },
     );
 
-    const { error } = await supabase.auth.verifyOtp({
+    const { data, error } = await supabase.auth.verifyOtp({
       type,
       token_hash,
     });
 
     if (!error) {
-      return redirectResponse;
+      let redirectPath = next;
+
+      // Check if user needs onboarding
+      if (data.user) {
+        const adminClient = createAdminClient();
+        const { data: profile } = await adminClient
+          .from('user_profiles')
+          .select('display_name')
+          .eq('id', data.user.id)
+          .single();
+
+        if (!profile?.display_name) {
+          redirectPath = '/onboarding';
+        }
+      }
+
+      const response = NextResponse.redirect(`${origin}${redirectPath}`);
+      for (const { name, value, options } of responseCookies) {
+        response.cookies.set(name, value, options);
+      }
+      return response;
     }
   }
 
