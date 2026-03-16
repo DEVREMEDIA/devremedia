@@ -10,8 +10,12 @@ import { EmptyState } from '@/components/shared/empty-state';
 import { useTranslations } from 'next-intl';
 import type { ProjectWithClient } from '@/types';
 
+type ProjectWithExtras = ProjectWithClient & {
+  filming_date?: string;
+};
+
 interface ActiveProjectsProps {
-  projects: ProjectWithClient[];
+  projects: ProjectWithExtras[];
 }
 
 export function ActiveProjects({ projects }: ActiveProjectsProps) {
@@ -54,20 +58,19 @@ export function ActiveProjects({ projects }: ActiveProjectsProps) {
             >
               <CardHeader className="pb-3">
                 <div className="flex items-start justify-between">
-                  <CardTitle className="text-base line-clamp-1">
-                    {project.title}
-                  </CardTitle>
+                  <CardTitle className="text-base line-clamp-1">{project.title}</CardTitle>
                   <StatusBadge status={project.status} />
                 </div>
               </CardHeader>
               <CardContent className="space-y-2">
                 <div className="text-sm text-muted-foreground">
-                  {PROJECT_TYPE_LABELS[project.project_type as keyof typeof PROJECT_TYPE_LABELS] || project.project_type}
+                  {PROJECT_TYPE_LABELS[project.project_type as keyof typeof PROJECT_TYPE_LABELS] ||
+                    project.project_type}
                 </div>
-                {(project as any).filming_date && (
+                {project.filming_date && (
                   <div className="flex items-center gap-2 text-sm text-muted-foreground">
                     <Calendar className="h-3 w-3" />
-                    {format(new Date((project as any).filming_date), 'MMM d, yyyy')}
+                    {format(new Date(project.filming_date), 'MMM d, yyyy')}
                   </div>
                 )}
                 <div className="text-xs text-muted-foreground">

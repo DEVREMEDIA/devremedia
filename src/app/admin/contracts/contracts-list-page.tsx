@@ -1,7 +1,6 @@
 'use client';
 
 import { useState } from 'react';
-import { format } from 'date-fns';
 import { FileText, Eye, Trash2 } from 'lucide-react';
 import Link from 'next/link';
 import { useTranslations } from 'next-intl';
@@ -58,8 +57,8 @@ export function ContractsListPage({ contracts: initialContracts }: ContractsList
     return (
       <EmptyState
         icon={FileText}
-        title="No contracts yet"
-        description="Contracts are created from project pages. Go to a project to create a contract."
+        title={t('noContracts')}
+        description={t('noContractsListDescription')}
       />
     );
   }
@@ -84,9 +83,17 @@ export function ContractsListPage({ contracts: initialContracts }: ContractsList
                   <StatusBadge status={contract.status} />
                 </div>
                 <div className="flex items-center gap-3 text-xs text-muted-foreground flex-wrap">
-                  <span>{contract.client?.company_name || contract.client?.contact_name || '-'}</span>
+                  <span>
+                    {contract.client?.company_name || contract.client?.contact_name || '-'}
+                  </span>
                   <span className="hidden sm:inline">{contract.project?.title || '-'}</span>
-                  <span>{format(new Date(contract.created_at), 'MMM d, yyyy')}</span>
+                  <span>
+                    {new Date(contract.created_at).toLocaleDateString(undefined, {
+                      year: 'numeric',
+                      month: 'short',
+                      day: 'numeric',
+                    })}
+                  </span>
                 </div>
               </div>
               <div className="flex items-center gap-2 flex-shrink-0">
@@ -112,9 +119,9 @@ export function ContractsListPage({ contracts: initialContracts }: ContractsList
       <ConfirmDialog
         open={!!deleteId}
         onOpenChange={(open) => !open && setDeleteId(null)}
-        title="Delete Contract"
-        description="Are you sure you want to delete this contract? This action cannot be undone."
-        confirmLabel="Delete"
+        title={t('deleteContract')}
+        description={t('deleteContractConfirm')}
+        confirmLabel={t('delete')}
         onConfirm={handleDelete}
         loading={isDeleting}
         destructive

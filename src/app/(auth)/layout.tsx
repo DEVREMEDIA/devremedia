@@ -1,6 +1,5 @@
 import Image from 'next/image';
 import Link from 'next/link';
-import { ArrowLeft } from 'lucide-react';
 import { getTranslations } from 'next-intl/server';
 
 export default async function AuthLayout({ children }: { children: React.ReactNode }) {
@@ -22,14 +21,13 @@ export default async function AuthLayout({ children }: { children: React.ReactNo
             className="h-12 w-auto mb-10"
             priority
           />
-          <h2 className="text-3xl font-bold tracking-tight mb-4">
-            {t('brandTagline')}
-          </h2>
-          <p className="text-zinc-400 text-lg leading-relaxed">
-            {t('brandDescription')}
-          </p>
+          <h2 className="text-3xl font-bold tracking-tight mb-4">{t('brandTagline')}</h2>
+          <p className="text-zinc-400 text-lg leading-relaxed">{t('brandDescription')}</p>
           <div className="mt-12 flex items-center gap-3 text-zinc-500 text-sm">
-            <span className="h-1.5 w-1.5 rounded-full bg-amber-500 animate-pulse" aria-hidden="true" />
+            <span
+              className="h-1.5 w-1.5 rounded-full bg-amber-500 animate-pulse"
+              aria-hidden="true"
+            />
             <span>{t('trustedBy')}</span>
           </div>
         </div>
@@ -37,13 +35,6 @@ export default async function AuthLayout({ children }: { children: React.ReactNo
 
       {/* Form Panel - Right */}
       <div className="relative flex flex-1 items-center justify-center bg-stone-50 dark:bg-zinc-950 p-4 sm:p-8">
-        <Link
-          href="/"
-          className="absolute top-5 left-5 inline-flex items-center gap-2 rounded-lg border border-border bg-background px-3 py-2 text-sm font-medium text-foreground shadow-sm transition-all hover:bg-accent hover:shadow-md"
-        >
-          <ArrowLeft className="h-4 w-4" />
-          {tc('back')}
-        </Link>
         <div className="w-full max-w-md space-y-6">
           {/* Logo (mobile only) */}
           <div className="text-center lg:hidden">

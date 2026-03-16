@@ -13,10 +13,14 @@ import { revalidatePath } from 'next/cache';
 export async function getEquipmentList(projectId: string): Promise<ActionResult<EquipmentList>> {
   try {
     const supabase = await createClient();
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
+    if (!user) return { data: null, error: 'Unauthorized' };
 
     const { data, error } = await supabase
       .from('equipment_lists')
-      .select('*')
+      .select('id, project_id, items, created_at, updated_at')
       .eq('project_id', projectId)
       .single();
 
@@ -27,7 +31,7 @@ export async function getEquipmentList(projectId: string): Promise<ActionResult<
           project_id: projectId,
           items: [],
         })
-        .select()
+        .select('id, project_id, items, created_at, updated_at')
         .single();
 
       if (createError) return { data: null, error: createError.message };
@@ -38,20 +42,30 @@ export async function getEquipmentList(projectId: string): Promise<ActionResult<
 
     return { data, error: null };
   } catch (err: unknown) {
-    return { data: null, error: err instanceof Error ? err.message : 'Failed to fetch equipment list' };
+    return {
+      data: null,
+      error: err instanceof Error ? err.message : 'Failed to fetch equipment list',
+    };
   }
 }
 
-export async function updateEquipmentList(projectId: string, input: unknown): Promise<ActionResult<EquipmentList>> {
+export async function updateEquipmentList(
+  projectId: string,
+  input: unknown,
+): Promise<ActionResult<EquipmentList>> {
   try {
     const validated = updateEquipmentListSchema.parse(input);
     const supabase = await createClient();
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
+    if (!user) return { data: null, error: 'Unauthorized' };
 
     const { data, error } = await supabase
       .from('equipment_lists')
       .update({ items: validated.items })
       .eq('project_id', projectId)
-      .select()
+      .select('id, project_id, items, created_at, updated_at')
       .single();
 
     if (error) return { data: null, error: error.message };
@@ -69,9 +83,14 @@ export async function updateEquipmentList(projectId: string, input: unknown): Pr
 export async function getShotLists(projectId: string): Promise<ActionResult<ShotList[]>> {
   try {
     const supabase = await createClient();
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
+    if (!user) return { data: null, error: 'Unauthorized' };
+
     const { data, error } = await supabase
       .from('shot_lists')
-      .select('*')
+      .select('id, project_id, shots, created_at, updated_at')
       .eq('project_id', projectId)
       .order('created_at', { ascending: false });
 
@@ -85,6 +104,10 @@ export async function getShotLists(projectId: string): Promise<ActionResult<Shot
 export async function createShotList(projectId: string): Promise<ActionResult<ShotList>> {
   try {
     const supabase = await createClient();
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
+    if (!user) return { data: null, error: 'Unauthorized' };
 
     const { data, error } = await supabase
       .from('shot_lists')
@@ -92,7 +115,7 @@ export async function createShotList(projectId: string): Promise<ActionResult<Sh
         project_id: projectId,
         shots: [],
       })
-      .select()
+      .select('id, project_id, shots, created_at, updated_at')
       .single();
 
     if (error) return { data: null, error: error.message };
@@ -108,12 +131,16 @@ export async function updateShotList(id: string, input: unknown): Promise<Action
   try {
     const validated = updateShotListSchema.parse(input);
     const supabase = await createClient();
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
+    if (!user) return { data: null, error: 'Unauthorized' };
 
     const { data, error } = await supabase
       .from('shot_lists')
       .update({ shots: validated.shots })
       .eq('id', id)
-      .select()
+      .select('id, project_id, shots, created_at, updated_at')
       .single();
 
     if (error) return { data: null, error: error.message };
@@ -133,32 +160,48 @@ export async function updateShotList(id: string, input: unknown): Promise<Action
 export async function getConceptNotes(projectId: string): Promise<ActionResult<ConceptNote[]>> {
   try {
     const supabase = await createClient();
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
+    if (!user) return { data: null, error: 'Unauthorized' };
+
     const { data, error } = await supabase
       .from('concept_notes')
-      .select('*')
+      .select('id, project_id, title, content, attachments, created_at, updated_at')
       .eq('project_id', projectId)
       .order('created_at', { ascending: false });
 
     if (error) return { data: null, error: error.message };
     return { data, error: null };
   } catch (err: unknown) {
-    return { data: null, error: err instanceof Error ? err.message : 'Failed to fetch concept notes' };
+    return {
+      data: null,
+      error: err instanceof Error ? err.message : 'Failed to fetch concept notes',
+    };
   }
 }
 
 export async function getConceptNote(id: string): Promise<ActionResult<ConceptNote>> {
   try {
     const supabase = await createClient();
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
+    if (!user) return { data: null, error: 'Unauthorized' };
+
     const { data, error } = await supabase
       .from('concept_notes')
-      .select('*')
+      .select('id, project_id, title, content, attachments, created_at, updated_at')
       .eq('id', id)
       .single();
 
     if (error) return { data: null, error: error.message };
     return { data, error: null };
   } catch (err: unknown) {
-    return { data: null, error: err instanceof Error ? err.message : 'Failed to fetch concept note' };
+    return {
+      data: null,
+      error: err instanceof Error ? err.message : 'Failed to fetch concept note',
+    };
   }
 }
 
@@ -166,11 +209,15 @@ export async function createConceptNote(input: unknown): Promise<ActionResult<Co
   try {
     const validated = createConceptNoteSchema.parse(input);
     const supabase = await createClient();
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
+    if (!user) return { data: null, error: 'Unauthorized' };
 
     const { data, error } = await supabase
       .from('concept_notes')
       .insert(validated)
-      .select()
+      .select('id, project_id, title, content, attachments, created_at, updated_at')
       .single();
 
     if (error) return { data: null, error: error.message };
@@ -185,16 +232,23 @@ export async function createConceptNote(input: unknown): Promise<ActionResult<Co
   }
 }
 
-export async function updateConceptNote(id: string, input: unknown): Promise<ActionResult<ConceptNote>> {
+export async function updateConceptNote(
+  id: string,
+  input: unknown,
+): Promise<ActionResult<ConceptNote>> {
   try {
     const validated = updateConceptNoteSchema.parse(input);
     const supabase = await createClient();
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
+    if (!user) return { data: null, error: 'Unauthorized' };
 
     const { data, error } = await supabase
       .from('concept_notes')
       .update(validated)
       .eq('id', id)
-      .select()
+      .select('id, project_id, title, content, attachments, created_at, updated_at')
       .single();
 
     if (error) return { data: null, error: error.message };
@@ -214,6 +268,10 @@ export async function updateConceptNote(id: string, input: unknown): Promise<Act
 export async function deleteConceptNote(id: string): Promise<ActionResult<void>> {
   try {
     const supabase = await createClient();
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
+    if (!user) return { data: null, error: 'Unauthorized' };
 
     const { data: note } = await supabase
       .from('concept_notes')
@@ -221,10 +279,7 @@ export async function deleteConceptNote(id: string): Promise<ActionResult<void>>
       .eq('id', id)
       .single();
 
-    const { error } = await supabase
-      .from('concept_notes')
-      .delete()
-      .eq('id', id);
+    const { error } = await supabase.from('concept_notes').delete().eq('id', id);
 
     if (error) return { data: null, error: error.message };
 
@@ -233,6 +288,9 @@ export async function deleteConceptNote(id: string): Promise<ActionResult<void>>
     }
     return { data: undefined, error: null };
   } catch (err: unknown) {
-    return { data: null, error: err instanceof Error ? err.message : 'Failed to delete concept note' };
+    return {
+      data: null,
+      error: err instanceof Error ? err.message : 'Failed to delete concept note',
+    };
   }
 }

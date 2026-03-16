@@ -5,12 +5,18 @@ import { createLeadActivitySchema } from '@/lib/schemas/lead-activity';
 import type { ActionResult, LeadActivity } from '@/types';
 import { revalidatePath } from 'next/cache';
 
-export async function getLeadActivities(leadId: string): Promise<ActionResult<unknown[]>> {
+export async function getLeadActivities(leadId: string): Promise<ActionResult<LeadActivity[]>> {
   try {
     const supabase = await createClient();
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
+    if (!user) return { data: null, error: 'Unauthorized' };
     const { data, error } = await supabase
       .from('lead_activities')
-      .select('*, user:user_profiles(display_name)')
+      .select(
+        'id, lead_id, user_id, activity_type, title, description, metadata, created_at, user:user_profiles(display_name)',
+      )
       .eq('lead_id', leadId)
       .order('created_at', { ascending: false });
 
@@ -26,7 +32,9 @@ export async function createLeadActivity(input: unknown): Promise<ActionResult<L
     const validated = createLeadActivitySchema.parse(input);
     const supabase = await createClient();
 
-    const { data: { user } } = await supabase.auth.getUser();
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
     if (!user) return { data: null, error: 'Unauthorized' };
 
     const { data, error } = await supabase
@@ -35,7 +43,7 @@ export async function createLeadActivity(input: unknown): Promise<ActionResult<L
         ...validated,
         user_id: user.id,
       })
-      .select()
+      .select('id, lead_id, user_id, activity_type, title, description, metadata, created_at')
       .single();
 
     if (error) return { data: null, error: error.message };

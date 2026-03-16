@@ -17,8 +17,17 @@ import { LEAD_SOURCE_LABELS } from '@/lib/constants';
 import { updateLead } from '@/lib/actions/leads';
 import { toast } from 'sonner';
 import { useTranslations } from 'next-intl';
-import { format } from 'date-fns';
-import { Phone, Mail, Building2, Calendar, User, ArrowRight, StickyNote, MoreHorizontal, LucideIcon } from 'lucide-react';
+import {
+  Phone,
+  Mail,
+  Building2,
+  Calendar,
+  User,
+  ArrowRight,
+  StickyNote,
+  MoreHorizontal,
+  LucideIcon,
+} from 'lucide-react';
 
 type LeadData = {
   id: string;
@@ -61,7 +70,7 @@ const ACTIVITY_ICONS: Record<string, LucideIcon> = {
 
 export function AdminLeadDetail({ lead, activities, salesmen }: AdminLeadDetailProps) {
   const router = useRouter();
-  const t = useTranslations('leads')
+  const t = useTranslations('leads');
   const tToast = useTranslations('toast');
   const [reassigning, setReassigning] = useState(false);
 
@@ -80,15 +89,17 @@ export function AdminLeadDetail({ lead, activities, salesmen }: AdminLeadDetailP
   return (
     <Tabs defaultValue="info" className="space-y-6">
       <TabsList>
-        <TabsTrigger value="info">Info</TabsTrigger>
-        <TabsTrigger value="activities">Activities ({activities.length})</TabsTrigger>
+        <TabsTrigger value="info">{t('info')}</TabsTrigger>
+        <TabsTrigger value="activities">
+          {t('activities')} ({activities.length})
+        </TabsTrigger>
       </TabsList>
 
       <TabsContent value="info" className="space-y-6">
         <div className="grid gap-6 md:grid-cols-2">
           <Card>
             <CardHeader>
-              <CardTitle className="text-lg">Contact Information</CardTitle>
+              <CardTitle className="text-lg">{t('contactInfo')}</CardTitle>
             </CardHeader>
             <CardContent className="space-y-3">
               <div className="flex items-center gap-2">
@@ -118,33 +129,40 @@ export function AdminLeadDetail({ lead, activities, salesmen }: AdminLeadDetailP
 
           <Card>
             <CardHeader>
-              <CardTitle className="text-lg">Deal Information</CardTitle>
+              <CardTitle className="text-lg">{t('dealInfo')}</CardTitle>
             </CardHeader>
             <CardContent className="space-y-3">
               <div className="flex items-center justify-between">
-                <span className="text-sm text-muted-foreground">Stage</span>
+                <span className="text-sm text-muted-foreground">{t('stage')}</span>
                 <StatusBadge status={lead.stage} />
               </div>
               <div className="flex items-center justify-between">
-                <span className="text-sm text-muted-foreground">Source</span>
+                <span className="text-sm text-muted-foreground">{t('source')}</span>
                 <Badge variant="outline">
-                  {LEAD_SOURCE_LABELS[lead.source as keyof typeof LEAD_SOURCE_LABELS] ?? lead.source}
+                  {LEAD_SOURCE_LABELS[lead.source as keyof typeof LEAD_SOURCE_LABELS] ??
+                    lead.source}
                 </Badge>
               </div>
               <div className="flex items-center justify-between">
-                <span className="text-sm text-muted-foreground">Deal Value</span>
+                <span className="text-sm text-muted-foreground">{t('dealValue')}</span>
                 <span className="font-medium">
                   {lead.deal_value != null ? `€${Number(lead.deal_value).toLocaleString()}` : '-'}
                 </span>
               </div>
               <div className="flex items-center justify-between">
-                <span className="text-sm text-muted-foreground">Probability</span>
+                <span className="text-sm text-muted-foreground">{t('probability')}</span>
                 <span>{lead.probability}%</span>
               </div>
               {lead.expected_close_date && (
                 <div className="flex items-center justify-between">
-                  <span className="text-sm text-muted-foreground">Expected Close</span>
-                  <span>{format(new Date(lead.expected_close_date), 'MMM d, yyyy')}</span>
+                  <span className="text-sm text-muted-foreground">{t('expectedCloseDate')}</span>
+                  <span>
+                    {new Date(lead.expected_close_date).toLocaleDateString(undefined, {
+                      year: 'numeric',
+                      month: 'short',
+                      day: 'numeric',
+                    })}
+                  </span>
                 </div>
               )}
             </CardContent>
@@ -154,11 +172,11 @@ export function AdminLeadDetail({ lead, activities, salesmen }: AdminLeadDetailP
         {/* Reassign */}
         <Card>
           <CardHeader>
-            <CardTitle className="text-lg">Assignment</CardTitle>
+            <CardTitle className="text-lg">{t('assignment')}</CardTitle>
           </CardHeader>
           <CardContent>
             <div className="flex items-center gap-4">
-              <span className="text-sm text-muted-foreground">Assigned to:</span>
+              <span className="text-sm text-muted-foreground">{t('assignedTo')}:</span>
               <Select
                 value={lead.assigned_to}
                 onValueChange={handleReassign}
@@ -170,7 +188,7 @@ export function AdminLeadDetail({ lead, activities, salesmen }: AdminLeadDetailP
                 <SelectContent>
                   {salesmen.map((s) => (
                     <SelectItem key={s.id} value={s.id}>
-                      {s.display_name ?? 'Unnamed'}
+                      {s.display_name ?? t('unassigned')}
                     </SelectItem>
                   ))}
                 </SelectContent>
@@ -182,7 +200,7 @@ export function AdminLeadDetail({ lead, activities, salesmen }: AdminLeadDetailP
         {lead.notes && (
           <Card>
             <CardHeader>
-              <CardTitle className="text-lg">Notes</CardTitle>
+              <CardTitle className="text-lg">{t('notes')}</CardTitle>
             </CardHeader>
             <CardContent>
               <p className="text-sm whitespace-pre-wrap">{lead.notes}</p>
@@ -194,7 +212,7 @@ export function AdminLeadDetail({ lead, activities, salesmen }: AdminLeadDetailP
       <TabsContent value="activities">
         <Card>
           <CardHeader>
-            <CardTitle className="text-lg">Activity History</CardTitle>
+            <CardTitle className="text-lg">{t('activityHistory')}</CardTitle>
           </CardHeader>
           <CardContent>
             {activities.length === 0 ? (
@@ -214,8 +232,12 @@ export function AdminLeadDetail({ lead, activities, salesmen }: AdminLeadDetailP
                           <p className="text-sm text-muted-foreground">{activity.description}</p>
                         )}
                         <p className="text-xs text-muted-foreground mt-1">
-                          {activity.user?.display_name ?? 'Unknown'} &middot;{' '}
-                          {format(new Date(activity.created_at), 'MMM d, yyyy h:mm a')}
+                          {activity.user?.display_name ?? t('unknown')} &middot;{' '}
+                          {new Date(activity.created_at).toLocaleDateString(undefined, {
+                            year: 'numeric',
+                            month: 'short',
+                            day: 'numeric',
+                          })}
                         </p>
                       </div>
                     </div>

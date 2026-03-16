@@ -2,7 +2,7 @@
 
 import { createClient } from '@/lib/supabase/server';
 import { createInvoiceSchema, updateInvoiceSchema, type LineItem } from '@/lib/schemas/invoice';
-import type { ActionResult, InvoiceWithRelations } from '@/types/index';
+import type { ActionResult, Invoice, InvoiceWithRelations } from '@/types/index';
 import type { InvoiceStatus } from '@/lib/constants';
 import { revalidatePath } from 'next/cache';
 
@@ -14,12 +14,20 @@ interface InvoiceFilters {
   issue_date_to?: string;
 }
 
-export async function getInvoices(filters?: InvoiceFilters): Promise<ActionResult<unknown[]>> {
+export async function getInvoices(
+  filters?: InvoiceFilters,
+): Promise<ActionResult<InvoiceWithRelations[]>> {
   try {
     const supabase = await createClient();
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
+    if (!user) return { data: null, error: 'Unauthorized' };
     let query = supabase
       .from('invoices')
-      .select('*, client:clients(*), project:projects(*)')
+      .select(
+        'id, project_id, client_id, invoice_number, issue_date, due_date, status, subtotal, tax_amount, total, currency, line_items, notes, terms, tax_rate, sent_at, viewed_at, paid_at, created_by, created_at, updated_at, client:clients(id, contact_name, company_name, email, phone, address, vat_number, avatar_url, notes, status, user_id, created_at, updated_at), project:projects(id, title, client_id, description, project_type, status, priority, budget, deadline, start_date, completion_date, tags, metadata, created_by, created_at, updated_at)',
+      )
       .order('created_at', { ascending: false });
 
     if (filters?.status) {
@@ -44,7 +52,7 @@ export async function getInvoices(filters?: InvoiceFilters): Promise<ActionResul
 
     const { data, error } = await query;
     if (error) return { data: null, error: error.message };
-    return { data, error: null };
+    return { data: data as unknown as InvoiceWithRelations[], error: null };
   } catch (err: unknown) {
     return { data: null, error: err instanceof Error ? err.message : 'Failed to fetch invoices' };
   }
@@ -53,14 +61,20 @@ export async function getInvoices(filters?: InvoiceFilters): Promise<ActionResul
 export async function getInvoice(id: string): Promise<ActionResult<InvoiceWithRelations>> {
   try {
     const supabase = await createClient();
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
+    if (!user) return { data: null, error: 'Unauthorized' };
     const { data, error } = await supabase
       .from('invoices')
-      .select('*, client:clients(*), project:projects(*)')
+      .select(
+        'id, project_id, client_id, invoice_number, issue_date, due_date, status, subtotal, tax_amount, total, currency, line_items, notes, terms, tax_rate, sent_at, viewed_at, paid_at, created_by, created_at, updated_at, client:clients(id, contact_name, company_name, email, phone, address, vat_number, avatar_url, notes, status, user_id, created_at, updated_at), project:projects(id, title, client_id, description, project_type, status, priority, budget, deadline, start_date, completion_date, tags, metadata, created_by, created_at, updated_at)',
+      )
       .eq('id', id)
       .single();
 
     if (error) return { data: null, error: error.message };
-    return { data, error: null };
+    return { data: data as unknown as InvoiceWithRelations, error: null };
   } catch (err: unknown) {
     return { data: null, error: err instanceof Error ? err.message : 'Failed to fetch invoice' };
   }
@@ -122,13 +136,17 @@ export async function createInvoice(input: unknown): Promise<ActionResult<Invoic
         status: 'draft',
         created_by: user.id,
       })
-      .select('*, client:clients(*), project:projects(*)')
+      .select(
+        'id, project_id, client_id, invoice_number, issue_date, due_date, status, subtotal, tax_amount, total, currency, line_items, notes, terms, tax_rate, sent_at, viewed_at, paid_at, created_by, created_at, updated_at, client:clients(id, contact_name, company_name, email, phone, address, vat_number, avatar_url, notes, status, user_id, created_at, updated_at), project:projects(id, title, client_id, description, project_type, status, priority, budget, deadline, start_date, completion_date, tags, metadata, created_by, created_at, updated_at)',
+      )
       .single();
 
     if (error) return { data: null, error: error.message };
 
     revalidatePath('/admin/invoices');
-    return { data, error: null };
+    revalidatePath('/client/invoices');
+    revalidatePath('/client/dashboard');
+    return { data: data as unknown as InvoiceWithRelations, error: null };
   } catch (err: unknown) {
     if (err instanceof Error) {
       return { data: null, error: err.message };
@@ -144,6 +162,10 @@ export async function updateInvoice(
   try {
     const validated = updateInvoiceSchema.parse(input);
     const supabase = await createClient();
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
+    if (!user) return { data: null, error: 'Unauthorized' };
 
     let updateData: Record<string, unknown> = { ...validated };
 
@@ -152,7 +174,7 @@ export async function updateInvoice(
         (sum: number, item: LineItem) => sum + item.quantity * item.unit_price,
         0,
       );
-      const taxRate = validated.tax_rate || 24;
+      const taxRate = validated.tax_rate ?? 24;
       const taxAmount = subtotal * (taxRate / 100);
       const total = subtotal + taxAmount;
 
@@ -168,14 +190,18 @@ export async function updateInvoice(
       .from('invoices')
       .update(updateData)
       .eq('id', id)
-      .select('*, client:clients(*), project:projects(*)')
+      .select(
+        'id, project_id, client_id, invoice_number, issue_date, due_date, status, subtotal, tax_amount, total, currency, line_items, notes, terms, tax_rate, sent_at, viewed_at, paid_at, created_by, created_at, updated_at, client:clients(id, contact_name, company_name, email, phone, address, vat_number, avatar_url, notes, status, user_id, created_at, updated_at), project:projects(id, title, client_id, description, project_type, status, priority, budget, deadline, start_date, completion_date, tags, metadata, created_by, created_at, updated_at)',
+      )
       .single();
 
     if (error) return { data: null, error: error.message };
 
     revalidatePath('/admin/invoices');
     revalidatePath(`/admin/invoices/${id}`);
-    return { data, error: null };
+    revalidatePath('/client/invoices');
+    revalidatePath('/client/dashboard');
+    return { data: data as unknown as InvoiceWithRelations, error: null };
   } catch (err: unknown) {
     if (err instanceof Error) {
       return { data: null, error: err.message };
@@ -187,9 +213,13 @@ export async function updateInvoice(
 export async function updateInvoiceStatus(
   id: string,
   status: InvoiceStatus,
-): Promise<ActionResult<unknown>> {
+): Promise<ActionResult<Invoice>> {
   try {
     const supabase = await createClient();
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
+    if (!user) return { data: null, error: 'Unauthorized' };
 
     const updateData: Record<string, unknown> = { status };
 
@@ -204,13 +234,17 @@ export async function updateInvoiceStatus(
       .from('invoices')
       .update(updateData)
       .eq('id', id)
-      .select()
+      .select(
+        'id, project_id, client_id, invoice_number, issue_date, due_date, status, subtotal, tax_amount, total, currency, line_items, notes, terms, tax_rate, sent_at, viewed_at, paid_at, created_by, created_at, updated_at',
+      )
       .single();
 
     if (error) return { data: null, error: error.message };
 
     revalidatePath('/admin/invoices');
     revalidatePath(`/admin/invoices/${id}`);
+    revalidatePath('/client/invoices');
+    revalidatePath('/client/dashboard');
     return { data, error: null };
   } catch (err: unknown) {
     return {
@@ -223,6 +257,10 @@ export async function updateInvoiceStatus(
 export async function deleteInvoice(id: string): Promise<ActionResult<void>> {
   try {
     const supabase = await createClient();
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
+    if (!user) return { data: null, error: 'Unauthorized' };
     const { error } = await supabase.from('invoices').delete().eq('id', id);
 
     if (error) return { data: null, error: error.message };

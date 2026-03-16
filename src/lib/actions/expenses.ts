@@ -16,9 +16,13 @@ interface ExpenseFilters {
 export async function getExpenses(filters?: ExpenseFilters): Promise<ActionResult<Expense[]>> {
   try {
     const supabase = await createClient();
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
+    if (!user) return { data: null, error: 'Unauthorized' };
     let query = supabase
       .from('expenses')
-      .select('*')
+      .select('id, project_id, category, description, amount, date, receipt_path, created_at')
       .order('date', { ascending: false });
 
     if (filters?.project_id) {
@@ -49,9 +53,13 @@ export async function getExpenses(filters?: ExpenseFilters): Promise<ActionResul
 export async function getExpense(id: string): Promise<ActionResult<Expense>> {
   try {
     const supabase = await createClient();
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
+    if (!user) return { data: null, error: 'Unauthorized' };
     const { data, error } = await supabase
       .from('expenses')
-      .select('*')
+      .select('id, project_id, category, description, amount, date, receipt_path, created_at')
       .eq('id', id)
       .single();
 
@@ -67,7 +75,9 @@ export async function createExpense(input: unknown): Promise<ActionResult<Expens
     const validated = createExpenseSchema.parse(input);
     const supabase = await createClient();
 
-    const { data: { user } } = await supabase.auth.getUser();
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
     if (!user) return { data: null, error: 'User not authenticated' };
 
     const { data, error } = await supabase
@@ -76,7 +86,7 @@ export async function createExpense(input: unknown): Promise<ActionResult<Expens
         ...validated,
         created_by: user.id,
       })
-      .select()
+      .select('id, project_id, category, description, amount, date, receipt_path, created_at')
       .single();
 
     if (error) return { data: null, error: error.message };
@@ -98,12 +108,24 @@ export async function updateExpense(id: string, input: unknown): Promise<ActionR
   try {
     const validated = updateExpenseSchema.parse(input);
     const supabase = await createClient();
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
+    if (!user) return { data: null, error: 'Unauthorized' };
+    const { data: profile } = await supabase
+      .from('user_profiles')
+      .select('role')
+      .eq('id', user.id)
+      .single();
+    if (!profile || !['super_admin', 'admin'].includes(profile.role)) {
+      return { data: null, error: 'Forbidden: admin access required' };
+    }
 
     const { data, error } = await supabase
       .from('expenses')
       .update(validated)
       .eq('id', id)
-      .select()
+      .select('id, project_id, category, description, amount, date, receipt_path, created_at')
       .single();
 
     if (error) return { data: null, error: error.message };
@@ -124,6 +146,18 @@ export async function updateExpense(id: string, input: unknown): Promise<ActionR
 export async function deleteExpense(id: string): Promise<ActionResult<void>> {
   try {
     const supabase = await createClient();
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
+    if (!user) return { data: null, error: 'Unauthorized' };
+    const { data: profile } = await supabase
+      .from('user_profiles')
+      .select('role')
+      .eq('id', user.id)
+      .single();
+    if (!profile || !['super_admin', 'admin'].includes(profile.role)) {
+      return { data: null, error: 'Forbidden: admin access required' };
+    }
 
     const { data: expense } = await supabase
       .from('expenses')
@@ -131,10 +165,7 @@ export async function deleteExpense(id: string): Promise<ActionResult<void>> {
       .eq('id', id)
       .single();
 
-    const { error } = await supabase
-      .from('expenses')
-      .delete()
-      .eq('id', id);
+    const { error } = await supabase.from('expenses').delete().eq('id', id);
 
     if (error) return { data: null, error: error.message };
 

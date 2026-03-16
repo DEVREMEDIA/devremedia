@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useRef, KeyboardEvent } from 'react';
+import Image from 'next/image';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { Send, Paperclip, X } from 'lucide-react';
@@ -28,7 +29,7 @@ function formatFileSize(bytes: number): string {
   const k = 1024;
   const sizes = ['Bytes', 'KB', 'MB', 'GB'];
   const i = Math.floor(Math.log(bytes) / Math.log(k));
-  return Math.round(bytes / Math.pow(k, i) * 100) / 100 + ' ' + sizes[i];
+  return Math.round((bytes / Math.pow(k, i)) * 100) / 100 + ' ' + sizes[i];
 }
 
 export function MessageInput({ projectId, onMessageSent, className }: MessageInputProps) {
@@ -44,19 +45,21 @@ export function MessageInput({ projectId, onMessageSent, className }: MessageInp
     const files = Array.from(e.target.files || []);
 
     // Validate file sizes
-    const oversizedFiles = files.filter(f => f.size > MAX_FILE_SIZES.attachment);
+    const oversizedFiles = files.filter((f) => f.size > MAX_FILE_SIZES.attachment);
     if (oversizedFiles.length > 0) {
-      toast.error(t('fileSizeExceeded', { size: Math.round(MAX_FILE_SIZES.attachment / 1024 / 1024) }));
+      toast.error(
+        t('fileSizeExceeded', { size: Math.round(MAX_FILE_SIZES.attachment / 1024 / 1024) }),
+      );
       return;
     }
 
     // Add files to pending list
-    const newFiles = files.map(file => ({
+    const newFiles = files.map((file) => ({
       file,
       preview: URL.createObjectURL(file),
     }));
 
-    setPendingFiles(prev => [...prev, ...newFiles]);
+    setPendingFiles((prev) => [...prev, ...newFiles]);
 
     // Reset input
     if (fileInputRef.current) {
@@ -65,7 +68,7 @@ export function MessageInput({ projectId, onMessageSent, className }: MessageInp
   };
 
   const removeFile = (index: number) => {
-    setPendingFiles(prev => {
+    setPendingFiles((prev) => {
       const newFiles = [...prev];
       URL.revokeObjectURL(newFiles[index].preview);
       newFiles.splice(index, 1);
@@ -95,9 +98,9 @@ export function MessageInput({ projectId, onMessageSent, className }: MessageInp
         }
 
         // Get public URL
-        const { data: { publicUrl } } = supabase.storage
-          .from(STORAGE_BUCKETS.attachments)
-          .getPublicUrl(filePath);
+        const {
+          data: { publicUrl },
+        } = supabase.storage.from(STORAGE_BUCKETS.attachments).getPublicUrl(filePath);
 
         attachments.push({
           file_path: publicUrl,
@@ -141,8 +144,8 @@ export function MessageInput({ projectId, onMessageSent, className }: MessageInp
 
       // Clear input
       setContent('');
-      setPendingFiles(prev => {
-        prev.forEach(f => URL.revokeObjectURL(f.preview));
+      setPendingFiles((prev) => {
+        prev.forEach((f) => URL.revokeObjectURL(f.preview));
         return [];
       });
 
@@ -178,16 +181,16 @@ export function MessageInput({ projectId, onMessageSent, className }: MessageInp
                 className="flex items-center gap-2 px-3 py-2 bg-background rounded-lg border text-sm"
               >
                 {pending.file.type.startsWith('image/') && (
-                  <img
+                  <Image
                     src={pending.preview}
                     alt={pending.file.name}
+                    width={32}
+                    height={32}
                     className="h-8 w-8 object-cover rounded"
                   />
                 )}
                 <div className="flex-1 min-w-0">
-                  <div className="font-medium truncate max-w-[200px]">
-                    {pending.file.name}
-                  </div>
+                  <div className="font-medium truncate max-w-[200px]">{pending.file.name}</div>
                   <div className="text-xs text-muted-foreground">
                     {formatFileSize(pending.file.size)}
                   </div>

@@ -7,7 +7,7 @@ import {
   reviewFilmingRequestSchema,
   publicBookingSchema,
 } from '@/lib/schemas/filming-request';
-import type { ActionResult, FilmingRequest } from '@/types/index';
+import type { ActionResult, FilmingRequest, Project } from '@/types/index';
 import type { FilmingRequestStatus } from '@/lib/constants';
 import { revalidatePath } from 'next/cache';
 
@@ -23,7 +23,9 @@ export async function getFilmingRequests(filters?: {
 
     let query = supabase
       .from('filming_requests')
-      .select('*')
+      .select(
+        'id, client_id, title, description, preferred_dates, location, project_type, budget_range, reference_links, selected_package, status, admin_notes, converted_project_id, contact_name, contact_email, contact_phone, contact_company, created_at',
+      )
       .order('created_at', { ascending: false });
 
     if (filters?.status) {
@@ -56,7 +58,9 @@ export async function getClientFilmingRequests(): Promise<ActionResult<FilmingRe
     // RLS automatically filters to only this client's requests
     const { data, error } = await supabase
       .from('filming_requests')
-      .select('*')
+      .select(
+        'id, client_id, title, description, preferred_dates, location, project_type, budget_range, reference_links, selected_package, status, admin_notes, converted_project_id, contact_name, contact_email, contact_phone, contact_company, created_at',
+      )
       .order('created_at', { ascending: false });
 
     if (error) return { data: null, error: error.message };
@@ -79,7 +83,9 @@ export async function getFilmingRequest(id: string): Promise<ActionResult<Filmin
 
     const { data, error } = await supabase
       .from('filming_requests')
-      .select('*')
+      .select(
+        'id, client_id, title, description, preferred_dates, location, project_type, budget_range, reference_links, selected_package, status, admin_notes, converted_project_id, contact_name, contact_email, contact_phone, contact_company, created_at',
+      )
       .eq('id', id)
       .single();
 
@@ -117,7 +123,9 @@ export async function createFilmingRequest(input: unknown): Promise<ActionResult
         client_id: client?.id || null,
         status: 'pending',
       })
-      .select()
+      .select(
+        'id, client_id, title, description, preferred_dates, location, project_type, budget_range, reference_links, selected_package, status, admin_notes, converted_project_id, contact_name, contact_email, contact_phone, contact_company, created_at',
+      )
       .single();
 
     if (error) return { data: null, error: error.message };
@@ -145,6 +153,15 @@ export async function reviewFilmingRequest(
     } = await supabase.auth.getUser();
     if (!user) return { data: null, error: 'User not authenticated' };
 
+    const { data: profile } = await supabase
+      .from('user_profiles')
+      .select('role')
+      .eq('id', user.id)
+      .single();
+    if (!profile || !['super_admin', 'admin'].includes(profile.role)) {
+      return { data: null, error: 'Forbidden: admin access required' };
+    }
+
     const { data, error } = await supabase
       .from('filming_requests')
       .update({
@@ -154,7 +171,9 @@ export async function reviewFilmingRequest(
         reviewed_at: new Date().toISOString(),
       })
       .eq('id', id)
-      .select()
+      .select(
+        'id, client_id, title, description, preferred_dates, location, project_type, budget_range, reference_links, selected_package, status, admin_notes, converted_project_id, contact_name, contact_email, contact_phone, contact_company, created_at',
+      )
       .single();
 
     if (error) return { data: null, error: error.message };
@@ -170,7 +189,7 @@ export async function reviewFilmingRequest(
   }
 }
 
-export async function convertToProject(id: string): Promise<ActionResult<unknown>> {
+export async function convertToProject(id: string): Promise<ActionResult<Project>> {
   try {
     const supabase = await createClient();
     const adminSupabase = createAdminClient();
@@ -180,9 +199,20 @@ export async function convertToProject(id: string): Promise<ActionResult<unknown
     } = await supabase.auth.getUser();
     if (!user) return { data: null, error: 'User not authenticated' };
 
+    const { data: profile } = await supabase
+      .from('user_profiles')
+      .select('role')
+      .eq('id', user.id)
+      .single();
+    if (!profile || !['super_admin', 'admin'].includes(profile.role)) {
+      return { data: null, error: 'Forbidden: admin access required' };
+    }
+
     const { data: request, error: fetchError } = await supabase
       .from('filming_requests')
-      .select('*')
+      .select(
+        'id, client_id, title, description, preferred_dates, location, project_type, budget_range, reference_links, selected_package, status, admin_notes, converted_project_id, contact_name, contact_email, contact_phone, contact_company, created_at',
+      )
       .eq('id', id)
       .single();
 
@@ -260,7 +290,9 @@ export async function convertToProject(id: string): Promise<ActionResult<unknown
         priority: 'medium',
         created_by: user.id,
       })
-      .select()
+      .select(
+        'id, client_id, title, description, project_type, status, priority, budget, deadline, start_date, completion_date, tags, metadata, created_by, created_at, updated_at',
+      )
       .single();
 
     if (projectError) return { data: null, error: projectError.message };
@@ -311,7 +343,9 @@ export async function createPublicFilmingRequest(
         contact_company: validated.contact_company || null,
         status: 'pending',
       })
-      .select()
+      .select(
+        'id, client_id, title, description, preferred_dates, location, project_type, budget_range, reference_links, selected_package, status, admin_notes, converted_project_id, contact_name, contact_email, contact_phone, contact_company, created_at',
+      )
       .single();
 
     if (error) return { data: null, error: error.message };

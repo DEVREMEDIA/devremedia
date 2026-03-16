@@ -9,7 +9,7 @@ export const createExpenseSchema = z.object({
   category: z.enum(EXPENSE_CATEGORIES),
   description: z.string().max(1000, 'Description must be at most 1000 characters').optional(),
   amount: z.number().min(0.01, 'Amount must be at least 0.01'),
-  date: z.string(),
+  date: z.string().regex(/^\d{4}-\d{2}-\d{2}$/, 'Invalid date format (YYYY-MM-DD)'),
   receipt_path: z.string().max(2048, 'Receipt path must be at most 2048 characters').optional(),
 });
 

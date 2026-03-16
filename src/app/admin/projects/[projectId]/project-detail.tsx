@@ -32,11 +32,7 @@ import { deleteProject } from '@/lib/actions/projects';
 import { toast } from 'sonner';
 import { differenceInDays } from 'date-fns';
 import { createClient } from '@/lib/supabase/client';
-import {
-  PROJECT_TYPE_LABELS,
-  PROJECT_STATUS_LABELS,
-  PRIORITY_LABELS,
-} from '@/lib/constants';
+import { PROJECT_TYPE_LABELS, PROJECT_STATUS_LABELS, PRIORITY_LABELS } from '@/lib/constants';
 import { useTranslations } from 'next-intl';
 
 interface ProjectDetailProps {
@@ -79,10 +75,7 @@ export function ProjectDetail({ project, contracts }: ProjectDetailProps) {
 
   const progress = (() => {
     if (!project.start_date || !project.deadline) return 0;
-    const total = differenceInDays(
-      new Date(project.deadline),
-      new Date(project.start_date)
-    );
+    const total = differenceInDays(new Date(project.deadline), new Date(project.start_date));
     const elapsed = differenceInDays(new Date(), new Date(project.start_date));
     return Math.min(Math.max((elapsed / total) * 100, 0), 100);
   })();
@@ -162,9 +155,7 @@ export function ProjectDetail({ project, contracts }: ProjectDetailProps) {
                 </CardTitle>
               </CardHeader>
               <CardContent>
-                <div className="text-2xl font-bold">
-                  {PROJECT_STATUS_LABELS[project.status]}
-                </div>
+                <div className="text-2xl font-bold">{PROJECT_STATUS_LABELS[project.status]}</div>
               </CardContent>
             </Card>
 
@@ -175,9 +166,7 @@ export function ProjectDetail({ project, contracts }: ProjectDetailProps) {
                 </CardTitle>
               </CardHeader>
               <CardContent>
-                <div className="text-2xl font-bold">
-                  {PRIORITY_LABELS[project.priority]}
-                </div>
+                <div className="text-2xl font-bold">{PRIORITY_LABELS[project.priority]}</div>
               </CardContent>
             </Card>
 
@@ -190,9 +179,9 @@ export function ProjectDetail({ project, contracts }: ProjectDetailProps) {
               <CardContent>
                 <div className="text-2xl font-bold">
                   {project.budget
-                    ? new Intl.NumberFormat('en-US', {
+                    ? new Intl.NumberFormat('el-GR', {
                         style: 'currency',
-                        currency: 'USD',
+                        currency: 'EUR',
                       }).format(project.budget)
                     : '-'}
                 </div>
@@ -209,9 +198,7 @@ export function ProjectDetail({ project, contracts }: ProjectDetailProps) {
                 </CardTitle>
               </CardHeader>
               <CardContent>
-                <p className="text-muted-foreground whitespace-pre-wrap">
-                  {project.description}
-                </p>
+                <p className="text-muted-foreground whitespace-pre-wrap">{project.description}</p>
               </CardContent>
             </Card>
           )}
@@ -250,8 +237,8 @@ export function ProjectDetail({ project, contracts }: ProjectDetailProps) {
                         daysUntilDeadline < 0
                           ? 'text-destructive'
                           : daysUntilDeadline <= 7
-                          ? 'text-amber-600'
-                          : 'text-muted-foreground'
+                            ? 'text-amber-600'
+                            : 'text-muted-foreground'
                       }`}
                     >
                       {daysUntilDeadline < 0
@@ -291,61 +278,47 @@ export function ProjectDetail({ project, contracts }: ProjectDetailProps) {
           </Card>
 
           {project.client && (
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Building2 className="h-5 w-5" />
-                {tc('clientInformation')}
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-3">
-              <div>
-                <div className="text-sm font-medium text-muted-foreground">
-                  {tc('company')}
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Building2 className="h-5 w-5" />
+                  {tc('clientInformation')}
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-3">
+                <div>
+                  <div className="text-sm font-medium text-muted-foreground">{tc('company')}</div>
+                  <div className="text-lg">{project.client.company_name || '-'}</div>
                 </div>
-                <div className="text-lg">
-                  {project.client.company_name || '-'}
+                <div>
+                  <div className="text-sm font-medium text-muted-foreground">{tc('contact')}</div>
+                  <div className="text-lg">{project.client.contact_name}</div>
                 </div>
-              </div>
-              <div>
-                <div className="text-sm font-medium text-muted-foreground">
-                  {tc('contact')}
-                </div>
-                <div className="text-lg">{project.client.contact_name}</div>
-              </div>
-              <div className="flex items-center gap-2 text-muted-foreground">
-                <Mail className="h-4 w-4" />
-                <a
-                  href={`mailto:${project.client.email}`}
-                  className="hover:text-foreground"
-                >
-                  {project.client.email}
-                </a>
-              </div>
-              {project.client.phone && (
                 <div className="flex items-center gap-2 text-muted-foreground">
-                  <Phone className="h-4 w-4" />
-                  <a
-                    href={`tel:${project.client.phone}`}
-                    className="hover:text-foreground"
-                  >
-                    {project.client.phone}
+                  <Mail className="h-4 w-4" />
+                  <a href={`mailto:${project.client.email}`} className="hover:text-foreground">
+                    {project.client.email}
                   </a>
                 </div>
-              )}
-              {project.client.address && (
-                <div className="flex items-start gap-2 text-muted-foreground">
-                  <MapPin className="h-4 w-4 mt-1" />
-                  <span>{project.client.address}</span>
-                </div>
-              )}
-              <Button asChild variant="outline" size="sm" className="w-full mt-4">
-                <Link href={`/admin/clients/${project.client_id}`}>
-                  {tc('viewDetails')}
-                </Link>
-              </Button>
-            </CardContent>
-          </Card>
+                {project.client.phone && (
+                  <div className="flex items-center gap-2 text-muted-foreground">
+                    <Phone className="h-4 w-4" />
+                    <a href={`tel:${project.client.phone}`} className="hover:text-foreground">
+                      {project.client.phone}
+                    </a>
+                  </div>
+                )}
+                {project.client.address && (
+                  <div className="flex items-start gap-2 text-muted-foreground">
+                    <MapPin className="h-4 w-4 mt-1" />
+                    <span>{project.client.address}</span>
+                  </div>
+                )}
+                <Button asChild variant="outline" size="sm" className="w-full mt-4">
+                  <Link href={`/admin/clients/${project.client_id}`}>{tc('viewDetails')}</Link>
+                </Button>
+              </CardContent>
+            </Card>
           )}
         </TabsContent>
 
@@ -369,11 +342,7 @@ export function ProjectDetail({ project, contracts }: ProjectDetailProps) {
           {currentUserId ? (
             <MessageThread projectId={project.id} currentUserId={currentUserId} />
           ) : (
-            <EmptyState
-              icon={MessageSquare}
-              title={tc('loading')}
-              description={tc('pleaseWait')}
-            />
+            <EmptyState icon={MessageSquare} title={tc('loading')} description={tc('pleaseWait')} />
           )}
         </TabsContent>
 

@@ -2,15 +2,21 @@
 
 import { createClient } from '@/lib/supabase/server';
 import { createMessageSchema } from '@/lib/schemas/message';
-import type { ActionResult } from '@/types/index';
+import type { ActionResult, Message } from '@/types/index';
 import { revalidatePath } from 'next/cache';
 
-export async function getMessagesByProject(projectId: string): Promise<ActionResult<unknown[]>> {
+export async function getMessagesByProject(projectId: string): Promise<ActionResult<Message[]>> {
   try {
     const supabase = await createClient();
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
+    if (!user) return { data: null, error: 'Unauthorized' };
     const { data, error } = await supabase
       .from('messages')
-      .select('*, sender:user_profiles(*)')
+      .select(
+        'id, project_id, sender_id, content, attachments, read_by, created_at, sender:user_profiles(id, role, display_name, avatar_url, preferences, created_at)',
+      )
       .eq('project_id', projectId)
       .order('created_at', { ascending: true });
 
@@ -21,7 +27,7 @@ export async function getMessagesByProject(projectId: string): Promise<ActionRes
   }
 }
 
-export async function createMessage(input: unknown): Promise<ActionResult<unknown>> {
+export async function createMessage(input: unknown): Promise<ActionResult<Message>> {
   try {
     const validated = createMessageSchema.parse(input);
     const supabase = await createClient();
@@ -37,7 +43,9 @@ export async function createMessage(input: unknown): Promise<ActionResult<unknow
         ...validated,
         sender_id: user.id,
       })
-      .select('*, sender:user_profiles(*)')
+      .select(
+        'id, project_id, sender_id, content, attachments, read_by, created_at, sender:user_profiles(id, role, display_name, avatar_url, preferences, created_at)',
+      )
       .single();
 
     if (error) return { data: null, error: error.message };

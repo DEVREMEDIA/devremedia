@@ -56,7 +56,7 @@ export function MessageThread({ projectId, currentUserId, className }: MessageTh
       if (result.error) {
         setError(result.error);
       } else {
-        setInitialMessages(result.data as Message[] ?? []);
+        setInitialMessages((result.data as unknown as Message[]) ?? []);
       }
 
       setIsLoading(false);
@@ -119,7 +119,11 @@ export function MessageThread({ projectId, currentUserId, className }: MessageTh
           <h3 className="font-semibold">{t('title')}</h3>
         </div>
         <div className="flex items-center gap-2 text-sm text-muted-foreground">
-          <span>{messages.length === 1 ? t('messageCount', { count: messages.length }) : t('messagesCount', { count: messages.length })}</span>
+          <span>
+            {messages.length === 1
+              ? t('messageCount', { count: messages.length })
+              : t('messagesCount', { count: messages.length })}
+          </span>
           {isConnected && (
             <div className="flex items-center gap-1">
               <div className="h-2 w-2 rounded-full bg-green-500 animate-pulse" />
@@ -130,10 +134,7 @@ export function MessageThread({ projectId, currentUserId, className }: MessageTh
       </div>
 
       {/* Messages Area */}
-      <div
-        ref={messagesContainerRef}
-        className="flex-1 overflow-y-auto p-4 space-y-4 min-h-0"
-      >
+      <div ref={messagesContainerRef} className="flex-1 overflow-y-auto p-4 space-y-4 min-h-0">
         {messages.length === 0 ? (
           <div className="flex items-center justify-center h-full">
             <EmptyState

@@ -7,7 +7,7 @@ import { Toaster } from '@/components/ui/sonner';
 import './globals.css';
 
 // Namespaces only used server-side (via getTranslations) — excluded from client bundle
-const SERVER_ONLY_NAMESPACES = ['calendar', 'validation'];
+const SERVER_ONLY_NAMESPACES = ['validation'];
 
 function pickClientMessages(messages: Record<string, unknown>) {
   const picked: Record<string, unknown> = {};

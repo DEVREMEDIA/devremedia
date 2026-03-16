@@ -13,7 +13,8 @@ import { forgotPasswordSchema } from '@/lib/schemas/auth';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { ArrowLeft } from 'lucide-react';
 
 type ForgotPasswordInput = z.infer<typeof forgotPasswordSchema>;
 
@@ -60,19 +61,23 @@ export default function ForgotPasswordPage() {
       <CardHeader>
         <CardTitle>{t('forgotPassword')}</CardTitle>
         <CardDescription>
-          {isSuccess
-            ? t('resetLinkSent')
-            : t('resetPasswordDescription')}
+          {isSuccess ? t('resetLinkSent') : t('resetPasswordDescription')}
         </CardDescription>
       </CardHeader>
       <CardContent>
         {isSuccess ? (
           <div className="space-y-4">
             <div className="rounded-md bg-green-50 dark:bg-green-950 border border-green-200 dark:border-green-800 p-4">
-              <p className="text-sm text-green-800 dark:text-green-200">
-                {t('resetLinkSent')}
-              </p>
+              <p className="text-sm text-green-800 dark:text-green-200">{t('resetLinkSent')}</p>
             </div>
+
+            <Link
+              href="/login"
+              className="flex items-center justify-center gap-1.5 text-sm text-muted-foreground transition-colors hover:text-foreground"
+            >
+              <ArrowLeft className="h-3.5 w-3.5" />
+              {t('backToLogin')}
+            </Link>
           </div>
         ) : (
           <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
@@ -85,25 +90,23 @@ export default function ForgotPasswordPage() {
                 autoComplete="email"
                 {...register('email')}
               />
-              {errors.email && (
-                <p className="text-sm text-destructive">{errors.email.message}</p>
-              )}
+              {errors.email && <p className="text-sm text-destructive">{errors.email.message}</p>}
             </div>
 
             <Button type="submit" className="w-full" disabled={isLoading}>
               {isLoading ? t('sending') : t('resetPassword')}
             </Button>
+
+            <Link
+              href="/login"
+              className="flex items-center justify-center gap-1.5 text-sm text-muted-foreground transition-colors hover:text-foreground"
+            >
+              <ArrowLeft className="h-3.5 w-3.5" />
+              {t('backToLogin')}
+            </Link>
           </form>
         )}
       </CardContent>
-      <CardFooter className="flex justify-center">
-        <Link
-          href="/login"
-          className="text-sm text-muted-foreground hover:text-foreground transition-colors"
-        >
-          {t('backToLogin')}
-        </Link>
-      </CardFooter>
     </Card>
   );
 }

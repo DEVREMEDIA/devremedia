@@ -26,9 +26,10 @@ function getDashboardForRole(role: UserRole): string {
 export function useRequireRole(allowedRoles: UserRole | UserRole[]) {
   const auth = useAuth();
   const router = useRouter();
-  const roles = Array.isArray(allowedRoles) ? allowedRoles : [allowedRoles];
+  const rolesKey = Array.isArray(allowedRoles) ? allowedRoles.join(',') : allowedRoles;
 
   useEffect(() => {
+    const roles = Array.isArray(allowedRoles) ? allowedRoles : [allowedRoles];
     if (!auth.isLoading) {
       if (!auth.user) {
         router.push('/login');
@@ -39,7 +40,8 @@ export function useRequireRole(allowedRoles: UserRole | UserRole[]) {
         router.push(getDashboardForRole(auth.profile.role));
       }
     }
-  }, [auth.isLoading, auth.user, auth.profile, roles, router]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [auth.isLoading, auth.user, auth.profile, rolesKey, router]);
 
   return auth;
 }

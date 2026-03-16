@@ -60,17 +60,17 @@ export default function UpdatePasswordPage() {
   return (
     <Card>
       <CardHeader>
-        <CardTitle>Update password</CardTitle>
-        <CardDescription>Enter your new password below</CardDescription>
+        <CardTitle>{t('updatePassword')}</CardTitle>
+        <CardDescription>{t('updatePasswordDescription')}</CardDescription>
       </CardHeader>
       <CardContent>
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
           <div className="space-y-2">
-            <Label htmlFor="password">New Password</Label>
+            <Label htmlFor="password">{t('newPassword')}</Label>
             <Input
               id="password"
               type="password"
-              placeholder="Enter new password"
+              placeholder={t('enterNewPassword')}
               autoComplete="new-password"
               {...register('password')}
             />
@@ -80,11 +80,11 @@ export default function UpdatePasswordPage() {
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="confirmPassword">Confirm Password</Label>
+            <Label htmlFor="confirmPassword">{t('confirmPassword')}</Label>
             <Input
               id="confirmPassword"
               type="password"
-              placeholder="Re-enter new password"
+              placeholder={t('confirmNewPassword')}
               autoComplete="new-password"
               {...register('confirmPassword')}
             />
@@ -94,11 +94,11 @@ export default function UpdatePasswordPage() {
           </div>
 
           <div className="rounded-md bg-muted p-3 text-sm text-muted-foreground">
-            Password must be at least 6 characters long.
+            {t('passwordMinLength')}
           </div>
 
           <Button type="submit" className="w-full" disabled={isLoading}>
-            {isLoading ? 'Updating...' : 'Update password'}
+            {isLoading ? t('updatingPassword') : t('updatePassword')}
           </Button>
         </form>
       </CardContent>

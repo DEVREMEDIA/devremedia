@@ -46,7 +46,7 @@ function ActionsMenu({ client }: ActionsMenuProps) {
         router.refresh();
       }
     } catch {
-      toast.error(t('clientDeleted'));
+      toast.error(t('deleteFailed'));
     } finally {
       setIsDeleting(false);
       setDeleteDialogOpen(false);
@@ -114,18 +114,13 @@ export function useClientColumns(): ColumnDef<Client>[] {
       accessorKey: 'avatar',
       header: '',
       cell: ({ row }) => (
-        <UserAvatar
-          name={row.original.contact_name}
-          src={row.original.avatar_url}
-        />
+        <UserAvatar name={row.original.contact_name} src={row.original.avatar_url} />
       ),
       enableSorting: false,
     },
     {
       accessorKey: 'contact_name',
-      header: ({ column }) => (
-        <DataTableColumnHeader column={column} title={t('contactName')} />
-      ),
+      header: ({ column }) => <DataTableColumnHeader column={column} title={t('contactName')} />,
       cell: ({ row }) => (
         <Link href={`/admin/clients/${row.original.id}`} className="font-medium hover:underline">
           {row.getValue('contact_name')}
@@ -134,9 +129,7 @@ export function useClientColumns(): ColumnDef<Client>[] {
     },
     {
       accessorKey: 'company_name',
-      header: ({ column }) => (
-        <DataTableColumnHeader column={column} title={t('companyName')} />
-      ),
+      header: ({ column }) => <DataTableColumnHeader column={column} title={t('companyName')} />,
       cell: ({ row }) => {
         const company = row.getValue('company_name') as string | null;
         return <div>{company || '-'}</div>;
@@ -144,12 +137,8 @@ export function useClientColumns(): ColumnDef<Client>[] {
     },
     {
       accessorKey: 'email',
-      header: ({ column }) => (
-        <DataTableColumnHeader column={column} title={tc('email')} />
-      ),
-      cell: ({ row }) => (
-        <div className="text-muted-foreground">{row.getValue('email')}</div>
-      ),
+      header: ({ column }) => <DataTableColumnHeader column={column} title={tc('email')} />,
+      cell: ({ row }) => <div className="text-muted-foreground">{row.getValue('email')}</div>,
     },
     {
       accessorKey: 'phone',
@@ -163,18 +152,14 @@ export function useClientColumns(): ColumnDef<Client>[] {
     {
       accessorKey: 'status',
       header: tc('status'),
-      cell: ({ row }) => (
-        <StatusBadge status={row.getValue('status')} />
-      ),
+      cell: ({ row }) => <StatusBadge status={row.getValue('status')} />,
       filterFn: (row, id, value) => {
         return value.includes(row.getValue(id));
       },
     },
     {
       accessorKey: 'created_at',
-      header: ({ column }) => (
-        <DataTableColumnHeader column={column} title={tc('date')} />
-      ),
+      header: ({ column }) => <DataTableColumnHeader column={column} title={tc('date')} />,
       cell: ({ row }) => {
         const date = row.getValue('created_at') as string;
         return <div>{format(new Date(date), 'MMM d, yyyy')}</div>;

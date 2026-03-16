@@ -6,6 +6,7 @@ import { cn } from '@/lib/utils';
 import { Attachment } from '@/lib/schemas/message';
 import Image from 'next/image';
 import { useState } from 'react';
+import { createClient } from '@/lib/supabase/client';
 
 interface MessageAttachmentProps {
   attachment: Attachment;
@@ -30,16 +31,14 @@ export function MessageAttachment({ attachment, className }: MessageAttachmentPr
 
   const handleDownload = async () => {
     try {
-      const response = await fetch(attachment.file_path);
-      const blob = await response.blob();
-      const url = window.URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = attachment.file_name;
-      document.body.appendChild(a);
-      a.click();
-      document.body.removeChild(a);
-      window.URL.revokeObjectURL(url);
+      const supabase = createClient();
+      const { data: signedUrlData } = await supabase.storage
+        .from('messages')
+        .createSignedUrl(attachment.file_path, 3600); // 1 hour expiry
+
+      if (signedUrlData?.signedUrl) {
+        window.open(signedUrlData.signedUrl, '_blank');
+      }
     } catch (error) {
       console.error('Download failed:', error);
     }

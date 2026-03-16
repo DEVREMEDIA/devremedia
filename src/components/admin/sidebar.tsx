@@ -21,6 +21,7 @@ import {
   GraduationCap,
   FolderOpen,
   Bot,
+  ShieldCheck,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
@@ -37,6 +38,11 @@ export function Sidebar() {
       href: '/admin/dashboard',
       icon: LayoutDashboard,
       label: t('dashboard'),
+    },
+    {
+      href: '/admin/users',
+      icon: ShieldCheck,
+      label: t('users'),
     },
     {
       href: '/admin/clients',
@@ -126,7 +132,7 @@ export function Sidebar() {
     <aside
       className={cn(
         'hidden md:flex flex-col border-r border-zinc-800 bg-zinc-900 transition-all duration-300',
-        isCollapsed ? 'w-16' : 'w-64'
+        isCollapsed ? 'w-16' : 'w-64',
       )}
     >
       {/* Logo */}
@@ -173,11 +179,7 @@ export function Sidebar() {
           className="w-full text-zinc-400 hover:text-zinc-200 hover:bg-white/5"
           aria-label={isCollapsed ? t('expandSidebar') : t('collapseSidebar')}
         >
-          {isCollapsed ? (
-            <ChevronRight className="h-5 w-5" />
-          ) : (
-            <ChevronLeft className="h-5 w-5" />
-          )}
+          {isCollapsed ? <ChevronRight className="h-5 w-5" /> : <ChevronLeft className="h-5 w-5" />}
         </Button>
       </div>
     </aside>

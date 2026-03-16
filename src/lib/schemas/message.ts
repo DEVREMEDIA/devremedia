@@ -7,7 +7,7 @@ export const attachmentSchema = z.object({
   file_path: z.string().max(2048, 'File path must be at most 2048 characters'),
   file_name: z.string().max(255, 'File name must be at most 255 characters'),
   file_type: z.string().max(255, 'File type must be at most 255 characters'),
-  file_size: z.number(),
+  file_size: z.number().max(104857600, 'File size must be at most 100MB'),
 });
 
 export type Attachment = z.infer<typeof attachmentSchema>;
@@ -17,7 +17,10 @@ export type Attachment = z.infer<typeof attachmentSchema>;
  */
 export const createMessageSchema = z.object({
   project_id: z.string().uuid('Invalid project ID'),
-  content: z.string().min(1, 'Content is required').max(10000, 'Content must be at most 10000 characters'),
+  content: z
+    .string()
+    .min(1, 'Content is required')
+    .max(10000, 'Content must be at most 10000 characters'),
   attachments: z.array(attachmentSchema).optional(),
 });
 

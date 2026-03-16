@@ -7,7 +7,20 @@ import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
 import { StatusBadge } from '@/components/shared/status-badge';
 import { format } from 'date-fns';
-import { ArrowLeft, Check, X, FolderKanban, Calendar, MapPin, DollarSign, Link as LinkIcon, User, Mail, Phone, Building2 } from 'lucide-react';
+import {
+  ArrowLeft,
+  Check,
+  X,
+  FolderKanban,
+  Calendar,
+  MapPin,
+  DollarSign,
+  Link as LinkIcon,
+  User,
+  Mail,
+  Phone,
+  Building2,
+} from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { reviewFilmingRequest, convertToProject } from '@/lib/actions/filming-requests';
 import { toast } from 'sonner';
@@ -67,7 +80,7 @@ export function FilmingRequestDetail({ request }: FilmingRequestDetailProps) {
     } else {
       toast.success(t('convertedToProject'));
       setConvertDialogOpen(false);
-      router.push(`/admin/projects/${(result.data as any).id}`);
+      router.push(`/admin/projects/${result.data!.id}`);
     }
 
     setLoading(false);
@@ -92,17 +105,11 @@ export function FilmingRequestDetail({ request }: FilmingRequestDetailProps) {
       <div className="space-y-6 max-w-4xl mx-auto">
         {/* Header */}
         <div className="flex items-center gap-4">
-          <Button
-            variant="ghost"
-            size="icon"
-            onClick={() => router.back()}
-          >
+          <Button variant="ghost" size="icon" onClick={() => router.back()}>
             <ArrowLeft className="h-4 w-4" />
           </Button>
           <div className="flex-1">
-            <h1 className="text-3xl font-bold tracking-tight">
-              {request.title}
-            </h1>
+            <h1 className="text-3xl font-bold tracking-tight">{request.title}</h1>
             <div className="flex items-center gap-2 mt-2">
               <StatusBadge status={request.status} />
               <span className="text-sm text-muted-foreground">
@@ -132,11 +139,7 @@ export function FilmingRequestDetail({ request }: FilmingRequestDetailProps) {
             </div>
           )}
           {request.status === 'accepted' && (
-            <Button
-              onClick={() => setConvertDialogOpen(true)}
-              disabled={loading}
-              className="gap-2"
-            >
+            <Button onClick={() => setConvertDialogOpen(true)} disabled={loading} className="gap-2">
               <FolderKanban className="h-4 w-4" />
               {t('convertToProject')}
             </Button>
@@ -162,10 +165,10 @@ export function FilmingRequestDetail({ request }: FilmingRequestDetailProps) {
               <>
                 <Separator />
                 <div>
-                  <div className="text-sm font-medium text-muted-foreground">{tc('description')}</div>
-                  <div className="text-sm whitespace-pre-wrap mt-1">
-                    {request.description}
+                  <div className="text-sm font-medium text-muted-foreground">
+                    {tc('description')}
                   </div>
+                  <div className="text-sm whitespace-pre-wrap mt-1">{request.description}</div>
                 </div>
               </>
             )}
@@ -207,7 +210,9 @@ export function FilmingRequestDetail({ request }: FilmingRequestDetailProps) {
               <div className="flex items-start gap-2">
                 <User className="h-4 w-4 text-muted-foreground mt-0.5" />
                 <div>
-                  <div className="text-sm font-medium text-muted-foreground">{t('contactName')}</div>
+                  <div className="text-sm font-medium text-muted-foreground">
+                    {t('contactName')}
+                  </div>
                   <div className="text-sm">{request.contact_name}</div>
                 </div>
               </div>
@@ -215,7 +220,9 @@ export function FilmingRequestDetail({ request }: FilmingRequestDetailProps) {
                 <div className="flex items-start gap-2">
                   <Mail className="h-4 w-4 text-muted-foreground mt-0.5" />
                   <div>
-                    <div className="text-sm font-medium text-muted-foreground">{t('contactEmail')}</div>
+                    <div className="text-sm font-medium text-muted-foreground">
+                      {t('contactEmail')}
+                    </div>
                     <div className="text-sm">{request.contact_email}</div>
                   </div>
                 </div>
@@ -224,7 +231,9 @@ export function FilmingRequestDetail({ request }: FilmingRequestDetailProps) {
                 <div className="flex items-start gap-2">
                   <Phone className="h-4 w-4 text-muted-foreground mt-0.5" />
                   <div>
-                    <div className="text-sm font-medium text-muted-foreground">{t('contactPhone')}</div>
+                    <div className="text-sm font-medium text-muted-foreground">
+                      {t('contactPhone')}
+                    </div>
                     <div className="text-sm">{request.contact_phone}</div>
                   </div>
                 </div>
@@ -233,7 +242,9 @@ export function FilmingRequestDetail({ request }: FilmingRequestDetailProps) {
                 <div className="flex items-start gap-2">
                   <Building2 className="h-4 w-4 text-muted-foreground mt-0.5" />
                   <div>
-                    <div className="text-sm font-medium text-muted-foreground">{t('contactCompany')}</div>
+                    <div className="text-sm font-medium text-muted-foreground">
+                      {t('contactCompany')}
+                    </div>
                     <div className="text-sm">{request.contact_company}</div>
                   </div>
                 </div>
@@ -290,7 +301,9 @@ export function FilmingRequestDetail({ request }: FilmingRequestDetailProps) {
                 <div className="flex items-start gap-2">
                   <DollarSign className="h-4 w-4 text-muted-foreground mt-0.5" />
                   <div>
-                    <div className="text-sm font-medium text-muted-foreground">{t('budgetRange')}</div>
+                    <div className="text-sm font-medium text-muted-foreground">
+                      {t('budgetRange')}
+                    </div>
                     <div className="text-sm">
                       {BUDGET_RANGE_LABELS[request.budget_range] || request.budget_range}
                     </div>
@@ -328,9 +341,7 @@ export function FilmingRequestDetail({ request }: FilmingRequestDetailProps) {
               {reviewStatus === 'accepted' ? t('acceptRequest') : t('declineRequest')}
             </DialogTitle>
             <DialogDescription>
-              {reviewStatus === 'accepted'
-                ? t('acceptDescription')
-                : t('declineDescription')}
+              {reviewStatus === 'accepted' ? t('acceptDescription') : t('declineDescription')}
             </DialogDescription>
           </DialogHeader>
 
@@ -346,11 +357,7 @@ export function FilmingRequestDetail({ request }: FilmingRequestDetailProps) {
           </div>
 
           <DialogFooter>
-            <Button
-              variant="outline"
-              onClick={() => setReviewDialogOpen(false)}
-              disabled={loading}
-            >
+            <Button variant="outline" onClick={() => setReviewDialogOpen(false)} disabled={loading}>
               {tc('cancel')}
             </Button>
             <Button
@@ -369,9 +376,7 @@ export function FilmingRequestDetail({ request }: FilmingRequestDetailProps) {
         <DialogContent>
           <DialogHeader>
             <DialogTitle>{t('convertToProject')}</DialogTitle>
-            <DialogDescription>
-              {t('convertDescription')}
-            </DialogDescription>
+            <DialogDescription>{t('convertDescription')}</DialogDescription>
           </DialogHeader>
 
           <DialogFooter>
@@ -382,10 +387,7 @@ export function FilmingRequestDetail({ request }: FilmingRequestDetailProps) {
             >
               {tc('cancel')}
             </Button>
-            <Button
-              onClick={handleConvertToProject}
-              disabled={loading}
-            >
+            <Button onClick={handleConvertToProject} disabled={loading}>
               {loading ? t('converting') : t('convertToProject')}
             </Button>
           </DialogFooter>

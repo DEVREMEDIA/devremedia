@@ -2,6 +2,19 @@
 
 Internal management platform for a video production company. Multi-role system (super_admin, admin, employee, salesman, client) with bilingual support (el/en via next-intl, default: el).
 
+## ACTIVE FIX TRACKER — MUST FOLLOW
+
+**There is an active fix tracker at `FIXES.md` in the project root.**
+
+When working on this project, ALWAYS follow these rules:
+1. **Read `FIXES.md` first** to see what needs to be done and what has been completed
+2. **Work through fixes in PHASE order** (Phase 1 Security first, then Phase 2 Bugs, etc.)
+3. **After EVERY fix**: run `pnpm build` to verify the build still passes
+4. **After completing a fix**: update `FIXES.md` — mark the item as `[x]` and update the Progress Summary table
+5. **Never skip ahead** to a later phase while the current phase has remaining items
+6. **Group related fixes** when possible (e.g., fix all auth in one file at once)
+7. **Auth fix pattern for server actions**: Add `const supabase = await createClient(); const { data: { user } } = await supabase.auth.getUser(); if (!user) return { data: null, error: 'Unauthorized' };` at the top. For admin-only functions, also check role from `user_profiles`.
+
 ## Tech Stack
 
 - **Next.js 16.1.6** (App Router, Turbopack dev) + **React 19.2.3** + **TypeScript 5**

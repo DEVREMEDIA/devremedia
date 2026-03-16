@@ -17,15 +17,11 @@ import {
   UserPlus,
   GraduationCap,
   FolderOpen,
+  ShieldCheck,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
-import {
-  Sheet,
-  SheetContent,
-  SheetHeader,
-  SheetTitle,
-} from '@/components/ui/sheet';
+import { Sheet, SheetContent, SheetHeader, SheetTitle } from '@/components/ui/sheet';
 import { useTranslations } from 'next-intl';
 
 interface MobileNavProps {
@@ -42,6 +38,11 @@ export function MobileNav({ open, onOpenChange }: MobileNavProps) {
       href: '/admin/dashboard',
       icon: LayoutDashboard,
       label: t('dashboard'),
+    },
+    {
+      href: '/admin/users',
+      icon: ShieldCheck,
+      label: t('users'),
     },
     {
       href: '/admin/clients',
@@ -127,8 +128,7 @@ export function MobileNav({ open, onOpenChange }: MobileNavProps) {
         <nav className="flex flex-col gap-1 p-4">
           {NAV_ITEMS.map((item) => {
             const Icon = item.icon;
-            const isActive =
-              pathname === item.href || pathname.startsWith(item.href + '/');
+            const isActive = pathname === item.href || pathname.startsWith(item.href + '/');
 
             return (
               <Button
@@ -139,7 +139,7 @@ export function MobileNav({ open, onOpenChange }: MobileNavProps) {
                   'w-full justify-start gap-3 border-l-2 border-transparent',
                   isActive
                     ? 'bg-amber-500/10 text-amber-400 border-amber-400'
-                    : 'hover:bg-white/5 text-zinc-400 hover:text-zinc-200'
+                    : 'hover:bg-white/5 text-zinc-400 hover:text-zinc-200',
                 )}
                 onClick={handleNavClick}
               >

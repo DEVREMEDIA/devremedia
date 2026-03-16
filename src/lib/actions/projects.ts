@@ -5,6 +5,7 @@ import { createProjectSchema, updateProjectSchema } from '@/lib/schemas/project'
 import type { ActionResult, ProjectWithClient, Project } from '@/types/index';
 import type { ProjectStatus, Priority } from '@/lib/constants';
 import { revalidatePath } from 'next/cache';
+import { escapePostgrestFilter } from '@/lib/utils';
 
 interface ProjectFilters {
   client_id?: string;
@@ -13,9 +14,15 @@ interface ProjectFilters {
   search?: string;
 }
 
-export async function getProjects(filters?: ProjectFilters): Promise<ActionResult<ProjectWithClient[]>> {
+export async function getProjects(
+  filters?: ProjectFilters,
+): Promise<ActionResult<ProjectWithClient[]>> {
   try {
     const supabase = await createClient();
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
+    if (!user) return { data: null, error: 'Unauthorized' };
     let query = supabase
       .from('projects')
       .select('*, client:clients(*)')
@@ -39,7 +46,8 @@ export async function getProjects(filters?: ProjectFilters): Promise<ActionResul
       }
     }
     if (filters?.search) {
-      query = query.or(`title.ilike.%${filters.search}%,description.ilike.%${filters.search}%`);
+      const s = escapePostgrestFilter(filters.search);
+      query = query.or(`title.ilike.%${s}%,description.ilike.%${s}%`);
     }
 
     const { data, error } = await query;
@@ -53,6 +61,10 @@ export async function getProjects(filters?: ProjectFilters): Promise<ActionResul
 export async function getProject(id: string): Promise<ActionResult<ProjectWithClient>> {
   try {
     const supabase = await createClient();
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
+    if (!user) return { data: null, error: 'Unauthorized' };
     const { data, error } = await supabase
       .from('projects')
       .select('*, client:clients(*)')
@@ -71,7 +83,9 @@ export async function createProject(input: unknown): Promise<ActionResult<Projec
     const validated = createProjectSchema.parse(input);
     const supabase = await createClient();
 
-    const { data: { user } } = await supabase.auth.getUser();
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
     if (!user) return { data: null, error: 'User not authenticated' };
 
     const { data, error } = await supabase
@@ -92,10 +106,17 @@ export async function createProject(input: unknown): Promise<ActionResult<Projec
   }
 }
 
-export async function updateProject(id: string, input: unknown): Promise<ActionResult<ProjectWithClient>> {
+export async function updateProject(
+  id: string,
+  input: unknown,
+): Promise<ActionResult<ProjectWithClient>> {
   try {
     const validated = updateProjectSchema.parse(input);
     const supabase = await createClient();
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
+    if (!user) return { data: null, error: 'Unauthorized' };
 
     const { data, error } = await supabase
       .from('projects')
@@ -117,9 +138,16 @@ export async function updateProject(id: string, input: unknown): Promise<ActionR
   }
 }
 
-export async function updateProjectStatus(id: string, status: ProjectStatus): Promise<ActionResult<Project>> {
+export async function updateProjectStatus(
+  id: string,
+  status: ProjectStatus,
+): Promise<ActionResult<Project>> {
   try {
     const supabase = await createClient();
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
+    if (!user) return { data: null, error: 'Unauthorized' };
 
     const { data, error } = await supabase
       .from('projects')
@@ -134,17 +162,21 @@ export async function updateProjectStatus(id: string, status: ProjectStatus): Pr
     revalidatePath(`/admin/projects/${id}`);
     return { data, error: null };
   } catch (err: unknown) {
-    return { data: null, error: err instanceof Error ? err.message : 'Failed to update project status' };
+    return {
+      data: null,
+      error: err instanceof Error ? err.message : 'Failed to update project status',
+    };
   }
 }
 
 export async function deleteProject(id: string): Promise<ActionResult<void>> {
   try {
     const supabase = await createClient();
-    const { error } = await supabase
-      .from('projects')
-      .delete()
-      .eq('id', id);
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
+    if (!user) return { data: null, error: 'Unauthorized' };
+    const { error } = await supabase.from('projects').delete().eq('id', id);
 
     if (error) return { data: null, error: error.message };
 

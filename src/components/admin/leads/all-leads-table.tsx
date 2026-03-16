@@ -23,7 +23,6 @@ import { StatusBadge } from '@/components/shared/status-badge';
 import { EmptyState } from '@/components/shared/empty-state';
 import { UserPlus, Search } from 'lucide-react';
 import { LEAD_STAGES, LEAD_STAGE_LABELS, LEAD_SOURCE_LABELS } from '@/lib/constants';
-import { format } from 'date-fns';
 import { useTranslations } from 'next-intl';
 
 type LeadRow = {
@@ -45,7 +44,7 @@ type AllLeadsTableProps = {
 };
 
 export function AllLeadsTable({ leads }: AllLeadsTableProps) {
-  const t = useTranslations('leads')
+  const t = useTranslations('leads');
   const [search, setSearch] = useState('');
   const [stageFilter, setStageFilter] = useState<string>('all');
 
@@ -63,11 +62,7 @@ export function AllLeadsTable({ leads }: AllLeadsTableProps) {
 
   if (leads.length === 0) {
     return (
-      <EmptyState
-        icon={UserPlus}
-        title={t('noLeads')}
-        description={t('noLeadsDescription')}
-      />
+      <EmptyState icon={UserPlus} title={t('noLeads')} description={t('noLeadsDescription')} />
     );
   }
 
@@ -88,7 +83,7 @@ export function AllLeadsTable({ leads }: AllLeadsTableProps) {
             <SelectValue placeholder={t('filterByStage')} />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="all">All Stages</SelectItem>
+            <SelectItem value="all">{t('allStages')}</SelectItem>
             {LEAD_STAGES.map((stage) => (
               <SelectItem key={stage} value={stage}>
                 {LEAD_STAGE_LABELS[stage]}
@@ -102,23 +97,20 @@ export function AllLeadsTable({ leads }: AllLeadsTableProps) {
         <Table>
           <TableHeader>
             <TableRow>
-              <TableHead>Contact</TableHead>
-              <TableHead>Company</TableHead>
-              <TableHead>Stage</TableHead>
-              <TableHead>Source</TableHead>
-              <TableHead className="text-right">Deal Value</TableHead>
-              <TableHead>Assigned To</TableHead>
-              <TableHead>Last Contact</TableHead>
+              <TableHead>{t('contactName')}</TableHead>
+              <TableHead>{t('companyName')}</TableHead>
+              <TableHead>{t('stage')}</TableHead>
+              <TableHead>{t('source')}</TableHead>
+              <TableHead className="text-right">{t('dealValue')}</TableHead>
+              <TableHead>{t('assignedTo')}</TableHead>
+              <TableHead>{t('lastContact')}</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
             {filtered.map((lead) => (
               <TableRow key={lead.id}>
                 <TableCell>
-                  <Link
-                    href={`/admin/leads/${lead.id}`}
-                    className="font-medium hover:underline"
-                  >
+                  <Link href={`/admin/leads/${lead.id}`} className="font-medium hover:underline">
                     {lead.contact_name}
                   </Link>
                   <p className="text-xs text-muted-foreground">{lead.email}</p>
@@ -129,26 +121,29 @@ export function AllLeadsTable({ leads }: AllLeadsTableProps) {
                 </TableCell>
                 <TableCell>
                   <Badge variant="outline">
-                    {LEAD_SOURCE_LABELS[lead.source as keyof typeof LEAD_SOURCE_LABELS] ?? lead.source}
+                    {LEAD_SOURCE_LABELS[lead.source as keyof typeof LEAD_SOURCE_LABELS] ??
+                      lead.source}
                   </Badge>
                 </TableCell>
                 <TableCell className="text-right">
                   {lead.deal_value != null ? `€${lead.deal_value.toLocaleString()}` : '-'}
                 </TableCell>
-                <TableCell>
-                  {lead.assigned_user?.display_name ?? 'Unassigned'}
-                </TableCell>
+                <TableCell>{lead.assigned_user?.display_name ?? t('unassigned')}</TableCell>
                 <TableCell>
                   {lead.last_contacted_at
-                    ? format(new Date(lead.last_contacted_at), 'MMM d, yyyy')
-                    : 'Never'}
+                    ? new Date(lead.last_contacted_at).toLocaleDateString(undefined, {
+                        year: 'numeric',
+                        month: 'short',
+                        day: 'numeric',
+                      })
+                    : t('never')}
                 </TableCell>
               </TableRow>
             ))}
             {filtered.length === 0 && (
               <TableRow>
                 <TableCell colSpan={7} className="text-center text-muted-foreground py-8">
-                  No leads match your filters
+                  {t('noMatchingLeads')}
                 </TableCell>
               </TableRow>
             )}

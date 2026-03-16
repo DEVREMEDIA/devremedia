@@ -7,18 +7,7 @@ import { Video, FileVideo } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { EmptyState } from '@/components/shared/empty-state';
 import { useTranslations } from 'next-intl';
-
-type DeliverableWithProject = {
-  id: string;
-  title: string;
-  status: string;
-  version_number: number;
-  created_at: string;
-  project_id: string;
-  project?: {
-    title: string;
-  };
-};
+import type { DeliverableWithProject } from '@/types';
 
 interface RecentDeliverablesProps {
   deliverables: DeliverableWithProject[];
@@ -63,16 +52,14 @@ export function RecentDeliverables({ deliverables }: RecentDeliverablesProps) {
               </div>
               <div className="flex-1 min-w-0">
                 <div className="flex items-center justify-between gap-2">
-                  <div className="font-medium text-sm line-clamp-1">
-                    {deliverable.title}
-                  </div>
+                  <div className="font-medium text-sm line-clamp-1">{deliverable.title}</div>
                   <StatusBadge status={deliverable.status} />
                 </div>
                 <div className="text-xs text-muted-foreground mt-1">
                   {deliverable.project?.title || 'Unknown Project'}
                 </div>
                 <div className="text-xs text-muted-foreground">
-                  v{deliverable.version_number} • {format(new Date(deliverable.created_at), 'MMM d, yyyy')}
+                  v{deliverable.version} • {format(new Date(deliverable.created_at), 'MMM d, yyyy')}
                 </div>
               </div>
             </div>

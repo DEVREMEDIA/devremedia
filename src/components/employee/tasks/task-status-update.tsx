@@ -36,14 +36,14 @@ export function TaskStatusUpdate({ taskId, currentStatus }: TaskStatusUpdateProp
       const result = await updateTaskStatus(taskId, typedStatus);
 
       if (result.error) {
-        toast.error(t('updateStatus'));
+        toast.error(t('statusUpdateFailed'));
         setStatus(currentStatus);
       } else {
-        toast.success(t('updateStatus'));
+        toast.success(t('statusUpdated'));
         router.refresh();
       }
     } catch {
-      toast.error(t('updateStatus'));
+      toast.error(t('statusUpdateFailed'));
       setStatus(currentStatus);
     } finally {
       setIsUpdating(false);

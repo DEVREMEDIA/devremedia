@@ -32,9 +32,7 @@ export function MessageBubble({
 }: MessageBubbleProps) {
   const t = useTranslations('messages');
   return (
-    <div
-      className={cn('flex gap-3 items-start', isOwn ? 'flex-row-reverse' : 'flex-row')}
-    >
+    <div className={cn('flex gap-3 items-start', isOwn ? 'flex-row-reverse' : 'flex-row')}>
       <UserAvatar
         src={sender.avatar_url}
         name={sender.display_name || t('unknownUser')}
@@ -51,9 +49,7 @@ export function MessageBubble({
         <div
           className={cn(
             'rounded-lg px-4 py-2 shadow-sm',
-            isOwn
-              ? 'bg-primary text-primary-foreground'
-              : 'bg-muted text-foreground'
+            isOwn ? 'bg-primary text-primary-foreground' : 'bg-muted text-foreground',
           )}
         >
           <p className="whitespace-pre-wrap text-sm break-words">{content}</p>
@@ -62,7 +58,7 @@ export function MessageBubble({
         {attachments && attachments.length > 0 && (
           <div className="flex flex-col gap-2 w-full">
             {attachments.map((attachment, index) => (
-              <MessageAttachment key={index} attachment={attachment} />
+              <MessageAttachment key={attachment.file_path} attachment={attachment} />
             ))}
           </div>
         )}

@@ -4,16 +4,7 @@ import { Badge } from '@/components/ui/badge';
 import { CheckCircle2, Circle, Clock } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useTranslations } from 'next-intl';
-
-type VideoAnnotation = {
-  id: string;
-  deliverable_id: string;
-  created_by: string | null;
-  timestamp_seconds: number;
-  content: string;
-  resolved: boolean;
-  created_at: string;
-};
+import type { VideoAnnotation } from '@/types';
 
 type AnnotationListProps = {
   annotations: VideoAnnotation[];

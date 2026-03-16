@@ -6,35 +6,57 @@ import type { ActionResult, Deliverable, VideoAnnotation } from '@/types/index';
 import type { DeliverableStatus } from '@/lib/constants';
 import { revalidatePath } from 'next/cache';
 
-export async function getDeliverablesByProject(projectId: string): Promise<ActionResult<Deliverable[]>> {
+export async function getDeliverablesByProject(
+  projectId: string,
+): Promise<ActionResult<Deliverable[]>> {
   try {
     const supabase = await createClient();
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
+    if (!user) return { data: null, error: 'Unauthorized' };
+
     const { data, error } = await supabase
       .from('deliverables')
-      .select('*')
+      .select(
+        'id, project_id, title, description, file_path, file_size, file_type, version, status, uploaded_by, download_count, expires_at, created_at',
+      )
       .eq('project_id', projectId)
       .order('version', { ascending: false });
 
     if (error) return { data: null, error: error.message };
     return { data, error: null };
   } catch (err: unknown) {
-    return { data: null, error: err instanceof Error ? err.message : 'Failed to fetch deliverables' };
+    return {
+      data: null,
+      error: err instanceof Error ? err.message : 'Failed to fetch deliverables',
+    };
   }
 }
 
 export async function getDeliverable(id: string): Promise<ActionResult<Deliverable>> {
   try {
     const supabase = await createClient();
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
+    if (!user) return { data: null, error: 'Unauthorized' };
+
     const { data, error } = await supabase
       .from('deliverables')
-      .select('*')
+      .select(
+        'id, project_id, title, description, file_path, file_size, file_type, version, status, uploaded_by, download_count, expires_at, created_at',
+      )
       .eq('id', id)
       .single();
 
     if (error) return { data: null, error: error.message };
     return { data, error: null };
   } catch (err: unknown) {
-    return { data: null, error: err instanceof Error ? err.message : 'Failed to fetch deliverable' };
+    return {
+      data: null,
+      error: err instanceof Error ? err.message : 'Failed to fetch deliverable',
+    };
   }
 }
 
@@ -43,7 +65,9 @@ export async function createDeliverable(input: unknown): Promise<ActionResult<De
     const validated = createDeliverableSchema.parse(input);
     const supabase = await createClient();
 
-    const { data: { user } } = await supabase.auth.getUser();
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
     if (!user) return { data: null, error: 'User not authenticated' };
 
     const { data: maxVersion } = await supabase
@@ -64,7 +88,9 @@ export async function createDeliverable(input: unknown): Promise<ActionResult<De
         version: versionNumber,
         status: 'pending_review',
       })
-      .select()
+      .select(
+        'id, project_id, title, description, file_path, file_size, file_type, version, status, uploaded_by, download_count, expires_at, created_at',
+      )
       .single();
 
     if (error) return { data: null, error: error.message };
@@ -81,16 +107,22 @@ export async function createDeliverable(input: unknown): Promise<ActionResult<De
 
 export async function updateDeliverableStatus(
   id: string,
-  status: DeliverableStatus
+  status: DeliverableStatus,
 ): Promise<ActionResult<Deliverable>> {
   try {
     const supabase = await createClient();
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
+    if (!user) return { data: null, error: 'Unauthorized' };
 
     const { data, error } = await supabase
       .from('deliverables')
       .update({ status })
       .eq('id', id)
-      .select()
+      .select(
+        'id, project_id, title, description, file_path, file_size, file_type, version, status, uploaded_by, download_count, expires_at, created_at',
+      )
       .single();
 
     if (error) return { data: null, error: error.message };
@@ -100,13 +132,20 @@ export async function updateDeliverableStatus(
     }
     return { data, error: null };
   } catch (err: unknown) {
-    return { data: null, error: err instanceof Error ? err.message : 'Failed to update deliverable status' };
+    return {
+      data: null,
+      error: err instanceof Error ? err.message : 'Failed to update deliverable status',
+    };
   }
 }
 
 export async function deleteDeliverable(id: string): Promise<ActionResult<void>> {
   try {
     const supabase = await createClient();
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
+    if (!user) return { data: null, error: 'Unauthorized' };
 
     const { data: deliverable } = await supabase
       .from('deliverables')
@@ -114,10 +153,7 @@ export async function deleteDeliverable(id: string): Promise<ActionResult<void>>
       .eq('id', id)
       .single();
 
-    const { error } = await supabase
-      .from('deliverables')
-      .delete()
-      .eq('id', id);
+    const { error } = await supabase.from('deliverables').delete().eq('id', id);
 
     if (error) return { data: null, error: error.message };
 
@@ -126,23 +162,36 @@ export async function deleteDeliverable(id: string): Promise<ActionResult<void>>
     }
     return { data: undefined, error: null };
   } catch (err: unknown) {
-    return { data: null, error: err instanceof Error ? err.message : 'Failed to delete deliverable' };
+    return {
+      data: null,
+      error: err instanceof Error ? err.message : 'Failed to delete deliverable',
+    };
   }
 }
 
-export async function getAnnotations(deliverableId: string): Promise<ActionResult<VideoAnnotation[]>> {
+export async function getAnnotations(
+  deliverableId: string,
+): Promise<ActionResult<VideoAnnotation[]>> {
   try {
     const supabase = await createClient();
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
+    if (!user) return { data: null, error: 'Unauthorized' };
+
     const { data, error } = await supabase
       .from('video_annotations')
-      .select('*')
+      .select('id, deliverable_id, user_id, timestamp_seconds, content, resolved, created_at')
       .eq('deliverable_id', deliverableId)
       .order('timestamp_seconds', { ascending: true });
 
     if (error) return { data: null, error: error.message };
     return { data, error: null };
   } catch (err: unknown) {
-    return { data: null, error: err instanceof Error ? err.message : 'Failed to fetch annotations' };
+    return {
+      data: null,
+      error: err instanceof Error ? err.message : 'Failed to fetch annotations',
+    };
   }
 }
 
@@ -151,13 +200,15 @@ export async function createAnnotation(input: unknown): Promise<ActionResult<Vid
     const validated = createAnnotationSchema.parse(input);
     const supabase = await createClient();
 
-    const { data: { user } } = await supabase.auth.getUser();
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
     if (!user) return { data: null, error: 'User not authenticated' };
 
     const { data, error } = await supabase
       .from('video_annotations')
-      .insert({ ...validated, created_by: user.id })
-      .select()
+      .insert({ ...validated, user_id: user.id })
+      .select('id, deliverable_id, user_id, timestamp_seconds, content, resolved, created_at')
       .single();
 
     if (error) return { data: null, error: error.message };
@@ -175,6 +226,10 @@ export async function createAnnotation(input: unknown): Promise<ActionResult<Vid
 export async function resolveAnnotation(id: string): Promise<ActionResult<VideoAnnotation>> {
   try {
     const supabase = await createClient();
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
+    if (!user) return { data: null, error: 'Unauthorized' };
 
     const { data: annotation } = await supabase
       .from('video_annotations')
@@ -186,7 +241,7 @@ export async function resolveAnnotation(id: string): Promise<ActionResult<VideoA
       .from('video_annotations')
       .update({ resolved: !annotation?.resolved })
       .eq('id', id)
-      .select()
+      .select('id, deliverable_id, user_id, timestamp_seconds, content, resolved, created_at')
       .single();
 
     if (error) return { data: null, error: error.message };
@@ -196,6 +251,9 @@ export async function resolveAnnotation(id: string): Promise<ActionResult<VideoA
     }
     return { data, error: null };
   } catch (err: unknown) {
-    return { data: null, error: err instanceof Error ? err.message : 'Failed to resolve annotation' };
+    return {
+      data: null,
+      error: err instanceof Error ? err.message : 'Failed to resolve annotation',
+    };
   }
 }

@@ -1,15 +1,28 @@
 'use client';
 
 import * as React from 'react';
-import { useForm } from 'react-hook-form';
+import { useForm, useWatch } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { createInvoiceSchema, type LineItem } from '@/lib/schemas/invoice';
 import { createInvoice, updateInvoice } from '@/lib/actions/invoices';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
 import { LineItemsEditor } from './line-items-editor';
 import { InvoiceSummary } from './invoice-summary';
@@ -59,9 +72,7 @@ export function InvoiceForm({ invoice, clients, projects, nextInvoiceNumber }: I
   const [isSubmitting, setIsSubmitting] = React.useState(false);
   const [selectedClientId, setSelectedClientId] = React.useState<string>(invoice?.client_id || '');
 
-  const defaultLineItems: LineItem[] = [
-    { description: '', quantity: 1, unit_price: 0 },
-  ];
+  const defaultLineItems: LineItem[] = [{ description: '', quantity: 1, unit_price: 0 }];
 
   const form = useForm<FormData>({
     resolver: zodResolver(createInvoiceSchema),
@@ -69,7 +80,9 @@ export function InvoiceForm({ invoice, clients, projects, nextInvoiceNumber }: I
       client_id: invoice?.client_id || '',
       project_id: invoice?.project_id || undefined,
       issue_date: invoice?.issue_date || new Date().toISOString().split('T')[0],
-      due_date: invoice?.due_date || new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
+      due_date:
+        invoice?.due_date ||
+        new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
       tax_rate: invoice?.tax_rate || DEFAULT_TAX_RATE,
       line_items: invoice?.line_items || defaultLineItems,
       notes: invoice?.notes || '',
@@ -77,37 +90,26 @@ export function InvoiceForm({ invoice, clients, projects, nextInvoiceNumber }: I
     },
   });
 
-  const lineItems = form.watch('line_items') || [];
-  const taxRate = form.watch('tax_rate') || DEFAULT_TAX_RATE;
+  const lineItems = useWatch({ control: form.control, name: 'line_items' }) ?? [];
+  const taxRate = useWatch({ control: form.control, name: 'tax_rate' }) ?? DEFAULT_TAX_RATE;
 
-  const subtotal = React.useMemo(() => {
-    return lineItems.reduce((sum, item) => sum + (item.quantity * item.unit_price), 0);
-  }, [lineItems]);
+  const subtotal = lineItems.reduce((sum, item) => sum + item.quantity * item.unit_price, 0);
+  const taxAmount = subtotal * (taxRate / 100);
+  const total = subtotal + taxAmount;
 
-  const taxAmount = React.useMemo(() => {
-    return subtotal * (taxRate / 100);
-  }, [subtotal, taxRate]);
-
-  const total = React.useMemo(() => {
-    return subtotal + taxAmount;
-  }, [subtotal, taxAmount]);
-
-  const clientProjects = React.useMemo(() => {
-    if (!selectedClientId) return [];
-    return projects.filter(p => p.client_id === selectedClientId);
-  }, [selectedClientId, projects]);
+  const clientProjects = selectedClientId
+    ? projects.filter((p) => p.client_id === selectedClientId)
+    : [];
 
   const onSubmit = async (data: FormData) => {
     setIsSubmitting(true);
 
-    const result = invoice
-      ? await updateInvoice(invoice.id, data)
-      : await createInvoice(data);
+    const result = invoice ? await updateInvoice(invoice.id, data) : await createInvoice(data);
 
     setIsSubmitting(false);
 
     if (result.error) {
-      toast.error(invoice ? t('invoiceUpdated') : t('invoiceCreated'), {
+      toast.error(invoice ? t('updateFailed') : t('createFailed'), {
         description: result.error,
       });
     } else {
@@ -170,7 +172,9 @@ export function InvoiceForm({ invoice, clients, projects, nextInvoiceNumber }: I
               name="project_id"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>{tc('project')} ({tc('optional')})</FormLabel>
+                  <FormLabel>
+                    {tc('project')} ({tc('optional')})
+                  </FormLabel>
                   <Select
                     value={field.value || 'none'}
                     onValueChange={(v) => field.onChange(v === 'none' ? undefined : v)}
@@ -257,10 +261,7 @@ export function InvoiceForm({ invoice, clients, projects, nextInvoiceNumber }: I
               render={({ field }) => (
                 <FormItem>
                   <FormControl>
-                    <LineItemsEditor
-                      items={field.value}
-                      onChange={field.onChange}
-                    />
+                    <LineItemsEditor items={field.value} onChange={field.onChange} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -273,7 +274,7 @@ export function InvoiceForm({ invoice, clients, projects, nextInvoiceNumber }: I
                 taxRate={taxRate}
                 taxAmount={taxAmount}
                 total={total}
-                currency="EUR"
+                currency={form.getValues('currency') || 'EUR'}
               />
             </div>
           </CardContent>
@@ -289,7 +290,9 @@ export function InvoiceForm({ invoice, clients, projects, nextInvoiceNumber }: I
               name="notes"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>{t('invoiceNotes')} ({tc('optional')})</FormLabel>
+                  <FormLabel>
+                    {t('invoiceNotes')} ({tc('optional')})
+                  </FormLabel>
                   <FormControl>
                     <Textarea
                       placeholder={t('invoiceNotes')}

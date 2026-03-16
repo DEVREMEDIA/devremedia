@@ -7,13 +7,15 @@ export const dynamic = 'force-dynamic';
 
 export async function GET(
   request: NextRequest,
-  { params }: { params: Promise<{ invoiceId: string }> }
+  { params }: { params: Promise<{ invoiceId: string }> },
 ) {
   try {
     const { invoiceId } = await params;
     const supabase = await createClient();
 
-    const { data: { user } } = await supabase.auth.getUser();
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
     if (!user) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
@@ -26,6 +28,21 @@ export async function GET(
 
     if (error || !invoice) {
       return NextResponse.json({ error: 'Invoice not found' }, { status: 404 });
+    }
+
+    // Verify access: admins can access any invoice, clients only their own
+    const { data: profile } = await supabase
+      .from('user_profiles')
+      .select('role')
+      .eq('id', user.id)
+      .single();
+
+    const isAdmin = profile && ['super_admin', 'admin'].includes(profile.role);
+    if (!isAdmin) {
+      const client = invoice.client as { user_id?: string | null } | null;
+      if (!client?.user_id || client.user_id !== user.id) {
+        return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
+      }
     }
 
     const buffer = await renderToBuffer(
@@ -41,13 +58,17 @@ export async function GET(
           currency: invoice.currency || 'EUR',
           notes: invoice.notes,
           tax_rate: invoice.tax_rate,
-          line_items: invoice.line_items as Array<{ description: string; quantity: number; unit_price: number }>,
+          line_items: invoice.line_items as Array<{
+            description: string;
+            quantity: number;
+            unit_price: number;
+          }>,
         },
         clientName: invoice.client?.contact_name || invoice.client?.company_name || 'Unknown',
         clientEmail: invoice.client?.email || '',
         clientAddress: invoice.client?.address || '',
         projectTitle: invoice.project?.title || '',
-      })
+      }),
     );
 
     return new NextResponse(new Uint8Array(buffer), {

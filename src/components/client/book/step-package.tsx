@@ -3,13 +3,10 @@
 import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
-import {
-  getServiceCategory,
-  type ProjectType,
-  type ServicePackage,
-} from '@/lib/constants';
+import { getServiceCategory, type ServicePackage } from '@/lib/constants';
 import { cn } from '@/lib/utils';
 import { Check, Clock, FileText, Package, Euro, Info } from 'lucide-react';
+import { useTranslations } from 'next-intl';
 import type { BookingFormData } from './booking-wizard';
 
 interface StepPackageProps {
@@ -18,18 +15,15 @@ interface StepPackageProps {
 }
 
 export function StepPackage({ formData, updateFormData }: StepPackageProps) {
-  const category = formData.project_type
-    ? getServiceCategory(formData.project_type)
-    : undefined;
+  const t = useTranslations('booking');
+  const category = formData.project_type ? getServiceCategory(formData.project_type) : undefined;
 
   if (!category) {
     return (
       <div className="text-center py-8 text-muted-foreground">
         <Package className="h-12 w-12 mx-auto mb-4 opacity-50" />
-        <p>Δεν υπάρχουν διαθέσιμα πακέτα για αυτόν τον τύπο project.</p>
-        <p className="text-sm mt-2">
-          Συνεχίστε στο επόμενο βήμα για να περιγράψετε τις ανάγκες σας.
-        </p>
+        <p>{t('noPackagesAvailable')}</p>
+        <p className="text-sm mt-2">{t('continueToDescribe')}</p>
       </div>
     );
   }
@@ -42,9 +36,7 @@ export function StepPackage({ formData, updateFormData }: StepPackageProps) {
       {/* Category header */}
       <div>
         <h3 className="text-lg font-semibold">{category.label}</h3>
-        <p className="text-sm text-muted-foreground mt-1">
-          {category.description}
-        </p>
+        <p className="text-sm text-muted-foreground mt-1">{category.description}</p>
       </div>
 
       {/* Fixed packages */}
@@ -72,14 +64,11 @@ export function StepPackage({ formData, updateFormData }: StepPackageProps) {
           <Card className="p-5">
             <h4 className="font-medium mb-3 flex items-center gap-2">
               <Euro className="h-4 w-4" />
-              Ενδεικτικός Τιμοκατάλογος
+              {t('indicativePricing')}
             </h4>
             <div className="space-y-2">
               {category.perCasePricing.items.map((item, i) => (
-                <div
-                  key={i}
-                  className="flex justify-between items-center text-sm"
-                >
+                <div key={i} className="flex justify-between items-center text-sm">
                   <span>{item.label}</span>
                   <span className="font-medium">{item.price}</span>
                 </div>
@@ -100,9 +89,9 @@ export function StepPackage({ formData, updateFormData }: StepPackageProps) {
             <div className="flex items-center gap-2 text-sm text-muted-foreground">
               <Clock className="h-4 w-4 shrink-0" />
               <span>
-                Παράδοση: {category.perCasePricing.deliveryTime}
+                {t('delivery')}: {category.perCasePricing.deliveryTime}
                 {category.perCasePricing.fastDeliveryFee &&
-                  ` (Fast delivery: +${category.perCasePricing.fastDeliveryFee}\u20AC)`}
+                  ` (${t('fastDelivery')}: +${category.perCasePricing.fastDeliveryFee}\u20AC)`}
               </span>
             </div>
 
@@ -114,10 +103,7 @@ export function StepPackage({ formData, updateFormData }: StepPackageProps) {
             )}
           </Card>
 
-          <p className="text-sm text-muted-foreground text-center">
-            Συνεχίστε στο επόμενο βήμα για να μας περιγράψετε τις ανάγκες σας
-            και θα σας στείλουμε προσφορά.
-          </p>
+          <p className="text-sm text-muted-foreground text-center">{t('continueForQuote')}</p>
         </div>
       )}
 
@@ -125,19 +111,14 @@ export function StepPackage({ formData, updateFormData }: StepPackageProps) {
       {!hasPackages && !hasPerCase && (
         <Card className="p-5 text-center">
           <FileText className="h-10 w-10 mx-auto mb-3 text-muted-foreground" />
-          <p className="text-sm text-muted-foreground">
-            Περιγράψτε τις ανάγκες σας στο επόμενο βήμα και θα σας στείλουμε
-            εξατομικευμένη προσφορά.
-          </p>
+          <p className="text-sm text-muted-foreground">{t('describeForCustomQuote')}</p>
         </Card>
       )}
 
       {/* Cancellation policy */}
       <div className="bg-muted/50 rounded-lg p-4">
-        <h4 className="text-sm font-medium mb-1">Πολιτική Ακυρώσεων</h4>
-        <p className="text-xs text-muted-foreground">
-          {category.cancellationPolicy}
-        </p>
+        <h4 className="text-sm font-medium mb-1">{t('cancellationPolicy')}</h4>
+        <p className="text-xs text-muted-foreground">{category.cancellationPolicy}</p>
       </div>
     </div>
   );
@@ -158,7 +139,7 @@ function PackageCard({
         'p-5 cursor-pointer transition-all hover:shadow-md',
         isSelected
           ? 'border-primary bg-primary/5 ring-2 ring-primary'
-          : 'border-border hover:border-primary/50'
+          : 'border-border hover:border-primary/50',
       )}
       onClick={onSelect}
     >
@@ -197,16 +178,12 @@ function PackageCard({
             )}
           </div>
 
-          {pkg.notes && (
-            <p className="text-xs text-muted-foreground italic">{pkg.notes}</p>
-          )}
+          {pkg.notes && <p className="text-xs text-muted-foreground italic">{pkg.notes}</p>}
         </div>
 
         {/* Price */}
         <div className="text-right shrink-0">
-          <div className="text-xl font-bold">
-            {pkg.price.toLocaleString('el-GR')}&euro;
-          </div>
+          <div className="text-xl font-bold">{pkg.price.toLocaleString('el-GR')}&euro;</div>
           {pkg.priceWithScripts && (
             <div className="text-xs text-muted-foreground mt-0.5">
               {pkg.priceWithScripts.toLocaleString('el-GR')}&euro; με σενάρια

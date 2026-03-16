@@ -1,6 +1,6 @@
-'use client'
+'use client';
 
-import { useState } from 'react'
+import { useState, useCallback, useEffect } from 'react';
 import {
   DndContext,
   DragEndEvent,
@@ -8,103 +8,115 @@ import {
   DragStartEvent,
   PointerSensor,
   KeyboardSensor,
+  TouchSensor,
   useSensor,
   useSensors,
-} from '@dnd-kit/core'
-import { toast } from 'sonner'
-import { useRouter } from 'next/navigation'
-import { useTranslations } from 'next-intl'
-import { LeadColumn } from './lead-column'
-import { LeadCard } from './lead-card'
-import { updateLeadStage } from '@/lib/actions/leads'
-import { LEAD_STAGES } from '@/lib/constants'
-import type { Lead, LeadStage } from '@/types'
+  rectIntersection,
+} from '@dnd-kit/core';
+import { toast } from 'sonner';
+import { useRouter } from 'next/navigation';
+import { useTranslations } from 'next-intl';
+import { LeadColumn } from './lead-column';
+import { LeadCard } from './lead-card';
+import { updateLeadStage } from '@/lib/actions/leads';
+import { LEAD_STAGES } from '@/lib/constants';
+import type { Lead, LeadStage } from '@/types';
 
 type LeadPipelineProps = {
-  leads: Lead[]
-}
+  leads: Lead[];
+};
 
 export function LeadPipeline({ leads }: LeadPipelineProps) {
-  const router = useRouter()
-  const tToast = useTranslations('toast')
-  const [activeLead, setActiveLead] = useState<Lead | null>(null)
+  const router = useRouter();
+  const tToast = useTranslations('toast');
+  const [localLeads, setLocalLeads] = useState(leads);
+  const [activeLead, setActiveLead] = useState<Lead | null>(null);
+
+  useEffect(() => {
+    setLocalLeads(leads);
+  }, [leads]);
 
   const sensors = useSensors(
     useSensor(PointerSensor, {
-      activationConstraint: {
-        distance: 8,
-      },
+      activationConstraint: { distance: 8 },
     }),
-    useSensor(KeyboardSensor)
-  )
+    useSensor(TouchSensor, {
+      activationConstraint: { delay: 200, tolerance: 5 },
+    }),
+    useSensor(KeyboardSensor),
+  );
 
-  const handleDragStart = (event: DragStartEvent) => {
-    const lead = leads.find((l) => l.id === event.active.id)
-    if (lead) {
-      setActiveLead(lead)
-    }
-  }
+  const handleDragStart = useCallback(
+    (event: DragStartEvent) => {
+      const lead = localLeads.find((l) => l.id === event.active.id);
+      setActiveLead(lead ?? null);
+    },
+    [localLeads],
+  );
 
-  const handleDragEnd = async (event: DragEndEvent) => {
-    const { active, over } = event
-    setActiveLead(null)
+  const handleDragEnd = useCallback(
+    async (event: DragEndEvent) => {
+      const { active, over } = event;
+      const draggedLead = activeLead;
 
-    if (!over) return
+      setActiveLead(null);
 
-    const leadId = active.id as string
-    const newStage = over.id as LeadStage
+      if (!over || !draggedLead) return;
 
-    const lead = leads.find((l) => l.id === leadId)
-    if (!lead || lead.stage === newStage) return
+      const newStage = over.id as LeadStage;
+      if (draggedLead.stage === newStage) return;
 
-    const result = await updateLeadStage(leadId, newStage)
+      // Optimistic update
+      setLocalLeads((prev) =>
+        prev.map((l) => (l.id === draggedLead.id ? { ...l, stage: newStage } : l)),
+      );
 
-    if (result.error) {
-      toast.error(tToast('updateError'), {
-        description: result.error,
-      })
-    } else {
-      toast.success(tToast('updateSuccess'))
-      router.refresh()
-    }
-  }
+      const result = await updateLeadStage(active.id as string, newStage);
+
+      if (result.error) {
+        // Revert on error
+        setLocalLeads((prev) =>
+          prev.map((l) => (l.id === draggedLead.id ? { ...l, stage: draggedLead.stage } : l)),
+        );
+        toast.error(tToast('updateError'), { description: result.error });
+      } else {
+        toast.success(tToast('updateSuccess'));
+        router.refresh();
+      }
+    },
+    [activeLead, router, tToast],
+  );
+
+  const handleDragCancel = useCallback(() => {
+    setActiveLead(null);
+  }, []);
 
   const handleLeadClick = (lead: Lead) => {
-    router.push(`/salesman/leads/${lead.id}`)
-  }
+    router.push(`/salesman/leads/${lead.id}`);
+  };
 
   return (
-    <>
-      <DndContext
-        sensors={sensors}
-        onDragStart={handleDragStart}
-        onDragEnd={handleDragEnd}
-      >
-        <div className="overflow-x-auto pb-4">
-          <div className="inline-flex gap-4 min-w-full">
-            {LEAD_STAGES.map((stage) => {
-              const stageLeads = leads.filter((lead) => lead.stage === stage)
-              return (
-                <div key={stage} className="w-80 flex-shrink-0">
-                  <LeadColumn
-                    stage={stage}
-                    leads={stageLeads}
-                    onLeadClick={handleLeadClick}
-                  />
-                </div>
-              )
-            })}
-          </div>
-        </div>
-
-        <DragOverlay>
-          {activeLead ? (
-            <div className="rotate-3 opacity-80">
-              <LeadCard lead={activeLead} onClick={() => {}} />
+    <DndContext
+      sensors={sensors}
+      collisionDetection={rectIntersection}
+      onDragStart={handleDragStart}
+      onDragEnd={handleDragEnd}
+      onDragCancel={handleDragCancel}
+    >
+      <div className="grid grid-cols-7 gap-2">
+        {LEAD_STAGES.map((stage) => {
+          const stageLeads = localLeads.filter((lead) => lead.stage === stage);
+          return (
+            <div key={stage} className="min-w-0">
+              <LeadColumn stage={stage} leads={stageLeads} onLeadClick={handleLeadClick} />
             </div>
-          ) : null}
-        </DragOverlay>
-      </DndContext>
-    </>
-  )
+          );
+        })}
+      </div>
+
+      <DragOverlay>
+        {activeLead ? <LeadCard lead={activeLead} onClick={() => {}} isOverlay /> : null}
+      </DragOverlay>
+    </DndContext>
+  );
 }

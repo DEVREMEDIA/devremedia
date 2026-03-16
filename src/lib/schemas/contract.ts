@@ -59,7 +59,8 @@ export const signContractSchema = z.object({
   signature_image: z
     .string()
     .min(1, 'Signature is required')
-    .max(500000, 'Signature data is too large'),
+    .max(500000, 'Signature data is too large')
+    .refine((val) => val.startsWith('data:image/'), 'Signature must be a base64 image'),
 });
 
 export type SignContractInput = z.infer<typeof signContractSchema>;

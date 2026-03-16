@@ -5,7 +5,10 @@ import { INVOICE_STATUSES, DEFAULT_TAX_RATE, DEFAULT_CURRENCY } from '@/lib/cons
  * Line item schema for invoice items
  */
 export const lineItemSchema = z.object({
-  description: z.string().min(1, 'Description is required').max(500, 'Description must be at most 500 characters'),
+  description: z
+    .string()
+    .min(1, 'Description is required')
+    .max(500, 'Description must be at most 500 characters'),
   quantity: z.number().min(0.01, 'Quantity must be at least 0.01'),
   unit_price: z.number().min(0, 'Unit price must be positive'),
 });
@@ -18,8 +21,8 @@ export type LineItem = z.infer<typeof lineItemSchema>;
 export const createInvoiceSchema = z.object({
   client_id: z.string().uuid('Invalid client ID'),
   project_id: z.string().uuid('Invalid project ID').optional(),
-  issue_date: z.string(),
-  due_date: z.string(),
+  issue_date: z.string().regex(/^\d{4}-\d{2}-\d{2}$/, 'Invalid date format (YYYY-MM-DD)'),
+  due_date: z.string().regex(/^\d{4}-\d{2}-\d{2}$/, 'Invalid date format (YYYY-MM-DD)'),
   line_items: z.array(lineItemSchema).min(1, 'At least one line item is required'),
   notes: z.string().max(2000, 'Notes must be at most 2000 characters').optional(),
   tax_rate: z.number().default(DEFAULT_TAX_RATE),

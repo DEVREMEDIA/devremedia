@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState, useCallback } from 'react';
+import { useEffect, useState, useCallback, useRef } from 'react';
 import { useTranslations } from 'next-intl';
 import {
   getConceptNotes,
@@ -33,15 +33,7 @@ import { toast } from 'sonner';
 import { format } from 'date-fns';
 import { cn } from '@/lib/utils';
 
-interface ConceptNote {
-  id: string;
-  project_id: string;
-  title: string;
-  content: string | null;
-  attachments: unknown[];
-  created_at: string;
-  updated_at: string;
-}
+import type { ConceptNote } from '@/types';
 
 interface ConceptNotesProps {
   projectId: string;
@@ -66,15 +58,18 @@ export function ConceptNotes({ projectId }: ConceptNotesProps) {
       return;
     }
 
-    setNotes(result.data as any || []);
-    if (result.data && result.data.length > 0 && !selectedNoteId) {
-      setSelectedNoteId(result.data[0].id);
-    }
+    setNotes(result.data ?? []);
+    setSelectedNoteId((prev) => {
+      if (!prev && result.data && result.data.length > 0) {
+        return result.data[0].id;
+      }
+      return prev;
+    });
     setLoading(false);
-  }, [projectId, selectedNoteId]);
+  }, [projectId, t]);
 
   useEffect(() => {
-    loadNotes();
+    void loadNotes();
   }, [loadNotes]);
 
   const handleCreateNote = async () => {
@@ -110,12 +105,12 @@ export function ConceptNotes({ projectId }: ConceptNotesProps) {
     }
 
     toast.success(t('noteDeleted'));
-    const remainingNotes = notes.filter(note => note.id !== selectedNoteId);
+    const remainingNotes = notes.filter((note) => note.id !== selectedNoteId);
     setNotes(remainingNotes);
     setSelectedNoteId(remainingNotes.length > 0 ? remainingNotes[0].id : null);
   };
 
-  const selectedNote = notes.find(note => note.id === selectedNoteId);
+  const selectedNote = notes.find((note) => note.id === selectedNoteId);
 
   if (loading) {
     return (
@@ -163,7 +158,7 @@ export function ConceptNotes({ projectId }: ConceptNotesProps) {
                           'w-full text-left p-3 rounded-lg border transition-colors',
                           selectedNoteId === note.id
                             ? 'bg-accent border-primary'
-                            : 'hover:bg-accent/50 border-transparent'
+                            : 'hover:bg-accent/50 border-transparent',
                         )}
                       >
                         <div className="font-medium truncate">{note.title}</div>
@@ -230,19 +225,19 @@ function NoteEditor({ note, onUpdate, onDelete }: NoteEditorProps) {
   const [title, setTitle] = useState(note.title);
   const [content, setContent] = useState(note.content || '');
   const [saving, setSaving] = useState(false);
-  const [saveTimeout, setSaveTimeout] = useState<NodeJS.Timeout | null>(null);
+  const saveTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
   useEffect(() => {
     setTitle(note.title);
     setContent(note.content || '');
   }, [note.id, note.title, note.content]);
 
-  const debouncedSave = async (updates: { title?: string; content?: string }) => {
-    if (saveTimeout) {
-      clearTimeout(saveTimeout);
+  const debouncedSave = (updates: { title?: string; content?: string }) => {
+    if (saveTimeoutRef.current) {
+      clearTimeout(saveTimeoutRef.current);
     }
 
-    const timeout = setTimeout(async () => {
+    saveTimeoutRef.current = setTimeout(async () => {
       setSaving(true);
       const result = await updateConceptNote(note.id, updates);
       setSaving(false);
@@ -253,8 +248,6 @@ function NoteEditor({ note, onUpdate, onDelete }: NoteEditorProps) {
         onUpdate();
       }
     }, 500);
-
-    setSaveTimeout(timeout);
   };
 
   const handleTitleChange = (newTitle: string) => {

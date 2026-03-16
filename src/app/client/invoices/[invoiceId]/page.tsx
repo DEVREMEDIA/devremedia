@@ -11,7 +11,9 @@ export default async function ClientInvoiceDetailPage({ params }: PageProps) {
   const { invoiceId } = await params;
 
   const supabase = await createClient();
-  const { data: { user } } = await supabase.auth.getUser();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
 
   if (!user) {
     redirect('/login');
@@ -23,11 +25,6 @@ export default async function ClientInvoiceDetailPage({ params }: PageProps) {
   }
 
   const invoice = invoiceResult.data;
-
-  // Ensure user owns this invoice
-  if (invoice.client_id !== user.id) {
-    notFound();
-  }
 
   return (
     <div className="container mx-auto px-4 py-6 sm:px-6">

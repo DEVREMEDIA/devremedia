@@ -36,10 +36,7 @@ interface SalesResourcesOverviewProps {
   resources: Resource[];
 }
 
-export function SalesResourcesOverview({
-  categories,
-  resources,
-}: SalesResourcesOverviewProps) {
+export function SalesResourcesOverview({ categories, resources }: SalesResourcesOverviewProps) {
   const router = useRouter();
   const t = useTranslations('salesResources');
   const [uploadFormOpen, setUploadFormOpen] = useState(false);
@@ -63,7 +60,7 @@ export function SalesResourcesOverview({
         <EmptyState
           icon={FolderOpen}
           title={t('noCategoriesYet')}
-          description="Create your first category to start organizing sales resources"
+          description={t('createFirstCategoryDescription')}
           action={{
             label: t('manageCategories'),
             onClick: () => setCategoryManageOpen(true),
@@ -83,15 +80,15 @@ export function SalesResourcesOverview({
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
-        <h2 className="text-lg font-semibold">Resources</h2>
+        <h2 className="text-lg font-semibold">{t('title')}</h2>
         <div className="flex items-center gap-2">
           <Button variant="outline" onClick={() => setCategoryManageOpen(true)}>
             <Settings className="h-4 w-4 mr-2" />
-            Manage Categories
+            {t('manageCategories')}
           </Button>
           <Button onClick={handleUploadClick}>
             <Plus className="h-4 w-4 mr-2" />
-            Upload Resource
+            {t('addResource')}
           </Button>
         </div>
       </div>
@@ -100,18 +97,14 @@ export function SalesResourcesOverview({
         <EmptyState
           icon={FolderOpen}
           title={t('noResourcesYet')}
-          description="Upload your first sales resource to get started"
+          description={t('uploadFirstResourceDescription')}
           action={{
             label: t('uploadResourceLabel'),
             onClick: handleUploadClick,
           }}
         />
       ) : (
-        <ResourceList
-          resources={resources}
-          categories={categories}
-          onDelete={handleSuccess}
-        />
+        <ResourceList resources={resources} categories={categories} onDelete={handleSuccess} />
       )}
 
       <ResourceUploadForm

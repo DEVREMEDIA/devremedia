@@ -1,8 +1,8 @@
 import { createServerClient } from '@supabase/ssr';
 import { NextResponse, type NextRequest } from 'next/server';
 
-const PUBLIC_ROUTES = ['/login', '/signup', '/forgot-password', '/update-password', '/book'];
-const AUTH_ROUTES = ['/login', '/signup', '/forgot-password'];
+const PUBLIC_ROUTES = ['/login', '/forgot-password', '/update-password', '/book'];
+const AUTH_ROUTES = ['/login', '/forgot-password'];
 const ADMIN_ROUTES_PREFIX = '/admin';
 const CLIENT_ROUTES_PREFIX = '/client';
 const EMPLOYEE_ROUTES_PREFIX = '/employee';
@@ -76,13 +76,20 @@ export async function middleware(request: NextRequest) {
   // User IS authenticated — get their role
   const { data: profile } = await supabase
     .from('user_profiles')
-    .select('role')
+    .select('role, display_name')
     .eq('id', user.id)
     .single();
 
   const role = profile?.role ?? 'client';
   const isAdmin = role === 'super_admin' || role === 'admin';
   const dashboard = getDashboardForRole(role);
+
+  // Redirect users who haven't completed onboarding (invited but no password/name set)
+  if (profile && !profile.display_name && pathname !== '/onboarding') {
+    const url = request.nextUrl.clone();
+    url.pathname = '/onboarding';
+    return NextResponse.redirect(url);
+  }
 
   // Redirect authenticated users away from auth pages
   if (AUTH_ROUTES.some((route) => pathname.startsWith(route))) {

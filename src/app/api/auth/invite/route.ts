@@ -48,6 +48,13 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: error.message }, { status: 400 });
     }
 
+    // Auto-link client record by email
+    await adminClient
+      .from('clients')
+      .update({ user_id: data.user.id })
+      .eq('email', validated.email)
+      .is('user_id', null);
+
     return NextResponse.json({ data: { user: data.user } });
   } catch (error: unknown) {
     if (error instanceof z.ZodError) {

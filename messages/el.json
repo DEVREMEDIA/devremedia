@@ -131,7 +131,22 @@
     "noDeliverablesYet": "Δεν υπάρχουν παραδοτέα",
     "noDeliverablesDescription": "Τα παραδοτέα αυτού του έργου θα εμφανιστούν εδώ",
     "pleaseWait": "Παρακαλώ περιμένετε...",
-    "confirmDeleteMessage": "Η ενέργεια δεν μπορεί να αναιρεθεί. Το έργο και όλα τα σχετικά δεδομένα θα διαγραφούν μόνιμα."
+    "confirmDeleteMessage": "Η ενέργεια δεν μπορεί να αναιρεθεί. Το έργο και όλα τα σχετικά δεδομένα θα διαγραφούν μόνιμα.",
+    "todayTasks": "Σημερινές Εργασίες",
+    "task": "εργασία",
+    "tasks": "εργασίες",
+    "dueToday": "για σήμερα",
+    "noTasksDueToday": "Δεν υπάρχουν εργασίες για σήμερα",
+    "overdue": "εκπρόθεσμες",
+    "viewAllTasks": "Προβολή όλων των εργασιών",
+    "day": "ημέρα",
+    "days": "ημέρες",
+    "leads": "leads",
+    "leadsNeedAttention": "leads χρειάζονται προσοχή",
+    "lastContacted": "Τελευταία επικοινωνία",
+    "neverContacted": "Χωρίς επικοινωνία",
+    "viewAll": "Προβολή όλων",
+    "enterUrl": "Εισάγετε URL:"
   },
 
   "nav": {
@@ -157,7 +172,45 @@
     "expandSidebar": "Ανάπτυξη πλευρικής μπάρας",
     "collapseSidebar": "Σύμπτυξη πλευρικής μπάρας",
     "chatbot": "AI Chatbot",
-    "toggleMenu": "Εναλλαγή μενού"
+    "toggleMenu": "Εναλλαγή μενού",
+    "users": "Χρήστες"
+  },
+
+  "users": {
+    "title": "Διαχείριση Χρηστών",
+    "description": "Διαχειριστείτε όλους τους χρήστες και τους ρόλους τους",
+    "searchPlaceholder": "Αναζήτηση με όνομα ή email...",
+    "allRoles": "Όλοι οι Ρόλοι",
+    "inviteUser": "Πρόσκληση Χρήστη",
+    "inviteNewUser": "Πρόσκληση Νέου Χρήστη",
+    "inviteDescription": "Στείλτε ένα email πρόσκλησης σε νέο χρήστη. Θα ορίσει κωδικό κατά την εγγραφή.",
+    "emailAddress": "Διεύθυνση Email",
+    "displayNameOptional": "Ονοματεπώνυμο (προαιρετικό)",
+    "displayNamePlaceholder": "Πλήρες όνομα",
+    "role": "Ρόλος",
+    "email": "Email",
+    "status": "Κατάσταση",
+    "joined": "Εγγραφή",
+    "clientRole": "Πελάτης",
+    "employeeRole": "Υπάλληλος",
+    "salesmanRole": "Πωλητής",
+    "adminRole": "Διαχειριστής",
+    "superAdminRole": "Super Admin",
+    "sending": "Αποστολή...",
+    "sendInvitation": "Αποστολή Πρόσκλησης",
+    "changeToClient": "Αλλαγή σε Πελάτη",
+    "changeToEmployee": "Αλλαγή σε Υπάλληλο",
+    "changeToSalesman": "Αλλαγή σε Πωλητή",
+    "changeToAdmin": "Αλλαγή σε Διαχειριστή",
+    "changeToSuperAdmin": "Αλλαγή σε Super Admin",
+    "deactivate": "Απενεργοποίηση",
+    "deactivateConfirm": "Είστε σίγουροι ότι θέλετε να απενεργοποιήσετε αυτόν τον χρήστη; Δεν θα μπορεί πλέον να συνδεθεί.",
+    "reactivate": "Επανενεργοποίηση",
+    "reactivateConfirm": "Είστε σίγουροι ότι θέλετε να επανενεργοποιήσετε αυτόν τον χρήστη; Θα μπορεί να συνδεθεί ξανά.",
+    "active": "Ενεργός",
+    "deactivated": "Απενεργοποιημένος",
+    "noUsersFound": "Δεν βρέθηκαν χρήστες",
+    "unnamedUser": "Χωρίς Όνομα"
   },
 
   "auth": {
@@ -188,6 +241,7 @@
     "resetPasswordDescription": "Εισάγετε το email σας και θα σας στείλουμε σύνδεσμο επαναφοράς κωδικού.",
     "resetLinkSent": "Ο σύνδεσμος επαναφοράς στάλθηκε! Ελέγξτε το email σας.",
     "backToLogin": "Πίσω στη σύνδεση",
+    "backToHome": "Πίσω στην αρχική",
     "passwordMinLength": "Ο κωδικός πρέπει να έχει τουλάχιστον 6 χαρακτήρες",
     "passwordsDontMatch": "Οι κωδικοί δεν ταιριάζουν",
     "emailRequired": "Το email είναι υποχρεωτικό",
@@ -208,7 +262,15 @@
     "accountCreated": "Ο λογαριασμός δημιουργήθηκε! Ελέγξτε το email σας για επιβεβαίωση.",
     "passwordUpdated": "Ο κωδικός ενημερώθηκε επιτυχώς!",
     "profileCompleted": "Το προφίλ ολοκληρώθηκε! Ανακατεύθυνση...",
-    "unexpectedError": "Παρουσιάστηκε μη αναμενόμενο σφάλμα"
+    "unexpectedError": "Παρουσιάστηκε μη αναμενόμενο σφάλμα",
+    "displayNamePlaceholder": "Το ονοματεπώνυμό σας",
+    "companyNameOptional": "Επωνυμία Εταιρείας (προαιρετικό)",
+    "companyNamePlaceholder": "Η εταιρεία σας",
+    "phoneOptional": "Τηλέφωνο (προαιρετικό)",
+    "setPassword": "Ορισμός Κωδικού",
+    "newPassword": "Νέος Κωδικός",
+    "updatePasswordDescription": "Εισάγετε τον νέο σας κωδικό παρακάτω",
+    "updatingPassword": "Ενημέρωση..."
   },
 
   "statuses": {
@@ -413,6 +475,7 @@
     "clientCreated": "Ο πελάτης δημιουργήθηκε",
     "clientUpdated": "Ο πελάτης ενημερώθηκε",
     "clientDeleted": "Ο πελάτης διαγράφηκε",
+    "deleteFailed": "Αποτυχία διαγραφής πελάτη",
     "deleteConfirm": "Είστε σίγουροι ότι θέλετε να διαγράψετε αυτόν τον πελάτη; Όλα τα σχετικά δεδομένα θα επηρεαστούν.",
     "inviteToPortal": "Πρόσκληση στην Πλατφόρμα",
     "inviteSent": "Η πρόσκληση στάλθηκε",
@@ -518,6 +581,8 @@
     "invoiceCreated": "Το τιμολόγιο δημιουργήθηκε",
     "invoiceUpdated": "Το τιμολόγιο ενημερώθηκε",
     "invoiceDeleted": "Το τιμολόγιο διαγράφηκε",
+    "updateFailed": "Αποτυχία ενημέρωσης τιμολογίου",
+    "createFailed": "Αποτυχία δημιουργίας τιμολογίου",
     "invoiceSent": "Το τιμολόγιο εστάλη",
     "expenses": "Έξοδα",
     "addExpense": "Νέο Έξοδο",
@@ -566,6 +631,7 @@
     "clientName": "Όνομα Πελάτη",
     "contact": "Επαφή",
     "paymentAndActions": "Πληρωμές & Ενέργειες",
+    "vat": "ΦΠΑ",
     "markAsSent": "Σήμανση ως Εσταλμένο",
     "deleteConfirmation": "Είστε σίγουροι ότι θέλετε να διαγράψετε αυτό το τιμολόγιο; Η ενέργεια δεν μπορεί να αναιρεθεί.",
     "sendPaymentLink": "Αποστολή Συνδέσμου Πληρωμής",
@@ -587,7 +653,10 @@
     "projectOptional": "Έργο (Προαιρετικό)",
     "sending": "Αποστολή...",
     "export": "Εξαγωγή",
-    "project": "Έργο"
+    "project": "Έργο",
+    "processing": "Επεξεργασία...",
+    "subtotal": "Υποσύνολο",
+    "totalDue": "Σύνολο Οφειλής"
   },
 
   "contracts": {
@@ -644,7 +713,14 @@
     "deleteTemplateConfirm": "Είστε σίγουροι ότι θέλετε να διαγράψετε αυτό το πρότυπο; Η ενέργεια δεν μπορεί να αναιρεθεί.",
     "templatePlaceholder": "Γράψτε το πρότυπο συμβολαίου εδώ. Χρησιμοποιήστε {placeholder_name} για δυναμικές τιμές...",
     "failedToSendContract": "Αποτυχία αποστολής συμβολαίου",
-    "contractSignedSuccess": "Το συμβόλαιο υπογράφηκε επιτυχώς"
+    "contractSignedSuccess": "Το συμβόλαιο υπογράφηκε επιτυχώς",
+    "backToProject": "Πίσω στο Έργο",
+    "sending": "Αποστολή...",
+    "sendToClient": "Αποστολή σε Πελάτη",
+    "delete": "Διαγραφή",
+    "contractTemplates": "Πρότυπα Συμβολαίων",
+    "templatesDescription": "Δημιουργία και διαχείριση επαναχρησιμοποιήσιμων προτύπων συμβολαίων",
+    "noContractsListDescription": "Τα συμβόλαια δημιουργούνται στις σελίδες έργων. Μεταβείτε σε ένα έργο για να δημιουργήσετε συμβόλαιο."
   },
 
   "deliverables": {
@@ -692,7 +768,23 @@
     "uploadNow": "Μεταφόρτωση Τώρα",
     "enterVideoTitle": "Εισάγετε τίτλο video",
     "uploadFailed": "Αποτυχία μεταφόρτωσης: {error}",
-    "describeChangesNeeded": "Περιγράψτε τις αλλαγές που χρειάζονται..."
+    "describeChangesNeeded": "Περιγράψτε τις αλλαγές που χρειάζονται...",
+    "currentStatus": "Τρέχουσα Κατάσταση",
+    "actions": "Ενέργειες",
+    "waitingForRevision": "Αναμονή για τον πελάτη να ανεβάσει νέα έκδοση με τις ζητούμενες αλλαγές.",
+    "finalApprovedVersion": "Αυτή είναι η τελική εγκεκριμένη έκδοση",
+    "provideRevisionFeedback": "Δώστε συγκεκριμένα σχόλια για τις αλλαγές που χρειάζονται",
+    "revisionComments": "Σχόλια Αναθεώρησης *",
+    "cancel": "Ακύρωση",
+    "requesting": "Αίτημα...",
+    "statusUpdateFailed": "Αποτυχία ενημέρωσης κατάστασης",
+    "revisionRequestFailed": "Αποτυχία αιτήματος αναθεώρησης",
+    "uploadVideoDeliverable": "Μεταφόρτωση Video Παραδοτέου",
+    "dragDropVideo": "Σύρετε και αφήστε το αρχείο video εδώ, ή κάντε κλικ για αναζήτηση",
+    "supportsAllFormats": "Υποστηρίζονται όλες οι μορφές video",
+    "videoTitle": "Τίτλος Video",
+    "uploading": "Μεταφόρτωση...",
+    "uploadVideo": "Μεταφόρτωση Video"
   },
 
   "filmingPrep": {
@@ -783,7 +875,9 @@
     "itemsAddedAndRemoved": "{added} αντικείμενα προστέθηκαν, {removed} αφαιρέθηκαν",
     "selectNoteDescription": "Επιλέξτε μια σημείωση από τη λίστα για προβολή και επεξεργασία",
     "noteContentPlaceholder": "Ξεκινήστε να γράφετε τις σημειώσεις σας...",
-    "newNote": "Νέα Σημείωση"
+    "newNote": "Νέα Σημείωση",
+    "filmingPreparation": "Προετοιμασία Γυρισμάτων",
+    "manageFor": "Διαχείριση εξοπλισμού, shot list και concept notes για {project}"
   },
 
   "filmingRequests": {
@@ -875,7 +969,8 @@
     "budget5000_10000": "€5.000 - €10.000",
     "budget10000Plus": "€10.000+",
     "budgetFlexible": "Ευέλικτο / Προς Συζήτηση",
-    "noPackages": "Η τιμολόγηση γίνεται κατά περίπτωση. Περίγραψε τις ανάγκες σου και θα στείλουμε προσφορά."
+    "noPackages": "Η τιμολόγηση γίνεται κατά περίπτωση. Περίγραψε τις ανάγκες σου και θα στείλουμε προσφορά.",
+    "submitError": "Κάτι πήγε στραβά. Παρακαλώ δοκιμάστε ξανά."
   },
 
   "calendar": {
@@ -888,7 +983,48 @@
     "addEvent": "Νέο Γεγονός",
     "editEvent": "Επεξεργασία Γεγονότος",
     "deleteEvent": "Διαγραφή Γεγονότος",
-    "noEvents": "Δεν υπάρχουν προγραμματισμένα γεγονότα"
+    "noEvents": "Δεν υπάρχουν προγραμματισμένα γεγονότα",
+    "thisMonthEvents": "Αυτόν τον Μήνα",
+    "upcomingDeadlines": "Προσεχείς Προθεσμίες",
+    "overdueInvoices": "Εκπρόθεσμα Τιμολόγια",
+    "activeProjects": "Ενεργά Έργα",
+    "projects": "Έργα",
+    "tasks": "Εργασίες",
+    "invoices": "Τιμολόγια",
+    "filterProject": "Έργο",
+    "filterTask": "Εργασία",
+    "filterInvoice": "Τιμολόγιο",
+    "projectStart": "Έναρξη Έργου",
+    "projectDeadline": "Προθεσμία Έργου",
+    "taskDue": "Λήξη Εργασίας",
+    "invoiceDue": "Λήξη Τιμολογίου",
+    "upcomingEventsTitle": "Προσεχή Γεγονότα",
+    "noUpcomingEvents": "Δεν υπάρχουν προσεχή γεγονότα",
+    "allDayEvent": "Ολοήμερο γεγονός",
+    "viewDetails": "Προβολή Λεπτομερειών",
+    "eventDate": "Ημερομηνία",
+    "eventProject": "Έργο",
+    "eventClient": "Πελάτης",
+    "eventKind": "Τύπος Γεγονότος",
+    "filterCustom": "Προσαρμοσμένα",
+    "customEvents": "Προσαρμοσμένα Γεγονότα",
+    "eventTitle": "Τίτλος",
+    "eventDescription": "Περιγραφή",
+    "eventStartDate": "Ημερομηνία Έναρξης",
+    "eventEndDate": "Ημερομηνία Λήξης",
+    "eventAllDay": "Ολοήμερο",
+    "eventTypeLabel": "Κατηγορία",
+    "eventTypeMeeting": "Συνάντηση",
+    "eventTypeReminder": "Υπενθύμιση",
+    "eventTypeFilming": "Γύρισμα",
+    "eventTypeDeadline": "Προθεσμία",
+    "eventTypeCustom": "Προσαρμοσμένο",
+    "createEventSuccess": "Το γεγονός δημιουργήθηκε",
+    "updateEventSuccess": "Το γεγονός ενημερώθηκε",
+    "deleteEventSuccess": "Το γεγονός διαγράφηκε",
+    "deleteEventConfirm": "Είστε σίγουροι ότι θέλετε να διαγράψετε αυτό το γεγονός;",
+    "creating": "Δημιουργία...",
+    "saving": "Αποθήκευση..."
   },
 
   "reports": {
@@ -1036,7 +1172,30 @@
     "noActivities": "Δεν υπάρχουν δραστηριότητες",
     "searchLeads": "Αναζήτηση leads...",
     "filterByStage": "Φιλτράρισμα ανά στάδιο",
-    "noActivitiesLogged": "Δεν έχουν καταγραφεί δραστηριότητες ακόμα."
+    "noActivitiesLogged": "Δεν έχουν καταγραφεί δραστηριότητες ακόμα.",
+    "dealValue": "Αξία Συμφωνίας",
+    "probability": "Πιθανότητα (%)",
+    "expectedCloseDate": "Αναμενόμενη Ημ. Κλεισίματος",
+    "contactedToday": "Επικοινωνία σήμερα",
+    "daysAgo": "{count}μ πριν",
+    "allLeads": "Όλα τα Leads",
+    "salesReports": "Αναφορές Πωλήσεων",
+    "viewAllDescription": "Προβολή όλων των leads και της απόδοσης πωλήσεων της ομάδας",
+    "allStages": "Όλα τα Στάδια",
+    "lastContact": "Τελευταία Επικοινωνία",
+    "assignedTo": "Ανατεθειμένο σε",
+    "unassigned": "Χωρίς Ανάθεση",
+    "never": "Ποτέ",
+    "noMatchingLeads": "Κανένα lead δεν ταιριάζει με τα φίλτρα σας",
+    "info": "Πληροφορίες",
+    "activities": "Δραστηριότητες",
+    "contactInfo": "Στοιχεία Επικοινωνίας",
+    "dealInfo": "Στοιχεία Συμφωνίας",
+    "assignment": "Ανάθεση",
+    "notes": "Σημειώσεις",
+    "activityHistory": "Ιστορικό Δραστηριοτήτων",
+    "unknown": "Άγνωστο",
+    "lostReason": "Λόγος Απώλειας"
   },
 
   "university": {
@@ -1055,6 +1214,7 @@
     "articleContent": "Περιεχόμενο",
     "noCategories": "Δεν υπάρχουν κατηγορίες",
     "noArticles": "Δεν υπάρχουν άρθρα",
+    "noArticlesCheckBack": "Αυτή η κατηγορία δεν έχει δημοσιευμένα άρθρα ακόμα. Ελέγξτε ξανά σύντομα!",
     "categoryCreated": "Η κατηγορία δημιουργήθηκε",
     "categoryUpdated": "Η κατηγορία ενημερώθηκε",
     "categoryDeleted": "Η κατηγορία διαγράφηκε",
@@ -1076,7 +1236,19 @@
     "selectParentCategory": "Επιλέξτε γονική κατηγορία",
     "filterByCategory": "Φιλτράρισμα ανά κατηγορία",
     "articlePreview": "Προεπισκόπηση Άρθρου",
-    "viewArticle": "Προβολή Άρθρου"
+    "viewArticle": "Προβολή Άρθρου",
+    "manageDescription": "Διαχείριση κατηγοριών και άρθρων βάσης γνώσεων"
+  },
+
+  "chatbot": {
+    "title": "AI Chatbot",
+    "description": "Προβολή συνομιλιών chatbot και διαχείριση βάσης γνώσεων",
+    "knowledgeBase": "Βάση Γνώσεων",
+    "conversations": "Συνομιλίες",
+    "totalConversations": "Συνολικές Συνομιλίες",
+    "today": "Σήμερα",
+    "totalMessages": "Συνολικά Μηνύματα",
+    "avgMsgsPerConv": "Μέσα Μνμ/Συν"
   },
 
   "salesResources": {
@@ -1088,6 +1260,7 @@
     "resourceName": "Όνομα Πόρου",
     "category": "Κατηγορία",
     "noResources": "Δεν υπάρχουν πόροι",
+    "noResourcesDescription": "Αυτή η κατηγορία δεν έχει πόρους ακόμα. Ελέγξτε ξανά σύντομα!",
     "resourceUploaded": "Ο πόρος μεταφορτώθηκε",
     "resourceDeleted": "Ο πόρος διαγράφηκε",
     "manageCategories": "Διαχείριση Κατηγοριών",
@@ -1102,7 +1275,9 @@
     "categoryDescriptionPlaceholder": "Σύντομη περιγραφή αυτής της κατηγορίας",
     "noCategoriesCreateOne": "Δεν υπάρχουν κατηγορίες. Δημιουργήστε μία για να ξεκινήσετε.",
     "createCategory": "Δημιουργία Κατηγορίας",
-    "uploadResourceLabel": "Μεταφόρτωση Πόρου"
+    "uploadResourceLabel": "Μεταφόρτωση Πόρου",
+    "createFirstCategoryDescription": "Δημιουργήστε την πρώτη κατηγορία για να οργανώσετε τους πόρους πωλήσεων",
+    "uploadFirstResourceDescription": "Μεταφορτώστε τον πρώτο πόρο πωλήσεων για να ξεκινήσετε"
   },
 
   "messages": {
@@ -1182,7 +1357,14 @@
     "budget2500_5000": "€2.500 - €5.000",
     "budget5000_10000": "€5.000 - €10.000",
     "budget10000Plus": "€10.000+",
-    "budgetFlexible": "Ευέλικτο / Προς Συζήτηση"
+    "budgetFlexible": "Ευέλικτο / Προς Συζήτηση",
+    "continueToDescribe": "Συνεχίστε στο επόμενο βήμα για να περιγράψετε τις ανάγκες σας.",
+    "indicativePricing": "Ενδεικτικός Τιμοκατάλογος",
+    "delivery": "Παράδοση",
+    "fastDelivery": "Γρήγορη παράδοση",
+    "continueForQuote": "Συνεχίστε στο επόμενο βήμα για να μας περιγράψετε τις ανάγκες σας και θα σας στείλουμε προσφορά.",
+    "describeForCustomQuote": "Περιγράψτε τις ανάγκες σας στο επόμενο βήμα και θα σας στείλουμε εξατομικευμένη προσφορά.",
+    "cancellationPolicy": "Πολιτική Ακυρώσεων"
   },
 
   "employee": {
@@ -1203,6 +1385,8 @@
       "noTasks": "Δεν υπάρχουν εργασίες",
       "noTasksDescription": "Οι εργασίες που σας ανατίθενται θα εμφανίζονται εδώ.",
       "updateStatus": "Ενημέρωση Κατάστασης",
+      "statusUpdated": "Η κατάσταση ενημερώθηκε",
+      "statusUpdateFailed": "Αποτυχία ενημέρωσης κατάστασης",
       "taskDetail": "Λεπτομέρειες Εργασίας"
     },
     "deliverables": {
@@ -1216,13 +1400,20 @@
       "title": "Πίνακας Πωλήσεων",
       "description": "Το pipeline και η απόδοσή σας",
       "pipelineSummary": "Σύνοψη Pipeline",
+      "activeLeads": "Ενεργά Leads",
+      "pipelineByStage": "Pipeline ανά Στάδιο",
+      "pipelineBreakdown": "Ανάλυση leads ανά στάδιο",
       "todayFollowups": "Σημερινά Follow-ups",
+      "followupsDescription": "Leads που χρειάζονται follow-up σήμερα",
       "noFollowups": "Δεν υπάρχουν follow-ups σήμερα",
-      "recentActivity": "Πρόσφατη Δραστηριότητα"
+      "recentActivity": "Πρόσφατη Δραστηριότητα",
+      "latestInteractions": "Οι πιο πρόσφατες αλληλεπιδράσεις σας",
+      "noRecentActivity": "Δεν υπάρχει πρόσφατη δραστηριότητα"
     },
     "leads": {
       "title": "Τα Leads Μου",
-      "description": "Διαχείριση pipeline leads"
+      "description": "Διαχείριση pipeline leads",
+      "addLead": "Νέο Lead"
     },
     "resources": {
       "title": "Πόροι",
@@ -1253,7 +1444,12 @@
       "noDeliverables": "Δεν υπάρχουν παραδοτέα",
       "noDeliverablesDescription": "Δεν έχετε κάποιο παραδοτέο ακόμα",
       "noUpcomingFilmings": "Δεν υπάρχουν επερχόμενα γυρίσματα",
-      "noUpcomingFilmingsDescription": "Δεν υπάρχουν προγραμματισμένες ημερομηνίες γυρισμάτων αυτή τη στιγμή"
+      "noUpcomingFilmingsDescription": "Δεν υπάρχουν προγραμματισμένες ημερομηνίες γυρισμάτων αυτή τη στιγμή",
+      "contracts": "Συμβόλαια",
+      "noContracts": "Δεν υπάρχουν συμβόλαια",
+      "noContractsDescription": "Τα συμβόλαιά σας θα εμφανιστούν εδώ μόλις δημιουργηθούν.",
+      "downloadPdf": "Λήψη PDF",
+      "viewContract": "Προβολή"
     },
     "projects": {
       "title": "Τα Έργα Μου",
@@ -1281,7 +1477,31 @@
       "stageEditing": "Μοντάζ",
       "stageReview": "Αξιολόγηση",
       "stageRevisions": "Διορθώσεις",
-      "stageDelivered": "Παραδόθηκε"
+      "stageDelivered": "Παραδόθηκε",
+      "overview": "Επισκόπηση",
+      "deliverables": "Παραδοτέα",
+      "messages": "Μηνύματα",
+      "contracts": "Συμβόλαια",
+      "projectDetails": "Στοιχεία Έργου",
+      "description": "Περιγραφή",
+      "status": "Κατάσταση",
+      "filmingDate": "Ημερομηνία Γυρίσματος",
+      "location": "Τοποθεσία",
+      "budget": "Προϋπολογισμός",
+      "createdOn": "Δημιουργήθηκε στις {date}"
+    },
+    "contracts": {
+      "title": "Τα Συμβόλαιά Μου",
+      "description": "Τα συμβόλαια και οι συμφωνίες σας",
+      "noContracts": "Δεν υπάρχουν συμβόλαια",
+      "noContractsDescription": "Τα συμβόλαιά σας θα εμφανιστούν εδώ μόλις δημιουργηθούν.",
+      "signContract": "Υπογραφή",
+      "downloadPdf": "Λήψη PDF",
+      "viewContract": "Προβολή",
+      "signatureRequired": "Αναμένεται η υπογραφή σας",
+      "project": "Έργο",
+      "created": "Δημιουργήθηκε",
+      "expires": "Λήγει"
     },
     "invoices": {
       "title": "Τα Τιμολόγιά Μου",

@@ -13,7 +13,9 @@ export default async function ClientProjectDetailPage({ params }: PageProps) {
   const { projectId } = await params;
 
   const supabase = await createClient();
-  const { data: { user } } = await supabase.auth.getUser();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
 
   if (!user) {
     redirect('/login');
@@ -27,12 +29,7 @@ export default async function ClientProjectDetailPage({ params }: PageProps) {
 
   const project = projectResult.data;
 
-  // Ensure user owns this project
-  if (project.client_id !== user.id) {
-    notFound();
-  }
-
-  // Fetch related data
+  // Fetch related data (RLS ensures client can only see their own projects)
   const deliverablesResult = await getDeliverablesByProject(projectId);
   const deliverables = (deliverablesResult.data ?? []) as import('@/types').Deliverable[];
 

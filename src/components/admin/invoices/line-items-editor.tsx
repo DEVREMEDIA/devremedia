@@ -3,7 +3,14 @@
 import * as React from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from '@/components/ui/table';
 import { useTranslations } from 'next-intl';
 import { Plus, Trash2 } from 'lucide-react';
 import type { LineItem } from '@/lib/schemas/invoice';
@@ -19,14 +26,25 @@ const formatCurrency = (amount: number) => {
 
 export function LineItemsEditor({ items, onChange }: LineItemsEditorProps) {
   const t = useTranslations('invoices');
-  const tc = useTranslations('common');
+  const keyCounter = React.useRef(0);
+  const itemKeys = React.useRef<string[]>([]);
+
+  // Sync keys with items length
+  while (itemKeys.current.length < items.length) {
+    itemKeys.current.push(`item-${keyCounter.current++}`);
+  }
+  if (itemKeys.current.length > items.length) {
+    itemKeys.current = itemKeys.current.slice(0, items.length);
+  }
 
   const handleAddItem = () => {
+    itemKeys.current.push(`item-${keyCounter.current++}`);
     onChange([...items, { description: '', quantity: 1, unit_price: 0 }]);
   };
 
   const handleRemoveItem = (index: number) => {
-    if (items.length === 1) return; // Keep at least one item
+    if (items.length === 1) return;
+    itemKeys.current = itemKeys.current.filter((_, i) => i !== index);
     onChange(items.filter((_, i) => i !== index));
   };
 
@@ -53,7 +71,7 @@ export function LineItemsEditor({ items, onChange }: LineItemsEditorProps) {
             {items.map((item, index) => {
               const lineTotal = item.quantity * item.unit_price;
               return (
-                <TableRow key={index}>
+                <TableRow key={itemKeys.current[index]}>
                   <TableCell>
                     <Input
                       value={item.description}
@@ -67,7 +85,9 @@ export function LineItemsEditor({ items, onChange }: LineItemsEditorProps) {
                       step="0.01"
                       min="0.01"
                       value={item.quantity}
-                      onChange={(e) => handleUpdateItem(index, 'quantity', parseFloat(e.target.value) || 0)}
+                      onChange={(e) =>
+                        handleUpdateItem(index, 'quantity', parseFloat(e.target.value) || 0)
+                      }
                     />
                   </TableCell>
                   <TableCell>
@@ -76,7 +96,9 @@ export function LineItemsEditor({ items, onChange }: LineItemsEditorProps) {
                       step="0.01"
                       min="0"
                       value={item.unit_price}
-                      onChange={(e) => handleUpdateItem(index, 'unit_price', parseFloat(e.target.value) || 0)}
+                      onChange={(e) =>
+                        handleUpdateItem(index, 'unit_price', parseFloat(e.target.value) || 0)
+                      }
                     />
                   </TableCell>
                   <TableCell className="text-right font-medium">

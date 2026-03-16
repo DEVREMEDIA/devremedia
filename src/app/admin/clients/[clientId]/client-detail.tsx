@@ -43,9 +43,14 @@ type ContractItem = {
 interface ClientDetailProps {
   client: Client;
   contracts: ContractItem[];
+  stats: {
+    totalProjects: number;
+    totalInvoiced: number;
+    totalPaid: number;
+  };
 }
 
-export function ClientDetail({ client, contracts }: ClientDetailProps) {
+export function ClientDetail({ client, contracts, stats }: ClientDetailProps) {
   const t = useTranslations('clients');
   const tc = useTranslations('common');
   const router = useRouter();
@@ -64,7 +69,7 @@ export function ClientDetail({ client, contracts }: ClientDetailProps) {
         router.refresh();
       }
     } catch {
-      toast.error(t('clientDeleted'));
+      toast.error(t('deleteFailed'));
     } finally {
       setIsDeleting(false);
       setDeleteDialogOpen(false);
@@ -102,11 +107,7 @@ export function ClientDetail({ client, contracts }: ClientDetailProps) {
       <Card>
         <CardContent className="pt-6">
           <div className="flex flex-col gap-6 sm:flex-row sm:items-start">
-            <UserAvatar
-              name={client.contact_name}
-              src={client.avatar_url}
-              className="h-20 w-20"
-            />
+            <UserAvatar name={client.contact_name} src={client.avatar_url} className="h-20 w-20" />
             <div className="flex-1 space-y-4">
               <div>
                 <h2 className="text-2xl font-bold">{client.contact_name}</h2>
@@ -181,9 +182,7 @@ export function ClientDetail({ client, contracts }: ClientDetailProps) {
                       <MapPin className="mt-0.5 h-5 w-5 text-muted-foreground" />
                       <div className="flex-1 space-y-1">
                         <p className="text-sm font-medium">{t('address')}</p>
-                        <p className="text-sm text-muted-foreground">
-                          {client.address}
-                        </p>
+                        <p className="text-sm text-muted-foreground">{client.address}</p>
                       </div>
                     </div>
                   </>
@@ -196,9 +195,7 @@ export function ClientDetail({ client, contracts }: ClientDetailProps) {
                       <FileText className="mt-0.5 h-5 w-5 text-muted-foreground" />
                       <div className="flex-1 space-y-1">
                         <p className="text-sm font-medium">{t('taxId')}</p>
-                        <p className="text-sm text-muted-foreground">
-                          {client.vat_number}
-                        </p>
+                        <p className="text-sm text-muted-foreground">{client.vat_number}</p>
                       </div>
                     </div>
                   </>
@@ -226,24 +223,28 @@ export function ClientDetail({ client, contracts }: ClientDetailProps) {
                 </CardHeader>
                 <CardContent className="space-y-4">
                   <div className="flex items-center justify-between">
-                    <span className="text-sm text-muted-foreground">
-                      {t('totalProjects')}
-                    </span>
-                    <span className="text-2xl font-bold">0</span>
+                    <span className="text-sm text-muted-foreground">{t('totalProjects')}</span>
+                    <span className="text-2xl font-bold">{stats.totalProjects}</span>
                   </div>
                   <Separator />
                   <div className="flex items-center justify-between">
-                    <span className="text-sm text-muted-foreground">
-                      {t('totalInvoiced')}
+                    <span className="text-sm text-muted-foreground">{t('totalInvoiced')}</span>
+                    <span className="text-2xl font-bold">
+                      {stats.totalInvoiced.toLocaleString(undefined, {
+                        style: 'currency',
+                        currency: 'EUR',
+                      })}
                     </span>
-                    <span className="text-2xl font-bold">0</span>
                   </div>
                   <Separator />
                   <div className="flex items-center justify-between">
-                    <span className="text-sm text-muted-foreground">
-                      {t('totalPaid')}
+                    <span className="text-sm text-muted-foreground">{t('totalPaid')}</span>
+                    <span className="text-2xl font-bold">
+                      {stats.totalPaid.toLocaleString(undefined, {
+                        style: 'currency',
+                        currency: 'EUR',
+                      })}
                     </span>
-                    <span className="text-2xl font-bold">$0</span>
                   </div>
                 </CardContent>
               </Card>

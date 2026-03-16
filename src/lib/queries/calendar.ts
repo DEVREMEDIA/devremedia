@@ -1,6 +1,8 @@
 'use server';
 
 import { createClient } from '@/lib/supabase/server';
+import { CALENDAR_EVENT_COLORS } from '@/lib/constants';
+import type { CalendarEventType } from '@/lib/constants';
 
 export type CalendarEvent = {
   id: string;
@@ -9,15 +11,20 @@ export type CalendarEvent = {
   end?: string;
   allDay?: boolean;
   color: string;
-  type: 'project' | 'task' | 'invoice';
+  type: 'project' | 'task' | 'invoice' | 'custom';
   entityId: string;
+  subtype?: 'start' | 'deadline';
+  projectTitle?: string;
+  clientName?: string;
+  description?: string;
+  eventType?: CalendarEventType;
 };
 
 export async function getCalendarEvents(): Promise<CalendarEvent[]> {
   try {
     const supabase = await createClient();
 
-    const [projectsResult, tasksResult, invoicesResult] = await Promise.all([
+    const [projectsResult, tasksResult, invoicesResult, customResult] = await Promise.all([
       supabase
         .from('projects')
         .select('id, title, start_date, deadline')
@@ -30,9 +37,14 @@ export async function getCalendarEvents(): Promise<CalendarEvent[]> {
         .not('due_date', 'is', null),
       supabase
         .from('invoices')
-        .select('id, invoice_number, due_date, project:projects(title)')
+        .select(
+          'id, invoice_number, due_date, project:projects(title), client:clients(contact_name)',
+        )
         .in('status', ['sent', 'viewed', 'overdue'])
         .not('due_date', 'is', null),
+      supabase
+        .from('calendar_events')
+        .select('id, title, description, start_date, end_date, all_day, color, event_type'),
     ]);
 
     const events: CalendarEvent[] = [];
@@ -48,6 +60,7 @@ export async function getCalendarEvents(): Promise<CalendarEvent[]> {
             color: 'hsl(var(--primary))',
             type: 'project',
             entityId: project.id,
+            subtype: 'start',
           });
         }
         if (project.deadline) {
@@ -59,6 +72,7 @@ export async function getCalendarEvents(): Promise<CalendarEvent[]> {
             color: 'hsl(var(--destructive))',
             type: 'project',
             entityId: project.id,
+            subtype: 'deadline',
           });
         }
       });
@@ -66,6 +80,7 @@ export async function getCalendarEvents(): Promise<CalendarEvent[]> {
 
     if (!tasksResult.error && tasksResult.data) {
       tasksResult.data.forEach((task) => {
+        const projectData = task.project as unknown as { title: string } | null;
         if (task.due_date) {
           events.push({
             id: `task-${task.id}`,
@@ -75,6 +90,7 @@ export async function getCalendarEvents(): Promise<CalendarEvent[]> {
             color: 'hsl(142 76% 36%)',
             type: 'task',
             entityId: task.id,
+            projectTitle: projectData?.title,
           });
         }
       });
@@ -82,6 +98,7 @@ export async function getCalendarEvents(): Promise<CalendarEvent[]> {
 
     if (!invoicesResult.error && invoicesResult.data) {
       invoicesResult.data.forEach((invoice) => {
+        const clientData = invoice.client as unknown as { contact_name: string } | null;
         if (invoice.due_date) {
           events.push({
             id: `invoice-${invoice.id}`,
@@ -91,8 +108,27 @@ export async function getCalendarEvents(): Promise<CalendarEvent[]> {
             color: 'hsl(25 95% 53%)',
             type: 'invoice',
             entityId: invoice.id,
+            clientName: clientData?.contact_name,
           });
         }
+      });
+    }
+
+    if (!customResult.error && customResult.data) {
+      customResult.data.forEach((ce) => {
+        const evtType = ce.event_type as CalendarEventType;
+        events.push({
+          id: ce.id,
+          title: ce.title,
+          start: ce.start_date,
+          end: ce.end_date ?? undefined,
+          allDay: ce.all_day,
+          color: ce.color ?? CALENDAR_EVENT_COLORS[evtType] ?? CALENDAR_EVENT_COLORS.custom,
+          type: 'custom',
+          entityId: ce.id,
+          description: ce.description ?? undefined,
+          eventType: evtType,
+        });
       });
     }
 

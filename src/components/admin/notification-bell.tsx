@@ -12,7 +12,7 @@ import { useTranslations } from 'next-intl';
 
 export function NotificationBell() {
   const t = useTranslations('common');
-  const hasUnread = true; // Hardcoded for now
+  const hasUnread = false; // TODO: connect to real notification system
 
   return (
     <DropdownMenu>
@@ -20,7 +20,10 @@ export function NotificationBell() {
         <Button variant="ghost" size="icon" className="relative" aria-label={t('notifications')}>
           <Bell className="h-5 w-5" aria-hidden="true" />
           {hasUnread && (
-            <span className="absolute top-1 right-1 h-2 w-2 rounded-full bg-red-500" aria-hidden="true" />
+            <span
+              className="absolute top-1 right-1 h-2 w-2 rounded-full bg-red-500"
+              aria-hidden="true"
+            />
           )}
         </Button>
       </DropdownMenuTrigger>

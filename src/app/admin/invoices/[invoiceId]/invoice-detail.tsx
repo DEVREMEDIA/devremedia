@@ -5,7 +5,14 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { StatusBadge } from '@/components/shared/status-badge';
 import { ConfirmDialog } from '@/components/shared/confirm-dialog';
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from '@/components/ui/table';
 import { Separator } from '@/components/ui/separator';
 import { PaymentActions } from '@/components/admin/invoices/payment-actions';
 import { deleteInvoice, updateInvoiceStatus } from '@/lib/actions/invoices';
@@ -99,9 +106,7 @@ export function InvoiceDetail({ invoice: initialInvoice }: InvoiceDetailProps) {
         <div className="flex items-center justify-between">
           <div>
             <h1 className="text-3xl font-bold tracking-tight">{invoice.invoice_number}</h1>
-            <p className="text-muted-foreground mt-2">
-              {t('invoiceDetailsDescription')}
-            </p>
+            <p className="text-muted-foreground mt-2">{t('invoiceDetailsDescription')}</p>
           </div>
           <div className="flex items-center gap-2">
             <Button variant="outline" onClick={handleDownloadPDF}>
@@ -114,10 +119,7 @@ export function InvoiceDetail({ invoice: initialInvoice }: InvoiceDetailProps) {
                 {tc('edit')}
               </Button>
             </Link>
-            <Button
-              variant="destructive"
-              onClick={() => setDeleteDialogOpen(true)}
-            >
+            <Button variant="destructive" onClick={() => setDeleteDialogOpen(true)}>
               <Trash2 className="mr-2 h-4 w-4" />
               {tc('delete')}
             </Button>
@@ -228,7 +230,9 @@ export function InvoiceDetail({ invoice: initialInvoice }: InvoiceDetailProps) {
                 <span>{formatCurrency(invoice.subtotal, invoice.currency)}</span>
               </div>
               <div className="flex justify-between text-sm">
-                <span className="text-muted-foreground">ΦΠΑ ({invoice.tax_rate}%)</span>
+                <span className="text-muted-foreground">
+                  {t('vat')} ({invoice.tax_rate}%)
+                </span>
                 <span>{formatCurrency(invoice.tax_amount, invoice.currency)}</span>
               </div>
               <Separator />

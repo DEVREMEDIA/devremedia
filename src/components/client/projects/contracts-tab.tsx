@@ -10,8 +10,12 @@ import { useRouter } from 'next/navigation';
 import { useTranslations } from 'next-intl';
 import type { ContractWithRelations } from '@/types';
 
+type ContractWithExtras = ContractWithRelations & {
+  description?: string;
+};
+
 interface ContractsTabProps {
-  contracts: ContractWithRelations[];
+  contracts: ContractWithExtras[];
 }
 
 export function ContractsTab({ contracts }: ContractsTabProps) {
@@ -57,7 +61,7 @@ export function ContractsTab({ contracts }: ContractsTabProps) {
                 >
                   View
                 </Button>
-                {contract.status === 'sent' && (
+                {(contract.status === 'sent' || contract.status === 'viewed') && (
                   <Button
                     size="sm"
                     onClick={() => router.push(`/client/contracts/${contract.id}/sign`)}
@@ -70,11 +74,9 @@ export function ContractsTab({ contracts }: ContractsTabProps) {
               </div>
             </div>
           </CardHeader>
-          {(contract as any).description && (
+          {contract.description && (
             <CardContent>
-              <p className="text-sm text-muted-foreground">
-                {(contract as any).description}
-              </p>
+              <p className="text-sm text-muted-foreground">{contract.description}</p>
             </CardContent>
           )}
         </Card>

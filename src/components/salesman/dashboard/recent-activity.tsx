@@ -1,5 +1,6 @@
 'use client';
 
+import { useTranslations } from 'next-intl';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Phone, Mail, MessageSquare, Calendar, CheckCircle, XCircle, FileText } from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
@@ -41,19 +42,19 @@ const ACTIVITY_COLORS: Record<string, string> = {
 };
 
 export function RecentActivity({ activities }: RecentActivityProps) {
+  const t = useTranslations('salesman.dashboard');
+
   if (activities.length === 0) {
     return (
       <Card>
         <CardHeader>
-          <CardTitle>Recent Activity</CardTitle>
-          <CardDescription>Your latest interactions</CardDescription>
+          <CardTitle>{t('recentActivity')}</CardTitle>
+          <CardDescription>{t('latestInteractions')}</CardDescription>
         </CardHeader>
         <CardContent>
           <div className="flex flex-col items-center justify-center py-8 text-center">
             <MessageSquare className="h-12 w-12 text-muted-foreground mb-4" />
-            <p className="text-sm text-muted-foreground">
-              No recent activity to show
-            </p>
+            <p className="text-sm text-muted-foreground">{t('noRecentActivity')}</p>
           </div>
         </CardContent>
       </Card>
@@ -63,8 +64,8 @@ export function RecentActivity({ activities }: RecentActivityProps) {
   return (
     <Card>
       <CardHeader>
-        <CardTitle>Recent Activity</CardTitle>
-        <CardDescription>Your latest interactions</CardDescription>
+        <CardTitle>{t('recentActivity')}</CardTitle>
+        <CardDescription>{t('latestInteractions')}</CardDescription>
       </CardHeader>
       <CardContent>
         <div className="space-y-4">
@@ -73,7 +74,10 @@ export function RecentActivity({ activities }: RecentActivityProps) {
             const iconColor = ACTIVITY_COLORS[activity.activity_type] || 'text-gray-600';
 
             return (
-              <div key={activity.id} className="flex items-start gap-4 pb-4 border-b last:border-0 last:pb-0">
+              <div
+                key={activity.id}
+                className="flex items-start gap-4 pb-4 border-b last:border-0 last:pb-0"
+              >
                 <div className={`mt-1 ${iconColor}`}>
                   <Icon className="h-5 w-5" />
                 </div>

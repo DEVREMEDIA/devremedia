@@ -2,16 +2,12 @@ import { Suspense } from 'react';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import { ChevronRight, File } from 'lucide-react';
+import { getTranslations } from 'next-intl/server';
 import { PageHeader } from '@/components/shared/page-header';
 import { EmptyState } from '@/components/shared/empty-state';
 import { LoadingSpinner } from '@/components/shared/loading-spinner';
-import {
-  Card,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from '@/components/ui/card';
-import { getSalesResourceCategories, getSalesResources } from '@/lib/actions/sales-resources';
+import { Card, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { getSalesResources } from '@/lib/actions/sales-resources';
 import { ResourceDownloadButton } from '@/components/salesman/resources/resource-download-button';
 
 interface CategoryResourcesPageProps {
@@ -20,34 +16,32 @@ interface CategoryResourcesPageProps {
   }>;
 }
 
+interface CategoryInfo {
+  id: string;
+  title: string;
+  description: string | null;
+}
+
+function formatFileSize(bytes: number): string {
+  if (bytes < 1024) return `${bytes} B`;
+  if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`;
+  return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
+}
+
 async function CategoryResourcesContent({ categoryId }: { categoryId: string }) {
-  const [categoriesResult, resourcesResult] = await Promise.all([
-    getSalesResourceCategories(),
-    getSalesResources(categoryId),
-  ]);
-
-  const categories = categoriesResult.data ?? [];
-  const category = categories.find((c) => c.id === categoryId);
-
-  if (!category) {
-    notFound();
-  }
-
+  const t = await getTranslations('salesResources');
+  const resourcesResult = await getSalesResources(categoryId);
   const resources = resourcesResult.data ?? [];
 
   if (resources.length === 0) {
     return (
-      <EmptyState
-        icon={File}
-        title="No resources yet"
-        description="This category doesn't have any resources yet. Check back soon!"
-      />
+      <EmptyState icon={File} title={t('noResources')} description={t('noResourcesDescription')} />
     );
   }
 
   return (
     <div className="space-y-4">
-      {resources.map((resource: any) => (
+      {resources.map((resource) => (
         <Card key={resource.id}>
           <CardHeader>
             <div className="flex items-start justify-between gap-4">
@@ -62,21 +56,12 @@ async function CategoryResourcesContent({ categoryId }: { categoryId: string }) 
                   )}
                   <div className="flex items-center gap-2 text-xs text-muted-foreground mt-2">
                     <span>{resource.file_name}</span>
-                    <span>•</span>
-                    <span>
-                      {resource.file_size < 1024
-                        ? `${resource.file_size} B`
-                        : resource.file_size < 1024 * 1024
-                        ? `${(resource.file_size / 1024).toFixed(1)} KB`
-                        : `${(resource.file_size / (1024 * 1024)).toFixed(1)} MB`}
-                    </span>
+                    <span>·</span>
+                    <span>{formatFileSize(resource.file_size)}</span>
                   </div>
                 </div>
               </div>
-              <ResourceDownloadButton
-                filePath={resource.file_path}
-                fileName={resource.file_name}
-              />
+              <ResourceDownloadButton filePath={resource.file_path} fileName={resource.file_name} />
             </div>
           </CardHeader>
         </Card>
@@ -87,10 +72,16 @@ async function CategoryResourcesContent({ categoryId }: { categoryId: string }) 
 
 export default async function CategoryResourcesPage({ params }: CategoryResourcesPageProps) {
   const { categoryId } = await params;
+  const t = await getTranslations('salesResources');
 
-  const categoriesResult = await getSalesResourceCategories();
-  const categories = categoriesResult.data ?? [];
-  const category = categories.find((c) => c.id === categoryId);
+  // Fetch category info inline to avoid double-fetching all categories
+  const { createClient } = await import('@/lib/supabase/server');
+  const supabase = await createClient();
+  const { data: category } = await supabase
+    .from('sales_resource_categories')
+    .select('id, title, description')
+    .eq('id', categoryId)
+    .single();
 
   if (!category) {
     notFound();
@@ -100,16 +91,13 @@ export default async function CategoryResourcesPage({ params }: CategoryResource
     <div className="flex flex-col gap-6 p-6">
       <div className="flex items-center gap-2 text-sm text-muted-foreground">
         <Link href="/salesman/resources" className="hover:text-foreground">
-          Resources
+          {t('title')}
         </Link>
         <ChevronRight className="h-4 w-4" />
         <span className="text-foreground">{category.title}</span>
       </div>
 
-      <PageHeader
-        title={category.title}
-        description={category.description ?? undefined}
-      />
+      <PageHeader title={category.title} description={category.description ?? undefined} />
 
       <Suspense
         fallback={

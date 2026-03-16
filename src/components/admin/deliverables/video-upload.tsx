@@ -1,94 +1,92 @@
-'use client'
+'use client';
 
-import { useState, useRef } from 'react'
-import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
-import { Label } from '@/components/ui/label'
-import { Progress } from '@/components/ui/progress'
-import { createClient } from '@/lib/supabase/client'
-import { createDeliverable } from '@/lib/actions/deliverables'
-import { useTranslations } from 'next-intl'
-import { toast } from 'sonner'
-import { Upload, X, FileVideo } from 'lucide-react'
-import { cn } from '@/lib/utils'
+import { useState, useRef } from 'react';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Progress } from '@/components/ui/progress';
+import { createClient } from '@/lib/supabase/client';
+import { createDeliverable } from '@/lib/actions/deliverables';
+import { useTranslations } from 'next-intl';
+import { toast } from 'sonner';
+import { Upload, X, FileVideo } from 'lucide-react';
+import { cn } from '@/lib/utils';
 
 type VideoUploadProps = {
-  projectId: string
-  onUploadComplete: () => void
-}
+  projectId: string;
+  onUploadComplete: () => void;
+};
 
 export function VideoUpload({ projectId, onUploadComplete }: VideoUploadProps) {
-  const t = useTranslations('deliverables')
-  const tToast = useTranslations('toast')
-  const [file, setFile] = useState<File | null>(null)
-  const [title, setTitle] = useState('')
-  const [isUploading, setIsUploading] = useState(false)
-  const [isDragging, setIsDragging] = useState(false)
-  const fileInputRef = useRef<HTMLInputElement>(null)
+  const t = useTranslations('deliverables');
+  const tToast = useTranslations('toast');
+  const [file, setFile] = useState<File | null>(null);
+  const [title, setTitle] = useState('');
+  const [isUploading, setIsUploading] = useState(false);
+  const [isDragging, setIsDragging] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   const handleFileSelect = (selectedFile: File) => {
     if (!selectedFile.type.startsWith('video/')) {
-      toast.error(tToast('validationError'))
-      return
+      toast.error(tToast('validationError'));
+      return;
     }
 
-    setFile(selectedFile)
-    setTitle(selectedFile.name.replace(/\.[^/.]+$/, ''))
-  }
+    setFile(selectedFile);
+    setTitle(selectedFile.name.replace(/\.[^/.]+$/, ''));
+  };
 
   const handleDragOver = (e: React.DragEvent) => {
-    e.preventDefault()
-    setIsDragging(true)
-  }
+    e.preventDefault();
+    setIsDragging(true);
+  };
 
   const handleDragLeave = (e: React.DragEvent) => {
-    e.preventDefault()
-    setIsDragging(false)
-  }
+    e.preventDefault();
+    setIsDragging(false);
+  };
 
   const handleDrop = (e: React.DragEvent) => {
-    e.preventDefault()
-    setIsDragging(false)
+    e.preventDefault();
+    setIsDragging(false);
 
-    const droppedFile = e.dataTransfer.files[0]
+    const droppedFile = e.dataTransfer.files[0];
     if (droppedFile) {
-      handleFileSelect(droppedFile)
+      handleFileSelect(droppedFile);
     }
-  }
+  };
 
   const handleFileInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const selectedFile = e.target.files?.[0]
+    const selectedFile = e.target.files?.[0];
     if (selectedFile) {
-      handleFileSelect(selectedFile)
+      handleFileSelect(selectedFile);
     }
-  }
+  };
 
   const handleRemoveFile = () => {
-    setFile(null)
-    setTitle('')
+    setFile(null);
+    setTitle('');
     if (fileInputRef.current) {
-      fileInputRef.current.value = ''
+      fileInputRef.current.value = '';
     }
-  }
+  };
 
   const handleUpload = async () => {
     if (!file || !title.trim()) {
-      toast.error(tToast('validationError'))
-      return
+      toast.error(tToast('validationError'));
+      return;
     }
 
-    setIsUploading(true)
+    setIsUploading(true);
 
     try {
-      const supabase = createClient()
-      const path = `projects/${projectId}/v${Date.now()}/${file.name}`
+      const supabase = createClient();
+      const path = `projects/${projectId}/v${Date.now()}/${file.name}`;
 
-      const { error: uploadError } = await supabase.storage
-        .from('deliverables')
-        .upload(path, file)
+      const { error: uploadError } = await supabase.storage.from('deliverables').upload(path, file);
 
       if (uploadError) {
-        throw uploadError
+        throw uploadError;
       }
 
       const result = await createDeliverable({
@@ -97,35 +95,35 @@ export function VideoUpload({ projectId, onUploadComplete }: VideoUploadProps) {
         file_path: path,
         file_size: file.size,
         file_type: file.type,
-      })
+      });
 
       if (result.error) {
-        throw new Error(result.error)
+        throw new Error(result.error);
       }
 
-      toast.success(tToast('uploadSuccess'))
-      handleRemoveFile()
-      onUploadComplete()
+      toast.success(tToast('uploadSuccess'));
+      handleRemoveFile();
+      onUploadComplete();
     } catch (error) {
-      console.error('Upload error:', error)
-      toast.error(error instanceof Error ? error.message : 'Failed to upload video')
+      console.error('Upload error:', error);
+      toast.error(error instanceof Error ? error.message : t('uploadFailed'));
     } finally {
-      setIsUploading(false)
+      setIsUploading(false);
     }
-  }
+  };
 
   const formatFileSize = (bytes: number) => {
-    if (bytes === 0) return '0 Bytes'
-    const k = 1024
-    const sizes = ['Bytes', 'KB', 'MB', 'GB']
-    const i = Math.floor(Math.log(bytes) / Math.log(k))
-    return Math.round(bytes / Math.pow(k, i) * 100) / 100 + ' ' + sizes[i]
-  }
+    if (bytes === 0) return '0 Bytes';
+    const k = 1024;
+    const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+    const i = Math.floor(Math.log(bytes) / Math.log(k));
+    return Math.round((bytes / Math.pow(k, i)) * 100) / 100 + ' ' + sizes[i];
+  };
 
   return (
     <div className="rounded-lg border bg-card p-6 space-y-4">
       <div className="flex items-center justify-between">
-        <h3 className="text-lg font-semibold">Upload Video Deliverable</h3>
+        <h3 className="text-lg font-semibold">{t('uploadVideoDeliverable')}</h3>
       </div>
 
       {!file ? (
@@ -134,7 +132,7 @@ export function VideoUpload({ projectId, onUploadComplete }: VideoUploadProps) {
             'border-2 border-dashed rounded-lg p-8 text-center cursor-pointer transition-colors',
             isDragging
               ? 'border-primary bg-primary/5'
-              : 'border-muted-foreground/25 hover:border-primary/50'
+              : 'border-muted-foreground/25 hover:border-primary/50',
           )}
           onDragOver={handleDragOver}
           onDragLeave={handleDragLeave}
@@ -144,12 +142,8 @@ export function VideoUpload({ projectId, onUploadComplete }: VideoUploadProps) {
           <div className="flex flex-col items-center gap-2">
             <Upload className="h-10 w-10 text-muted-foreground" />
             <div className="space-y-1">
-              <p className="text-sm font-medium">
-                Drag and drop your video file here, or click to browse
-              </p>
-              <p className="text-xs text-muted-foreground">
-                Supports all video formats
-              </p>
+              <p className="text-sm font-medium">{t('dragDropVideo')}</p>
+              <p className="text-xs text-muted-foreground">{t('supportsAllFormats')}</p>
             </div>
           </div>
           <input
@@ -182,7 +176,7 @@ export function VideoUpload({ projectId, onUploadComplete }: VideoUploadProps) {
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="title">Video Title</Label>
+            <Label htmlFor="title">{t('videoTitle')}</Label>
             <Input
               id="title"
               value={title}
@@ -195,26 +189,22 @@ export function VideoUpload({ projectId, onUploadComplete }: VideoUploadProps) {
           {isUploading && (
             <div className="space-y-2">
               <div className="flex items-center justify-between text-sm">
-                <span className="text-muted-foreground">Uploading...</span>
+                <span className="text-muted-foreground">{t('uploading')}</span>
               </div>
               <Progress value={undefined} className="h-2" />
             </div>
           )}
 
           <div className="flex gap-2 justify-end">
-            <Button
-              variant="outline"
-              onClick={handleRemoveFile}
-              disabled={isUploading}
-            >
-              Cancel
+            <Button variant="outline" onClick={handleRemoveFile} disabled={isUploading}>
+              {t('cancel')}
             </Button>
             <Button onClick={handleUpload} disabled={isUploading || !title.trim()}>
-              {isUploading ? 'Uploading...' : 'Upload Video'}
+              {isUploading ? t('uploading') : t('uploadVideo')}
             </Button>
           </div>
         </div>
       )}
     </div>
-  )
+  );
 }

@@ -1,153 +1,157 @@
-'use client'
+'use client';
 
-import { useState, useEffect } from 'react'
-import { toast } from 'sonner'
-import { useRouter } from 'next/navigation'
-import { useTranslations } from 'next-intl'
-import { Calendar, Trash2 } from 'lucide-react'
-import {
-  Sheet,
-  SheetContent,
-  SheetHeader,
-  SheetTitle,
-} from '@/components/ui/sheet'
+import { useState, useEffect } from 'react';
+import { toast } from 'sonner';
+import { useRouter } from 'next/navigation';
+import { useTranslations } from 'next-intl';
+import { Calendar, Trash2 } from 'lucide-react';
+import { Sheet, SheetContent, SheetHeader, SheetTitle } from '@/components/ui/sheet';
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from '@/components/ui/select'
-import { Input } from '@/components/ui/input'
-import { Label } from '@/components/ui/label'
-import { Textarea } from '@/components/ui/textarea'
-import { Button } from '@/components/ui/button'
-import { ConfirmDialog } from '@/components/shared/confirm-dialog'
-import { SubTaskList } from './sub-task-list'
-import { updateTask, deleteTask } from '@/lib/actions/tasks'
-import { TASK_STATUSES, TASK_STATUS_LABELS, PRIORITIES, PRIORITY_LABELS } from '@/lib/constants'
+} from '@/components/ui/select';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Textarea } from '@/components/ui/textarea';
+import { Button } from '@/components/ui/button';
+import { ConfirmDialog } from '@/components/shared/confirm-dialog';
+import { SubTaskList } from './sub-task-list';
+import { updateTask, deleteTask } from '@/lib/actions/tasks';
+import { TASK_STATUSES, TASK_STATUS_LABELS, PRIORITIES, PRIORITY_LABELS } from '@/lib/constants';
 
-type TaskStatus = 'todo' | 'in_progress' | 'review' | 'done'
-type Priority = 'low' | 'medium' | 'high' | 'urgent'
+type TaskStatus = 'todo' | 'in_progress' | 'review' | 'done';
+type Priority = 'low' | 'medium' | 'high' | 'urgent';
 
 type Task = {
-  id: string
-  project_id: string
-  title: string
-  description: string | null
-  status: TaskStatus
-  priority: Priority
-  assigned_to: string | null
-  due_date: string | null
-  order_index: number
-  metadata: Record<string, unknown>
-  created_by: string
-  created_at: string
-  updated_at: string
-}
+  id: string;
+  project_id: string;
+  title: string;
+  description: string | null;
+  status: TaskStatus;
+  priority: Priority;
+  assigned_to: string | null;
+  due_date: string | null;
+  order_index: number;
+  metadata: Record<string, unknown>;
+  created_by: string;
+  created_at: string;
+  updated_at: string;
+};
 
 type SubTask = {
-  id: string
-  title: string
-  completed: boolean
-}
+  id: string;
+  title: string;
+  completed: boolean;
+};
 
 type TaskDetailSheetProps = {
-  task: Task | null
-  open: boolean
-  onOpenChange: (open: boolean) => void
-}
+  task: Task | null;
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
+};
 
 export function TaskDetailSheet({ task, open, onOpenChange }: TaskDetailSheetProps) {
-  const t = useTranslations('tasks')
-  const tc = useTranslations('common')
-  const router = useRouter()
-  const [isDeleting, setIsDeleting] = useState(false)
-  const [showDeleteDialog, setShowDeleteDialog] = useState(false)
+  const t = useTranslations('tasks');
+  const tc = useTranslations('common');
+  const router = useRouter();
+  const [isDeleting, setIsDeleting] = useState(false);
+  const [showDeleteDialog, setShowDeleteDialog] = useState(false);
 
-  const [editedTitle, setEditedTitle] = useState('')
-  const [editedDescription, setEditedDescription] = useState('')
-  const [editedAssignedTo, setEditedAssignedTo] = useState('')
-  const [editedDueDate, setEditedDueDate] = useState('')
+  const [editedTitle, setEditedTitle] = useState('');
+  const [editedDescription, setEditedDescription] = useState('');
+  const [editedAssignedTo, setEditedAssignedTo] = useState('');
+  const [editedDueDate, setEditedDueDate] = useState('');
 
   useEffect(() => {
     if (task) {
-      setEditedTitle(task.title)
-      setEditedDescription(task.description || '')
-      setEditedAssignedTo(task.assigned_to || '')
-      setEditedDueDate(task.due_date ? task.due_date.split('T')[0] : '')
+      setEditedTitle(task.title);
+      setEditedDescription(task.description || '');
+      setEditedAssignedTo(task.assigned_to || '');
+      setEditedDueDate(task.due_date ? task.due_date.split('T')[0] : '');
     }
-  }, [task])
+  }, [task]);
 
-  if (!task) return null
+  if (!task) return null;
 
   const handleUpdate = async (field: string, value: unknown) => {
-    const result = await updateTask(task.id, { [field]: value })
+    const result = await updateTask(task.id, { [field]: value });
 
     if (result.error) {
       toast.error(t('failedToUpdate'), {
         description: result.error,
-      })
-      return
+      });
+      return;
     }
 
-    toast.success(t('updatedSuccessfully'))
-    router.refresh()
-  }
+    toast.success(t('updatedSuccessfully'));
+    router.refresh();
+  };
 
   const handleTitleBlur = () => {
     if (editedTitle.trim() && editedTitle !== task.title) {
-      handleUpdate('title', editedTitle.trim())
+      handleUpdate('title', editedTitle.trim());
     } else if (!editedTitle.trim()) {
-      setEditedTitle(task.title)
+      setEditedTitle(task.title);
     }
-  }
+  };
 
   const handleDescriptionBlur = () => {
     if (editedDescription !== (task.description || '')) {
-      handleUpdate('description', editedDescription.trim() || null)
+      handleUpdate('description', editedDescription.trim() || null);
     }
-  }
+  };
+
+  const UUID_REGEX = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
   const handleAssignedToBlur = () => {
-    if (editedAssignedTo !== (task.assigned_to || '')) {
-      handleUpdate('assigned_to', editedAssignedTo.trim() || null)
+    const trimmed = editedAssignedTo.trim();
+    if (trimmed === (task.assigned_to || '')) return;
+
+    if (trimmed && !UUID_REGEX.test(trimmed)) {
+      toast.error(t('invalidAssigneeId'));
+      setEditedAssignedTo(task.assigned_to || '');
+      return;
     }
-  }
+
+    handleUpdate('assigned_to', trimmed || null);
+  };
 
   const handleDueDateChange = (value: string) => {
-    setEditedDueDate(value)
-    handleUpdate('due_date', value || null)
-  }
+    setEditedDueDate(value);
+    handleUpdate('due_date', value || null);
+  };
 
   const handleStatusChange = (value: string) => {
-    handleUpdate('status', value)
-  }
+    handleUpdate('status', value);
+  };
 
   const handlePriorityChange = (value: string) => {
-    handleUpdate('priority', value)
-  }
+    handleUpdate('priority', value);
+  };
 
   const handleDelete = async () => {
-    setIsDeleting(true)
+    setIsDeleting(true);
 
-    const result = await deleteTask(task.id)
+    const result = await deleteTask(task.id);
 
-    setIsDeleting(false)
+    setIsDeleting(false);
 
     if (result.error) {
       toast.error(t('failedToDelete'), {
         description: result.error,
-      })
+      });
     } else {
-      toast.success(t('deletedSuccessfully'))
-      setShowDeleteDialog(false)
-      onOpenChange(false)
-      router.refresh()
+      toast.success(t('deletedSuccessfully'));
+      setShowDeleteDialog(false);
+      onOpenChange(false);
+      router.refresh();
     }
-  }
+  };
 
-  const subTasks = (task.metadata?.sub_tasks as SubTask[] | undefined) || []
+  const subTasks = (task.metadata?.sub_tasks as SubTask[] | undefined) || [];
 
   return (
     <>
@@ -167,7 +171,7 @@ export function TaskDetailSheet({ task, open, onOpenChange }: TaskDetailSheetPro
                 onBlur={handleTitleBlur}
                 onKeyDown={(e) => {
                   if (e.key === 'Enter') {
-                    e.currentTarget.blur()
+                    e.currentTarget.blur();
                   }
                 }}
                 className="font-medium"
@@ -245,7 +249,7 @@ export function TaskDetailSheet({ task, open, onOpenChange }: TaskDetailSheetPro
                   placeholder={t('assigneePlaceholder')}
                   onKeyDown={(e) => {
                     if (e.key === 'Enter') {
-                      e.currentTarget.blur()
+                      e.currentTarget.blur();
                     }
                   }}
                 />
@@ -283,5 +287,5 @@ export function TaskDetailSheet({ task, open, onOpenChange }: TaskDetailSheetPro
         loading={isDeleting}
       />
     </>
-  )
+  );
 }

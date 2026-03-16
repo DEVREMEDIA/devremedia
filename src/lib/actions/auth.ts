@@ -43,6 +43,13 @@ export async function inviteClient(
       return { data: null, error: error.message };
     }
 
+    // Auto-link client record by email
+    await adminClient
+      .from('clients')
+      .update({ user_id: data.user.id })
+      .eq('email', email)
+      .is('user_id', null);
+
     return { data: { userId: data.user.id }, error: null };
   } catch {
     return { data: null, error: 'Failed to send invitation' };
@@ -51,7 +58,7 @@ export async function inviteClient(
 
 export async function completeOnboarding(
   input: z.infer<typeof onboardingSchema>,
-): Promise<ActionResult<{ success: boolean }>> {
+): Promise<ActionResult<{ role: string }>> {
   try {
     const validated = onboardingSchema.parse(input);
     const supabase = await createClient();
@@ -64,6 +71,16 @@ export async function completeOnboarding(
       return { data: null, error: 'Unauthorized' };
     }
 
+    // Set the user's password so they can log in with email/password
+    const { error: passwordError } = await supabase.auth.updateUser({
+      password: validated.password,
+    });
+
+    if (passwordError) {
+      return { data: null, error: passwordError.message };
+    }
+
+    // Update display name in user_profiles
     const { error } = await supabase
       .from('user_profiles')
       .update({
@@ -75,7 +92,24 @@ export async function completeOnboarding(
       return { data: null, error: error.message };
     }
 
-    return { data: { success: true }, error: null };
+    // Auto-link client record by email (fallback if invite didn't link)
+    const adminClient = createAdminClient();
+    await adminClient
+      .from('clients')
+      .update({ user_id: user.id })
+      .eq('email', user.email ?? '')
+      .is('user_id', null);
+
+    // Fetch user role for redirect
+    const { data: profile } = await supabase
+      .from('user_profiles')
+      .select('role')
+      .eq('id', user.id)
+      .single();
+
+    const role = profile?.role ?? 'client';
+
+    return { data: { role }, error: null };
   } catch (err: unknown) {
     if (err instanceof z.ZodError) {
       const zodError = err as z.ZodError;

@@ -1,3 +1,4 @@
+import { getTranslations } from 'next-intl/server';
 import { PageHeader } from '@/components/shared/page-header';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { AllLeadsTable } from '@/components/admin/leads/all-leads-table';
@@ -13,6 +14,7 @@ import {
 } from '@/lib/queries/leads';
 
 export default async function AdminLeadsPage() {
+  const t = await getTranslations('leads');
   const [leadsResult, stageData, conversionRate, forecast, salesmanData, sourceData] =
     await Promise.all([
       getLeads(),
@@ -27,19 +29,18 @@ export default async function AdminLeadsPage() {
 
   return (
     <div className="space-y-6">
-      <PageHeader
-        title="Leads"
-        description="View all leads and sales performance across the team"
-      />
+      <PageHeader title={t('title')} description={t('viewAllDescription')} />
 
       <Tabs defaultValue="leads" className="space-y-6">
         <TabsList>
-          <TabsTrigger value="leads">All Leads</TabsTrigger>
-          <TabsTrigger value="reports">Sales Reports</TabsTrigger>
+          <TabsTrigger value="leads">{t('allLeads')}</TabsTrigger>
+          <TabsTrigger value="reports">{t('salesReports')}</TabsTrigger>
         </TabsList>
 
         <TabsContent value="leads">
-          <AllLeadsTable leads={leads as ComponentProps<typeof AllLeadsTable>['leads']} />
+          <AllLeadsTable
+            leads={leads as unknown as ComponentProps<typeof AllLeadsTable>['leads']}
+          />
         </TabsContent>
 
         <TabsContent value="reports">

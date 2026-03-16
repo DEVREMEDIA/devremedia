@@ -11,7 +11,10 @@ export const createTaskSchema = z.object({
   assigned_to: z.string().uuid('Invalid user ID').optional(),
   status: z.enum(TASK_STATUSES).default('todo'),
   priority: z.enum(PRIORITIES).default('medium'),
-  due_date: z.string().optional(),
+  due_date: z
+    .string()
+    .regex(/^\d{4}-\d{2}-\d{2}$/, 'Invalid date format (YYYY-MM-DD)')
+    .optional(),
   sort_order: z.number().optional(),
 });
 

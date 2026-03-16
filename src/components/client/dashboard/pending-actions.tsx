@@ -6,22 +6,19 @@ import { AlertCircle, Receipt, FileText } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { INVOICE_STATUS_LABELS } from '@/lib/constants';
 import { useTranslations } from 'next-intl';
-import type { InvoiceWithRelations, ProjectWithClient } from '@/types';
+import type { InvoiceWithRelations, Contract } from '@/types';
 
 interface PendingActionsProps {
   invoices: InvoiceWithRelations[];
-  projects: ProjectWithClient[];
+  unsignedContracts?: Contract[];
 }
 
-export function PendingActions({ invoices }: PendingActionsProps) {
+export function PendingActions({ invoices, unsignedContracts = [] }: PendingActionsProps) {
   const router = useRouter();
   const t = useTranslations('client.dashboard');
 
-  // Get unsigned contracts count (placeholder - would need contracts query)
-  const unsignedContracts: any[] = [];
-
   const pendingItems = [
-    ...invoices.map(invoice => ({
+    ...invoices.map((invoice) => ({
       type: 'invoice',
       id: invoice.id,
       title: `${t('invoice')} ${invoice.invoice_number}`,
@@ -30,7 +27,7 @@ export function PendingActions({ invoices }: PendingActionsProps) {
       icon: Receipt,
       onClick: () => router.push(`/client/invoices/${invoice.id}`),
     })),
-    ...unsignedContracts.map((contract: any) => ({
+    ...unsignedContracts.map((contract) => ({
       type: 'contract',
       id: contract.id,
       title: contract.title,
@@ -48,9 +45,7 @@ export function PendingActions({ invoices }: PendingActionsProps) {
           <CardTitle>{t('pendingActions')}</CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="text-sm text-muted-foreground">
-            {t('noPendingActions')}
-          </div>
+          <div className="text-sm text-muted-foreground">{t('noPendingActions')}</div>
         </CardContent>
       </Card>
     );
@@ -75,15 +70,10 @@ export function PendingActions({ invoices }: PendingActionsProps) {
                   <Icon className="h-5 w-5 text-muted-foreground mt-0.5" />
                   <div className="flex-1 min-w-0">
                     <div className="font-medium text-sm">{item.title}</div>
-                    <div className="text-xs text-muted-foreground">
-                      {item.description}
-                    </div>
+                    <div className="text-xs text-muted-foreground">{item.description}</div>
                   </div>
                 </div>
-                <Button
-                  size="sm"
-                  onClick={item.onClick}
-                >
+                <Button size="sm" onClick={item.onClick}>
                   {item.action}
                 </Button>
               </div>

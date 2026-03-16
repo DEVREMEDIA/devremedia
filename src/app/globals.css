@@ -594,3 +594,92 @@
   }
 }
 
+/* ═══════════════════════════════════════════════════════════════
+   FULLCALENDAR — Shadcn Theme Integration
+   ═══════════════════════════════════════════════════════════════ */
+
+.fc {
+  --fc-border-color: var(--border);
+  --fc-button-bg-color: transparent;
+  --fc-button-border-color: var(--border);
+  --fc-button-text-color: var(--foreground);
+  --fc-button-hover-bg-color: var(--accent);
+  --fc-button-hover-border-color: var(--border);
+  --fc-button-active-bg-color: var(--primary);
+  --fc-button-active-border-color: var(--primary);
+  --fc-button-active-text-color: var(--primary-foreground);
+  --fc-today-bg-color: oklch(0.75 0.16 70 / 8%);
+  --fc-neutral-bg-color: var(--muted);
+  --fc-page-bg-color: transparent;
+  --fc-event-border-color: transparent;
+}
+
+.fc .fc-button {
+  border-radius: var(--radius-md);
+  font-size: 0.875rem;
+  font-weight: 500;
+  padding: 0.375rem 0.75rem;
+  box-shadow: none;
+  transition: background-color 0.15s, border-color 0.15s, color 0.15s;
+}
+
+.fc .fc-button:focus {
+  box-shadow: 0 0 0 2px var(--background), 0 0 0 4px var(--ring);
+}
+
+.fc .fc-button-primary:not(:disabled).fc-button-active {
+  background-color: var(--primary);
+  border-color: var(--primary);
+  color: var(--primary-foreground);
+}
+
+.fc .fc-col-header-cell {
+  background-color: var(--muted);
+  font-weight: 500;
+  font-size: 0.8125rem;
+  color: var(--muted-foreground);
+  padding: 0.5rem 0;
+}
+
+.fc .fc-day-today .fc-daygrid-day-number {
+  color: var(--primary);
+  font-weight: 700;
+}
+
+.fc .fc-event {
+  border: none;
+  border-radius: var(--radius-sm);
+  font-size: 0.75rem;
+  padding: 1px 4px;
+  cursor: pointer;
+  transition: filter 0.15s, transform 0.15s;
+}
+
+.fc .fc-event:hover {
+  filter: brightness(1.1);
+  transform: scale(1.02);
+}
+
+.fc .fc-daygrid-day-frame {
+  min-height: 5rem;
+}
+
+.fc .fc-daygrid-more-link {
+  color: var(--primary);
+  font-weight: 500;
+  font-size: 0.75rem;
+}
+
+.fc .fc-toolbar-title {
+  font-size: 1.125rem;
+  font-weight: 600;
+}
+
+.fc .fc-timegrid-now-indicator-line {
+  border-color: var(--primary);
+}
+
+.fc .fc-timegrid-now-indicator-arrow {
+  border-top-color: var(--primary);
+}
+

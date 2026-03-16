@@ -7,16 +7,22 @@ import { EmptyState } from '@/components/shared/empty-state';
 import { useTranslations } from 'next-intl';
 import type { ProjectWithClient } from '@/types';
 
+type ProjectWithExtras = ProjectWithClient & {
+  filming_date?: string;
+  filming_time?: string;
+  location?: string;
+};
+
 interface UpcomingFilmingsProps {
-  projects: ProjectWithClient[];
+  projects: ProjectWithExtras[];
 }
 
 export function UpcomingFilmings({ projects }: UpcomingFilmingsProps) {
   const t = useTranslations('client.dashboard');
   // Filter projects with filming dates in the future
   const upcomingFilmings = projects
-    .filter((p: any) => p.filming_date && new Date(p.filming_date) >= new Date())
-    .sort((a: any, b: any) => new Date(a.filming_date).getTime() - new Date(b.filming_date).getTime())
+    .filter((p) => p.filming_date && new Date(p.filming_date) >= new Date())
+    .sort((a, b) => new Date(a.filming_date!).getTime() - new Date(b.filming_date!).getTime())
     .slice(0, 5);
 
   if (upcomingFilmings.length === 0) {
@@ -44,29 +50,22 @@ export function UpcomingFilmings({ projects }: UpcomingFilmingsProps) {
       <CardContent>
         <div className="space-y-3">
           {upcomingFilmings.map((project) => (
-            <div
-              key={project.id}
-              className="flex items-start gap-3 p-3 border rounded-lg"
-            >
+            <div key={project.id} className="flex items-start gap-3 p-3 border rounded-lg">
               <div className="p-2 rounded-lg bg-primary/10 text-primary">
                 <Calendar className="h-4 w-4" />
               </div>
               <div className="flex-1 min-w-0">
-                <div className="font-medium text-sm line-clamp-1">
-                  {project.title}
-                </div>
+                <div className="font-medium text-sm line-clamp-1">{project.title}</div>
                 <div className="text-sm text-muted-foreground mt-1">
-                  {format(new Date((project as any).filming_date), 'EEEE, MMMM d, yyyy')}
+                  {format(new Date(project.filming_date!), 'EEEE, MMMM d, yyyy')}
                 </div>
-                {(project as any).filming_time && (
-                  <div className="text-xs text-muted-foreground">
-                    {(project as any).filming_time}
-                  </div>
+                {project.filming_time && (
+                  <div className="text-xs text-muted-foreground">{project.filming_time}</div>
                 )}
-                {(project as any).location && (
+                {project.location && (
                   <div className="flex items-center gap-1 text-xs text-muted-foreground mt-1">
                     <MapPin className="h-3 w-3" />
-                    {(project as any).location}
+                    {project.location}
                   </div>
                 )}
               </div>

@@ -2,15 +2,23 @@
 
 import { createClient } from '@/lib/supabase/server';
 import { createLeadSchema, updateLeadSchema } from '@/lib/schemas/lead';
-import type { ActionResult, LeadFilters, Lead } from '@/types';
+import type { ActionResult, LeadFilters, Lead, Client } from '@/types';
+import { LEAD_STAGES } from '@/lib/constants';
 import { revalidatePath } from 'next/cache';
+import { escapePostgrestFilter } from '@/lib/utils';
 
-export async function getLeads(filters?: LeadFilters): Promise<ActionResult<unknown[]>> {
+export async function getLeads(filters?: LeadFilters): Promise<ActionResult<Lead[]>> {
   try {
     const supabase = await createClient();
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
+    if (!user) return { data: null, error: 'Unauthorized' };
     let query = supabase
       .from('leads')
-      .select('*, assigned_user:user_profiles!leads_assigned_to_fkey(display_name)')
+      .select(
+        'id, contact_name, email, phone, company_name, source, stage, deal_value, probability, notes, assigned_to, lost_reason, expected_close_date, last_contacted_at, converted_to_client_id, converted_at, created_at, updated_at, assigned_user:user_profiles!leads_assigned_to_user_profiles_fkey(display_name)',
+      )
       .order('created_at', { ascending: false });
 
     if (filters?.stage) {
@@ -25,7 +33,8 @@ export async function getLeads(filters?: LeadFilters): Promise<ActionResult<unkn
       query = query.eq('assigned_to', filters.assigned_to);
     }
     if (filters?.search) {
-      query = query.or(`contact_name.ilike.%${filters.search}%,email.ilike.%${filters.search}%,company_name.ilike.%${filters.search}%`);
+      const s = escapePostgrestFilter(filters.search);
+      query = query.or(`contact_name.ilike.%${s}%,email.ilike.%${s}%,company_name.ilike.%${s}%`);
     }
     if (filters?.expected_close_from) {
       query = query.gte('expected_close_date', filters.expected_close_from);
@@ -45,9 +54,15 @@ export async function getLeads(filters?: LeadFilters): Promise<ActionResult<unkn
 export async function getLeadsByAssignee(userId: string): Promise<ActionResult<Lead[]>> {
   try {
     const supabase = await createClient();
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
+    if (!user) return { data: null, error: 'Unauthorized' };
     const { data, error } = await supabase
       .from('leads')
-      .select('*')
+      .select(
+        'id, contact_name, email, phone, company_name, source, stage, deal_value, probability, notes, assigned_to, lost_reason, expected_close_date, last_contacted_at, converted_to_client_id, converted_at, created_at, updated_at',
+      )
       .eq('assigned_to', userId)
       .order('updated_at', { ascending: false });
 
@@ -58,12 +73,18 @@ export async function getLeadsByAssignee(userId: string): Promise<ActionResult<L
   }
 }
 
-export async function getLead(id: string): Promise<ActionResult<unknown>> {
+export async function getLead(id: string): Promise<ActionResult<Lead>> {
   try {
     const supabase = await createClient();
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
+    if (!user) return { data: null, error: 'Unauthorized' };
     const { data, error } = await supabase
       .from('leads')
-      .select('*, assigned_user:user_profiles!leads_assigned_to_fkey(display_name), converted_client:clients!leads_converted_to_client_id_fkey(contact_name, company_name)')
+      .select(
+        'id, contact_name, email, phone, company_name, source, stage, deal_value, probability, notes, assigned_to, lost_reason, expected_close_date, last_contacted_at, converted_to_client_id, converted_at, created_at, updated_at, assigned_user:user_profiles!leads_assigned_to_user_profiles_fkey(display_name), converted_client:clients!leads_converted_to_client_id_fkey(contact_name, company_name)',
+      )
       .eq('id', id)
       .single();
 
@@ -79,7 +100,9 @@ export async function createLead(input: unknown): Promise<ActionResult<Lead>> {
     const validated = createLeadSchema.parse(input);
     const supabase = await createClient();
 
-    const { data: { user } } = await supabase.auth.getUser();
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
     if (!user) return { data: null, error: 'Unauthorized' };
 
     const { data, error } = await supabase
@@ -88,7 +111,9 @@ export async function createLead(input: unknown): Promise<ActionResult<Lead>> {
         ...validated,
         assigned_to: validated.assigned_to || user.id,
       })
-      .select()
+      .select(
+        'id, contact_name, email, phone, company_name, source, stage, deal_value, probability, notes, assigned_to, lost_reason, expected_close_date, last_contacted_at, converted_to_client_id, converted_at, created_at, updated_at',
+      )
       .single();
 
     if (error) return { data: null, error: error.message };
@@ -106,12 +131,18 @@ export async function updateLead(id: string, input: unknown): Promise<ActionResu
   try {
     const validated = updateLeadSchema.parse(input);
     const supabase = await createClient();
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
+    if (!user) return { data: null, error: 'Unauthorized' };
 
     const { data, error } = await supabase
       .from('leads')
       .update({ ...validated, updated_at: new Date().toISOString() })
       .eq('id', id)
-      .select()
+      .select(
+        'id, contact_name, email, phone, company_name, source, stage, deal_value, probability, notes, assigned_to, lost_reason, expected_close_date, last_contacted_at, converted_to_client_id, converted_at, created_at, updated_at',
+      )
       .single();
 
     if (error) return { data: null, error: error.message };
@@ -129,15 +160,22 @@ export async function updateLead(id: string, input: unknown): Promise<ActionResu
 
 export async function updateLeadStage(id: string, stage: string): Promise<ActionResult<Lead>> {
   try {
+    if (!LEAD_STAGES.includes(stage as (typeof LEAD_STAGES)[number])) {
+      return { data: null, error: `Invalid stage: ${stage}` };
+    }
     const supabase = await createClient();
-    const { data: { user } } = await supabase.auth.getUser();
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
     if (!user) return { data: null, error: 'Unauthorized' };
 
     const { data, error } = await supabase
       .from('leads')
       .update({ stage, updated_at: new Date().toISOString() })
       .eq('id', id)
-      .select()
+      .select(
+        'id, contact_name, email, phone, company_name, source, stage, deal_value, probability, notes, assigned_to, lost_reason, expected_close_date, last_contacted_at, converted_to_client_id, converted_at, created_at, updated_at',
+      )
       .single();
 
     if (error) return { data: null, error: error.message };
@@ -162,6 +200,10 @@ export async function updateLeadStage(id: string, stage: string): Promise<Action
 export async function deleteLead(id: string): Promise<ActionResult<void>> {
   try {
     const supabase = await createClient();
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
+    if (!user) return { data: null, error: 'Unauthorized' };
     const { error } = await supabase.from('leads').delete().eq('id', id);
 
     if (error) return { data: null, error: error.message };
@@ -174,16 +216,20 @@ export async function deleteLead(id: string): Promise<ActionResult<void>> {
   }
 }
 
-export async function convertLeadToClient(id: string): Promise<ActionResult<unknown>> {
+export async function convertLeadToClient(id: string): Promise<ActionResult<Client>> {
   try {
     const supabase = await createClient();
-    const { data: { user } } = await supabase.auth.getUser();
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
     if (!user) return { data: null, error: 'Unauthorized' };
 
     // Fetch the lead
     const { data: lead, error: leadError } = await supabase
       .from('leads')
-      .select('*')
+      .select(
+        'id, contact_name, email, phone, company_name, source, stage, deal_value, probability, notes, assigned_to, lost_reason, expected_close_date, last_contacted_at, converted_to_client_id, converted_at, created_at, updated_at',
+      )
       .eq('id', id)
       .single();
 
@@ -202,7 +248,9 @@ export async function convertLeadToClient(id: string): Promise<ActionResult<unkn
         company_name: lead.company_name,
         status: 'active',
       })
-      .select()
+      .select(
+        'id, user_id, company_name, contact_name, email, phone, address, vat_number, avatar_url, notes, status, created_at, updated_at',
+      )
       .single();
 
     if (clientError) return { data: null, error: clientError.message };

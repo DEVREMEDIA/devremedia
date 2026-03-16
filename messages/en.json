@@ -131,7 +131,22 @@
     "noDeliverablesYet": "No deliverables yet",
     "noDeliverablesDescription": "Deliverables for this project will appear here",
     "pleaseWait": "Please wait...",
-    "confirmDeleteMessage": "This action cannot be undone. The project and all associated data will be permanently deleted."
+    "confirmDeleteMessage": "This action cannot be undone. The project and all associated data will be permanently deleted.",
+    "todayTasks": "Today's Tasks",
+    "task": "task",
+    "tasks": "tasks",
+    "dueToday": "due today",
+    "noTasksDueToday": "No tasks due today",
+    "overdue": "overdue",
+    "viewAllTasks": "View all tasks",
+    "day": "day",
+    "days": "days",
+    "leads": "leads",
+    "leadsNeedAttention": "leads need attention",
+    "lastContacted": "Last contacted",
+    "neverContacted": "Never contacted",
+    "viewAll": "View all",
+    "enterUrl": "Enter URL:"
   },
 
   "nav": {
@@ -157,7 +172,45 @@
     "expandSidebar": "Expand sidebar",
     "collapseSidebar": "Collapse sidebar",
     "chatbot": "AI Chatbot",
-    "toggleMenu": "Toggle menu"
+    "toggleMenu": "Toggle menu",
+    "users": "Users"
+  },
+
+  "users": {
+    "title": "User Management",
+    "description": "Manage all users and their roles",
+    "searchPlaceholder": "Search by name or email...",
+    "allRoles": "All Roles",
+    "inviteUser": "Invite User",
+    "inviteNewUser": "Invite New User",
+    "inviteDescription": "Send an invitation email to a new user. They will set their password during onboarding.",
+    "emailAddress": "Email Address",
+    "displayNameOptional": "Display Name (optional)",
+    "displayNamePlaceholder": "Full name",
+    "role": "Role",
+    "email": "Email",
+    "status": "Status",
+    "joined": "Joined",
+    "clientRole": "Client",
+    "employeeRole": "Employee",
+    "salesmanRole": "Salesman",
+    "adminRole": "Admin",
+    "superAdminRole": "Super Admin",
+    "sending": "Sending...",
+    "sendInvitation": "Send Invitation",
+    "changeToClient": "Change to Client",
+    "changeToEmployee": "Change to Employee",
+    "changeToSalesman": "Change to Salesman",
+    "changeToAdmin": "Change to Admin",
+    "changeToSuperAdmin": "Change to Super Admin",
+    "deactivate": "Deactivate",
+    "deactivateConfirm": "Are you sure you want to deactivate this user? They will no longer be able to log in.",
+    "reactivate": "Reactivate",
+    "reactivateConfirm": "Are you sure you want to reactivate this user? They will be able to log in again.",
+    "active": "Active",
+    "deactivated": "Deactivated",
+    "noUsersFound": "No users found",
+    "unnamedUser": "Unnamed User"
   },
 
   "auth": {
@@ -188,6 +241,7 @@
     "resetPasswordDescription": "Enter your email and we'll send you a link to reset your password.",
     "resetLinkSent": "Password reset link sent! Check your email.",
     "backToLogin": "Back to sign in",
+    "backToHome": "Back to home",
     "passwordMinLength": "Password must be at least 6 characters",
     "passwordsDontMatch": "Passwords don't match",
     "emailRequired": "Email is required",
@@ -208,7 +262,15 @@
     "accountCreated": "Account created! Please check your email to confirm your account.",
     "passwordUpdated": "Password updated successfully!",
     "profileCompleted": "Profile completed! Redirecting...",
-    "unexpectedError": "An unexpected error occurred"
+    "unexpectedError": "An unexpected error occurred",
+    "displayNamePlaceholder": "Your full name",
+    "companyNameOptional": "Company Name (optional)",
+    "companyNamePlaceholder": "Your company",
+    "phoneOptional": "Phone (optional)",
+    "setPassword": "Set Password",
+    "newPassword": "New Password",
+    "updatePasswordDescription": "Enter your new password below",
+    "updatingPassword": "Updating..."
   },
 
   "statuses": {
@@ -413,6 +475,7 @@
     "clientCreated": "Client created successfully",
     "clientUpdated": "Client updated successfully",
     "clientDeleted": "Client deleted successfully",
+    "deleteFailed": "Failed to delete client",
     "deleteConfirm": "Are you sure you want to delete this client? All associated data will be affected.",
     "inviteToPortal": "Invite to Portal",
     "inviteSent": "Invitation sent successfully",
@@ -518,6 +581,8 @@
     "invoiceCreated": "Invoice created successfully",
     "invoiceUpdated": "Invoice updated successfully",
     "invoiceDeleted": "Invoice deleted successfully",
+    "updateFailed": "Failed to update invoice",
+    "createFailed": "Failed to create invoice",
     "invoiceSent": "Invoice sent",
     "expenses": "Expenses",
     "addExpense": "Add Expense",
@@ -566,6 +631,7 @@
     "clientName": "Client Name",
     "contact": "Contact",
     "paymentAndActions": "Payment & Actions",
+    "vat": "VAT",
     "markAsSent": "Mark as Sent",
     "deleteConfirmation": "Are you sure you want to delete this invoice? This action cannot be undone.",
     "sendPaymentLink": "Send Payment Link",
@@ -587,7 +653,10 @@
     "projectOptional": "Project (Optional)",
     "sending": "Sending...",
     "export": "Export",
-    "project": "Project"
+    "project": "Project",
+    "processing": "Processing...",
+    "subtotal": "Subtotal",
+    "totalDue": "Total Due"
   },
 
   "contracts": {
@@ -644,7 +713,14 @@
     "deleteTemplateConfirm": "Are you sure you want to delete this template? This action cannot be undone.",
     "templatePlaceholder": "Write your contract template here. Use {placeholder_name} for dynamic values...",
     "failedToSendContract": "Failed to send contract",
-    "contractSignedSuccess": "Contract signed successfully"
+    "contractSignedSuccess": "Contract signed successfully",
+    "backToProject": "Back to Project",
+    "sending": "Sending...",
+    "sendToClient": "Send to Client",
+    "delete": "Delete",
+    "contractTemplates": "Contract Templates",
+    "templatesDescription": "Create and manage reusable contract templates with placeholders",
+    "noContractsListDescription": "Contracts are created from project pages. Go to a project to create a contract."
   },
 
   "deliverables": {
@@ -692,7 +768,23 @@
     "uploadNow": "Upload Now",
     "enterVideoTitle": "Enter video title",
     "uploadFailed": "Upload failed: {error}",
-    "describeChangesNeeded": "Describe the changes needed..."
+    "describeChangesNeeded": "Describe the changes needed...",
+    "currentStatus": "Current Status",
+    "actions": "Actions",
+    "waitingForRevision": "Waiting for client to upload a new version with requested revisions.",
+    "finalApprovedVersion": "This is the final approved version",
+    "provideRevisionFeedback": "Provide specific feedback about what needs to be changed",
+    "revisionComments": "Revision Comments *",
+    "cancel": "Cancel",
+    "requesting": "Requesting...",
+    "statusUpdateFailed": "Failed to update status",
+    "revisionRequestFailed": "Failed to request revision",
+    "uploadVideoDeliverable": "Upload Video Deliverable",
+    "dragDropVideo": "Drag and drop your video file here, or click to browse",
+    "supportsAllFormats": "Supports all video formats",
+    "videoTitle": "Video Title",
+    "uploading": "Uploading...",
+    "uploadVideo": "Upload Video"
   },
 
   "filmingPrep": {
@@ -783,7 +875,9 @@
     "itemsAddedAndRemoved": "{added} items added, {removed} removed",
     "selectNoteDescription": "Choose a note from the list to view and edit",
     "noteContentPlaceholder": "Start writing your concept notes...",
-    "newNote": "New Note"
+    "newNote": "New Note",
+    "filmingPreparation": "Filming Preparation",
+    "manageFor": "Manage equipment, shot lists, and concept notes for {project}"
   },
 
   "filmingRequests": {
@@ -875,7 +969,8 @@
     "budget5000_10000": "€5,000 - €10,000",
     "budget10000Plus": "€10,000+",
     "budgetFlexible": "Flexible / To Be Discussed",
-    "noPackages": "Pricing is per-case for this type. Describe your needs and we'll send a custom quote."
+    "noPackages": "Pricing is per-case for this type. Describe your needs and we'll send a custom quote.",
+    "submitError": "Something went wrong. Please try again."
   },
 
   "calendar": {
@@ -888,7 +983,48 @@
     "addEvent": "Add Event",
     "editEvent": "Edit Event",
     "deleteEvent": "Delete Event",
-    "noEvents": "No events scheduled"
+    "noEvents": "No events scheduled",
+    "thisMonthEvents": "This Month",
+    "upcomingDeadlines": "Upcoming Deadlines",
+    "overdueInvoices": "Overdue Invoices",
+    "activeProjects": "Active Projects",
+    "projects": "Projects",
+    "tasks": "Tasks",
+    "invoices": "Invoices",
+    "filterProject": "Project",
+    "filterTask": "Task",
+    "filterInvoice": "Invoice",
+    "projectStart": "Project Start",
+    "projectDeadline": "Project Deadline",
+    "taskDue": "Task Due",
+    "invoiceDue": "Invoice Due",
+    "upcomingEventsTitle": "Upcoming Events",
+    "noUpcomingEvents": "No upcoming events",
+    "allDayEvent": "All day event",
+    "viewDetails": "View Details",
+    "eventDate": "Date",
+    "eventProject": "Project",
+    "eventClient": "Client",
+    "eventKind": "Event Type",
+    "filterCustom": "Custom",
+    "customEvents": "Custom Events",
+    "eventTitle": "Title",
+    "eventDescription": "Description",
+    "eventStartDate": "Start Date",
+    "eventEndDate": "End Date",
+    "eventAllDay": "All Day",
+    "eventTypeLabel": "Category",
+    "eventTypeMeeting": "Meeting",
+    "eventTypeReminder": "Reminder",
+    "eventTypeFilming": "Filming",
+    "eventTypeDeadline": "Deadline",
+    "eventTypeCustom": "Custom",
+    "createEventSuccess": "Event created successfully",
+    "updateEventSuccess": "Event updated successfully",
+    "deleteEventSuccess": "Event deleted successfully",
+    "deleteEventConfirm": "Are you sure you want to delete this event?",
+    "creating": "Creating...",
+    "saving": "Saving..."
   },
 
   "reports": {
@@ -1036,7 +1172,30 @@
     "noActivities": "No activities yet",
     "searchLeads": "Search leads...",
     "filterByStage": "Filter by stage",
-    "noActivitiesLogged": "No activities logged yet."
+    "noActivitiesLogged": "No activities logged yet.",
+    "dealValue": "Deal Value",
+    "probability": "Probability (%)",
+    "expectedCloseDate": "Expected Close Date",
+    "contactedToday": "Contacted today",
+    "daysAgo": "{count}d ago",
+    "allLeads": "All Leads",
+    "salesReports": "Sales Reports",
+    "viewAllDescription": "View all leads and sales performance across the team",
+    "allStages": "All Stages",
+    "lastContact": "Last Contact",
+    "assignedTo": "Assigned To",
+    "unassigned": "Unassigned",
+    "never": "Never",
+    "noMatchingLeads": "No leads match your filters",
+    "info": "Info",
+    "activities": "Activities",
+    "contactInfo": "Contact Information",
+    "dealInfo": "Deal Information",
+    "assignment": "Assignment",
+    "notes": "Notes",
+    "activityHistory": "Activity History",
+    "unknown": "Unknown",
+    "lostReason": "Lost Reason"
   },
 
   "university": {
@@ -1055,6 +1214,7 @@
     "articleContent": "Content",
     "noCategories": "No categories yet",
     "noArticles": "No articles yet",
+    "noArticlesCheckBack": "This category doesn't have any published articles yet. Check back soon!",
     "categoryCreated": "Category created",
     "categoryUpdated": "Category updated",
     "categoryDeleted": "Category deleted",
@@ -1076,7 +1236,19 @@
     "selectParentCategory": "Select parent category",
     "filterByCategory": "Filter by category",
     "articlePreview": "Article Preview",
-    "viewArticle": "View Article"
+    "viewArticle": "View Article",
+    "manageDescription": "Manage knowledge base categories and articles"
+  },
+
+  "chatbot": {
+    "title": "AI Chatbot",
+    "description": "View chatbot conversations and manage knowledge base",
+    "knowledgeBase": "Knowledge Base",
+    "conversations": "Conversations",
+    "totalConversations": "Total Conversations",
+    "today": "Today",
+    "totalMessages": "Total Messages",
+    "avgMsgsPerConv": "Avg Msgs/Conv"
   },
 
   "salesResources": {
@@ -1088,6 +1260,7 @@
     "resourceName": "Resource Name",
     "category": "Category",
     "noResources": "No resources yet",
+    "noResourcesDescription": "This category doesn't have any resources yet. Check back soon!",
     "resourceUploaded": "Resource uploaded",
     "resourceDeleted": "Resource deleted",
     "manageCategories": "Manage Categories",
@@ -1102,7 +1275,9 @@
     "categoryDescriptionPlaceholder": "Brief description of this category",
     "noCategoriesCreateOne": "No categories yet. Create one to get started.",
     "createCategory": "Create Category",
-    "uploadResourceLabel": "Upload Resource"
+    "uploadResourceLabel": "Upload Resource",
+    "createFirstCategoryDescription": "Create your first category to start organizing sales resources",
+    "uploadFirstResourceDescription": "Upload your first sales resource to get started"
   },
 
   "messages": {
@@ -1182,7 +1357,14 @@
     "budget2500_5000": "€2,500 - €5,000",
     "budget5000_10000": "€5,000 - €10,000",
     "budget10000Plus": "€10,000+",
-    "budgetFlexible": "Flexible / To Be Discussed"
+    "budgetFlexible": "Flexible / To Be Discussed",
+    "continueToDescribe": "Continue to the next step to describe your needs.",
+    "indicativePricing": "Indicative Pricing",
+    "delivery": "Delivery",
+    "fastDelivery": "Fast delivery",
+    "continueForQuote": "Continue to the next step to describe your needs and we'll send you a quote.",
+    "describeForCustomQuote": "Describe your needs in the next step and we'll send you a custom quote.",
+    "cancellationPolicy": "Cancellation Policy"
   },
 
   "employee": {
@@ -1203,6 +1385,8 @@
       "noTasks": "No tasks assigned",
       "noTasksDescription": "Tasks assigned to you will appear here.",
       "updateStatus": "Update Status",
+      "statusUpdated": "Status updated successfully",
+      "statusUpdateFailed": "Failed to update status",
       "taskDetail": "Task Detail"
     },
     "deliverables": {
@@ -1216,13 +1400,20 @@
       "title": "Sales Dashboard",
       "description": "Your pipeline and performance",
       "pipelineSummary": "Pipeline Summary",
+      "activeLeads": "Active Leads",
+      "pipelineByStage": "Pipeline by Stage",
+      "pipelineBreakdown": "Breakdown of leads across stages",
       "todayFollowups": "Today's Follow-ups",
+      "followupsDescription": "Leads that need follow-up today",
       "noFollowups": "No follow-ups today",
-      "recentActivity": "Recent Activity"
+      "recentActivity": "Recent Activity",
+      "latestInteractions": "Your latest interactions",
+      "noRecentActivity": "No recent activity to show"
     },
     "leads": {
       "title": "My Leads",
-      "description": "Manage your leads pipeline"
+      "description": "Manage your leads pipeline",
+      "addLead": "Add Lead"
     },
     "resources": {
       "title": "Resources",
@@ -1253,7 +1444,12 @@
       "noDeliverables": "No deliverables",
       "noDeliverablesDescription": "You don't have any deliverables yet",
       "noUpcomingFilmings": "No upcoming filmings",
-      "noUpcomingFilmingsDescription": "No filming dates scheduled at the moment"
+      "noUpcomingFilmingsDescription": "No filming dates scheduled at the moment",
+      "contracts": "Contracts",
+      "noContracts": "No contracts",
+      "noContractsDescription": "Your contracts will appear here once created.",
+      "downloadPdf": "Download PDF",
+      "viewContract": "View"
     },
     "projects": {
       "title": "My Projects",
@@ -1281,7 +1477,31 @@
       "stageEditing": "Editing",
       "stageReview": "Review",
       "stageRevisions": "Revisions",
-      "stageDelivered": "Delivered"
+      "stageDelivered": "Delivered",
+      "overview": "Overview",
+      "deliverables": "Deliverables",
+      "messages": "Messages",
+      "contracts": "Contracts",
+      "projectDetails": "Project Details",
+      "description": "Description",
+      "status": "Status",
+      "filmingDate": "Filming Date",
+      "location": "Location",
+      "budget": "Budget",
+      "createdOn": "Created on {date}"
+    },
+    "contracts": {
+      "title": "My Contracts",
+      "description": "Your contracts and agreements",
+      "noContracts": "No contracts yet",
+      "noContractsDescription": "Your contracts will appear here once created.",
+      "signContract": "Sign",
+      "downloadPdf": "Download PDF",
+      "viewContract": "View",
+      "signatureRequired": "Awaiting your signature",
+      "project": "Project",
+      "created": "Created",
+      "expires": "Expires"
     },
     "invoices": {
       "title": "My Invoices",

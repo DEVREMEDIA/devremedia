@@ -26,19 +26,16 @@ export function LandingContactForm() {
     };
 
     try {
-      // Submit as a filming request via the existing system
-      const { createClient } = await import('@/lib/supabase/client');
-      const supabase = createClient();
-      const { error } = await supabase.from('filming_requests').insert({
+      const { createPublicFilmingRequest } = await import('@/lib/actions/filming-requests');
+      const result = await createPublicFilmingRequest({
         contact_name: data.name,
         contact_email: data.email,
         contact_phone: data.phone || null,
         title: data.subject || 'Website Contact Form',
         description: data.message,
-        status: 'pending',
       });
 
-      if (error) throw error;
+      if (result.error) throw new Error(result.error);
       setStatus('success');
       (e.target as HTMLFormElement).reset();
     } catch {
@@ -147,7 +144,11 @@ export function LandingContactForm() {
       </div>
 
       {status === 'error' && (
-        <div role="alert" aria-live="assertive" className="flex items-center gap-2 text-sm text-red-400">
+        <div
+          role="alert"
+          aria-live="assertive"
+          className="flex items-center gap-2 text-sm text-red-400"
+        >
           <AlertCircle className="h-4 w-4" aria-hidden="true" />
           {t('error')}
         </div>

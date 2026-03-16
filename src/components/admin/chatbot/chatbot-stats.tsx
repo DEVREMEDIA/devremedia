@@ -2,6 +2,7 @@
 
 import { MessageSquare, MessagesSquare, CalendarDays, TrendingUp } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { useTranslations } from 'next-intl';
 
 type ChatbotStatsProps = {
   totalConversations: number;
@@ -16,11 +17,13 @@ export function ChatbotStats({
   totalMessages,
   avgMsgsPerConv,
 }: ChatbotStatsProps) {
+  const t = useTranslations('chatbot');
+
   const stats = [
-    { title: 'Total Conversations', value: totalConversations, icon: MessageSquare },
-    { title: 'Today', value: todayConversations, icon: CalendarDays },
-    { title: 'Total Messages', value: totalMessages, icon: MessagesSquare },
-    { title: 'Avg Msgs/Conv', value: avgMsgsPerConv, icon: TrendingUp },
+    { title: t('totalConversations'), value: totalConversations, icon: MessageSquare },
+    { title: t('today'), value: todayConversations, icon: CalendarDays },
+    { title: t('totalMessages'), value: totalMessages, icon: MessagesSquare },
+    { title: t('avgMsgsPerConv'), value: avgMsgsPerConv, icon: TrendingUp },
   ];
 
   return (

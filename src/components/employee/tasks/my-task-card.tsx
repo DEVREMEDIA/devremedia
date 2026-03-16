@@ -69,7 +69,7 @@ export function MyTaskCard({ task }: MyTaskCardProps) {
                 {isOverdue && <AlertCircle className="h-3 w-3" />}
                 <Calendar className="h-3 w-3" />
                 <span>
-                  {new Date(task.due_date).toLocaleDateString('en-US', {
+                  {new Date(task.due_date).toLocaleDateString(undefined, {
                     month: 'short',
                     day: 'numeric',
                     year: 'numeric',

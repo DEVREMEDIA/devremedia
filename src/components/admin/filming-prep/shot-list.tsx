@@ -1,28 +1,33 @@
 'use client';
 
-import { useEffect, useState, useCallback } from 'react';
+import { useEffect, useState, useCallback, useRef } from 'react';
 import { useTranslations } from 'next-intl';
 import { getShotLists, createShotList, updateShotList } from '@/lib/actions/filming-prep';
-import type { Shot } from '@/lib/schemas/filming-prep';
+import type { Shot, ShotList as ShotListData } from '@/types';
 import { SHOT_TYPES, SHOT_TYPE_LABELS } from '@/lib/constants';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from '@/components/ui/table';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 import { EmptyState } from '@/components/shared/empty-state';
 import { LoadingSpinner } from '@/components/shared/loading-spinner';
 import { Plus, Trash2, Camera } from 'lucide-react';
 import { toast } from 'sonner';
-
-type ShotListData = {
-  id: string;
-  project_id: string;
-  shots: Shot[];
-  created_at: string;
-  updated_at: string;
-};
 
 interface ShotListProps {
   projectId: string;
@@ -43,15 +48,15 @@ export function ShotList({ projectId }: ShotListProps) {
       return;
     }
 
-    setShotLists(result.data as any || []);
+    setShotLists(result.data ?? []);
     if (result.data && result.data.length > 0) {
       setActiveShotListId(result.data[0].id);
     }
     setLoading(false);
-  }, [projectId]);
+  }, [projectId, t]);
 
   useEffect(() => {
-    loadShotLists();
+    void loadShotLists();
   }, [loadShotLists]);
 
   const handleCreateShotList = async () => {
@@ -94,7 +99,7 @@ export function ShotList({ projectId }: ShotListProps) {
     );
   }
 
-  const activeShotList = shotLists.find(list => list.id === activeShotListId);
+  const activeShotList = shotLists.find((list) => list.id === activeShotListId);
 
   return (
     <Card>
@@ -103,12 +108,7 @@ export function ShotList({ projectId }: ShotListProps) {
         <CardDescription>{t('planAndTrackShots')}</CardDescription>
       </CardHeader>
       <CardContent>
-        {activeShotList && (
-          <ShotListTable
-            shotList={activeShotList}
-            onUpdate={loadShotLists}
-          />
-        )}
+        {activeShotList && <ShotListTable shotList={activeShotList} onUpdate={loadShotLists} />}
       </CardContent>
     </Card>
   );
@@ -124,14 +124,14 @@ function ShotListTable({ shotList }: ShotListTableProps) {
   const tc = useTranslations('common');
   const [shots, setShots] = useState<Shot[]>(shotList.shots || []);
   const [saving, setSaving] = useState(false);
-  const [saveTimeout, setSaveTimeout] = useState<NodeJS.Timeout | null>(null);
+  const saveTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
   const debouncedSave = (updatedShots: Shot[]) => {
-    if (saveTimeout) {
-      clearTimeout(saveTimeout);
+    if (saveTimeoutRef.current) {
+      clearTimeout(saveTimeoutRef.current);
     }
 
-    const timeout = setTimeout(async () => {
+    saveTimeoutRef.current = setTimeout(async () => {
       setSaving(true);
       const result = await updateShotList(shotList.id, { shots: updatedShots });
       setSaving(false);
@@ -140,8 +140,6 @@ function ShotListTable({ shotList }: ShotListTableProps) {
         toast.error(t('failedToSaveShotList'));
       }
     }, 500);
-
-    setSaveTimeout(timeout);
   };
 
   const addShot = () => {
@@ -193,7 +191,7 @@ function ShotListTable({ shotList }: ShotListTableProps) {
     debouncedSave(updatedShots);
   };
 
-  const completedCount = shots.filter(shot => shot.completed).length;
+  const completedCount = shots.filter((shot) => shot.completed).length;
 
   return (
     <div className="space-y-4">
@@ -220,11 +218,7 @@ function ShotListTable({ shotList }: ShotListTableProps) {
       </div>
 
       {shots.length === 0 ? (
-        <EmptyState
-          icon={Camera}
-          title={t('noShotsYet')}
-          description={t('addFirstShot')}
-        />
+        <EmptyState icon={Camera} title={t('noShotsYet')} description={t('addFirstShot')} />
       ) : (
         <div className="border rounded-lg">
           <Table>
@@ -242,10 +236,8 @@ function ShotListTable({ shotList }: ShotListTableProps) {
             </TableHeader>
             <TableBody>
               {shots.map((shot, index) => (
-                <TableRow key={index}>
-                  <TableCell className="font-medium text-center">
-                    {shot.number}
-                  </TableCell>
+                <TableRow key={`shot-${shot.number}`}>
+                  <TableCell className="font-medium text-center">{shot.number}</TableCell>
                   <TableCell>
                     <Input
                       value={shot.description}
@@ -257,7 +249,9 @@ function ShotListTable({ shotList }: ShotListTableProps) {
                   <TableCell>
                     <Select
                       value={shot.shot_type}
-                      onValueChange={(value) => updateShot(index, { shot_type: value as Shot['shot_type'] })}
+                      onValueChange={(value) =>
+                        updateShot(index, { shot_type: value as Shot['shot_type'] })
+                      }
                     >
                       <SelectTrigger className="h-9">
                         <SelectValue />
@@ -302,11 +296,7 @@ function ShotListTable({ shotList }: ShotListTableProps) {
                     />
                   </TableCell>
                   <TableCell>
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={() => deleteShot(index)}
-                    >
+                    <Button variant="ghost" size="sm" onClick={() => deleteShot(index)}>
                       <Trash2 className="h-4 w-4 text-destructive" />
                     </Button>
                   </TableCell>

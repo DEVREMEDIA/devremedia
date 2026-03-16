@@ -1,4 +1,5 @@
 import Link from 'next/link';
+import { getTranslations } from 'next-intl/server';
 import { PageHeader } from '@/components/shared/page-header';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -9,18 +10,16 @@ import { getChatConversations, getChatStats } from '@/lib/queries/chatbot';
 import type { ChatConversation } from '@/types/index';
 
 export default async function AdminChatbotPage() {
-  const [conversations, stats] = await Promise.all([
-    getChatConversations(),
-    getChatStats(),
-  ]);
+  const t = await getTranslations('chatbot');
+  const [conversations, stats] = await Promise.all([getChatConversations(), getChatStats()]);
 
   return (
     <div className="space-y-6">
-      <PageHeader title="AI Chatbot" description="View chatbot conversations and manage knowledge base">
+      <PageHeader title={t('title')} description={t('description')}>
         <Link href="/admin/chatbot/knowledge">
           <Button variant="outline" size="sm">
             <BookOpen className="h-4 w-4 mr-2" />
-            Knowledge Base
+            {t('knowledgeBase')}
           </Button>
         </Link>
       </PageHeader>
@@ -29,7 +28,7 @@ export default async function AdminChatbotPage() {
 
       <Card>
         <CardHeader>
-          <CardTitle>Conversations</CardTitle>
+          <CardTitle>{t('conversations')}</CardTitle>
         </CardHeader>
         <CardContent>
           <ConversationsTable conversations={conversations as ChatConversation[]} />

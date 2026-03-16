@@ -8,9 +8,15 @@ import { revalidatePath } from 'next/cache';
 export async function getKbCategories(): Promise<ActionResult<KbCategory[]>> {
   try {
     const supabase = await createClient();
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
+    if (!user) return { data: null, error: 'Unauthorized' };
     const { data, error } = await supabase
       .from('kb_categories')
-      .select('*')
+      .select(
+        'id, title, description, slug, sort_order, parent_id, created_by, created_at, updated_at',
+      )
       .order('sort_order', { ascending: true });
 
     if (error) return { data: null, error: error.message };
@@ -23,9 +29,15 @@ export async function getKbCategories(): Promise<ActionResult<KbCategory[]>> {
 export async function getKbCategory(id: string): Promise<ActionResult<KbCategory>> {
   try {
     const supabase = await createClient();
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
+    if (!user) return { data: null, error: 'Unauthorized' };
     const { data, error } = await supabase
       .from('kb_categories')
-      .select('*')
+      .select(
+        'id, title, description, slug, sort_order, parent_id, created_by, created_at, updated_at',
+      )
       .eq('id', id)
       .single();
 
@@ -39,9 +51,15 @@ export async function getKbCategory(id: string): Promise<ActionResult<KbCategory
 export async function getKbCategoryBySlug(slug: string): Promise<ActionResult<KbCategory>> {
   try {
     const supabase = await createClient();
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
+    if (!user) return { data: null, error: 'Unauthorized' };
     const { data, error } = await supabase
       .from('kb_categories')
-      .select('*')
+      .select(
+        'id, title, description, slug, sort_order, parent_id, created_by, created_at, updated_at',
+      )
       .eq('slug', slug)
       .single();
 
@@ -57,13 +75,26 @@ export async function createKbCategory(input: unknown): Promise<ActionResult<KbC
     const validated = createKbCategorySchema.parse(input);
     const supabase = await createClient();
 
-    const { data: { user } } = await supabase.auth.getUser();
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
     if (!user) return { data: null, error: 'Unauthorized' };
+
+    const { data: profile } = await supabase
+      .from('user_profiles')
+      .select('role')
+      .eq('id', user.id)
+      .single();
+    if (!profile || !['super_admin', 'admin'].includes(profile.role)) {
+      return { data: null, error: 'Forbidden: admin access required' };
+    }
 
     const { data, error } = await supabase
       .from('kb_categories')
       .insert({ ...validated, created_by: user.id })
-      .select()
+      .select(
+        'id, title, description, slug, sort_order, parent_id, created_by, created_at, updated_at',
+      )
       .single();
 
     if (error) return { data: null, error: error.message };
@@ -77,16 +108,34 @@ export async function createKbCategory(input: unknown): Promise<ActionResult<KbC
   }
 }
 
-export async function updateKbCategory(id: string, input: unknown): Promise<ActionResult<KbCategory>> {
+export async function updateKbCategory(
+  id: string,
+  input: unknown,
+): Promise<ActionResult<KbCategory>> {
   try {
     const validated = updateKbCategorySchema.parse(input);
     const supabase = await createClient();
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
+    if (!user) return { data: null, error: 'Unauthorized' };
+
+    const { data: profile } = await supabase
+      .from('user_profiles')
+      .select('role')
+      .eq('id', user.id)
+      .single();
+    if (!profile || !['super_admin', 'admin'].includes(profile.role)) {
+      return { data: null, error: 'Forbidden: admin access required' };
+    }
 
     const { data, error } = await supabase
       .from('kb_categories')
       .update(validated)
       .eq('id', id)
-      .select()
+      .select(
+        'id, title, description, slug, sort_order, parent_id, created_by, created_at, updated_at',
+      )
       .single();
 
     if (error) return { data: null, error: error.message };
@@ -103,6 +152,20 @@ export async function updateKbCategory(id: string, input: unknown): Promise<Acti
 export async function deleteKbCategory(id: string): Promise<ActionResult<void>> {
   try {
     const supabase = await createClient();
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
+    if (!user) return { data: null, error: 'Unauthorized' };
+
+    const { data: profile } = await supabase
+      .from('user_profiles')
+      .select('role')
+      .eq('id', user.id)
+      .single();
+    if (!profile || !['super_admin', 'admin'].includes(profile.role)) {
+      return { data: null, error: 'Forbidden: admin access required' };
+    }
+
     const { error } = await supabase.from('kb_categories').delete().eq('id', id);
 
     if (error) return { data: null, error: error.message };

@@ -25,16 +25,22 @@ export async function POST(req: Request) {
       return new Response('Missing required fields', { status: 400 });
     }
 
-    // Rate limit check
-    const rateCheck = await checkRateLimit(sessionId);
+    // Rate limit check — use IP + sessionId to prevent easy bypass
+    const clientIp =
+      req.headers.get('x-forwarded-for')?.split(',')[0]?.trim() ||
+      req.headers.get('x-real-ip') ||
+      'unknown';
+    const rateLimitKey = `${clientIp}:${sessionId}`;
+    const rateCheck = await checkRateLimit(rateLimitKey);
     if (!rateCheck.allowed) {
       return new Response(
         JSON.stringify({
-          error: language === 'el'
-            ? 'Πολλά μηνύματα. Παρακαλώ περιμένετε λίγο.'
-            : 'Too many messages. Please wait a moment.',
+          error:
+            language === 'el'
+              ? 'Πολλά μηνύματα. Παρακαλώ περιμένετε λίγο.'
+              : 'Too many messages. Please wait a moment.',
         }),
-        { status: 429, headers: { 'Content-Type': 'application/json' } }
+        { status: 429, headers: { 'Content-Type': 'application/json' } },
       );
     }
 
@@ -94,9 +100,7 @@ export async function POST(req: Request) {
           if (chunks && chunks.length > 0) {
             const lang = language === 'el' ? 'content_el' : 'content_en';
             contextContent = chunks
-              .map((c: Record<string, unknown>) =>
-                `[${c.title}]: ${c[lang] || c.content_en || ''}`
-              )
+              .map((c: Record<string, unknown>) => `[${c.title}]: ${c[lang] || c.content_en || ''}`)
               .join('\n\n');
           }
         } catch (embeddingError) {
@@ -148,9 +152,9 @@ export async function POST(req: Request) {
     return result.toUIMessageStreamResponse();
   } catch (error) {
     console.error('Chat API error:', error);
-    return new Response(
-      JSON.stringify({ error: 'Internal server error' }),
-      { status: 500, headers: { 'Content-Type': 'application/json' } }
-    );
+    return new Response(JSON.stringify({ error: 'Internal server error' }), {
+      status: 500,
+      headers: { 'Content-Type': 'application/json' },
+    });
   }
 }

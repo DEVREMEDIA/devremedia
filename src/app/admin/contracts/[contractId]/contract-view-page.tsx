@@ -86,19 +86,19 @@ export function ContractViewPage({ contract }: ContractViewPageProps) {
           <Button variant="outline" size="sm" asChild>
             <Link href={`/admin/projects/${contract.project_id}`}>
               <ArrowLeft className="h-4 w-4 mr-2" />
-              Back to Project
+              {t('backToProject')}
             </Link>
           </Button>
           {contract.status === 'signed' && (
             <Button size="sm" variant="outline" onClick={handleDownloadPDF}>
               <Download className="h-4 w-4 mr-2" />
-              Download PDF
+              {t('downloadPdf')}
             </Button>
           )}
           {contract.status === 'draft' && (
             <Button size="sm" onClick={handleSendToClient} disabled={isSending}>
               <Send className="h-4 w-4 mr-2" />
-              {isSending ? 'Sending...' : 'Send to Client'}
+              {isSending ? t('sending') : t('sendToClient')}
             </Button>
           )}
           <Button
@@ -108,7 +108,7 @@ export function ContractViewPage({ contract }: ContractViewPageProps) {
             className="text-red-600 hover:text-red-700 hover:bg-red-50"
           >
             <Trash2 className="h-4 w-4 mr-2" />
-            Delete
+            {t('delete')}
           </Button>
         </div>
       </PageHeader>
@@ -120,9 +120,9 @@ export function ContractViewPage({ contract }: ContractViewPageProps) {
       <ConfirmDialog
         open={deleteDialogOpen}
         onOpenChange={setDeleteDialogOpen}
-        title="Delete Contract"
-        description="Are you sure you want to delete this contract? This action cannot be undone."
-        confirmLabel="Delete"
+        title={t('deleteContract')}
+        description={t('deleteContractConfirm')}
+        confirmLabel={t('delete')}
         onConfirm={handleDelete}
         loading={isDeleting}
         destructive

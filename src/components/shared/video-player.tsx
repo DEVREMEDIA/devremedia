@@ -1,26 +1,17 @@
-'use client'
+'use client';
 
-import { useState, useRef, useEffect } from 'react'
-import { Button } from '@/components/ui/button'
-import { Play, Pause, Volume2, VolumeX, Maximize, Minimize } from 'lucide-react'
-import { cn } from '@/lib/utils'
-
-type VideoAnnotation = {
-  id: string
-  deliverable_id: string
-  created_by: string | null
-  timestamp_seconds: number
-  content: string
-  resolved: boolean
-  created_at: string
-}
+import { useState, useRef, useEffect } from 'react';
+import { Button } from '@/components/ui/button';
+import { Play, Pause, Volume2, VolumeX, Maximize, Minimize } from 'lucide-react';
+import { cn } from '@/lib/utils';
+import type { VideoAnnotation } from '@/types';
 
 type VideoPlayerProps = {
-  src: string
-  annotations?: VideoAnnotation[]
-  onTimeClick?: (seconds: number) => void
-  onAnnotationClick?: (annotation: VideoAnnotation) => void
-}
+  src: string;
+  annotations?: VideoAnnotation[];
+  onTimeClick?: (seconds: number) => void;
+  onAnnotationClick?: (annotation: VideoAnnotation) => void;
+};
 
 export function VideoPlayer({
   src,
@@ -28,126 +19,121 @@ export function VideoPlayer({
   onTimeClick,
   onAnnotationClick,
 }: VideoPlayerProps) {
-  const videoRef = useRef<HTMLVideoElement>(null)
-  const containerRef = useRef<HTMLDivElement>(null)
-  const [isPlaying, setIsPlaying] = useState(false)
-  const [currentTime, setCurrentTime] = useState(0)
-  const [duration, setDuration] = useState(0)
-  const [volume, setVolume] = useState(1)
-  const [isMuted, setIsMuted] = useState(false)
-  const [isFullscreen, setIsFullscreen] = useState(false)
+  const videoRef = useRef<HTMLVideoElement>(null);
+  const containerRef = useRef<HTMLDivElement>(null);
+  const [isPlaying, setIsPlaying] = useState(false);
+  const [currentTime, setCurrentTime] = useState(0);
+  const [duration, setDuration] = useState(0);
+  const [volume, setVolume] = useState(1);
+  const [isMuted, setIsMuted] = useState(false);
+  const [isFullscreen, setIsFullscreen] = useState(false);
 
   useEffect(() => {
-    const video = videoRef.current
-    if (!video) return
+    const video = videoRef.current;
+    if (!video) return;
 
-    const handleTimeUpdate = () => setCurrentTime(video.currentTime)
-    const handleLoadedMetadata = () => setDuration(video.duration)
-    const handleEnded = () => setIsPlaying(false)
+    const handleTimeUpdate = () => setCurrentTime(video.currentTime);
+    const handleLoadedMetadata = () => setDuration(video.duration);
+    const handleEnded = () => setIsPlaying(false);
 
-    video.addEventListener('timeupdate', handleTimeUpdate)
-    video.addEventListener('loadedmetadata', handleLoadedMetadata)
-    video.addEventListener('ended', handleEnded)
+    video.addEventListener('timeupdate', handleTimeUpdate);
+    video.addEventListener('loadedmetadata', handleLoadedMetadata);
+    video.addEventListener('ended', handleEnded);
 
     return () => {
-      video.removeEventListener('timeupdate', handleTimeUpdate)
-      video.removeEventListener('loadedmetadata', handleLoadedMetadata)
-      video.removeEventListener('ended', handleEnded)
-    }
-  }, [])
+      video.removeEventListener('timeupdate', handleTimeUpdate);
+      video.removeEventListener('loadedmetadata', handleLoadedMetadata);
+      video.removeEventListener('ended', handleEnded);
+    };
+  }, []);
 
   useEffect(() => {
     const handleFullscreenChange = () => {
-      setIsFullscreen(!!document.fullscreenElement)
-    }
+      setIsFullscreen(!!document.fullscreenElement);
+    };
 
-    document.addEventListener('fullscreenchange', handleFullscreenChange)
-    return () => document.removeEventListener('fullscreenchange', handleFullscreenChange)
-  }, [])
+    document.addEventListener('fullscreenchange', handleFullscreenChange);
+    return () => document.removeEventListener('fullscreenchange', handleFullscreenChange);
+  }, []);
 
   const togglePlay = () => {
-    const video = videoRef.current
-    if (!video) return
+    const video = videoRef.current;
+    if (!video) return;
 
     if (isPlaying) {
-      video.pause()
+      video.pause();
     } else {
-      video.play()
+      video.play();
     }
-    setIsPlaying(!isPlaying)
-  }
+    setIsPlaying(!isPlaying);
+  };
 
   const handleSeek = (e: React.MouseEvent<HTMLDivElement>) => {
-    const video = videoRef.current
-    if (!video) return
+    const video = videoRef.current;
+    if (!video) return;
 
-    const rect = e.currentTarget.getBoundingClientRect()
-    const percent = (e.clientX - rect.left) / rect.width
-    const newTime = percent * duration
-    video.currentTime = newTime
-    setCurrentTime(newTime)
-    onTimeClick?.(newTime)
-  }
+    const rect = e.currentTarget.getBoundingClientRect();
+    const percent = (e.clientX - rect.left) / rect.width;
+    const newTime = percent * duration;
+    video.currentTime = newTime;
+    setCurrentTime(newTime);
+    onTimeClick?.(newTime);
+  };
 
   const handleVolumeChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const video = videoRef.current
-    if (!video) return
+    const video = videoRef.current;
+    if (!video) return;
 
-    const newVolume = parseFloat(e.target.value)
-    video.volume = newVolume
-    setVolume(newVolume)
-    setIsMuted(newVolume === 0)
-  }
+    const newVolume = parseFloat(e.target.value);
+    video.volume = newVolume;
+    setVolume(newVolume);
+    setIsMuted(newVolume === 0);
+  };
 
   const toggleMute = () => {
-    const video = videoRef.current
-    if (!video) return
+    const video = videoRef.current;
+    if (!video) return;
 
-    video.muted = !isMuted
-    setIsMuted(!isMuted)
-  }
+    video.muted = !isMuted;
+    setIsMuted(!isMuted);
+  };
 
   const toggleFullscreen = async () => {
-    const container = containerRef.current
-    if (!container) return
+    const container = containerRef.current;
+    if (!container) return;
 
     try {
       if (!document.fullscreenElement) {
-        await container.requestFullscreen()
+        await container.requestFullscreen();
       } else {
-        await document.exitFullscreen()
+        await document.exitFullscreen();
       }
     } catch (error) {
-      console.error('Fullscreen error:', error)
+      console.error('Fullscreen error:', error);
     }
-  }
+  };
 
   const formatTime = (seconds: number) => {
-    if (isNaN(seconds)) return '0:00'
-    const mins = Math.floor(seconds / 60)
-    const secs = Math.floor(seconds % 60)
-    return `${mins}:${secs.toString().padStart(2, '0')}`
-  }
+    if (isNaN(seconds)) return '0:00';
+    const mins = Math.floor(seconds / 60);
+    const secs = Math.floor(seconds % 60);
+    return `${mins}:${secs.toString().padStart(2, '0')}`;
+  };
 
   const handleAnnotationMarkerClick = (annotation: VideoAnnotation, e: React.MouseEvent) => {
-    e.stopPropagation()
-    const video = videoRef.current
+    e.stopPropagation();
+    const video = videoRef.current;
     if (video) {
-      video.currentTime = annotation.timestamp_seconds
-      setCurrentTime(annotation.timestamp_seconds)
+      video.currentTime = annotation.timestamp_seconds;
+      setCurrentTime(annotation.timestamp_seconds);
     }
-    onAnnotationClick?.(annotation)
-  }
+    onAnnotationClick?.(annotation);
+  };
 
   return (
     <div ref={containerRef} className="bg-black rounded-lg overflow-hidden">
       <div className="relative aspect-video bg-black group">
-        <video
-          ref={videoRef}
-          src={src}
-          className="w-full h-full"
-          onClick={togglePlay}
-        />
+        <video ref={videoRef} src={src} className="w-full h-full" onClick={togglePlay} />
 
         {/* Controls Overlay */}
         <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity">
@@ -171,9 +157,7 @@ export function VideoPlayer({
                     key={annotation.id}
                     className={cn(
                       'absolute top-1/2 -translate-y-1/2 w-2 h-2 rounded-full transition-all hover:scale-150',
-                      annotation.resolved
-                        ? 'bg-green-500'
-                        : 'bg-yellow-500'
+                      annotation.resolved ? 'bg-green-500' : 'bg-yellow-500',
                     )}
                     style={{
                       left: `${(annotation.timestamp_seconds / duration) * 100}%`,
@@ -235,5 +219,5 @@ export function VideoPlayer({
         </div>
       </div>
     </div>
-  )
+  );
 }

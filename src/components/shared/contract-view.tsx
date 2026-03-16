@@ -1,5 +1,6 @@
 'use client';
 
+import Image from 'next/image';
 import { format } from 'date-fns';
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import { StatusBadge } from '@/components/shared/status-badge';
@@ -40,7 +41,12 @@ export function ContractView({ contract, showSignature = false }: ContractViewPr
                 <div className="flex items-center gap-3 mt-2">
                   <StatusBadge status={contract.status} />
                   <span className="text-sm text-muted-foreground">
-                    {t('created')} {format(new Date(contract.created_at), 'MMMM d, yyyy')}
+                    {t('created')}{' '}
+                    {new Date(contract.created_at).toLocaleDateString(undefined, {
+                      year: 'numeric',
+                      month: 'long',
+                      day: 'numeric',
+                    })}
                   </span>
                 </div>
               </div>
@@ -50,7 +56,12 @@ export function ContractView({ contract, showSignature = false }: ContractViewPr
           {contract.expires_at && (
             <div className="flex items-center gap-2">
               <Badge variant="outline">
-                {t('expires')} {format(new Date(contract.expires_at), 'MMMM d, yyyy')}
+                {t('expires')}{' '}
+                {new Date(contract.expires_at).toLocaleDateString(undefined, {
+                  year: 'numeric',
+                  month: 'long',
+                  day: 'numeric',
+                })}
               </Badge>
             </div>
           )}
@@ -64,27 +75,35 @@ export function ContractView({ contract, showSignature = false }: ContractViewPr
         </CardContent>
       </Card>
 
-      {showSignature && contract.status === 'signed' && contract.signature_image && (
-        <Card>
-          <CardHeader>
-            <h2 className="text-lg font-semibold">{t('signatureLabel')}</h2>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-2">
-              <div className="border rounded-lg p-4 bg-muted/10 inline-block">
-                <img
-                  src={contract.signature_image}
-                  alt={t('contractSignature')}
-                  className="h-24"
-                />
+      {showSignature &&
+        contract.status === 'signed' &&
+        contract.signature_image &&
+        contract.signed_at && (
+          <Card>
+            <CardHeader>
+              <h2 className="text-lg font-semibold">{t('signatureLabel')}</h2>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-2">
+                <div className="border rounded-lg p-4 bg-muted/10 inline-block">
+                  <Image
+                    src={contract.signature_image}
+                    alt={t('contractSignature')}
+                    width={200}
+                    height={96}
+                    className="h-24 w-auto"
+                  />
+                </div>
+                <p className="text-sm text-muted-foreground">
+                  {t('signedOn', {
+                    date: format(new Date(contract.signed_at!), 'MMMM d, yyyy'),
+                    time: format(new Date(contract.signed_at!), 'h:mm a'),
+                  })}
+                </p>
               </div>
-              <p className="text-sm text-muted-foreground">
-                {t('signedOn', { date: format(new Date(contract.signed_at!), 'MMMM d, yyyy'), time: format(new Date(contract.signed_at!), 'h:mm a') })}
-              </p>
-            </div>
-          </CardContent>
-        </Card>
-      )}
+            </CardContent>
+          </Card>
+        )}
     </div>
   );
 }

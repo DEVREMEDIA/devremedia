@@ -1,163 +1,156 @@
-'use client'
+'use client';
 
-import { useState, useEffect } from 'react'
-import { Button } from '@/components/ui/button'
-import dynamic from 'next/dynamic'
-import { AnnotationList } from '@/components/shared/annotation-list'
+import { useState, useEffect } from 'react';
+import { Button } from '@/components/ui/button';
+import dynamic from 'next/dynamic';
+import { AnnotationList } from '@/components/shared/annotation-list';
 
 const VideoPlayer = dynamic(
   () => import('@/components/shared/video-player').then((mod) => mod.VideoPlayer),
   { ssr: false },
-)
-import { AddAnnotationDialog } from '@/components/shared/add-annotation-dialog'
-import { ApprovalActions } from '@/components/admin/deliverables/approval-actions'
-import { VersionHistory } from '@/components/admin/deliverables/version-history'
-import { getAnnotations, resolveAnnotation, getDeliverablesByProject } from '@/lib/actions/deliverables'
-import { createClient } from '@/lib/supabase/client'
-import { useTranslations } from 'next-intl'
-import { toast } from 'sonner'
-import { ArrowLeft, Download, Plus, Loader2 } from 'lucide-react'
-import type { DeliverableStatus } from '@/lib/constants'
+);
+import { AddAnnotationDialog } from '@/components/shared/add-annotation-dialog';
+import { ApprovalActions } from '@/components/admin/deliverables/approval-actions';
+import { VersionHistory } from '@/components/admin/deliverables/version-history';
+import {
+  getAnnotations,
+  resolveAnnotation,
+  getDeliverablesByProject,
+} from '@/lib/actions/deliverables';
+import { createClient } from '@/lib/supabase/client';
+import { useTranslations } from 'next-intl';
+import { toast } from 'sonner';
+import { ArrowLeft, Download, Plus, Loader2 } from 'lucide-react';
+import type { VideoAnnotation } from '@/types';
+import type { DeliverableStatus } from '@/lib/constants';
 
 type Deliverable = {
-  id: string
-  project_id: string
-  title: string
-  description: string | null
-  file_path: string
-  file_size: number | null
-  file_type: string | null
-  version_number: number
-  status: DeliverableStatus
-  download_count: number
-  expires_at: string | null
-  uploaded_by: string | null
-  created_at: string
-}
-
-type VideoAnnotation = {
-  id: string
-  deliverable_id: string
-  created_by: string | null
-  timestamp_seconds: number
-  content: string
-  resolved: boolean
-  created_at: string
-}
+  id: string;
+  project_id: string;
+  title: string;
+  description: string | null;
+  file_path: string;
+  file_size: number | null;
+  file_type: string | null;
+  version_number: number;
+  status: DeliverableStatus;
+  download_count: number;
+  expires_at: string | null;
+  uploaded_by: string | null;
+  created_at: string;
+};
 
 type DeliverableDetailProps = {
-  deliverable: Deliverable
-  projectId: string
-  onBack: () => void
-}
+  deliverable: Deliverable;
+  projectId: string;
+  onBack: () => void;
+};
 
-export function DeliverableDetail({
-  deliverable,
-  projectId,
-  onBack,
-}: DeliverableDetailProps) {
-  const t = useTranslations('deliverables')
-  const tToast = useTranslations('toast')
-  const [annotations, setAnnotations] = useState<VideoAnnotation[]>([])
-  const [versionHistory, setVersionHistory] = useState<Deliverable[]>([])
-  const [isLoadingAnnotations, setIsLoadingAnnotations] = useState(true)
-  const [isLoadingVersions, setIsLoadingVersions] = useState(true)
-  const [videoUrl, setVideoUrl] = useState<string | null>(null)
-  const [isAnnotationDialogOpen, setIsAnnotationDialogOpen] = useState(false)
-  const [selectedTimestamp, setSelectedTimestamp] = useState(0)
+export function DeliverableDetail({ deliverable, projectId, onBack }: DeliverableDetailProps) {
+  const t = useTranslations('deliverables');
+  const tToast = useTranslations('toast');
+  const [annotations, setAnnotations] = useState<VideoAnnotation[]>([]);
+  const [versionHistory, setVersionHistory] = useState<Deliverable[]>([]);
+  const [isLoadingAnnotations, setIsLoadingAnnotations] = useState(true);
+  const [isLoadingVersions, setIsLoadingVersions] = useState(true);
+  const [videoUrl, setVideoUrl] = useState<string | null>(null);
+  const [isAnnotationDialogOpen, setIsAnnotationDialogOpen] = useState(false);
+  const [selectedTimestamp, setSelectedTimestamp] = useState(0);
 
   const fetchAnnotations = async () => {
-    setIsLoadingAnnotations(true)
-    const result = await getAnnotations(deliverable.id)
+    setIsLoadingAnnotations(true);
+    const result = await getAnnotations(deliverable.id);
 
     if (result.error) {
-      toast.error(t('failedToLoadAnnotations'))
+      toast.error(t('failedToLoadAnnotations'));
     } else {
-      setAnnotations(result.data as unknown as VideoAnnotation[] ?? [])
+      setAnnotations(result.data ?? []);
     }
 
-    setIsLoadingAnnotations(false)
-  }
+    setIsLoadingAnnotations(false);
+  };
 
   const fetchVersionHistory = async () => {
-    setIsLoadingVersions(true)
-    const result = await getDeliverablesByProject(projectId)
+    setIsLoadingVersions(true);
+    const result = await getDeliverablesByProject(projectId);
 
     if (result.error) {
-      toast.error(tToast('genericError'))
+      toast.error(tToast('genericError'));
     } else {
-      const allDeliverables = result.data as unknown as Deliverable[] ?? []
-      setVersionHistory(allDeliverables)
+      const allDeliverables = (result.data as unknown as Deliverable[]) ?? [];
+      setVersionHistory(allDeliverables);
     }
 
-    setIsLoadingVersions(false)
-  }
+    setIsLoadingVersions(false);
+  };
 
   const fetchVideoUrl = async () => {
     try {
-      const supabase = createClient()
-      const { data } = supabase.storage
+      const supabase = createClient();
+      const { data: signedUrlData } = await supabase.storage
         .from('deliverables')
-        .getPublicUrl(deliverable.file_path)
+        .createSignedUrl(deliverable.file_path, 3600); // 1 hour expiry
 
-      setVideoUrl(data.publicUrl)
+      if (signedUrlData?.signedUrl) {
+        setVideoUrl(signedUrlData.signedUrl);
+      }
     } catch (error: unknown) {
-      console.error('Failed to get video URL:', error)
-      toast.error(tToast('genericError'))
+      console.error('Failed to get video URL:', error);
+      toast.error(tToast('genericError'));
     }
-  }
+  };
 
   useEffect(() => {
-    fetchAnnotations()
-    fetchVersionHistory()
-    fetchVideoUrl()
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [deliverable.id])
+    fetchAnnotations();
+    fetchVersionHistory();
+    fetchVideoUrl();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [deliverable.id]);
 
   const handleAnnotationClick = () => {
     // Video player will handle seeking to timestamp (annotation parameter unused intentionally)
-  }
+  };
 
   const handleTimeClick = (seconds: number) => {
-    setSelectedTimestamp(seconds)
-    setIsAnnotationDialogOpen(true)
-  }
+    setSelectedTimestamp(seconds);
+    setIsAnnotationDialogOpen(true);
+  };
 
   const handleResolve = async (annotationId: string) => {
-    const result = await resolveAnnotation(annotationId)
+    const result = await resolveAnnotation(annotationId);
 
     if (result.error) {
-      toast.error(t('failedToUpdateAnnotation'))
+      toast.error(t('failedToUpdateAnnotation'));
     } else {
-      toast.success(t('annotationUpdated'))
-      fetchAnnotations()
+      toast.success(t('annotationUpdated'));
+      fetchAnnotations();
     }
-  }
+  };
 
   const handleDownload = async () => {
     try {
-      const supabase = createClient()
+      const supabase = createClient();
       const { data, error } = await supabase.storage
         .from('deliverables')
-        .download(deliverable.file_path)
+        .download(deliverable.file_path);
 
-      if (error) throw error
+      if (error) throw error;
 
-      const url = URL.createObjectURL(data)
-      const a = document.createElement('a')
-      a.href = url
-      a.download = deliverable.title
-      document.body.appendChild(a)
-      a.click()
-      document.body.removeChild(a)
-      URL.revokeObjectURL(url)
+      const url = URL.createObjectURL(data);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = deliverable.title;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
 
-      toast.success(t('downloadStarted'))
+      toast.success(t('downloadStarted'));
     } catch (error: unknown) {
-      console.error('Download error:', error)
-      toast.error(t('failedToDownload'))
+      console.error('Download error:', error);
+      toast.error(t('failedToDownload'));
     }
-  }
+  };
 
   return (
     <div className="space-y-6">
@@ -169,9 +162,7 @@ export function DeliverableDetail({
           </Button>
           <div>
             <h2 className="text-2xl font-bold">{deliverable.title}</h2>
-            <p className="text-sm text-muted-foreground">
-              Version {deliverable.version_number}
-            </p>
+            <p className="text-sm text-muted-foreground">Version {deliverable.version_number}</p>
           </div>
         </div>
         <Button variant="outline" onClick={handleDownload}>
@@ -205,8 +196,8 @@ export function DeliverableDetail({
               <Button
                 size="sm"
                 onClick={() => {
-                  setSelectedTimestamp(0)
-                  setIsAnnotationDialogOpen(true)
+                  setSelectedTimestamp(0);
+                  setIsAnnotationDialogOpen(true);
                 }}
               >
                 <Plus className="h-4 w-4 mr-2" />
@@ -235,7 +226,7 @@ export function DeliverableDetail({
             <ApprovalActions
               deliverable={deliverable}
               onStatusChange={() => {
-                onBack()
+                onBack();
               }}
             />
           </div>
@@ -247,10 +238,7 @@ export function DeliverableDetail({
                 <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
               </div>
             ) : (
-              <VersionHistory
-                deliverables={versionHistory}
-                currentId={deliverable.id}
-              />
+              <VersionHistory deliverables={versionHistory} currentId={deliverable.id} />
             )}
           </div>
         </div>
@@ -265,5 +253,5 @@ export function DeliverableDetail({
         onCreated={fetchAnnotations}
       />
     </div>
-  )
+  );
 }

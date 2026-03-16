@@ -6,7 +6,7 @@ export const dynamic = 'force-dynamic';
 
 export async function POST(
   request: NextRequest,
-  { params }: { params: Promise<{ invoiceId: string }> }
+  { params }: { params: Promise<{ invoiceId: string }> },
 ) {
   try {
     // 1. Await params (Next.js 16 pattern)
@@ -14,7 +14,9 @@ export async function POST(
 
     // 2. Get authenticated user via supabase
     const supabase = await createClient();
-    const { data: { user } } = await supabase.auth.getUser();
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
     if (!user) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
@@ -30,12 +32,20 @@ export async function POST(
       return NextResponse.json({ error: 'Invoice not found' }, { status: 404 });
     }
 
+    // 3b. Verify client ownership — only the client who owns this invoice can pay
+    const client = invoice.client as { user_id?: string | null } | null;
+    if (!client?.user_id || client.user_id !== user.id) {
+      return NextResponse.json({ error: 'Forbidden: not your invoice' }, { status: 403 });
+    }
+
     if (invoice.status === 'paid') {
       return NextResponse.json({ error: 'Invoice already paid' }, { status: 400 });
     }
 
     // 4. Build line items for Stripe checkout
-    const lineItems = (invoice.line_items as Array<{ description: string; quantity: number; unit_price: number }>).map(item => ({
+    const lineItems = (
+      invoice.line_items as Array<{ description: string; quantity: number; unit_price: number }>
+    ).map((item) => ({
       price_data: {
         currency: invoice.currency?.toLowerCase() || 'eur',
         product_data: { name: item.description },
@@ -61,9 +71,6 @@ export async function POST(
     return NextResponse.json({ url: session.url });
   } catch (error) {
     console.error('Stripe checkout error:', error);
-    return NextResponse.json(
-      { error: 'Failed to create checkout session' },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: 'Failed to create checkout session' }, { status: 500 });
   }
 }

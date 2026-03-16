@@ -9,18 +9,14 @@ import {
 import type {
   ActionResult,
   Contract,
+  ContractWithProject,
   ContractWithRelations,
   ContractTemplate,
 } from '@/types/index';
 import { revalidatePath } from 'next/cache';
 import { format } from 'date-fns';
 
-const PAYMENT_METHOD_LABELS: Record<string, string> = {
-  bank_transfer: 'Bank Transfer',
-  cash: 'Cash',
-  card: 'Credit / Debit Card',
-  installments: 'Installments',
-};
+import { PAYMENT_METHOD_LABELS } from '@/lib/constants';
 
 function generateContractContent(params: {
   clientName: string;
@@ -65,7 +61,9 @@ export async function getContractsByProject(projectId: string): Promise<ActionRe
 
     const { data, error } = await supabase
       .from('contracts')
-      .select('*')
+      .select(
+        'id, project_id, client_id, template_id, title, content, status, pdf_path, signature_data, sent_at, viewed_at, signed_at, expires_at, service_type, agreed_amount, payment_method, created_by, created_at',
+      )
       .eq('project_id', projectId)
       .order('created_at', { ascending: false });
 
@@ -107,14 +105,36 @@ export async function getContract(id: string): Promise<ActionResult<ContractWith
 
     const { data, error } = await supabase
       .from('contracts')
-      .select('*, client:clients!inner(*), project:projects(*)')
+      .select(
+        'id, project_id, client_id, template_id, title, content, status, pdf_path, signature_data, sent_at, viewed_at, signed_at, expires_at, service_type, agreed_amount, payment_method, created_by, created_at, client:clients!inner(id, user_id, company_name, contact_name, email, phone, address, vat_number, avatar_url, notes, status, created_at, updated_at), project:projects(id, client_id, title, description, project_type, status, priority, budget, deadline, start_date, completion_date, tags, metadata, created_by, created_at, updated_at)',
+      )
       .eq('id', id)
       .single();
 
     if (error) return { data: null, error: error.message };
-    return { data, error: null };
+    return { data: data as unknown as ContractWithRelations, error: null };
   } catch (err: unknown) {
     return { data: null, error: err instanceof Error ? err.message : 'Failed to fetch contract' };
+  }
+}
+
+export async function getMyContracts(): Promise<ActionResult<ContractWithProject[]>> {
+  try {
+    const supabase = await createClient();
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
+    if (!user) return { data: null, error: 'User not authenticated' };
+
+    const { data, error } = await supabase
+      .from('contracts')
+      .select('*, project:projects(title)')
+      .order('created_at', { ascending: false });
+
+    if (error) return { data: null, error: error.message };
+    return { data: data as ContractWithProject[], error: null };
+  } catch (err: unknown) {
+    return { data: null, error: err instanceof Error ? err.message : 'Failed to fetch contracts' };
   }
 }
 
@@ -125,6 +145,15 @@ export async function getAllContracts(): Promise<ActionResult<Contract[]>> {
       data: { user },
     } = await supabase.auth.getUser();
     if (!user) return { data: null, error: 'User not authenticated' };
+
+    const { data: profile } = await supabase
+      .from('user_profiles')
+      .select('role')
+      .eq('id', user.id)
+      .single();
+    if (!profile || !['super_admin', 'admin'].includes(profile.role)) {
+      return { data: null, error: 'Forbidden: admin access required' };
+    }
 
     const { data, error } = await supabase
       .from('contracts')
@@ -147,6 +176,15 @@ export async function createContract(input: unknown): Promise<ActionResult<Contr
       data: { user },
     } = await supabase.auth.getUser();
     if (!user) return { data: null, error: 'User not authenticated' };
+
+    const { data: profile } = await supabase
+      .from('user_profiles')
+      .select('role')
+      .eq('id', user.id)
+      .single();
+    if (!profile || !['super_admin', 'admin'].includes(profile.role)) {
+      return { data: null, error: 'Forbidden: admin access required' };
+    }
 
     if (!validated.client_id) {
       return { data: null, error: 'A client is required to create a contract' };
@@ -198,7 +236,9 @@ export async function createContract(input: unknown): Promise<ActionResult<Contr
         sent_at: new Date().toISOString(),
         created_by: user.id,
       })
-      .select()
+      .select(
+        'id, project_id, client_id, template_id, title, content, status, pdf_path, signature_data, sent_at, viewed_at, signed_at, expires_at, service_type, agreed_amount, payment_method, created_by, created_at',
+      )
       .single();
 
     if (error) return { data: null, error: error.message };
@@ -229,11 +269,22 @@ export async function updateContract(id: string, input: unknown): Promise<Action
     } = await supabase.auth.getUser();
     if (!user) return { data: null, error: 'User not authenticated' };
 
+    const { data: profile } = await supabase
+      .from('user_profiles')
+      .select('role')
+      .eq('id', user.id)
+      .single();
+    if (!profile || !['super_admin', 'admin'].includes(profile.role)) {
+      return { data: null, error: 'Forbidden: admin access required' };
+    }
+
     const { data, error } = await supabase
       .from('contracts')
       .update(validated)
       .eq('id', id)
-      .select()
+      .select(
+        'id, project_id, client_id, template_id, title, content, status, pdf_path, signature_data, sent_at, viewed_at, signed_at, expires_at, service_type, agreed_amount, payment_method, created_by, created_at',
+      )
       .single();
 
     if (error) return { data: null, error: error.message };
@@ -242,6 +293,7 @@ export async function updateContract(id: string, input: unknown): Promise<Action
       revalidatePath(`/admin/projects/${data.project_id}`);
     }
     revalidatePath(`/admin/contracts/${id}`);
+    revalidatePath('/client/contracts');
     return { data, error: null };
   } catch (error) {
     if (error instanceof Error) {
@@ -275,7 +327,7 @@ export async function signContract(
 
     const clientData = Array.isArray(existing.client) ? existing.client[0] : existing.client;
     const clientUserId = (clientData as { user_id: string | null } | null)?.user_id;
-    if (clientUserId && clientUserId !== user.id) {
+    if (!clientUserId || clientUserId !== user.id) {
       return { data: null, error: 'You are not authorized to sign this contract' };
     }
 
@@ -290,7 +342,9 @@ export async function signContract(
         signed_at: new Date().toISOString(),
       })
       .eq('id', id)
-      .select()
+      .select(
+        'id, project_id, client_id, template_id, title, content, status, pdf_path, signature_data, sent_at, viewed_at, signed_at, expires_at, service_type, agreed_amount, payment_method, created_by, created_at',
+      )
       .single();
 
     if (error) return { data: null, error: error.message };
@@ -299,6 +353,8 @@ export async function signContract(
       revalidatePath(`/admin/projects/${data.project_id}`);
     }
     revalidatePath(`/admin/contracts/${id}`);
+    revalidatePath('/client/contracts');
+    revalidatePath('/admin/contracts');
     return { data, error: null };
   } catch (error) {
     if (error instanceof Error) {
@@ -316,6 +372,15 @@ export async function sendContract(id: string): Promise<ActionResult<{ id: strin
       data: { user },
     } = await supabase.auth.getUser();
     if (!user) return { data: null, error: 'User not authenticated' };
+
+    const { data: profile } = await supabase
+      .from('user_profiles')
+      .select('role')
+      .eq('id', user.id)
+      .single();
+    if (!profile || !['super_admin', 'admin'].includes(profile.role)) {
+      return { data: null, error: 'Forbidden: admin access required' };
+    }
 
     // Verify contract is in draft status
     const { data: contract, error: fetchError } = await supabase
@@ -335,7 +400,7 @@ export async function sendContract(id: string): Promise<ActionResult<{ id: strin
         sent_at: new Date().toISOString(),
       })
       .eq('id', id)
-      .select()
+      .select('id')
       .single();
 
     if (error) return { data: null, error: error.message };
@@ -345,6 +410,8 @@ export async function sendContract(id: string): Promise<ActionResult<{ id: strin
     }
     revalidatePath(`/admin/contracts/${id}`);
     revalidatePath('/admin/contracts');
+    revalidatePath('/client/contracts');
+    revalidatePath('/client/dashboard');
     return { data: { id: data.id }, error: null };
   } catch {
     return { data: null, error: 'Failed to send contract' };
@@ -359,6 +426,15 @@ export async function deleteContract(id: string): Promise<ActionResult<void>> {
       data: { user },
     } = await supabase.auth.getUser();
     if (!user) return { data: null, error: 'User not authenticated' };
+
+    const { data: profile } = await supabase
+      .from('user_profiles')
+      .select('role')
+      .eq('id', user.id)
+      .single();
+    if (!profile || !['super_admin', 'admin'].includes(profile.role)) {
+      return { data: null, error: 'Forbidden: admin access required' };
+    }
 
     const { data: contract, error: fetchError } = await supabase
       .from('contracts')
@@ -389,6 +465,15 @@ export async function getContractTemplates(): Promise<ActionResult<ContractTempl
     } = await supabase.auth.getUser();
     if (!user) return { data: null, error: 'User not authenticated' };
 
+    const { data: profile } = await supabase
+      .from('user_profiles')
+      .select('role')
+      .eq('id', user.id)
+      .single();
+    if (!profile || !['super_admin', 'admin'].includes(profile.role)) {
+      return { data: null, error: 'Forbidden: admin access required' };
+    }
+
     const { data, error } = await supabase
       .from('contract_templates')
       .select('id, title, content, placeholders, created_by, created_at')
@@ -417,6 +502,15 @@ export async function createContractTemplate(input: {
     } = await supabase.auth.getUser();
     if (!user) return { data: null, error: 'User not authenticated' };
 
+    const { data: profile } = await supabase
+      .from('user_profiles')
+      .select('role')
+      .eq('id', user.id)
+      .single();
+    if (!profile || !['super_admin', 'admin'].includes(profile.role)) {
+      return { data: null, error: 'Forbidden: admin access required' };
+    }
+
     const { data, error } = await supabase
       .from('contract_templates')
       .insert({
@@ -425,7 +519,7 @@ export async function createContractTemplate(input: {
         placeholders: input.placeholders ?? {},
         created_by: user.id,
       })
-      .select()
+      .select('id, title, content, placeholders, created_by, created_at')
       .single();
 
     if (error) return { data: null, error: error.message };
@@ -456,6 +550,15 @@ export async function updateContractTemplate(
     } = await supabase.auth.getUser();
     if (!user) return { data: null, error: 'User not authenticated' };
 
+    const { data: profile } = await supabase
+      .from('user_profiles')
+      .select('role')
+      .eq('id', user.id)
+      .single();
+    if (!profile || !['super_admin', 'admin'].includes(profile.role)) {
+      return { data: null, error: 'Forbidden: admin access required' };
+    }
+
     const updateData: Record<string, unknown> = {};
     if (input.title !== undefined) updateData.title = input.title;
     if (input.content !== undefined) updateData.content = input.content;
@@ -465,7 +568,7 @@ export async function updateContractTemplate(
       .from('contract_templates')
       .update(updateData)
       .eq('id', id)
-      .select()
+      .select('id, title, content, placeholders, created_by, created_at')
       .single();
 
     if (error) return { data: null, error: error.message };
@@ -488,6 +591,15 @@ export async function deleteContractTemplate(id: string): Promise<ActionResult<v
       data: { user },
     } = await supabase.auth.getUser();
     if (!user) return { data: null, error: 'User not authenticated' };
+
+    const { data: profile } = await supabase
+      .from('user_profiles')
+      .select('role')
+      .eq('id', user.id)
+      .single();
+    if (!profile || !['super_admin', 'admin'].includes(profile.role)) {
+      return { data: null, error: 'Forbidden: admin access required' };
+    }
 
     const { error } = await supabase.from('contract_templates').delete().eq('id', id);
 

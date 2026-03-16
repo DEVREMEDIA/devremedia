@@ -19,6 +19,7 @@ import {
   Undo,
   Redo,
 } from 'lucide-react';
+import { useTranslations } from 'next-intl';
 import { cn } from '@/lib/utils';
 
 interface TiptapEditorProps {
@@ -28,6 +29,7 @@ interface TiptapEditorProps {
 }
 
 export function TiptapEditor({ content, onChange, placeholder }: TiptapEditorProps) {
+  const t = useTranslations('common');
   const editor = useEditor({
     immediatelyRender: false,
     extensions: [
@@ -67,7 +69,7 @@ export function TiptapEditor({ content, onChange, placeholder }: TiptapEditorPro
   }
 
   const addLink = () => {
-    const url = window.prompt('Enter URL:');
+    const url = window.prompt(t('enterUrl'));
     if (url) {
       editor.chain().focus().setLink({ href: url }).run();
     }

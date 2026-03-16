@@ -1,4 +1,5 @@
 import { Suspense, type ComponentProps } from 'react';
+import { getTranslations } from 'next-intl/server';
 import { PageHeader } from '@/components/shared/page-header';
 import { getKbCategories } from '@/lib/actions/kb-categories';
 import { getKbArticles } from '@/lib/actions/kb-articles';
@@ -24,13 +25,11 @@ async function UniversityContent() {
   );
 }
 
-export default function UniversityPage() {
+export default async function UniversityPage() {
+  const t = await getTranslations('university');
   return (
     <div className="flex flex-col gap-6 p-6">
-      <PageHeader
-        title="DMS University"
-        description="Manage knowledge base categories and articles"
-      />
+      <PageHeader title={t('title')} description={t('manageDescription')} />
 
       <Suspense
         fallback={

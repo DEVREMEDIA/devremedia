@@ -4,7 +4,6 @@ import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { z } from 'zod';
 import { toast } from 'sonner';
 import { useTranslations } from 'next-intl';
 
@@ -13,15 +12,17 @@ import { completeOnboarding } from '@/lib/actions/auth';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from '@/components/ui/card';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 
-type OnboardingInput = z.infer<typeof onboardingSchema>;
+import type { OnboardingInput } from '@/lib/schemas/auth';
+
+const ROLE_DASHBOARDS: Record<string, string> = {
+  super_admin: '/admin/dashboard',
+  admin: '/admin/dashboard',
+  employee: '/employee/dashboard',
+  salesman: '/salesman/dashboard',
+  client: '/client/dashboard',
+};
 
 export default function OnboardingPage() {
   const router = useRouter();
@@ -47,7 +48,9 @@ export default function OnboardingPage() {
       }
 
       toast.success(t('profileCompleted'));
-      router.push('/client/dashboard');
+      const role = result.data?.role ?? 'client';
+      const redirectPath = ROLE_DASHBOARDS[role] ?? '/client/dashboard';
+      router.push(redirectPath);
     } catch {
       toast.error(t('unexpectedError'));
     } finally {
@@ -58,17 +61,17 @@ export default function OnboardingPage() {
   return (
     <Card>
       <CardHeader>
-        <CardTitle>Complete your profile</CardTitle>
-        <CardDescription>Tell us a bit about yourself to get started</CardDescription>
+        <CardTitle>{t('onboarding')}</CardTitle>
+        <CardDescription>{t('onboardingDescription')}</CardDescription>
       </CardHeader>
       <CardContent>
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
           <div className="space-y-2">
-            <Label htmlFor="display_name">Display Name</Label>
+            <Label htmlFor="display_name">{t('displayName')}</Label>
             <Input
               id="display_name"
               type="text"
-              placeholder="Your full name"
+              placeholder={t('displayNamePlaceholder')}
               autoComplete="name"
               {...register('display_name')}
             />
@@ -78,11 +81,43 @@ export default function OnboardingPage() {
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="company_name">Company Name (optional)</Label>
+            <Label htmlFor="password">{t('setPassword')}</Label>
+            <Input
+              id="password"
+              type="password"
+              placeholder={t('enterNewPassword')}
+              autoComplete="new-password"
+              {...register('password')}
+            />
+            {errors.password && (
+              <p className="text-sm text-destructive">{errors.password.message}</p>
+            )}
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="confirmPassword">{t('confirmPassword')}</Label>
+            <Input
+              id="confirmPassword"
+              type="password"
+              placeholder={t('confirmNewPassword')}
+              autoComplete="new-password"
+              {...register('confirmPassword')}
+            />
+            {errors.confirmPassword && (
+              <p className="text-sm text-destructive">{errors.confirmPassword.message}</p>
+            )}
+          </div>
+
+          <div className="rounded-md bg-muted p-3 text-sm text-muted-foreground">
+            {t('passwordMinLength')}
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="company_name">{t('companyNameOptional')}</Label>
             <Input
               id="company_name"
               type="text"
-              placeholder="Your company"
+              placeholder={t('companyNamePlaceholder')}
               autoComplete="organization"
               {...register('company_name')}
             />
@@ -92,7 +127,7 @@ export default function OnboardingPage() {
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="phone">Phone (optional)</Label>
+            <Label htmlFor="phone">{t('phoneOptional')}</Label>
             <Input
               id="phone"
               type="tel"
@@ -100,13 +135,11 @@ export default function OnboardingPage() {
               autoComplete="tel"
               {...register('phone')}
             />
-            {errors.phone && (
-              <p className="text-sm text-destructive">{errors.phone.message}</p>
-            )}
+            {errors.phone && <p className="text-sm text-destructive">{errors.phone.message}</p>}
           </div>
 
           <Button type="submit" className="w-full" disabled={isLoading}>
-            {isLoading ? 'Saving...' : 'Complete Setup'}
+            {isLoading ? t('completingSetup') : t('completeSetup')}
           </Button>
         </form>
       </CardContent>

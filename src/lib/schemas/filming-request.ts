@@ -22,7 +22,10 @@ export const createFilmingRequestSchema = z.object({
   project_type: z.enum(PROJECT_TYPES).optional(),
   selected_package: z.string().max(100, 'Package ID must be at most 100 characters').optional(),
   budget_range: z.string().max(100, 'Budget range must be at most 100 characters').optional(),
-  reference_links: z.array(z.string().max(2048, 'URL must be at most 2048 characters')).max(20, 'At most 20 reference links allowed').optional(),
+  reference_links: z
+    .array(z.string().url('Invalid URL').max(2048, 'URL must be at most 2048 characters'))
+    .max(20, 'At most 20 reference links allowed')
+    .optional(),
 });
 
 export type CreateFilmingRequestInput = z.infer<typeof createFilmingRequestSchema>;

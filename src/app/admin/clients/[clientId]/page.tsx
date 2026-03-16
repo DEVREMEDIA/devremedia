@@ -3,6 +3,8 @@ import { notFound } from 'next/navigation';
 import { getTranslations } from 'next-intl/server';
 import { getClient } from '@/lib/actions/clients';
 import { getContractsByClient } from '@/lib/actions/contracts';
+import { getProjects } from '@/lib/actions/projects';
+import { getInvoices } from '@/lib/actions/invoices';
 import { Client } from '@/types/index';
 import { ClientDetail } from './client-detail';
 
@@ -31,9 +33,11 @@ export async function generateMetadata({ params }: ClientDetailPageProps): Promi
 
 export default async function ClientDetailPage({ params }: ClientDetailPageProps) {
   const { clientId } = await params;
-  const [clientResult, contractsResult] = await Promise.all([
+  const [clientResult, contractsResult, projectsResult, invoicesResult] = await Promise.all([
     getClient(clientId),
     getContractsByClient(clientId),
+    getProjects({ client_id: clientId }),
+    getInvoices({ client_id: clientId }),
   ]);
 
   if (clientResult.error || !clientResult.data) {
@@ -50,5 +54,23 @@ export default async function ClientDetailPage({ params }: ClientDetailPageProps
     signed_at: string | null;
   }>;
 
-  return <ClientDetail client={client} contracts={contracts} />;
+  const projects = projectsResult.data ?? [];
+  const invoices = invoicesResult.data ?? [];
+
+  const totalInvoiced = invoices.reduce((sum, inv) => sum + (inv.total ?? 0), 0);
+  const totalPaid = invoices
+    .filter((inv) => inv.status === 'paid')
+    .reduce((sum, inv) => sum + (inv.total ?? 0), 0);
+
+  return (
+    <ClientDetail
+      client={client}
+      contracts={contracts}
+      stats={{
+        totalProjects: projects.length,
+        totalInvoiced,
+        totalPaid,
+      }}
+    />
+  );
 }

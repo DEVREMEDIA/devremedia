@@ -37,6 +37,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
+import { ConfirmDialog } from '@/components/shared/confirm-dialog';
 import { inviteTeamMember, updateTeamMemberRole, deactivateTeamMember } from '@/lib/actions/team';
 import { useRouter } from 'next/navigation';
 import { useTranslations } from 'next-intl';
@@ -58,6 +59,8 @@ export function TeamManagement({ members }: TeamManagementProps) {
   const [inviteEmail, setInviteEmail] = useState('');
   const [inviteRole, setInviteRole] = useState<UserRole>('admin');
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [deactivateUserId, setDeactivateUserId] = useState<string | null>(null);
+  const [isDeactivating, setIsDeactivating] = useState(false);
 
   const handleInvite = async () => {
     if (!inviteEmail) {
@@ -92,12 +95,11 @@ export function TeamManagement({ members }: TeamManagementProps) {
     }
   };
 
-  const handleDeactivate = async (userId: string) => {
-    if (!confirm(t('deactivateConfirm'))) {
-      return;
-    }
+  const handleDeactivate = async () => {
+    if (!deactivateUserId) return;
 
-    const result = await deactivateTeamMember(userId);
+    setIsDeactivating(true);
+    const result = await deactivateTeamMember(deactivateUserId);
 
     if (result.error) {
       toast.error(result.error);
@@ -105,138 +107,141 @@ export function TeamManagement({ members }: TeamManagementProps) {
       toast.success(tToast('deleteSuccess'));
       router.refresh();
     }
+
+    setIsDeactivating(false);
+    setDeactivateUserId(null);
   };
 
   return (
-    <Card>
-      <CardHeader>
-        <div className="flex items-center justify-between">
-          <div>
-            <CardTitle>{t('teamMembers')}</CardTitle>
-            <CardDescription>{t('teamDescription')}</CardDescription>
+    <>
+      <Card>
+        <CardHeader>
+          <div className="flex items-center justify-between">
+            <div>
+              <CardTitle>{t('teamMembers')}</CardTitle>
+              <CardDescription>{t('teamDescription')}</CardDescription>
+            </div>
+            <Dialog open={isInviteDialogOpen} onOpenChange={setIsInviteDialogOpen}>
+              <DialogTrigger asChild>
+                <Button>
+                  <UserPlus className="mr-2 h-4 w-4" />
+                  {t('inviteMember')}
+                </Button>
+              </DialogTrigger>
+              <DialogContent>
+                <DialogHeader>
+                  <DialogTitle>{t('inviteTeamMember')}</DialogTitle>
+                  <DialogDescription>{t('inviteDescription')}</DialogDescription>
+                </DialogHeader>
+                <div className="space-y-4 py-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="email">{t('emailAddress')}</Label>
+                    <Input
+                      id="email"
+                      type="email"
+                      placeholder="colleague@example.com"
+                      value={inviteEmail}
+                      onChange={(e) => setInviteEmail(e.target.value)}
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="role">{t('role')}</Label>
+                    <Select
+                      value={inviteRole}
+                      onValueChange={(value) => setInviteRole(value as UserRole)}
+                    >
+                      <SelectTrigger>
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="admin">{t('adminRole')}</SelectItem>
+                        <SelectItem value="super_admin">{t('superAdminRole')}</SelectItem>
+                        <SelectItem value="employee">{t('employeeRole')}</SelectItem>
+                        <SelectItem value="salesman">{t('salesmanRole')}</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                </div>
+                <DialogFooter>
+                  <Button variant="outline" onClick={() => setIsInviteDialogOpen(false)}>
+                    {tc('cancel')}
+                  </Button>
+                  <Button onClick={handleInvite} disabled={isSubmitting}>
+                    {isSubmitting ? t('sending') : t('sendInvitation')}
+                  </Button>
+                </DialogFooter>
+              </DialogContent>
+            </Dialog>
           </div>
-          <Dialog open={isInviteDialogOpen} onOpenChange={setIsInviteDialogOpen}>
-            <DialogTrigger asChild>
-              <Button>
-                <UserPlus className="mr-2 h-4 w-4" />
-                {t('inviteMember')}
-              </Button>
-            </DialogTrigger>
-            <DialogContent>
-              <DialogHeader>
-                <DialogTitle>{t('inviteTeamMember')}</DialogTitle>
-                <DialogDescription>
-                  {t('inviteDescription')}
-                </DialogDescription>
-              </DialogHeader>
-              <div className="space-y-4 py-4">
-                <div className="space-y-2">
-                  <Label htmlFor="email">{t('emailAddress')}</Label>
-                  <Input
-                    id="email"
-                    type="email"
-                    placeholder="colleague@example.com"
-                    value={inviteEmail}
-                    onChange={(e) => setInviteEmail(e.target.value)}
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="role">{t('role')}</Label>
-                  <Select
-                    value={inviteRole}
-                    onValueChange={(value) => setInviteRole(value as UserRole)}
-                  >
-                    <SelectTrigger>
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="admin">{t('adminRole')}</SelectItem>
-                      <SelectItem value="super_admin">{t('superAdminRole')}</SelectItem>
-                      <SelectItem value="employee">{t('employeeRole')}</SelectItem>
-                      <SelectItem value="salesman">{t('salesmanRole')}</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-              </div>
-              <DialogFooter>
-                <Button
-                  variant="outline"
-                  onClick={() => setIsInviteDialogOpen(false)}
-                >
-                  {tc('cancel')}
-                </Button>
-                <Button onClick={handleInvite} disabled={isSubmitting}>
-                  {isSubmitting ? t('sending') : t('sendInvitation')}
-                </Button>
-              </DialogFooter>
-            </DialogContent>
-          </Dialog>
-        </div>
-      </CardHeader>
-      <CardContent>
-        <Table>
-          <TableHeader>
-            <TableRow>
-              <TableHead>{tc('name')}</TableHead>
-              <TableHead>{t('role')}</TableHead>
-              <TableHead>{t('joined')}</TableHead>
-              <TableHead className="w-[50px]"></TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {members.map((member) => (
-              <TableRow key={member.id}>
-                <TableCell className="font-medium">
-                  {member.display_name || t('unnamedUser')}
-                </TableCell>
-                <TableCell>
-                  <Badge variant="secondary">{USER_ROLE_LABELS[member.role]}</Badge>
-                </TableCell>
-                <TableCell>
-                  {new Date(member.created_at).toLocaleDateString()}
-                </TableCell>
-                <TableCell>
-                  <DropdownMenu>
-                    <DropdownMenuTrigger asChild>
-                      <Button variant="ghost" size="icon">
-                        <MoreHorizontal className="h-4 w-4" />
-                      </Button>
-                    </DropdownMenuTrigger>
-                    <DropdownMenuContent align="end">
-                      <DropdownMenuItem
-                        onClick={() => handleChangeRole(member.id, 'admin')}
-                      >
-                        {t('changeToAdmin')}
-                      </DropdownMenuItem>
-                      <DropdownMenuItem
-                        onClick={() => handleChangeRole(member.id, 'super_admin')}
-                      >
-                        {t('changeToSuperAdmin')}
-                      </DropdownMenuItem>
-                      <DropdownMenuItem
-                        onClick={() => handleChangeRole(member.id, 'employee')}
-                      >
-                        {t('changeToEmployee')}
-                      </DropdownMenuItem>
-                      <DropdownMenuItem
-                        onClick={() => handleChangeRole(member.id, 'salesman')}
-                      >
-                        {t('changeToSalesman')}
-                      </DropdownMenuItem>
-                      <DropdownMenuItem
-                        className="text-destructive"
-                        onClick={() => handleDeactivate(member.id)}
-                      >
-                        {t('deactivate')}
-                      </DropdownMenuItem>
-                    </DropdownMenuContent>
-                  </DropdownMenu>
-                </TableCell>
+        </CardHeader>
+        <CardContent>
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead>{tc('name')}</TableHead>
+                <TableHead>{t('role')}</TableHead>
+                <TableHead>{t('joined')}</TableHead>
+                <TableHead className="w-[50px]"></TableHead>
               </TableRow>
-            ))}
-          </TableBody>
-        </Table>
-      </CardContent>
-    </Card>
+            </TableHeader>
+            <TableBody>
+              {members.map((member) => (
+                <TableRow key={member.id}>
+                  <TableCell className="font-medium">
+                    {member.display_name || t('unnamedUser')}
+                  </TableCell>
+                  <TableCell>
+                    <Badge variant="secondary">{USER_ROLE_LABELS[member.role]}</Badge>
+                  </TableCell>
+                  <TableCell>{new Date(member.created_at).toLocaleDateString()}</TableCell>
+                  <TableCell>
+                    <DropdownMenu>
+                      <DropdownMenuTrigger asChild>
+                        <Button variant="ghost" size="icon">
+                          <MoreHorizontal className="h-4 w-4" />
+                        </Button>
+                      </DropdownMenuTrigger>
+                      <DropdownMenuContent align="end">
+                        <DropdownMenuItem onClick={() => handleChangeRole(member.id, 'admin')}>
+                          {t('changeToAdmin')}
+                        </DropdownMenuItem>
+                        <DropdownMenuItem
+                          onClick={() => handleChangeRole(member.id, 'super_admin')}
+                        >
+                          {t('changeToSuperAdmin')}
+                        </DropdownMenuItem>
+                        <DropdownMenuItem onClick={() => handleChangeRole(member.id, 'employee')}>
+                          {t('changeToEmployee')}
+                        </DropdownMenuItem>
+                        <DropdownMenuItem onClick={() => handleChangeRole(member.id, 'salesman')}>
+                          {t('changeToSalesman')}
+                        </DropdownMenuItem>
+                        <DropdownMenuItem
+                          className="text-destructive"
+                          onClick={() => setDeactivateUserId(member.id)}
+                        >
+                          {t('deactivate')}
+                        </DropdownMenuItem>
+                      </DropdownMenuContent>
+                    </DropdownMenu>
+                  </TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+        </CardContent>
+      </Card>
+
+      <ConfirmDialog
+        open={!!deactivateUserId}
+        onOpenChange={(open) => !open && setDeactivateUserId(null)}
+        title={t('deactivate')}
+        description={t('deactivateConfirm')}
+        confirmLabel={t('deactivate')}
+        onConfirm={handleDeactivate}
+        loading={isDeactivating}
+        destructive
+      />
+    </>
   );
 }

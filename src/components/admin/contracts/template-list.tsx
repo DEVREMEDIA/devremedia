@@ -68,7 +68,7 @@ export function TemplateList({ templates, onEdit, onDelete }: TemplateListProps)
                 <div className="flex-1">
                   <CardTitle className="text-lg">{template.title}</CardTitle>
                   <CardDescription className="mt-1 line-clamp-2">
-                    {(template as any).description || 'No description'}
+                    {template.content.slice(0, 100) || 'No description'}
                   </CardDescription>
                 </div>
               </div>

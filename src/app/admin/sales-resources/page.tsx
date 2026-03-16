@@ -13,7 +13,7 @@ async function SalesResourcesContent() {
   ]);
 
   const categories = (categoriesResult.data as OverviewProps['categories']) ?? [];
-  const resources = (resourcesResult.data as OverviewProps['resources']) ?? [];
+  const resources = (resourcesResult.data as unknown as OverviewProps['resources']) ?? [];
 
   return <SalesResourcesOverview categories={categories} resources={resources} />;
 }

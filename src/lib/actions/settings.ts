@@ -25,6 +25,20 @@ export async function getCompanySettings(): Promise<ActionResult<CompanySettings
   try {
     const supabase = await createClient();
 
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
+    if (!user) return { data: null, error: 'Unauthorized' };
+
+    const { data: profile } = await supabase
+      .from('user_profiles')
+      .select('role')
+      .eq('id', user.id)
+      .single();
+    if (!profile || !['super_admin', 'admin'].includes(profile.role)) {
+      return { data: null, error: 'Forbidden: admin access required' };
+    }
+
     // For now, we'll use a simple approach with a settings table
     const { data, error } = await supabase
       .from('settings')
@@ -62,6 +76,20 @@ export async function updateCompanySettings(
   try {
     const supabase = await createClient();
 
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
+    if (!user) return { data: null, error: 'Unauthorized' };
+
+    const { data: profile } = await supabase
+      .from('user_profiles')
+      .select('role')
+      .eq('id', user.id)
+      .single();
+    if (!profile || !['super_admin', 'admin'].includes(profile.role)) {
+      return { data: null, error: 'Forbidden: admin access required' };
+    }
+
     const { error } = await supabase.from('settings').upsert({
       key: 'company_settings',
       value: settings,
@@ -86,6 +114,21 @@ export async function getNotificationSettings(
 ): Promise<ActionResult<NotificationSettings>> {
   try {
     const supabase = await createClient();
+
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
+    if (!user) return { data: null, error: 'Unauthorized' };
+
+    const { data: profile } = await supabase
+      .from('user_profiles')
+      .select('role')
+      .eq('id', user.id)
+      .single();
+    const isAdmin = profile && ['super_admin', 'admin'].includes(profile.role);
+    if (!isAdmin && user.id !== userId) {
+      return { data: null, error: "Forbidden: cannot access another user's settings" };
+    }
 
     const { data, error } = await supabase
       .from('user_profiles')
@@ -132,6 +175,21 @@ export async function updateNotificationSettings(
 ): Promise<ActionResult<NotificationSettings>> {
   try {
     const supabase = await createClient();
+
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
+    if (!user) return { data: null, error: 'Unauthorized' };
+
+    const { data: profile } = await supabase
+      .from('user_profiles')
+      .select('role')
+      .eq('id', user.id)
+      .single();
+    const isAdmin = profile && ['super_admin', 'admin'].includes(profile.role);
+    if (!isAdmin && user.id !== userId) {
+      return { data: null, error: "Forbidden: cannot update another user's settings" };
+    }
 
     // Get current preferences
     const { data: currentData } = await supabase

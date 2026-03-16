@@ -25,6 +25,7 @@ type LeadConvertDialogProps = {
 export function LeadConvertDialog({ lead }: LeadConvertDialogProps) {
   const router = useRouter();
   const t = useTranslations('leads');
+  const tCommon = useTranslations('common');
   const tToast = useTranslations('toast');
   const [isOpen, setIsOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
@@ -93,11 +94,11 @@ export function LeadConvertDialog({ lead }: LeadConvertDialogProps) {
 
         <DialogFooter>
           <Button variant="outline" onClick={() => setIsOpen(false)} disabled={isLoading}>
-            Cancel
+            {tCommon('cancel')}
           </Button>
           <Button onClick={handleConvert} disabled={isLoading}>
             {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-            Convert to Client
+            {t('convertToClient')}
           </Button>
         </DialogFooter>
       </DialogContent>

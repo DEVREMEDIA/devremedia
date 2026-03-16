@@ -1,17 +1,24 @@
+'use server';
+
 import { createClient } from '@/lib/supabase/server';
+import { LEAD_STAGES } from '@/lib/constants';
 
 export async function getLeadsByStage() {
   try {
     const supabase = await createClient();
-    const { data, error } = await supabase
-      .from('leads')
-      .select('stage');
-
-    if (error || !data) return {};
+    const results = await Promise.all(
+      LEAD_STAGES.map(async (stage) => {
+        const { count } = await supabase
+          .from('leads')
+          .select('id', { count: 'exact', head: true })
+          .eq('stage', stage);
+        return [stage, count ?? 0] as const;
+      }),
+    );
 
     const counts: Record<string, number> = {};
-    for (const lead of data) {
-      counts[lead.stage] = (counts[lead.stage] || 0) + 1;
+    for (const [stage, count] of results) {
+      if (count > 0) counts[stage] = count;
     }
     return counts;
   } catch {
@@ -22,10 +29,7 @@ export async function getLeadsByStage() {
 export async function getConversionRate(dateFrom?: string, dateTo?: string) {
   try {
     const supabase = await createClient();
-    let query = supabase
-      .from('leads')
-      .select('stage')
-      .in('stage', ['won', 'lost']);
+    let query = supabase.from('leads').select('stage').in('stage', ['won', 'lost']);
 
     if (dateFrom) query = query.gte('created_at', dateFrom);
     if (dateTo) query = query.lte('created_at', dateTo);
@@ -75,18 +79,23 @@ export async function getLeadsBySalesman() {
     const supabase = await createClient();
     const { data, error } = await supabase
       .from('leads')
-      .select('assigned_to, stage, deal_value, assigned_user:user_profiles!leads_assigned_to_fkey(display_name)');
+      .select(
+        'assigned_to, stage, deal_value, assigned_user:user_profiles!leads_assigned_to_user_profiles_fkey(display_name)',
+      );
 
     if (error || !data) return [];
 
-    const salesmanMap: Record<string, {
-      name: string;
-      total_leads: number;
-      won: number;
-      lost: number;
-      active: number;
-      total_value: number;
-    }> = {};
+    const salesmanMap: Record<
+      string,
+      {
+        name: string;
+        total_leads: number;
+        won: number;
+        lost: number;
+        active: number;
+        total_value: number;
+      }
+    > = {};
 
     for (const lead of data) {
       const id = lead.assigned_to;
@@ -117,9 +126,7 @@ export async function getLeadsBySalesman() {
 export async function getLeadsBySource() {
   try {
     const supabase = await createClient();
-    const { data, error } = await supabase
-      .from('leads')
-      .select('source, stage');
+    const { data, error } = await supabase.from('leads').select('source, stage');
 
     if (error || !data) return [];
 

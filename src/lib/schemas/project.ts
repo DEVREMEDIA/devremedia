@@ -11,8 +11,14 @@ export const createProjectSchema = z.object({
   project_type: z.enum(PROJECT_TYPES),
   status: z.enum(PROJECT_STATUSES).default('briefing'),
   priority: z.enum(PRIORITIES).default('medium'),
-  start_date: z.string().optional(),
-  deadline: z.string().optional(),
+  start_date: z
+    .string()
+    .regex(/^\d{4}-\d{2}-\d{2}$/, 'Invalid date format (YYYY-MM-DD)')
+    .optional(),
+  deadline: z
+    .string()
+    .regex(/^\d{4}-\d{2}-\d{2}$/, 'Invalid date format (YYYY-MM-DD)')
+    .optional(),
   budget: z.number().min(0, 'Budget must be positive').optional(),
 });
 
