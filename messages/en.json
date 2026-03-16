@@ -259,6 +259,8 @@
     "brandDescription": "Video production, content strategy, and brand building — all in one platform.",
     "trustedBy": "Trusted by 50+ brands across Greece",
     "authFailed": "Authentication failed. Please try again.",
+    "linkExpired": "The invitation link has expired. Please ask an admin to send a new one.",
+    "accessDenied": "Access denied. The link may be invalid or expired. Please request a new invitation.",
     "accountCreated": "Account created! Please check your email to confirm your account.",
     "passwordUpdated": "Password updated successfully!",
     "profileCompleted": "Profile completed! Redirecting...",

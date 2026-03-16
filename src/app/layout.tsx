@@ -4,6 +4,7 @@ import { NextIntlClientProvider } from 'next-intl';
 import { getLocale, getMessages } from 'next-intl/server';
 import { Providers } from '@/components/providers';
 import { Toaster } from '@/components/ui/sonner';
+import { AuthHashHandler } from '@/components/shared/auth-hash-handler';
 import './globals.css';
 
 // Namespaces only used server-side (via getTranslations) — excluded from client bundle
@@ -64,6 +65,7 @@ export default async function RootLayout({
       >
         <NextIntlClientProvider messages={pickClientMessages(messages as Record<string, unknown>)}>
           <Providers>
+            <AuthHashHandler />
             {children}
             <Toaster richColors position="top-right" />
           </Providers>

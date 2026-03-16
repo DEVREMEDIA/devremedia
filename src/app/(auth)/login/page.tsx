@@ -38,8 +38,20 @@ function LoginForm() {
 
   const urlError = searchParams.get('error');
   useEffect(() => {
-    if (urlError) {
-      toast.error(urlError === 'auth_callback_error' ? t('authFailed') : tc('error'));
+    if (!urlError) return;
+
+    switch (urlError) {
+      case 'auth_callback_error':
+        toast.error(t('authFailed'));
+        break;
+      case 'otp_expired':
+        toast.error(t('linkExpired'));
+        break;
+      case 'access_denied':
+        toast.error(t('accessDenied'));
+        break;
+      default:
+        toast.error(tc('error'));
     }
   }, [urlError, t, tc]);
 
