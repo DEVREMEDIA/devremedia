@@ -113,11 +113,11 @@ $$;
 -- ============================================================
 CREATE TRIGGER handle_chat_knowledge_updated_at
   BEFORE UPDATE ON chat_knowledge
-  FOR EACH ROW EXECUTE FUNCTION update_updated_at();
+  FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
 
 CREATE TRIGGER handle_chat_conversations_updated_at
   BEFORE UPDATE ON chat_conversations
-  FOR EACH ROW EXECUTE FUNCTION update_updated_at();
+  FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
 
 -- ============================================================
 -- RLS Policies

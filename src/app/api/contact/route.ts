@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { Resend } from 'resend';
 import { z } from 'zod';
+import { createAdminClient } from '@/lib/supabase/admin';
 
 const contactSchema = z.object({
   name: z.string().min(1),
@@ -20,29 +20,31 @@ export async function POST(request: NextRequest) {
 
   const { name, email, phone, subject, message } = parsed.data;
 
-  const resend = new Resend(process.env.RESEND_API_KEY);
+  try {
+    const supabase = createAdminClient();
 
-  const { error } = await resend.emails.send({
-    from: 'Devre Media Website <onboarding@resend.dev>',
-    to: 'info@devremedia.com',
-    replyTo: email,
-    subject: subject || `New contact from ${name}`,
-    html: `
-      <h2>New Contact Form Submission</h2>
-      <p><strong>Name:</strong> ${name}</p>
-      <p><strong>Email:</strong> ${email}</p>
-      ${phone ? `<p><strong>Phone:</strong> ${phone}</p>` : ''}
-      ${subject ? `<p><strong>Subject:</strong> ${subject}</p>` : ''}
-      <hr />
-      <p><strong>Message:</strong></p>
-      <p>${message.replace(/\n/g, '<br />')}</p>
-    `,
-  });
+    const notesParts: string[] = [];
+    notesParts.push(`Source: Landing page contact form`);
+    if (subject) notesParts.push(`Subject: ${subject}`);
+    notesParts.push(`Message: ${message}`);
 
-  if (error) {
-    console.error('Resend error:', error);
-    return NextResponse.json({ error: 'Failed to send email' }, { status: 500 });
+    const { error } = await supabase.from('leads').insert({
+      contact_name: name,
+      email,
+      phone: phone || null,
+      source: 'website' as const,
+      stage: 'new' as const,
+      notes: notesParts.join('\n'),
+    });
+
+    if (error) {
+      console.error('Failed to create lead:', error);
+      return NextResponse.json({ error: 'Failed to submit' }, { status: 500 });
+    }
+
+    return NextResponse.json({ success: true });
+  } catch (err) {
+    console.error('Contact form error:', err);
+    return NextResponse.json({ error: 'Failed to submit' }, { status: 500 });
   }
-
-  return NextResponse.json({ success: true });
 }

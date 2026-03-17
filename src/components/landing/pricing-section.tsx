@@ -8,7 +8,11 @@ export async function PricingSection() {
   const t = await getTranslations('landing');
 
   return (
-    <section id="pricing" className="relative py-24 sm:py-32 md:py-40" aria-labelledby="pricing-heading">
+    <section
+      id="pricing"
+      className="relative py-24 sm:py-32 md:py-40"
+      aria-labelledby="pricing-heading"
+    >
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         <ScrollReveal>
           <div className="text-center mb-12 sm:mb-16">
@@ -51,15 +55,20 @@ export async function PricingSection() {
                   t('pricing.featureRevision'),
                 ].map((feat, i) => (
                   <li key={i} className="flex items-start gap-2.5">
-                    <CheckCircle2 className="h-4 w-4 text-gold-500 flex-shrink-0 mt-0.5" aria-hidden="true" />
+                    <CheckCircle2
+                      className="h-4 w-4 text-gold-500 flex-shrink-0 mt-0.5"
+                      aria-hidden="true"
+                    />
                     <span className="text-zinc-400 text-sm">{feat}</span>
                   </li>
                 ))}
               </ul>
-              <Button asChild variant="outline" className="w-full border-white/10 text-zinc-300 hover:text-white hover:bg-white/5 h-12">
-                <Link href="#contact">
-                  {t('pricing.getQuote')}
-                </Link>
+              <Button
+                asChild
+                variant="outline"
+                className="w-full border-white/10 text-zinc-300 hover:text-white hover:bg-white/5 h-12"
+              >
+                <Link href="/book">{t('pricing.getQuote')}</Link>
               </Button>
             </div>
           </ScrollReveal>
@@ -81,15 +90,19 @@ export async function PricingSection() {
                   t('pricing.featureDrone'),
                 ].map((feat, i) => (
                   <li key={i} className="flex items-start gap-2.5">
-                    <CheckCircle2 className="h-4 w-4 text-gold-500 flex-shrink-0 mt-0.5" aria-hidden="true" />
+                    <CheckCircle2
+                      className="h-4 w-4 text-gold-500 flex-shrink-0 mt-0.5"
+                      aria-hidden="true"
+                    />
                     <span className="text-zinc-400 text-sm">{feat}</span>
                   </li>
                 ))}
               </ul>
-              <Button asChild className="w-full bg-gold-500 hover:bg-gold-400 text-black font-bold h-12">
-                <Link href="#contact">
-                  {t('pricing.getQuote')}
-                </Link>
+              <Button
+                asChild
+                className="w-full bg-gold-500 hover:bg-gold-400 text-black font-bold h-12"
+              >
+                <Link href="/book">{t('pricing.getQuote')}</Link>
               </Button>
             </div>
           </ScrollReveal>
@@ -112,15 +125,20 @@ export async function PricingSection() {
                   t('pricing.sameDayDelivery'),
                 ].map((feat, i) => (
                   <li key={i} className="flex items-start gap-2.5">
-                    <CheckCircle2 className="h-4 w-4 text-gold-500 flex-shrink-0 mt-0.5" aria-hidden="true" />
+                    <CheckCircle2
+                      className="h-4 w-4 text-gold-500 flex-shrink-0 mt-0.5"
+                      aria-hidden="true"
+                    />
                     <span className="text-zinc-400 text-sm">{feat}</span>
                   </li>
                 ))}
               </ul>
-              <Button asChild variant="outline" className="w-full border-white/10 text-zinc-300 hover:text-white hover:bg-white/5 h-12">
-                <Link href="#contact">
-                  {t('pricing.getQuote')}
-                </Link>
+              <Button
+                asChild
+                variant="outline"
+                className="w-full border-white/10 text-zinc-300 hover:text-white hover:bg-white/5 h-12"
+              >
+                <Link href="/book">{t('pricing.getQuote')}</Link>
               </Button>
             </div>
           </ScrollReveal>
@@ -130,31 +148,39 @@ export async function PricingSection() {
         <div className="grid sm:grid-cols-2 gap-4 sm:gap-5 max-w-4xl mx-auto">
           <ScrollReveal delay={0}>
             <div className="glass-card rounded-2xl p-8 sm:p-10">
-              <h4 className="text-lg sm:text-xl font-bold text-white mb-2">{t('pricing.podcastLabel')}</h4>
+              <h4 className="text-lg sm:text-xl font-bold text-white mb-2">
+                {t('pricing.podcastLabel')}
+              </h4>
               <div className="mb-4 sm:mb-5">
                 <span className="text-2xl sm:text-3xl font-black text-white">4-8</span>
                 <span className="text-zinc-400 ml-1 text-sm">{t('pricing.epMonth')}</span>
               </div>
               <p className="text-zinc-400 text-sm mb-6 sm:mb-8">{t('pricing.podcastDesc')}</p>
-              <Button asChild variant="outline" className="w-full border-white/10 text-zinc-300 hover:text-white hover:bg-white/5 h-12">
-                <Link href="#contact">
-                  {t('pricing.getQuote')}
-                </Link>
+              <Button
+                asChild
+                variant="outline"
+                className="w-full border-white/10 text-zinc-300 hover:text-white hover:bg-white/5 h-12"
+              >
+                <Link href="/book">{t('pricing.getQuote')}</Link>
               </Button>
             </div>
           </ScrollReveal>
           <ScrollReveal delay={150}>
             <div className="glass-card rounded-2xl p-8 sm:p-10">
-              <h4 className="text-lg sm:text-xl font-bold text-white mb-2">{t('pricing.eventLabel')}</h4>
+              <h4 className="text-lg sm:text-xl font-bold text-white mb-2">
+                {t('pricing.eventLabel')}
+              </h4>
               <div className="mb-4 sm:mb-5">
                 <span className="text-2xl sm:text-3xl font-black text-white">3-6</span>
                 <span className="text-zinc-400 ml-1 text-sm">{t('pricing.videos')}</span>
               </div>
               <p className="text-zinc-400 text-sm mb-6 sm:mb-8">{t('pricing.eventDesc')}</p>
-              <Button asChild variant="outline" className="w-full border-white/10 text-zinc-300 hover:text-white hover:bg-white/5 h-12">
-                <Link href="#contact">
-                  {t('pricing.getQuote')}
-                </Link>
+              <Button
+                asChild
+                variant="outline"
+                className="w-full border-white/10 text-zinc-300 hover:text-white hover:bg-white/5 h-12"
+              >
+                <Link href="/book">{t('pricing.getQuote')}</Link>
               </Button>
             </div>
           </ScrollReveal>

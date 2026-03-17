@@ -45,10 +45,7 @@ WITH CHECK (true);
 CREATE INDEX IF NOT EXISTS idx_messages_project_created
 ON messages(project_id, created_at DESC);
 
--- Add index for unread count queries
-CREATE INDEX IF NOT EXISTS idx_messages_unread
-ON messages(read_at)
-WHERE read_at IS NULL;
+-- Note: messages uses read_by (jsonb) not read_at for read tracking
 
 -- Add index for rate limiting queries
 CREATE INDEX IF NOT EXISTS idx_messages_project_created_recent

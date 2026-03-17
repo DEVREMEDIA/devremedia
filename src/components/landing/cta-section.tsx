@@ -24,8 +24,7 @@ export async function CtaSection() {
             id="cta-heading"
             className="text-3xl sm:text-4xl md:text-6xl lg:text-7xl font-black text-white leading-[1.05] mb-4 sm:mb-6"
           >
-            {t('cta.title1')}{' '}
-            <span className="text-gold-500">{t('cta.title2')}</span>
+            {t('cta.title1')} <span className="text-gold-500">{t('cta.title2')}</span>
           </h2>
         </ScrollReveal>
 
@@ -41,7 +40,7 @@ export async function CtaSection() {
             size="lg"
             className="bg-gold-500 hover:bg-gold-400 text-black font-bold text-base sm:text-lg px-8 sm:px-10 py-6 sm:py-7 h-auto shadow-[0_0_60px_rgba(201,160,51,0.25)] animate-glow-pulse"
           >
-            <Link href="#contact">
+            <Link href="/book">
               {t('cta.button')}
               <ArrowRight className="ml-2 h-5 w-5" aria-hidden="true" />
             </Link>

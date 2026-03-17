@@ -1,6 +1,6 @@
 import { getTranslations } from 'next-intl/server';
-import Image from 'next/image';
 import Link from 'next/link';
+import { CinematicLogo } from '@/components/shared/cinematic-logo';
 import { ArrowRight } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { LandingMobileNav } from '@/components/shared/landing-mobile-nav';
@@ -16,19 +16,13 @@ export async function LandingNav() {
       aria-label={t('nav.mainNavigation')}
     >
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-        <div className="flex items-center justify-between h-16 sm:h-20">
+        <div className="flex items-center justify-between h-24 sm:h-28">
           <Link
             href="/"
             className="flex items-center gap-2 sm:gap-3 hover:opacity-80 transition-opacity"
             aria-label="Devre Media - Home"
           >
-            <Image
-              src="/images/Logo_Horizontal_Transparent.png"
-              alt="Devre Media"
-              width={140}
-              height={38}
-              className="h-7 w-auto"
-            />
+            <CinematicLogo className="h-18" priority />
           </Link>
 
           <div className="hidden lg:flex items-center gap-6 xl:gap-10">
@@ -58,7 +52,7 @@ export async function LandingNav() {
               size="sm"
               className="hidden lg:inline-flex bg-gold-500 hover:bg-gold-400 text-black font-semibold text-[13px] h-12"
             >
-              <Link href="#contact">
+              <Link href="/book">
                 {t('nav.bookCall')}
                 <ArrowRight className="ml-1.5 h-3.5 w-3.5" aria-hidden="true" />
               </Link>

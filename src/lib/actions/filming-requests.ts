@@ -321,36 +321,42 @@ export async function convertToProject(id: string): Promise<ActionResult<Project
 
 export async function createPublicFilmingRequest(
   input: unknown,
-): Promise<ActionResult<FilmingRequest>> {
+): Promise<ActionResult<{ id: string }>> {
   try {
     const validated = publicBookingSchema.parse(input);
     const supabase = createAdminClient();
 
+    // Build notes from the booking details
+    const notesParts: string[] = [];
+    if (validated.project_type) notesParts.push(`Project type: ${validated.project_type}`);
+    if (validated.selected_package) notesParts.push(`Package: ${validated.selected_package}`);
+    if (validated.title) notesParts.push(`Title: ${validated.title}`);
+    if (validated.description) notesParts.push(`Description: ${validated.description}`);
+    if (validated.location) notesParts.push(`Location: ${validated.location}`);
+    if (validated.budget_range) notesParts.push(`Budget: ${validated.budget_range}`);
+    if (validated.preferred_dates?.length) {
+      const dates = validated.preferred_dates.map((d) => d.date).join(', ');
+      notesParts.push(`Preferred dates: ${dates}`);
+    }
+
     const { data, error } = await supabase
-      .from('filming_requests')
+      .from('leads')
       .insert({
-        client_id: null,
-        title: validated.title,
-        description: validated.description || null,
-        project_type: validated.project_type || null,
-        selected_package: validated.selected_package || null,
-        budget_range: validated.budget_range || null,
-        location: validated.location || null,
-        preferred_dates: validated.preferred_dates ?? null,
         contact_name: validated.contact_name,
-        contact_email: validated.contact_email,
-        contact_phone: validated.contact_phone || null,
-        contact_company: validated.contact_company || null,
-        status: 'pending',
+        email: validated.contact_email,
+        phone: validated.contact_phone || null,
+        company_name: validated.contact_company || null,
+        source: 'website' as const,
+        stage: 'new' as const,
+        notes: notesParts.join('\n') || null,
       })
-      .select(
-        'id, client_id, title, description, preferred_dates, location, project_type, budget_range, reference_links, selected_package, status, admin_notes, converted_project_id, contact_name, contact_email, contact_phone, contact_company, created_at',
-      )
+      .select('id')
       .single();
 
     if (error) return { data: null, error: error.message };
 
-    revalidatePath('/admin/filming-requests');
+    revalidatePath('/admin/leads');
+    revalidatePath('/salesman/leads');
     return { data, error: null };
   } catch (error) {
     if (error instanceof Error) {

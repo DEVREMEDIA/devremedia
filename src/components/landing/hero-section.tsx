@@ -80,7 +80,7 @@ export async function HeroSection() {
               size="lg"
               className="bg-gold-500 hover:bg-gold-400 text-black font-bold text-base sm:text-lg px-10 py-6 h-auto shadow-[0_0_40px_rgba(201,160,51,0.25)] hover:shadow-[0_0_60px_rgba(201,160,51,0.35)] transition-all duration-300"
             >
-              <Link href="#contact">
+              <Link href="/book">
                 {t('hero.ctaPrimary')}
                 <ArrowRight className="ml-2 h-4 w-4 sm:h-5 sm:w-5" aria-hidden="true" />
               </Link>

@@ -4,13 +4,14 @@ import { useState } from 'react';
 import { useForm, useFieldArray } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useTranslations } from 'next-intl';
-import { Loader2 } from 'lucide-react';
+import { ArrowLeft, Loader2 } from 'lucide-react';
 import { toast } from 'sonner';
 
 import { publicBookingSchema, type PublicBookingInput } from '@/lib/schemas/filming-request';
 import { createPublicFilmingRequest } from '@/lib/actions/filming-requests';
 import { getServiceCategory, type ProjectType } from '@/lib/constants';
 
+import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { BookingSuccess } from '@/components/shared/booking-success';
 import { BookingContactSection } from '@/components/shared/booking-contact-section';
@@ -108,7 +109,7 @@ export function PublicBookingForm() {
 
       <BookingLocationBudgetSection register={register} watch={watch} setValue={setValue} />
 
-      <div className="pt-4">
+      <div className="pt-4 space-y-3">
         <Button
           type="submit"
           disabled={isSubmitting}
@@ -122,6 +123,12 @@ export function PublicBookingForm() {
           ) : (
             t('submitRequest')
           )}
+        </Button>
+        <Button asChild variant="ghost" className="w-full text-zinc-400 hover:text-white">
+          <Link href="/">
+            <ArrowLeft className="mr-2 h-4 w-4" />
+            {t('backToHome')}
+          </Link>
         </Button>
       </div>
     </form>
