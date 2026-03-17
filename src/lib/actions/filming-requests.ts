@@ -291,7 +291,7 @@ export async function convertToProject(id: string): Promise<ActionResult<Project
         created_by: user.id,
       })
       .select(
-        'id, client_id, title, description, project_type, status, priority, budget, deadline, start_date, completion_date, tags, metadata, created_by, created_at, updated_at',
+        'id, client_id, title, description, project_type, status, priority, budget, deadline, start_date, created_at, updated_at',
       )
       .single();
 

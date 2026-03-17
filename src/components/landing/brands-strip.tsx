@@ -6,15 +6,17 @@ export async function BrandsStrip() {
   const t = await getTranslations('landing');
 
   return (
-    <div
-      className="relative py-10 sm:py-14"
-      role="region"
-      aria-label={t('hero.trustedBy')}
-    >
+    <div className="relative py-10 sm:py-14" role="region" aria-label={t('hero.trustedBy')}>
       {/* Top gold gradient line */}
-      <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-gold-500/20 to-transparent" aria-hidden="true" />
+      <div
+        className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-gold-500/20 to-transparent"
+        aria-hidden="true"
+      />
       {/* Bottom gold gradient line */}
-      <div className="absolute bottom-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-gold-500/20 to-transparent" aria-hidden="true" />
+      <div
+        className="absolute bottom-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-gold-500/20 to-transparent"
+        aria-hidden="true"
+      />
 
       <p className="text-center text-zinc-400 text-xs tracking-[0.3em] uppercase mb-6 sm:mb-8">
         {t('hero.trustedBy')}
@@ -25,14 +27,18 @@ export async function BrandsStrip() {
           aria-hidden="true"
         >
           {[...CLIENT_LOGOS, ...CLIENT_LOGOS].map((brand, i) => (
-            <Image
+            <div
               key={`${brand.name}-${i}`}
-              src={brand.src}
-              alt={brand.name}
-              width={100}
-              height={40}
-              className="h-6 sm:h-8 w-auto object-contain brightness-0 invert opacity-25 hover:opacity-60 transition-opacity duration-300 flex-shrink-0"
-            />
+              className="flex-shrink-0 bg-white/5 border border-gold-500/30 rounded-lg px-6 py-3 backdrop-blur-sm hover:bg-white/10 hover:border-gold-500/60 hover:shadow-[0_0_12px_rgba(201,160,51,0.25)] hover:scale-105 transition-all duration-300"
+            >
+              <Image
+                src={brand.src}
+                alt={brand.name}
+                width={100}
+                height={40}
+                className="h-6 sm:h-8 w-auto object-contain opacity-60 hover:opacity-100 transition-opacity duration-300"
+              />
+            </div>
           ))}
         </div>
       </div>

@@ -77,11 +77,11 @@ export function ClientNavbar() {
         {/* Logo */}
         <Link href="/client/dashboard" className="flex items-center mr-6">
           <Image
-            src="/images/LOGO.svg"
+            src="/images/Logo_Horizontal_Transparent.png"
             alt="Devre Media"
-            height={28}
             width={120}
-            className="dark:invert"
+            height={32}
+            className="h-7 w-auto invert dark:invert-0"
           />
         </Link>
 

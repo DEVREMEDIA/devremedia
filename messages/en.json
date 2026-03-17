@@ -1669,7 +1669,7 @@
     "about": {
       "label": "About Us",
       "title": "Crafting Stories, One Frame at a Time",
-      "description": "Based in Vienna and Thessaloniki, we combine the speed of modern digital production with the quality standards of traditional cinematography.",
+      "description": "Based in Thessaloniki, we combine the speed of modern digital production with the quality standards of traditional cinematography.",
       "text1": "Devre Media was born from a simple belief: every brand deserves cinematic-quality content without the wait. We specialize in social media videos, corporate films, podcast production, and event coverage — delivering everything your brand needs to dominate on screen.",
       "text2": "Our lightweight, agile approach means we move fast without compromising quality. Where others take weeks, we deliver in days — because your brand can't afford to wait.",
       "highlight1Title": "Fast Delivery",
@@ -1826,7 +1826,7 @@
       "emailLabel": "Email",
       "emailPlaceholder": "you@example.com",
       "phoneLabel": "Phone",
-      "phonePlaceholder": "+43 or +30...",
+      "phonePlaceholder": "+30...",
       "subjectLabel": "Subject",
       "subjectPlaceholder": "What's this about?",
       "messageLabel": "Message",
@@ -1835,11 +1835,9 @@
       "sending": "Sending...",
       "sendAnother": "Send another message",
       "success": "Message sent! We'll get back to you within 24 hours.",
-      "error": "Failed to send. Please email us at devremedia@gmail.com",
-      "viennaOffice": "Vienna Office",
-      "viennaAddress": "Meidlgasse 25, 1110 Vienna, Austria",
+      "error": "Failed to send. Please email us at info@devremedia.com",
       "thessalonikiOffice": "Greece Office",
-      "thessalonikiAddress": "Thessaloniki, Greece",
+      "thessalonikiAddress": "Themistokli Sofouli 88, Kalamaria, Thessaloniki, 55 131",
       "emailUs": "Email Us",
       "callUs": "Call Us",
       "followUs": "Follow Us"
@@ -1849,7 +1847,7 @@
       "title2": "your brand's image?",
       "description": "Let's sit down for 30 minutes and map out a content plan that actually makes sense for your business. No pushy sales — just an honest conversation about where your brand can go.",
       "button": "Book Your Free Discovery Call",
-      "location": "Vienna & Thessaloniki. Available for projects across Europe and internationally."
+      "location": "Thessaloniki. Available for projects across Europe and internationally."
     },
     "footer": {
       "tagline": "Video production & advertising content. Building complete brand images since day one.",
@@ -1861,10 +1859,10 @@
       "caseStudies": "Case Studies",
       "createAccount": "Create Account",
       "copyright": "All rights reserved.",
-      "city": "Vienna, Austria & Thessaloniki, Greece",
+      "city": "Thessaloniki, Greece",
       "impressum": "Impressum",
       "privacy": "Privacy Policy",
-      "emailAddress": "devremedia@gmail.com",
+      "emailAddress": "info@devremedia.com",
       "aboutUs": "About Us",
       "portfolio": "Portfolio",
       "ourTeam": "Our Team",

@@ -26,16 +26,13 @@ export function LandingContactForm() {
     };
 
     try {
-      const { createPublicFilmingRequest } = await import('@/lib/actions/filming-requests');
-      const result = await createPublicFilmingRequest({
-        contact_name: data.name,
-        contact_email: data.email,
-        contact_phone: data.phone || null,
-        title: data.subject || 'Website Contact Form',
-        description: data.message,
+      const res = await fetch('/api/contact', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(data),
       });
 
-      if (result.error) throw new Error(result.error);
+      if (!res.ok) throw new Error('Failed to send');
       setStatus('success');
       (e.target as HTMLFormElement).reset();
     } catch {

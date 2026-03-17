@@ -2,15 +2,12 @@ import { getTranslations } from 'next-intl/server';
 import { MapPin, Phone, Mail, Instagram, Youtube, Linkedin } from 'lucide-react';
 import { ScrollReveal } from '@/components/shared/scroll-reveal';
 import { LandingContactForm } from '@/components/shared/landing-contact-form';
-import { TikTokIcon } from './tiktok-icon';
 import { SOCIAL_LINKS } from './constants';
 
 function getSocialIcon(platform: string) {
   switch (platform) {
     case 'instagram':
       return <Instagram className="h-5 w-5" aria-hidden="true" />;
-    case 'tiktok':
-      return <TikTokIcon />;
     case 'linkedin':
       return <Linkedin className="h-5 w-5" aria-hidden="true" />;
     case 'youtube':
@@ -24,12 +21,15 @@ export async function ContactSection() {
   const t = await getTranslations('landing');
 
   const offices = [
-    { title: t('contact.viennaOffice'), address: t('contact.viennaAddress') },
     { title: t('contact.thessalonikiOffice'), address: t('contact.thessalonikiAddress') },
   ];
 
   return (
-    <section id="contact" className="relative py-24 sm:py-32 md:py-40" aria-labelledby="contact-heading">
+    <section
+      id="contact"
+      className="relative py-24 sm:py-32 md:py-40"
+      aria-labelledby="contact-heading"
+    >
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         <div className="grid lg:grid-cols-2 gap-12 sm:gap-16 lg:gap-24">
           <div>
@@ -72,24 +72,12 @@ export async function ContactSection() {
                   <Phone className="h-4 w-4 text-gold-500 flex-shrink-0" aria-hidden="true" />
                   {t('contact.callUs')}
                 </h3>
-                <div className="text-zinc-400 text-sm pl-6 space-y-1">
-                  <p>
-                    <a
-                      href="tel:+436706502131"
-                      className="min-h-[48px] inline-flex items-center hover:text-gold-400 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold-500 rounded-sm"
-                    >
-                      +43 670 650 2131
-                    </a>
-                  </p>
-                  <p>
-                    <a
-                      href="tel:+306984592968"
-                      className="min-h-[48px] inline-flex items-center hover:text-gold-400 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold-500 rounded-sm"
-                    >
-                      +30 6984 592 968
-                    </a>
-                  </p>
-                </div>
+                <a
+                  href="tel:+306984592968"
+                  className="text-zinc-400 text-sm pl-6 min-h-[48px] inline-flex items-center hover:text-gold-400 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold-500 rounded-sm"
+                >
+                  +30 6984 592 968
+                </a>
               </div>
             </ScrollReveal>
 
@@ -101,10 +89,10 @@ export async function ContactSection() {
                   {t('contact.emailUs')}
                 </h3>
                 <a
-                  href="mailto:devremedia@gmail.com"
+                  href="mailto:info@devremedia.com"
                   className="text-gold-500 hover:text-gold-400 text-sm pl-6 min-h-[48px] inline-flex items-center focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold-500 rounded-sm"
                 >
-                  devremedia@gmail.com
+                  info@devremedia.com
                 </a>
               </div>
             </ScrollReveal>

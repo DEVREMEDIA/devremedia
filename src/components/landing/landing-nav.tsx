@@ -23,15 +23,12 @@ export async function LandingNav() {
             aria-label="Devre Media - Home"
           >
             <Image
-              src="/images/LOGO_WhiteLetter.png"
-              alt=""
-              width={36}
-              height={36}
-              className="w-8 h-8 sm:w-9 sm:h-9 object-contain"
+              src="/images/Logo_Horizontal_Transparent.png"
+              alt="Devre Media"
+              width={140}
+              height={38}
+              className="h-7 w-auto"
             />
-            <span className="hidden sm:block text-white font-bold text-lg tracking-tight">
-              DEVRE MEDIA
-            </span>
           </Link>
 
           <div className="hidden lg:flex items-center gap-6 xl:gap-10">
@@ -48,12 +45,19 @@ export async function LandingNav() {
 
           <div className="flex items-center gap-2 sm:gap-3">
             <LanguageSwitcher />
-            <Button asChild variant="ghost" size="sm" className="hidden lg:inline-flex text-zinc-400 hover:text-white hover:bg-white/5 text-[13px] h-12">
-              <Link href="/login">
-                {t('nav.clientPortal')}
-              </Link>
+            <Button
+              asChild
+              variant="ghost"
+              size="sm"
+              className="hidden lg:inline-flex text-zinc-400 hover:text-white hover:bg-white/5 text-[13px] h-12"
+            >
+              <Link href="/login">{t('nav.clientPortal')}</Link>
             </Button>
-            <Button asChild size="sm" className="hidden lg:inline-flex bg-gold-500 hover:bg-gold-400 text-black font-semibold text-[13px] h-12">
+            <Button
+              asChild
+              size="sm"
+              className="hidden lg:inline-flex bg-gold-500 hover:bg-gold-400 text-black font-semibold text-[13px] h-12"
+            >
               <Link href="#contact">
                 {t('nav.bookCall')}
                 <ArrowRight className="ml-1.5 h-3.5 w-3.5" aria-hidden="true" />

@@ -2,7 +2,7 @@
 
 import { useLocale } from 'next-intl';
 import { useRouter } from 'next/navigation';
-import { useTransition } from 'react';
+import { useEffect, useState, useTransition } from 'react';
 import { Globe } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
@@ -18,6 +18,9 @@ export function LanguageSwitcher() {
   const locale = useLocale();
   const router = useRouter();
   const [isPending, startTransition] = useTransition();
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => setMounted(true), []);
 
   const handleLocaleChange = (newLocale: Locale) => {
     startTransition(async () => {
@@ -26,10 +29,29 @@ export function LanguageSwitcher() {
     });
   };
 
+  // Render static placeholder during SSR to avoid Radix useId() hydration mismatch
+  if (!mounted) {
+    return (
+      <Button
+        variant="ghost"
+        size="icon"
+        className="text-zinc-400 hover:text-white hover:bg-white/10 h-12 w-12"
+      >
+        <Globe className="h-4 w-4" aria-hidden="true" />
+        <span className="sr-only">Switch language</span>
+      </Button>
+    );
+  }
+
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
-        <Button variant="ghost" size="icon" disabled={isPending} className="text-zinc-400 hover:text-white hover:bg-white/10 h-12 w-12">
+        <Button
+          variant="ghost"
+          size="icon"
+          disabled={isPending}
+          className="text-zinc-400 hover:text-white hover:bg-white/10 h-12 w-12"
+        >
           <Globe className="h-4 w-4" aria-hidden="true" />
           <span className="sr-only">Switch language</span>
         </Button>

@@ -263,17 +263,6 @@ export function ProjectDetail({ project, contracts }: ProjectDetailProps) {
                   </div>
                 </div>
               )}
-
-              {project.completion_date && (
-                <div>
-                  <div className="text-sm font-medium text-muted-foreground mb-1">
-                    {tc('completedOn')}
-                  </div>
-                  <div className="text-lg">
-                    {format(new Date(project.completion_date), 'MMM d, yyyy')}
-                  </div>
-                </div>
-              )}
             </CardContent>
           </Card>
 

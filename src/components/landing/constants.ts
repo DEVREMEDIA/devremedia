@@ -5,12 +5,12 @@ export const CLIENT_LOGOS = [
   { name: 'Alpha Jiu-Jitsu', src: '/images/clients/alpha.png' },
   { name: 'Almeco', src: '/images/clients/almeco.png' },
   { name: 'Stammdesign', src: '/images/clients/stammdesign.png' },
-  { name: 'Technomat', src: '/images/clients/technomat.webp' },
+  { name: 'Technomat', src: '/images/clients/technomat.jpeg' },
   { name: 'RE/MAX', src: '/images/clients/remax.png' },
-  { name: 'Sunteak', src: '/images/clients/sunteak.png' },
   { name: 'Ariston', src: '/images/clients/ariston.png' },
-  { name: '1516 Brewing', src: '/images/clients/1516.png' },
-  { name: 'Cincin Catering', src: '/images/clients/cincin.png' },
+  { name: 'Ophthalmica', src: '/images/clients/ophthalmica.png' },
+  { name: 'Delli', src: '/images/clients/delli.png' },
+  { name: 'Μαύρη Θάλασσα', src: '/images/clients/mavri-thalassa.png' },
 ] as const;
 
 export const PORTFOLIO_VIDEOS = [
@@ -32,8 +32,15 @@ export const NAV_LINKS = [
 ] as const;
 
 export const SOCIAL_LINKS = [
-  { href: 'https://www.instagram.com/devre.media/', label: 'Instagram', platform: 'instagram' },
-  { href: 'https://www.tiktok.com/@devre.media', label: 'TikTok', platform: 'tiktok' },
-  { href: 'https://www.linkedin.com/company/devre-media', label: 'LinkedIn', platform: 'linkedin' },
-  { href: 'https://www.youtube.com/@devremedia', label: 'YouTube', platform: 'youtube' },
+  {
+    href: 'https://www.instagram.com/devre_media?igsh=YnQ2bWRlMjJycG1p',
+    label: 'Instagram',
+    platform: 'instagram',
+  },
+  {
+    href: 'https://www.linkedin.com/company/devre-media/',
+    label: 'LinkedIn',
+    platform: 'linkedin',
+  },
+  { href: 'https://www.youtube.com/@DevreMedia', label: 'YouTube', platform: 'youtube' },
 ] as const;

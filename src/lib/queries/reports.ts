@@ -93,7 +93,9 @@ export async function getRevenueThisMonth(): Promise<number> {
     const supabase = await createClient();
     const now = new Date();
     const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1).toISOString().split('T')[0];
-    const endOfMonth = new Date(now.getFullYear(), now.getMonth() + 1, 0).toISOString().split('T')[0];
+    const endOfMonth = new Date(now.getFullYear(), now.getMonth() + 1, 0)
+      .toISOString()
+      .split('T')[0];
 
     const { data, error } = await supabase
       .from('invoices')
@@ -109,13 +111,12 @@ export async function getRevenueThisMonth(): Promise<number> {
   }
 }
 
-export async function getPaymentMethodBreakdown(dateRange?: DateRange): Promise<PaymentMethodBreakdown[]> {
+export async function getPaymentMethodBreakdown(
+  dateRange?: DateRange,
+): Promise<PaymentMethodBreakdown[]> {
   try {
     const supabase = await createClient();
-    let query = supabase
-      .from('invoices')
-      .select('total, metadata')
-      .eq('status', 'paid');
+    let query = supabase.from('invoices').select('total, metadata').eq('status', 'paid');
 
     if (dateRange) {
       query = query.gte('paid_at', dateRange.from).lte('paid_at', dateRange.to);
@@ -147,13 +148,12 @@ export async function getPaymentMethodBreakdown(dateRange?: DateRange): Promise<
   }
 }
 
-export async function getProjectTypeBreakdown(dateRange?: DateRange): Promise<ProjectTypeBreakdown[]> {
+export async function getProjectTypeBreakdown(
+  dateRange?: DateRange,
+): Promise<ProjectTypeBreakdown[]> {
   try {
     const supabase = await createClient();
-    let query = supabase
-      .from('projects')
-      .select('project_type')
-      .neq('status', 'archived');
+    let query = supabase.from('projects').select('project_type').neq('status', 'archived');
 
     if (dateRange) {
       query = query.gte('created_at', dateRange.from).lte('created_at', dateRange.to);
@@ -178,7 +178,10 @@ export async function getProjectTypeBreakdown(dateRange?: DateRange): Promise<Pr
   }
 }
 
-export async function getTopClientsByRevenue(limit: number = 10, dateRange?: DateRange): Promise<ClientRevenue[]> {
+export async function getTopClientsByRevenue(
+  limit: number = 10,
+  dateRange?: DateRange,
+): Promise<ClientRevenue[]> {
   try {
     const supabase = await createClient();
     let query = supabase
@@ -221,12 +224,12 @@ export async function getTopClientsByRevenue(limit: number = 10, dateRange?: Dat
   }
 }
 
-export async function getExpensesByCategory(dateRange?: DateRange): Promise<ExpenseCategoryBreakdown[]> {
+export async function getExpensesByCategory(
+  dateRange?: DateRange,
+): Promise<ExpenseCategoryBreakdown[]> {
   try {
     const supabase = await createClient();
-    let query = supabase
-      .from('expenses')
-      .select('category, amount');
+    let query = supabase.from('expenses').select('category, amount');
 
     if (dateRange) {
       query = query.gte('date', dateRange.from).lte('date', dateRange.to);
@@ -257,22 +260,19 @@ export async function getExpensesByCategory(dateRange?: DateRange): Promise<Expe
   }
 }
 
-export async function getProfitMargin(dateRange?: DateRange): Promise<{ revenue: number; expenses: number; profit: number; margin: number }> {
+export async function getProfitMargin(
+  dateRange?: DateRange,
+): Promise<{ revenue: number; expenses: number; profit: number; margin: number }> {
   try {
     const supabase = await createClient();
 
-    let revenueQuery = supabase
-      .from('invoices')
-      .select('total')
-      .eq('status', 'paid');
+    let revenueQuery = supabase.from('invoices').select('total').eq('status', 'paid');
 
     if (dateRange) {
       revenueQuery = revenueQuery.gte('paid_at', dateRange.from).lte('paid_at', dateRange.to);
     }
 
-    let expenseQuery = supabase
-      .from('expenses')
-      .select('amount');
+    let expenseQuery = supabase.from('expenses').select('amount');
 
     if (dateRange) {
       expenseQuery = expenseQuery.gte('date', dateRange.from).lte('date', dateRange.to);
@@ -300,16 +300,16 @@ export async function getAverageProjectDuration(): Promise<number> {
     const supabase = await createClient();
     const { data, error } = await supabase
       .from('projects')
-      .select('start_date, completion_date')
+      .select('start_date, deadline')
       .eq('status', 'delivered')
       .not('start_date', 'is', null)
-      .not('completion_date', 'is', null);
+      .not('deadline', 'is', null);
 
     if (error || !data || data.length === 0) return 0;
 
     const durations = data.map((project) => {
       const start = new Date(project.start_date!);
-      const end = new Date(project.completion_date!);
+      const end = new Date(project.deadline!);
       return Math.floor((end.getTime() - start.getTime()) / (1000 * 60 * 60 * 24));
     });
 

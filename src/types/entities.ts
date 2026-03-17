@@ -59,10 +59,6 @@ export type Project = {
   budget: number | null;
   deadline: string | null;
   start_date: string | null;
-  completion_date: string | null;
-  tags: string[];
-  metadata: Record<string, unknown>;
-  created_by: string;
   created_at: string;
   updated_at: string;
 };

@@ -40,11 +40,11 @@ export default async function AuthLayout({ children }: { children: React.ReactNo
           <div className="text-center lg:hidden">
             <Link href="/" className="inline-block mb-2">
               <Image
-                src="/images/LOGO.svg"
+                src="/images/Logo_Horizontal_Transparent.png"
                 alt="Devre Media"
                 width={200}
-                height={40}
-                className="h-10 w-auto dark:invert"
+                height={50}
+                className="h-10 w-auto invert dark:invert-0"
                 priority
               />
             </Link>

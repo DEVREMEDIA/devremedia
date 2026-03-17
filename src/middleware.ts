@@ -47,7 +47,36 @@ export async function middleware(request: NextRequest) {
   // Refresh session
   const {
     data: { user },
+    error: authError,
   } = await supabase.auth.getUser();
+
+  // If the refresh token is invalid/expired, clear stale auth cookies and redirect to login
+  if (authError?.code === 'refresh_token_not_found' || authError?.code === 'session_not_found') {
+    const { pathname } = request.nextUrl;
+    // Don't redirect if already on a public/auth route
+    if (
+      !PUBLIC_ROUTES.some((route) => pathname.startsWith(route)) &&
+      !pathname.startsWith('/auth/')
+    ) {
+      const url = request.nextUrl.clone();
+      url.pathname = '/login';
+      const response = NextResponse.redirect(url);
+      // Clear all Supabase auth cookies to stop the error loop
+      request.cookies.getAll().forEach(({ name }) => {
+        if (name.startsWith('sb-')) {
+          response.cookies.delete(name);
+        }
+      });
+      return response;
+    }
+    // On public routes, just clear the cookies without redirecting
+    request.cookies.getAll().forEach(({ name }) => {
+      if (name.startsWith('sb-')) {
+        supabaseResponse.cookies.delete(name);
+      }
+    });
+    return supabaseResponse;
+  }
 
   const { pathname } = request.nextUrl;
 
