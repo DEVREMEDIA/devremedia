@@ -1,6 +1,6 @@
 import { getTranslations } from 'next-intl/server';
-import Image from 'next/image';
 import { CLIENT_LOGOS } from './constants';
+import { BrandsTicker } from './brands-ticker';
 
 export async function BrandsStrip() {
   const t = await getTranslations('landing');
@@ -21,36 +21,9 @@ export async function BrandsStrip() {
       <p className="text-center text-zinc-400 text-xs tracking-[0.3em] uppercase mb-6 sm:mb-8">
         {t('hero.trustedBy')}
       </p>
-      <div className="relative overflow-hidden [mask-image:linear-gradient(to_right,transparent,black_10%,black_90%,transparent)]">
-        <div
-          className="flex items-center gap-12 sm:gap-20 animate-[marquee_50s_linear_infinite]"
-          aria-hidden="true"
-        >
-          {[...CLIENT_LOGOS, ...CLIENT_LOGOS].map((brand, i) => (
-            <div
-              key={`${brand.name}-${i}`}
-              className={`flex-shrink-0 rounded-lg px-6 py-3 overflow-hidden border border-gold-500/30 hover:border-gold-500/60 hover:shadow-[0_0_14px_rgba(201,160,51,0.2)] hover:scale-105 transition-all duration-300 ${
-                brand.solidBg
-                  ? 'bg-white/90 hover:bg-white'
-                  : 'bg-white/5 backdrop-blur-sm hover:bg-white/10'
-              }`}
-            >
-              <Image
-                src={brand.src}
-                alt={brand.name}
-                width={100}
-                height={40}
-                className={`h-6 sm:h-8 w-auto object-contain transition-opacity duration-300 ${
-                  brand.solidBg
-                    ? 'grayscale opacity-80 hover:opacity-100 hover:grayscale-0'
-                    : 'opacity-70 hover:opacity-100'
-                }`}
-                style={brand.solidBg ? undefined : { filter: 'brightness(0) invert(1)' }}
-              />
-            </div>
-          ))}
-        </div>
-      </div>
+
+      <BrandsTicker logos={CLIENT_LOGOS} />
+
       {/* Screen reader list of clients */}
       <ul className="sr-only">
         {CLIENT_LOGOS.map((brand) => (

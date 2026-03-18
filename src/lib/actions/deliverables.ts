@@ -105,6 +105,8 @@ export async function createDeliverable(input: unknown): Promise<ActionResult<De
     revalidatePath(`/admin/projects/${validated.project_id}`);
     revalidatePath(`/client/projects/${validated.project_id}`);
     revalidatePath('/client/dashboard');
+    revalidatePath(`/employee/deliverables/${validated.project_id}`);
+    revalidatePath(`/employee/projects/${validated.project_id}`);
 
     // Notify client about new deliverable
     const clientUserId = await getClientUserIdFromProject(validated.project_id);
@@ -153,6 +155,8 @@ export async function updateDeliverableStatus(
       revalidatePath(`/admin/projects/${data.project_id}`);
       revalidatePath(`/client/projects/${data.project_id}`);
       revalidatePath('/client/dashboard');
+      revalidatePath(`/employee/deliverables/${data.project_id}`);
+      revalidatePath(`/employee/projects/${data.project_id}`);
 
       // Determine who to notify based on who made the change
       const { data: profile } = await supabase
@@ -171,6 +175,16 @@ export async function updateDeliverableStatus(
             type: NOTIFICATION_TYPES.DELIVERABLE_REVIEWED,
             title: `Deliverable "${data.title}" marked as ${status}`,
             actionUrl: `/client/projects/${data.project_id}`,
+          });
+        }
+
+        // Also notify the employee who uploaded it
+        if (data.uploaded_by && data.uploaded_by !== user.id) {
+          createNotification({
+            userId: data.uploaded_by,
+            type: NOTIFICATION_TYPES.DELIVERABLE_REVIEWED,
+            title: `Deliverable "${data.title}" marked as ${status}`,
+            actionUrl: `/employee/deliverables/${data.project_id}`,
           });
         }
       } else {
@@ -213,6 +227,8 @@ export async function deleteDeliverable(id: string): Promise<ActionResult<void>>
     if (deliverable?.project_id) {
       revalidatePath(`/admin/projects/${deliverable.project_id}`);
       revalidatePath(`/client/projects/${deliverable.project_id}`);
+      revalidatePath(`/employee/deliverables/${deliverable.project_id}`);
+      revalidatePath(`/employee/projects/${deliverable.project_id}`);
     }
     return { data: undefined, error: null };
   } catch (err: unknown) {
@@ -277,6 +293,8 @@ export async function createAnnotation(input: unknown): Promise<ActionResult<Vid
       .single();
     if (deliverable?.project_id) {
       revalidatePath(`/client/projects/${deliverable.project_id}`);
+      revalidatePath(`/employee/deliverables/${deliverable.project_id}`);
+      revalidatePath(`/employee/projects/${deliverable.project_id}`);
     }
     return { data, error: null };
   } catch (error) {

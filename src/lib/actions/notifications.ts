@@ -165,6 +165,7 @@ export async function markAsRead(id: string): Promise<ActionResult<void>> {
 
     revalidatePath('/admin/dashboard');
     revalidatePath('/client/dashboard');
+    revalidatePath('/employee/dashboard');
     return { data: undefined, error: null };
   } catch (err: unknown) {
     return {
@@ -192,6 +193,7 @@ export async function markAllAsRead(): Promise<ActionResult<void>> {
 
     revalidatePath('/admin/dashboard');
     revalidatePath('/client/dashboard');
+    revalidatePath('/employee/dashboard');
     return { data: undefined, error: null };
   } catch (err: unknown) {
     return {

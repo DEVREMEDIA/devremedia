@@ -59,6 +59,7 @@ export async function createMessage(input: unknown): Promise<ActionResult<Messag
 
     revalidatePath(`/admin/projects/${validated.project_id}`);
     revalidatePath(`/client/projects/${validated.project_id}`);
+    revalidatePath(`/employee/projects/${validated.project_id}`);
 
     // Notify the other party about new message
     const { data: profile } = await supabase
@@ -118,6 +119,7 @@ export async function markMessagesAsRead(projectId: string): Promise<ActionResul
 
     revalidatePath(`/admin/projects/${projectId}`);
     revalidatePath(`/client/projects/${projectId}`);
+    revalidatePath(`/employee/projects/${projectId}`);
     return { data: undefined, error: null };
   } catch (err: unknown) {
     return {

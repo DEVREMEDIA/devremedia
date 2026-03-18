@@ -5,6 +5,8 @@ import { createTaskSchema, updateTaskSchema } from '@/lib/schemas/task';
 import type { ActionResult, Task } from '@/types/index';
 import type { TaskStatus } from '@/lib/constants';
 import { revalidatePath } from 'next/cache';
+import { createNotification } from '@/lib/actions/notifications';
+import { NOTIFICATION_TYPES } from '@/lib/notification-types';
 
 export async function getTasksByProject(projectId: string): Promise<ActionResult<Task[]>> {
   try {
@@ -72,6 +74,19 @@ export async function createTask(input: unknown): Promise<ActionResult<Task>> {
     if (error) return { data: null, error: error.message };
 
     revalidatePath(`/admin/projects/${validated.project_id}`);
+    revalidatePath('/employee/tasks');
+    revalidatePath('/employee/dashboard');
+
+    if (validated.assigned_to) {
+      createNotification({
+        userId: validated.assigned_to,
+        type: NOTIFICATION_TYPES.TASK_ASSIGNED,
+        title: 'New task assigned to you',
+        body: data.title,
+        actionUrl: `/employee/tasks/${data.id}`,
+      });
+    }
+
     return { data, error: null };
   } catch (error) {
     if (error instanceof Error) {
@@ -90,6 +105,13 @@ export async function updateTask(id: string, input: unknown): Promise<ActionResu
     } = await supabase.auth.getUser();
     if (!user) return { data: null, error: 'Unauthorized' };
 
+    // Fetch old task to compare assigned_to
+    const { data: oldTask } = await supabase
+      .from('tasks')
+      .select('assigned_to')
+      .eq('id', id)
+      .single();
+
     const { data, error } = await supabase
       .from('tasks')
       .update(validated)
@@ -104,6 +126,20 @@ export async function updateTask(id: string, input: unknown): Promise<ActionResu
     if (data?.project_id) {
       revalidatePath(`/admin/projects/${data.project_id}`);
     }
+    revalidatePath('/employee/tasks');
+    revalidatePath('/employee/dashboard');
+
+    // Notify new assignee if assigned_to changed
+    if (validated.assigned_to && validated.assigned_to !== oldTask?.assigned_to) {
+      createNotification({
+        userId: validated.assigned_to,
+        type: NOTIFICATION_TYPES.TASK_ASSIGNED,
+        title: 'New task assigned to you',
+        body: data.title,
+        actionUrl: `/employee/tasks/${data.id}`,
+      });
+    }
+
     return { data, error: null };
   } catch (error) {
     if (error instanceof Error) {
@@ -144,6 +180,19 @@ export async function updateTaskStatus(
     if (data?.project_id) {
       revalidatePath(`/admin/projects/${data.project_id}`);
     }
+    revalidatePath('/employee/tasks');
+    revalidatePath('/employee/dashboard');
+
+    // Notify assigned employee about status change (if someone else changed it)
+    if (data.assigned_to && data.assigned_to !== user.id) {
+      createNotification({
+        userId: data.assigned_to,
+        type: NOTIFICATION_TYPES.TASK_UPDATED,
+        title: `Task "${data.title}" status changed to ${status}`,
+        actionUrl: `/employee/tasks/${data.id}`,
+      });
+    }
+
     return { data, error: null };
   } catch (err: unknown) {
     return {
@@ -170,6 +219,8 @@ export async function deleteTask(id: string): Promise<ActionResult<void>> {
     if (task?.project_id) {
       revalidatePath(`/admin/projects/${task.project_id}`);
     }
+    revalidatePath('/employee/tasks');
+    revalidatePath('/employee/dashboard');
     return { data: undefined, error: null };
   } catch (err: unknown) {
     return { data: null, error: err instanceof Error ? err.message : 'Failed to delete task' };

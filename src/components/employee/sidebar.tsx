@@ -6,6 +6,7 @@ import { CinematicLogo } from '@/components/shared/cinematic-logo';
 import {
   LayoutDashboard,
   CheckSquare,
+  FolderKanban,
   GraduationCap,
   Settings,
   ChevronLeft,
@@ -31,6 +32,11 @@ export function Sidebar() {
       href: '/employee/tasks',
       icon: CheckSquare,
       label: t('myTasks'),
+    },
+    {
+      href: '/employee/projects',
+      icon: FolderKanban,
+      label: t('projects'),
     },
     {
       href: '/employee/university',

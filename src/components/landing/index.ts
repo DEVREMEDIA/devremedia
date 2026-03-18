@@ -1,3 +1,4 @@
+export { CinematicBackground } from './cinematic-background';
 export { LandingNav } from './landing-nav';
 export { HeroSection } from './hero-section';
 export { BrandsStrip } from './brands-strip';

@@ -9,6 +9,8 @@ export const NOTIFICATION_TYPES = {
   FILMING_REQUEST_STATUS: 'filming_request_status',
   NEW_MESSAGE: 'new_message',
   BOOKING_SUBMITTED: 'booking_submitted',
+  TASK_ASSIGNED: 'task_assigned',
+  TASK_UPDATED: 'task_updated',
 } as const;
 
 // Map notification types to preference keys for checking user preferences
@@ -23,4 +25,6 @@ export const TYPE_TO_PREFERENCE: Record<string, string> = {
   [NOTIFICATION_TYPES.FILMING_REQUEST_STATUS]: 'filming_reminders',
   [NOTIFICATION_TYPES.NEW_MESSAGE]: 'messages',
   [NOTIFICATION_TYPES.BOOKING_SUBMITTED]: 'project_updates',
+  [NOTIFICATION_TYPES.TASK_ASSIGNED]: 'project_updates',
+  [NOTIFICATION_TYPES.TASK_UPDATED]: 'project_updates',
 };

@@ -731,6 +731,8 @@
     "title": "Deliverables",
     "description": "Manage video deliverables",
     "addDeliverable": "Upload Deliverable",
+    "uploadDeliverable": "Upload Deliverable",
+    "uploadVideoFiles": "Upload video files for this project",
     "editDeliverable": "Edit Deliverable",
     "deleteDeliverable": "Delete Deliverable",
     "deliverableName": "Name",
@@ -1381,7 +1383,14 @@
       "reviewCount": "In Review",
       "doneCount": "Done",
       "overdueTasks": "Overdue Tasks",
-      "noOverdue": "No overdue tasks"
+      "noOverdue": "No overdue tasks",
+      "upcomingTasks": "Upcoming Tasks",
+      "dueThisWeek": "due this week",
+      "noUpcoming": "No upcoming tasks this week",
+      "myProjects": "My Projects",
+      "activeProjectsCount": "active projects",
+      "noProjects": "No projects assigned",
+      "viewAllProjects": "View All Projects"
     },
     "tasks": {
       "title": "My Tasks",
@@ -1391,11 +1400,29 @@
       "updateStatus": "Update Status",
       "statusUpdated": "Status updated successfully",
       "statusUpdateFailed": "Failed to update status",
-      "taskDetail": "Task Detail"
+      "taskDetail": "Task Detail",
+      "subTasks": "Sub-tasks"
     },
     "deliverables": {
       "title": "Deliverables",
-      "description": "Upload and manage deliverables"
+      "description": "Upload and manage deliverables",
+      "uploadDeliverable": "Upload Deliverable"
+    },
+    "projects": {
+      "title": "My Projects",
+      "description": "Projects you are assigned to",
+      "noProjects": "No projects yet",
+      "noProjectsDescription": "Projects with tasks assigned to you will appear here.",
+      "myTasks": "My Tasks",
+      "deliverables": "Deliverables",
+      "messages": "Messages",
+      "noTasks": "No tasks",
+      "noTasksDescription": "No tasks assigned to you in this project.",
+      "task": "task",
+      "tasks": "tasks",
+      "viewDeliverables": "View Deliverables",
+      "overview": "Overview",
+      "taskCount": "{count} tasks"
     }
   },
 

@@ -19,11 +19,8 @@ interface EmployeeDeliverablesProps {
   deliverables: Deliverable[];
 }
 
-export function EmployeeDeliverables({
-  projectId,
-  deliverables,
-}: EmployeeDeliverablesProps) {
-  const t = useTranslations('deliverables')
+export function EmployeeDeliverables({ projectId, deliverables }: EmployeeDeliverablesProps) {
+  const t = useTranslations('deliverables');
   const tToast = useTranslations('toast');
   const [isUploading, setIsUploading] = React.useState(false);
   const [showUpload, setShowUpload] = React.useState(false);
@@ -37,7 +34,9 @@ export function EmployeeDeliverables({
 
     try {
       const supabase = createClient();
-      const { data: { user } } = await supabase.auth.getUser();
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
 
       if (!user) {
         toast.error(tToast('unauthorized'));
@@ -93,7 +92,7 @@ export function EmployeeDeliverables({
     const k = 1024;
     const sizes = ['Bytes', 'KB', 'MB', 'GB'];
     const i = Math.floor(Math.log(bytes) / Math.log(k));
-    return Math.round(bytes / Math.pow(k, i) * 100) / 100 + ' ' + sizes[i];
+    return Math.round((bytes / Math.pow(k, i)) * 100) / 100 + ' ' + sizes[i];
   };
 
   return (
@@ -102,7 +101,7 @@ export function EmployeeDeliverables({
       <div className="flex justify-end">
         <Button onClick={() => setShowUpload(!showUpload)}>
           <Upload />
-          Upload Deliverable
+          {t('uploadDeliverable')}
         </Button>
       </div>
 

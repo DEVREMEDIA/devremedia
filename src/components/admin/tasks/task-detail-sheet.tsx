@@ -18,6 +18,7 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Button } from '@/components/ui/button';
 import { ConfirmDialog } from '@/components/shared/confirm-dialog';
+import { TeamMemberSelect } from '@/components/shared/team-member-select';
 import { SubTaskList } from './sub-task-list';
 import { updateTask, deleteTask } from '@/lib/actions/tasks';
 import { TASK_STATUSES, TASK_STATUS_LABELS, PRIORITIES, PRIORITY_LABELS } from '@/lib/constants';
@@ -62,14 +63,12 @@ export function TaskDetailSheet({ task, open, onOpenChange }: TaskDetailSheetPro
 
   const [editedTitle, setEditedTitle] = useState('');
   const [editedDescription, setEditedDescription] = useState('');
-  const [editedAssignedTo, setEditedAssignedTo] = useState('');
   const [editedDueDate, setEditedDueDate] = useState('');
 
   useEffect(() => {
     if (task) {
       setEditedTitle(task.title);
       setEditedDescription(task.description || '');
-      setEditedAssignedTo(task.assigned_to || '');
       setEditedDueDate(task.due_date ? task.due_date.split('T')[0] : '');
     }
   }, [task]);
@@ -102,21 +101,6 @@ export function TaskDetailSheet({ task, open, onOpenChange }: TaskDetailSheetPro
     if (editedDescription !== (task.description || '')) {
       handleUpdate('description', editedDescription.trim() || null);
     }
-  };
-
-  const UUID_REGEX = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
-
-  const handleAssignedToBlur = () => {
-    const trimmed = editedAssignedTo.trim();
-    if (trimmed === (task.assigned_to || '')) return;
-
-    if (trimmed && !UUID_REGEX.test(trimmed)) {
-      toast.error(t('invalidAssigneeId'));
-      setEditedAssignedTo(task.assigned_to || '');
-      return;
-    }
-
-    handleUpdate('assigned_to', trimmed || null);
   };
 
   const handleDueDateChange = (value: string) => {
@@ -240,18 +224,10 @@ export function TaskDetailSheet({ task, open, onOpenChange }: TaskDetailSheetPro
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="task-assigned-to">{t('assignedTo')}</Label>
-                <Input
-                  id="task-assigned-to"
-                  value={editedAssignedTo}
-                  onChange={(e) => setEditedAssignedTo(e.target.value)}
-                  onBlur={handleAssignedToBlur}
-                  placeholder={t('assigneePlaceholder')}
-                  onKeyDown={(e) => {
-                    if (e.key === 'Enter') {
-                      e.currentTarget.blur();
-                    }
-                  }}
+                <Label>{t('assignedTo')}</Label>
+                <TeamMemberSelect
+                  value={task.assigned_to}
+                  onValueChange={(userId) => handleUpdate('assigned_to', userId)}
                 />
               </div>
             </div>

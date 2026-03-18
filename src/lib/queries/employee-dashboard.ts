@@ -52,13 +52,53 @@ export async function getMyUpcomingTasks(userId: string, days: number = 7) {
   return data ?? [];
 }
 
+export async function getMyProjects(userId: string) {
+  const supabase = await createClient();
+
+  // Get projects where this employee has tasks assigned
+  const { data: tasks, error } = await supabase
+    .from('tasks')
+    .select('project_id, project:projects(id, title, status, project_type, deadline)')
+    .eq('assigned_to', userId);
+
+  if (error || !tasks) return [];
+
+  // Deduplicate by project_id
+  const projectMap = new Map<
+    string,
+    {
+      id: string;
+      title: string;
+      status: string;
+      project_type: string;
+      deadline: string | null;
+      taskCount: number;
+    }
+  >();
+  for (const task of tasks) {
+    const project = task.project as unknown as {
+      id: string;
+      title: string;
+      status: string;
+      project_type: string;
+      deadline: string | null;
+    } | null;
+    if (!project) continue;
+    const existing = projectMap.get(project.id);
+    if (existing) {
+      existing.taskCount++;
+    } else {
+      projectMap.set(project.id, { ...project, taskCount: 1 });
+    }
+  }
+
+  return Array.from(projectMap.values());
+}
+
 export async function getMyTaskStats(userId: string) {
   const supabase = await createClient();
 
-  const { data, error } = await supabase
-    .from('tasks')
-    .select('status')
-    .eq('assigned_to', userId);
+  const { data, error } = await supabase.from('tasks').select('status').eq('assigned_to', userId);
 
   if (error || !data) return { todo: 0, in_progress: 0, review: 0, done: 0 };
 

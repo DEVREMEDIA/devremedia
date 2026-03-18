@@ -38,7 +38,12 @@ export function MyTaskCard({ task }: MyTaskCardProps) {
               >
                 {task.title}
               </Link>
-              <p className="text-sm text-muted-foreground mt-1">{projectTitle}</p>
+              <Link
+                href={`/employee/projects/${task.project_id}`}
+                className="text-sm text-muted-foreground mt-1 hover:underline hover:text-primary inline-block"
+              >
+                {projectTitle}
+              </Link>
             </div>
             <TaskStatusUpdate
               taskId={task.id}

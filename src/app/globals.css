@@ -219,10 +219,13 @@
    LANDING PAGE — CINEMATIC DESIGN SYSTEM
    ═══════════════════════════════════════════════════════════════ */
 
-/* Brand marquee — infinite horizontal scroll */
-@keyframes marquee {
-  from { transform: translateX(0); }
-  to { transform: translateX(-50%); }
+/* Hide scrollbar for drag-to-scroll elements */
+.scrollbar-hide {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+.scrollbar-hide::-webkit-scrollbar {
+  display: none;
 }
 
 /* Film grain effect — adds cinematic texture */

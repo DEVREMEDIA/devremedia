@@ -1,15 +1,26 @@
 'use client';
 
-import { Calendar, AlertCircle, FileText } from 'lucide-react';
+import Link from 'next/link';
+import { Calendar, AlertCircle, FileText, FolderKanban } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Checkbox } from '@/components/ui/checkbox';
 import { TaskStatusUpdate } from './task-status-update';
 import { PRIORITY_LABELS } from '@/lib/constants';
 import type { Task, Priority } from '@/types/index';
 import { cn } from '@/lib/utils';
 
+interface SubTask {
+  id: string;
+  title: string;
+  completed: boolean;
+}
+
 interface TaskDetailProps {
-  task: Task & { project?: { id: string; title: string } | null };
+  task: Task & {
+    project?: { id: string; title: string } | null;
+    metadata?: Record<string, unknown>;
+  };
 }
 
 const priorityColorMap: Record<Priority, string> = {
@@ -24,6 +35,7 @@ export function TaskDetail({ task }: TaskDetailProps) {
   const tCommon = useTranslations('common');
 
   const isOverdue = task.due_date && task.status !== 'done' && new Date(task.due_date) < new Date();
+  const subTasks = (task.metadata?.sub_tasks as SubTask[] | undefined) ?? [];
 
   return (
     <div className="space-y-6">
@@ -37,6 +49,22 @@ export function TaskDetail({ task }: TaskDetailProps) {
           <div>
             <h2 className="text-xl font-semibold">{task.title}</h2>
           </div>
+
+          {/* Project link */}
+          {task.project && (
+            <div className="space-y-2">
+              <div className="flex items-center gap-2 text-sm font-medium text-muted-foreground">
+                <FolderKanban className="h-4 w-4" />
+                <span>{tCommon('project')}</span>
+              </div>
+              <Link
+                href={`/employee/projects/${task.project.id}`}
+                className="text-sm text-primary hover:underline"
+              >
+                {task.project.title}
+              </Link>
+            </div>
+          )}
 
           {/* Description */}
           {task.description && (
@@ -92,6 +120,30 @@ export function TaskDetail({ task }: TaskDetailProps) {
                     year: 'numeric',
                   })}
                 </span>
+              </div>
+            </div>
+          )}
+
+          {/* Sub-tasks (read-only) */}
+          {subTasks.length > 0 && (
+            <div className="space-y-2">
+              <p className="text-sm font-medium text-muted-foreground">
+                {t('subTasks')} ({subTasks.filter((s) => s.completed).length}/{subTasks.length})
+              </p>
+              <div className="space-y-2">
+                {subTasks.map((subTask) => (
+                  <div key={subTask.id} className="flex items-center gap-2">
+                    <Checkbox checked={subTask.completed} disabled />
+                    <span
+                      className={cn(
+                        'text-sm',
+                        subTask.completed && 'line-through text-muted-foreground',
+                      )}
+                    >
+                      {subTask.title}
+                    </span>
+                  </div>
+                ))}
               </div>
             </div>
           )}
