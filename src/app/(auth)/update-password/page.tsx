@@ -37,19 +37,40 @@ export default function UpdatePasswordPage() {
     try {
       const supabase = createClient();
 
-      // Verify session exists before attempting update — this also forces
-      // the browser client to hydrate its session from cookies
+      // DEBUG: Log cookies and session state
+      console.log('[update-password] cookies:', document.cookie);
+
+      const { data: sessionData, error: sessionError } = await supabase.auth.getSession();
+      console.log('[update-password] getSession:', {
+        hasSession: !!sessionData?.session,
+        accessToken: sessionData?.session?.access_token?.slice(0, 20) + '...',
+        error: sessionError?.message,
+      });
+
       const {
         data: { user: currentUser },
         error: userError,
       } = await supabase.auth.getUser();
+      console.log('[update-password] getUser:', {
+        hasUser: !!currentUser,
+        userId: currentUser?.id,
+        error: userError?.message,
+        errorStatus: userError?.status,
+      });
+
       if (userError || !currentUser) {
+        console.log('[update-password] No session — showing expired UI');
         setIsExpired(true);
         return;
       }
 
+      console.log('[update-password] Calling updateUser...');
       const { error } = await supabase.auth.updateUser({
         password: data.password,
+      });
+      console.log('[update-password] updateUser result:', {
+        error: error?.message,
+        errorStatus: error?.status,
       });
 
       if (error) {
@@ -75,7 +96,14 @@ export default function UpdatePasswordPage() {
       const dashboard = dashboards[profile?.role ?? 'client'] ?? '/client/dashboard';
       router.replace(dashboard);
     } catch (err) {
-      // updateUser throws AuthSessionMissingError when no session
+      console.error('[update-password] CAUGHT EXCEPTION:', err);
+      console.error('[update-password] Error type:', typeof err);
+      console.error('[update-password] Error name:', err instanceof Error ? err.name : 'not Error');
+      console.error(
+        '[update-password] Error message:',
+        err instanceof Error ? err.message : String(err),
+      );
+
       if (
         err instanceof Error &&
         (err.message.toLowerCase().includes('session') ||
