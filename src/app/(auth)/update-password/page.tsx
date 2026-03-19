@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -23,6 +23,21 @@ export default function UpdatePasswordPage() {
   const t = useTranslations('auth');
   const [isLoading, setIsLoading] = useState(false);
   const [isExpired, setIsExpired] = useState(false);
+  const sessionReady = useRef(false);
+
+  // Warm up the Supabase client on mount — forces it to acquire the
+  // navigator.locks lock and hydrate the session from cookies BEFORE
+  // the user submits. This prevents AbortError on submit.
+  useEffect(() => {
+    createClient()
+      .auth.getSession()
+      .then(() => {
+        sessionReady.current = true;
+      })
+      .catch(() => {
+        // Ignore — will be handled on submit
+      });
+  }, []);
 
   const {
     register,
@@ -37,78 +52,79 @@ export default function UpdatePasswordPage() {
     try {
       const supabase = createClient();
 
-      // DEBUG: Log cookies and session state
-      console.log('[update-password] cookies:', document.cookie);
-
-      const { data: sessionData, error: sessionError } = await supabase.auth.getSession();
-      console.log('[update-password] getSession:', {
-        hasSession: !!sessionData?.session,
-        accessToken: sessionData?.session?.access_token?.slice(0, 20) + '...',
-        error: sessionError?.message,
-      });
-
-      const {
-        data: { user: currentUser },
-        error: userError,
-      } = await supabase.auth.getUser();
-      console.log('[update-password] getUser:', {
-        hasUser: !!currentUser,
-        userId: currentUser?.id,
-        error: userError?.message,
-        errorStatus: userError?.status,
-      });
-
-      if (userError || !currentUser) {
-        console.log('[update-password] No session — showing expired UI');
-        setIsExpired(true);
-        return;
+      // If session hasn't been hydrated yet, wait briefly
+      if (!sessionReady.current) {
+        await supabase.auth.getSession();
       }
 
-      console.log('[update-password] Calling updateUser...');
       const { error } = await supabase.auth.updateUser({
         password: data.password,
       });
-      console.log('[update-password] updateUser result:', {
-        error: error?.message,
-        errorStatus: error?.status,
-      });
 
       if (error) {
+        if (error.status === 401 || error.status === 403) {
+          setIsExpired(true);
+          return;
+        }
         toast.error(error.message);
         return;
       }
 
       toast.success(t('passwordUpdated'));
 
-      const { data: profile } = await supabase
-        .from('user_profiles')
-        .select('role')
-        .eq('id', currentUser.id)
-        .single();
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
+      if (user) {
+        const { data: profile } = await supabase
+          .from('user_profiles')
+          .select('role')
+          .eq('id', user.id)
+          .single();
 
-      const dashboards: Record<string, string> = {
-        super_admin: '/admin/dashboard',
-        admin: '/admin/dashboard',
-        employee: '/employee/dashboard',
-        salesman: '/salesman/dashboard',
-        client: '/client/dashboard',
-      };
-      const dashboard = dashboards[profile?.role ?? 'client'] ?? '/client/dashboard';
-      router.replace(dashboard);
+        const dashboards: Record<string, string> = {
+          super_admin: '/admin/dashboard',
+          admin: '/admin/dashboard',
+          employee: '/employee/dashboard',
+          salesman: '/salesman/dashboard',
+          client: '/client/dashboard',
+        };
+        const dashboard = dashboards[profile?.role ?? 'client'] ?? '/client/dashboard';
+        router.replace(dashboard);
+      } else {
+        router.replace('/login');
+      }
     } catch (err) {
-      console.error('[update-password] CAUGHT EXCEPTION:', err);
-      console.error('[update-password] Error type:', typeof err);
-      console.error('[update-password] Error name:', err instanceof Error ? err.name : 'not Error');
-      console.error(
-        '[update-password] Error message:',
-        err instanceof Error ? err.message : String(err),
-      );
+      // AbortError = Supabase lock contention — retry once after a delay
+      if (err instanceof DOMException && err.name === 'AbortError') {
+        try {
+          await new Promise((r) => setTimeout(r, 1000));
+          const supabase = createClient();
+          const { error } = await supabase.auth.updateUser({
+            password: data.password,
+          });
+          if (error) {
+            if (error.status === 401 || error.status === 403) {
+              setIsExpired(true);
+            } else {
+              toast.error(error.message);
+            }
+            return;
+          }
+          toast.success(t('passwordUpdated'));
+          router.replace('/login');
+          return;
+        } catch {
+          setIsExpired(true);
+          return;
+        }
+      }
 
+      // Session-related thrown errors
       if (
         err instanceof Error &&
         (err.message.toLowerCase().includes('session') ||
-          err.message.toLowerCase().includes('not authenticated') ||
-          err.message.toLowerCase().includes('auth'))
+          err.message.toLowerCase().includes('not authenticated'))
       ) {
         setIsExpired(true);
       } else {
