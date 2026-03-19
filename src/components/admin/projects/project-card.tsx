@@ -141,9 +141,10 @@ function CardInner({
           <Popover open={open} onOpenChange={setOpen}>
             <PopoverTrigger asChild>
               <button
+                type="button"
                 onClick={(e) => {
                   e.stopPropagation();
-                  e.preventDefault();
+                  setOpen((prev) => !prev);
                 }}
                 onPointerDown={(e) => e.stopPropagation()}
                 className="cursor-pointer"
