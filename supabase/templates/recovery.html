@@ -1,0 +1,141 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Devre Media</title>
+</head>
+<body style="margin:0;padding:0;background-color:#09090b;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,'Helvetica Neue',Arial,sans-serif;-webkit-font-smoothing:antialiased;">
+  <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="background-color:#09090b;">
+    <tr>
+      <td align="center" style="padding:48px 24px;">
+        <table role="presentation" width="520" cellpadding="0" cellspacing="0" border="0" style="max-width:520px;width:100%;">
+
+          <!-- Logo -->
+          <tr>
+            <td align="center" style="padding-bottom:12px;">
+              <span style="font-size:32px;font-weight:800;color:#ffffff;letter-spacing:-1px;font-family:Georgia,'Times New Roman',serif;">Devre Media.</span>
+            </td>
+          </tr>
+          <tr>
+            <td align="center" style="padding-bottom:36px;">
+              <span style="font-size:11px;color:#71717a;letter-spacing:3px;text-transform:uppercase;">social entertainment</span>
+            </td>
+          </tr>
+
+          <!-- Gold divider -->
+          <tr>
+            <td align="center" style="padding-bottom:36px;">
+              <table role="presentation" cellpadding="0" cellspacing="0" border="0">
+                <tr><td style="width:48px;height:2px;background-color:#d4a843;border-radius:1px;"></td></tr>
+              </table>
+            </td>
+          </tr>
+
+          <!-- Card -->
+          <tr>
+            <td style="background-color:#18181b;border-radius:16px;padding:44px 36px;border:1px solid #27272a;">
+
+              {{ if eq .Data.locale "en" }}
+
+              <h1 style="margin:0 0 8px;font-size:26px;font-weight:700;color:#ffffff;letter-spacing:-0.5px;">Reset your password</h1>
+              <p style="margin:0 0 28px;font-size:15px;line-height:1.7;color:#a1a1aa;">
+                We received a request to reset the password for your <strong style="color:#ffffff;">Devre Media System</strong> account. Click the button below to set a new password.
+              </p>
+
+              <!-- CTA Button -->
+              <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0">
+                <tr>
+                  <td align="center" style="padding:4px 0 32px;">
+                    <table role="presentation" cellpadding="0" cellspacing="0" border="0">
+                      <tr>
+                        <td align="center" style="background-color:#d4a843;border-radius:10px;">
+                          <a href="{{ .SiteURL }}/auth/confirm?token_hash={{ .TokenHash }}&type=recovery"
+                             style="display:inline-block;padding:15px 40px;color:#09090b;font-size:15px;font-weight:700;text-decoration:none;letter-spacing:0.3px;">
+                            Reset Password &rarr;
+                          </a>
+                        </td>
+                      </tr>
+                    </table>
+                  </td>
+                </tr>
+              </table>
+
+              <!-- Divider -->
+              <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0">
+                <tr><td style="height:1px;background-color:#27272a;"></td></tr>
+              </table>
+
+              <p style="margin:20px 0 0;font-size:12px;color:#52525b;line-height:1.6;">
+                If you didn't request this, you can safely ignore this email.
+              </p>
+              <p style="margin:12px 0 0;font-size:12px;color:#52525b;line-height:1.6;">
+                If the button doesn't work, copy and paste this link:
+              </p>
+              <p style="margin:6px 0 0;font-size:11px;color:#3f3f46;word-break:break-all;line-height:1.5;">
+                {{ .SiteURL }}/auth/confirm?token_hash={{ .TokenHash }}&amp;type=recovery
+              </p>
+
+              {{ else }}
+
+              <h1 style="margin:0 0 8px;font-size:26px;font-weight:700;color:#ffffff;letter-spacing:-0.5px;">Επαναφορά κωδικού</h1>
+              <p style="margin:0 0 28px;font-size:15px;line-height:1.7;color:#a1a1aa;">
+                Λάβαμε αίτημα επαναφοράς κωδικού για τον λογαριασμό σας στο <strong style="color:#ffffff;">Devre Media System</strong>. Πατήστε παρακάτω για να ορίσετε νέο κωδικό.
+              </p>
+
+              <!-- CTA Button -->
+              <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0">
+                <tr>
+                  <td align="center" style="padding:4px 0 32px;">
+                    <table role="presentation" cellpadding="0" cellspacing="0" border="0">
+                      <tr>
+                        <td align="center" style="background-color:#d4a843;border-radius:10px;">
+                          <a href="{{ .SiteURL }}/auth/confirm?token_hash={{ .TokenHash }}&type=recovery"
+                             style="display:inline-block;padding:15px 40px;color:#09090b;font-size:15px;font-weight:700;text-decoration:none;letter-spacing:0.3px;">
+                            Επαναφορά Κωδικού &rarr;
+                          </a>
+                        </td>
+                      </tr>
+                    </table>
+                  </td>
+                </tr>
+              </table>
+
+              <!-- Divider -->
+              <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0">
+                <tr><td style="height:1px;background-color:#27272a;"></td></tr>
+              </table>
+
+              <p style="margin:20px 0 0;font-size:12px;color:#52525b;line-height:1.6;">
+                Αν δεν ζητήσατε επαναφορά κωδικού, αγνοήστε αυτό το email.
+              </p>
+              <p style="margin:12px 0 0;font-size:12px;color:#52525b;line-height:1.6;">
+                Αν το κουμπί δεν λειτουργεί, αντιγράψτε τον παρακάτω σύνδεσμο:
+              </p>
+              <p style="margin:6px 0 0;font-size:11px;color:#3f3f46;word-break:break-all;line-height:1.5;">
+                {{ .SiteURL }}/auth/confirm?token_hash={{ .TokenHash }}&amp;type=recovery
+              </p>
+
+              {{ end }}
+
+            </td>
+          </tr>
+
+          <!-- Footer -->
+          <tr>
+            <td align="center" style="padding-top:36px;">
+              <p style="margin:0 0 6px;font-size:12px;color:#3f3f46;">
+                &copy; 2026 Devre Media. All rights reserved.
+              </p>
+              <p style="margin:0;font-size:11px;color:#27272a;">
+                Athens, Greece &bull; devremedia.com
+              </p>
+            </td>
+          </tr>
+
+        </table>
+      </td>
+    </tr>
+  </table>
+</body>
+</html>

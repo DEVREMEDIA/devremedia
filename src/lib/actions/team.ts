@@ -6,6 +6,7 @@ import type { ActionResult, UserProfile } from '@/types';
 import type { UserWithEmail } from '@/types/entities';
 import type { UserRole } from '@/lib/constants';
 import { revalidatePath } from 'next/cache';
+import { cookies } from 'next/headers';
 
 export async function getTeamMembers(): Promise<ActionResult<UserProfile[]>> {
   try {
@@ -128,14 +129,15 @@ export async function inviteTeamMember(
 
     // Use admin client to invite user via Supabase Auth
     const adminClient = createAdminClient();
-    const redirectTo = `${process.env.NEXT_PUBLIC_APP_URL}/auth/callback?next=/onboarding`;
+    const cookieStore = await cookies();
+    const locale = cookieStore.get('NEXT_LOCALE')?.value ?? 'el';
 
     const { data: inviteData, error } = await adminClient.auth.admin.inviteUserByEmail(email, {
       data: {
         role,
         invited_by: user.id,
+        locale,
       },
-      redirectTo,
     });
 
     if (error) {
@@ -145,9 +147,8 @@ export async function inviteTeamMember(
         error.message.toLowerCase().includes('exists');
 
       if (isUserExists) {
-        // Send a recovery email — user clicks link → lands on /onboarding → sets password
         const { error: resetError } = await adminClient.auth.resetPasswordForEmail(email, {
-          redirectTo,
+          redirectTo: `${process.env.NEXT_PUBLIC_APP_URL}/auth/confirm?type=recovery`,
         });
 
         if (resetError) {
@@ -164,7 +165,7 @@ export async function inviteTeamMember(
               .update({ role, display_name: null })
               .eq('id', existingUser.id),
             adminClient.auth.admin.updateUserById(existingUser.id, {
-              user_metadata: { invited_by: user.id },
+              user_metadata: { invited_by: user.id, locale },
             }),
           ]);
         }

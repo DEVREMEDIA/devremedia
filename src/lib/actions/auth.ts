@@ -4,22 +4,29 @@ import { createClient } from '@/lib/supabase/server';
 import { createAdminClient } from '@/lib/supabase/admin';
 import { onboardingSchema } from '@/lib/schemas/auth';
 import type { ActionResult } from '@/types';
+import { cookies } from 'next/headers';
 import { z } from 'zod';
+
+async function getLocale(): Promise<string> {
+  const cookieStore = await cookies();
+  return cookieStore.get('NEXT_LOCALE')?.value ?? 'el';
+}
 
 /**
  * Forces a user into onboarding state:
  * 1. Clears display_name in profile (middleware checks this)
- * 2. Sets invited_by in user metadata (middleware also checks this)
+ * 2. Sets invited_by + locale in user metadata (middleware also checks this)
  */
 async function forceOnboardingState(
   adminClient: ReturnType<typeof createAdminClient>,
   targetUserId: string,
   invitedByUserId: string,
+  locale: string,
 ) {
   await Promise.all([
     adminClient.from('user_profiles').update({ display_name: null }).eq('id', targetUserId),
     adminClient.auth.admin.updateUserById(targetUserId, {
-      user_metadata: { invited_by: invitedByUserId },
+      user_metadata: { invited_by: invitedByUserId, locale },
     }),
   ]);
 }
@@ -49,25 +56,24 @@ export async function inviteClient(
     }
 
     const adminClient = createAdminClient();
-    const redirectTo = `${process.env.NEXT_PUBLIC_APP_URL}/auth/callback?next=/onboarding`;
+    const locale = await getLocale();
 
     const { data, error } = await adminClient.auth.admin.inviteUserByEmail(email, {
       data: {
         display_name: displayName || email,
         invited_by: user.id,
+        locale,
       },
-      redirectTo,
     });
 
     if (error) {
-      // User already exists — re-invite via magic link
+      // User already exists — re-invite via recovery email
       const { data: existingUsers } = await adminClient.auth.admin.listUsers();
       const existingUser = existingUsers?.users.find((u) => u.email === email);
 
       if (existingUser) {
-        // Send a new invite email
         const { error: resetError } = await adminClient.auth.resetPasswordForEmail(email, {
-          redirectTo,
+          redirectTo: `${process.env.NEXT_PUBLIC_APP_URL}/auth/confirm?type=recovery`,
         });
 
         if (resetError) {
@@ -75,7 +81,7 @@ export async function inviteClient(
         }
 
         // Force onboarding state so middleware catches them
-        await forceOnboardingState(adminClient, existingUser.id, user.id);
+        await forceOnboardingState(adminClient, existingUser.id, user.id, locale);
 
         // Auto-link client record
         await adminClient
