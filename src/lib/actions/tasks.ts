@@ -187,6 +187,17 @@ export async function updateTaskStatus(
     revalidatePath('/employee/tasks');
     revalidatePath('/employee/dashboard');
 
+    // Debug: trace notification logic
+    console.log('[DEBUG updateTaskStatus]', {
+      taskId: id,
+      newStatus: status,
+      userId: user.id,
+      assignedTo: data.assigned_to,
+      projectId: data.project_id,
+      isAssignedToSelf: data.assigned_to === user.id,
+      isAssignedToOther: data.assigned_to && data.assigned_to !== user.id,
+    });
+
     // Notify based on who changed the status
     if (data.assigned_to && data.assigned_to !== user.id) {
       // Admin changed status → notify assigned employee
