@@ -6,6 +6,24 @@ import { onboardingSchema } from '@/lib/schemas/auth';
 import type { ActionResult } from '@/types';
 import { z } from 'zod';
 
+/**
+ * Forces a user into onboarding state:
+ * 1. Clears display_name in profile (middleware checks this)
+ * 2. Sets invited_by in user metadata (middleware also checks this)
+ */
+async function forceOnboardingState(
+  adminClient: ReturnType<typeof createAdminClient>,
+  targetUserId: string,
+  invitedByUserId: string,
+) {
+  await Promise.all([
+    adminClient.from('user_profiles').update({ display_name: null }).eq('id', targetUserId),
+    adminClient.auth.admin.updateUserById(targetUserId, {
+      user_metadata: { invited_by: invitedByUserId },
+    }),
+  ]);
+}
+
 export async function inviteClient(
   email: string,
   displayName?: string,
@@ -31,35 +49,48 @@ export async function inviteClient(
     }
 
     const adminClient = createAdminClient();
+    const redirectTo = `${process.env.NEXT_PUBLIC_APP_URL}/auth/callback?next=/onboarding`;
+
     const { data, error } = await adminClient.auth.admin.inviteUserByEmail(email, {
       data: {
         display_name: displayName || email,
         invited_by: user.id,
       },
-      redirectTo: `${process.env.NEXT_PUBLIC_APP_URL}/auth/callback?next=/onboarding`,
+      redirectTo,
     });
 
     if (error) {
-      // If user already exists or trigger conflicts, try to recover by linking existing user
-      const { data: linkData } = await adminClient.auth.admin.generateLink({
-        type: 'magiclink',
-        email,
-      });
+      // User already exists — re-invite via magic link
+      const { data: existingUsers } = await adminClient.auth.admin.listUsers();
+      const existingUser = existingUsers?.users.find((u) => u.email === email);
 
-      if (linkData?.user?.id) {
+      if (existingUser) {
+        // Send a new invite email
+        const { error: resetError } = await adminClient.auth.resetPasswordForEmail(email, {
+          redirectTo,
+        });
+
+        if (resetError) {
+          return { data: null, error: resetError.message };
+        }
+
+        // Force onboarding state so middleware catches them
+        await forceOnboardingState(adminClient, existingUser.id, user.id);
+
+        // Auto-link client record
         await adminClient
           .from('clients')
-          .update({ user_id: linkData.user.id })
+          .update({ user_id: existingUser.id })
           .eq('email', email)
           .is('user_id', null);
 
-        return { data: { userId: linkData.user.id }, error: null };
+        return { data: { userId: existingUser.id }, error: null };
       }
 
       return { data: null, error: error.message };
     }
 
-    // Auto-link client record by email
+    // New user — DB trigger sets display_name = NULL, but ensure invited_by is set
     await adminClient
       .from('clients')
       .update({ user_id: data.user.id })
@@ -118,13 +149,13 @@ export async function completeOnboarding(
       .is('user_id', null);
 
     // Fetch user role for redirect
-    const { data: profile } = await supabase
+    const { data: profileData } = await supabase
       .from('user_profiles')
       .select('role')
       .eq('id', user.id)
       .single();
 
-    const role = profile?.role ?? 'client';
+    const role = profileData?.role ?? 'client';
 
     return { data: { role }, error: null };
   } catch (err: unknown) {

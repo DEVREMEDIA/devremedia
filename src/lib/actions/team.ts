@@ -154,11 +154,19 @@ export async function inviteTeamMember(
           return { data: null, error: resetError.message };
         }
 
-        // Update role in case it changed
+        // Find existing user, update role, and force onboarding state
         const { data: authData } = await adminClient.auth.admin.listUsers();
         const existingUser = authData?.users.find((u) => u.email === email);
         if (existingUser) {
-          await supabase.from('user_profiles').update({ role }).eq('id', existingUser.id);
+          await Promise.all([
+            supabase
+              .from('user_profiles')
+              .update({ role, display_name: null })
+              .eq('id', existingUser.id),
+            adminClient.auth.admin.updateUserById(existingUser.id, {
+              user_metadata: { invited_by: user.id },
+            }),
+          ]);
         }
 
         revalidatePath('/admin/settings');
@@ -217,7 +225,52 @@ export async function updateTeamMemberRole(
       return { data: null, error: error.message };
     }
 
+    // When changing role to 'client', ensure a clients record exists
+    if (role === 'client') {
+      const adminClient = createAdminClient();
+      const { data: authData } = await adminClient.auth.admin.getUserById(userId);
+      const email = authData?.user?.email;
+
+      if (email) {
+        // Check if client record already linked to this user
+        const { data: existingClient } = await supabase
+          .from('clients')
+          .select('id')
+          .eq('user_id', userId)
+          .maybeSingle();
+
+        if (!existingClient) {
+          // Try to link by email first (orphaned client record)
+          const { data: emailClient } = await supabase
+            .from('clients')
+            .select('id')
+            .eq('email', email)
+            .is('user_id', null)
+            .maybeSingle();
+
+          if (emailClient) {
+            await supabase.from('clients').update({ user_id: userId }).eq('id', emailClient.id);
+          } else {
+            // Create new client record
+            const { data: targetProfile } = await supabase
+              .from('user_profiles')
+              .select('display_name')
+              .eq('id', userId)
+              .single();
+
+            await supabase.from('clients').insert({
+              user_id: userId,
+              email,
+              contact_name: targetProfile?.display_name ?? email.split('@')[0],
+              status: 'active',
+            });
+          }
+        }
+      }
+    }
+
     revalidatePath('/admin/users');
+    revalidatePath('/admin/clients');
     return { data: { userId, role }, error: null };
   } catch (error) {
     return {
