@@ -1,13 +1,18 @@
 'use client';
 
 import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
 import { DELIVERABLE_STATUS_LABELS } from '@/lib/constants';
 import type { DeliverableStatus } from '@/lib/constants';
-import { FileVideo, Calendar } from 'lucide-react';
+import { ExternalLink, FileVideo, Calendar, Trash2 } from 'lucide-react';
 import { format } from 'date-fns';
 import { useTranslations } from 'next-intl';
+import { deleteDeliverable } from '@/lib/actions/deliverables';
+import { toast } from 'sonner';
+import { useState } from 'react';
+import { ConfirmDialog } from '@/components/shared/confirm-dialog';
 
-type Deliverable = {
+interface Deliverable {
   id: string;
   project_id: string;
   title: string;
@@ -21,40 +26,43 @@ type Deliverable = {
   expires_at: string | null;
   uploaded_by: string | null;
   created_at: string;
-};
+}
 
-type DeliverableListProps = {
+interface DeliverableListProps {
   deliverables: Deliverable[];
   onSelect: (deliverable: Deliverable) => void;
+  onRefresh?: () => void;
+}
+
+const STATUS_COLOR: Record<string, string> = {
+  pending_review: 'bg-yellow-500/10 text-yellow-700 dark:text-yellow-400 border-yellow-500/20',
+  approved: 'bg-green-500/10 text-green-700 dark:text-green-400 border-green-500/20',
+  revision_requested: 'bg-red-500/10 text-red-700 dark:text-red-400 border-red-500/20',
+  final: 'bg-blue-500/10 text-blue-700 dark:text-blue-400 border-blue-500/20',
 };
 
-const getStatusColor = (status: DeliverableStatus) => {
-  switch (status) {
-    case 'pending_review':
-      return 'bg-yellow-500/10 text-yellow-700 dark:text-yellow-400 border-yellow-500/20';
-    case 'approved':
-      return 'bg-green-500/10 text-green-700 dark:text-green-400 border-green-500/20';
-    case 'revision_requested':
-      return 'bg-red-500/10 text-red-700 dark:text-red-400 border-red-500/20';
-    case 'final':
-      return 'bg-blue-500/10 text-blue-700 dark:text-blue-400 border-blue-500/20';
-    default:
-      return '';
-  }
-};
-
-export function DeliverableList({ deliverables, onSelect }: DeliverableListProps) {
+export function DeliverableList({ deliverables, onRefresh }: DeliverableListProps) {
   const t = useTranslations('deliverables');
-  const tc = useTranslations('common');
+  const [deleteId, setDeleteId] = useState<string | null>(null);
+  const [isDeleting, setIsDeleting] = useState(false);
 
-  const formatFileSize = (bytes: number | null) => {
-    if (!bytes) return tc('unknownSize');
-    if (bytes === 0) return '0 Bytes';
-    const k = 1024;
-    const sizes = ['Bytes', 'KB', 'MB', 'GB'];
-    const i = Math.floor(Math.log(bytes) / Math.log(k));
-    return Math.round((bytes / Math.pow(k, i)) * 100) / 100 + ' ' + sizes[i];
+  const handleDelete = async () => {
+    if (!deleteId) return;
+    setIsDeleting(true);
+    const result = await deleteDeliverable(deleteId);
+    if (result.error) {
+      toast.error(result.error);
+    } else {
+      toast.success(t('deliverableDeleted'));
+      onRefresh?.();
+    }
+    setIsDeleting(false);
+    setDeleteId(null);
   };
+
+  const isExternalLink = (path: string) =>
+    path.startsWith('http://') || path.startsWith('https://');
+
   if (deliverables.length === 0) {
     return (
       <div className="rounded-lg border border-dashed p-12">
@@ -70,40 +78,64 @@ export function DeliverableList({ deliverables, onSelect }: DeliverableListProps
   }
 
   return (
-    <div className="space-y-4">
-      <h3 className="text-lg font-semibold">Deliverables</h3>
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+    <>
+      <div className="space-y-3">
         {deliverables.map((deliverable) => (
-          <button
-            key={deliverable.id}
-            onClick={() => onSelect(deliverable)}
-            className="text-left rounded-lg border bg-card p-4 hover:bg-accent transition-colors space-y-3"
-          >
-            <div className="flex items-start justify-between gap-2">
-              <div className="flex items-start gap-3 flex-1 min-w-0">
-                <FileVideo className="h-5 w-5 text-muted-foreground shrink-0 mt-0.5" />
-                <div className="flex-1 min-w-0">
-                  <h4 className="font-medium text-sm truncate">{deliverable.title}</h4>
-                  <p className="text-xs text-muted-foreground mt-1">
-                    Version {deliverable.version}
-                  </p>
+          <div key={deliverable.id} className="rounded-lg border bg-card p-4 space-y-2">
+            <div className="flex items-start justify-between gap-3">
+              <div className="flex-1 min-w-0">
+                <div className="flex items-center gap-2 flex-wrap">
+                  <h4 className="font-medium text-sm">{deliverable.title}</h4>
+                  <Badge variant="outline" className={STATUS_COLOR[deliverable.status] ?? ''}>
+                    {DELIVERABLE_STATUS_LABELS[deliverable.status]}
+                  </Badge>
                 </div>
+                {deliverable.description && (
+                  <p className="text-sm text-muted-foreground mt-1">{deliverable.description}</p>
+                )}
               </div>
-              <Badge variant="outline" className={getStatusColor(deliverable.status)}>
-                {DELIVERABLE_STATUS_LABELS[deliverable.status]}
-              </Badge>
+              <Button
+                variant="ghost"
+                size="icon"
+                className="text-muted-foreground hover:text-destructive shrink-0"
+                onClick={() => setDeleteId(deliverable.id)}
+              >
+                <Trash2 className="h-4 w-4" />
+              </Button>
             </div>
 
-            <div className="flex items-center justify-between text-xs text-muted-foreground">
-              <div className="flex items-center gap-1">
-                <Calendar className="h-3 w-3" />
-                {format(new Date(deliverable.created_at), 'MMM d, yyyy')}
+            <div className="flex items-center justify-between gap-2">
+              <div className="flex items-center gap-3 text-xs text-muted-foreground">
+                <span className="flex items-center gap-1">
+                  <Calendar className="h-3 w-3" />
+                  {format(new Date(deliverable.created_at), 'dd/MM/yyyy')}
+                </span>
+                <span>v{deliverable.version}</span>
               </div>
-              <span>{formatFileSize(deliverable.file_size)}</span>
+
+              {isExternalLink(deliverable.file_path) && (
+                <Button variant="outline" size="sm" asChild>
+                  <a href={deliverable.file_path} target="_blank" rel="noopener noreferrer">
+                    <ExternalLink className="h-3.5 w-3.5 mr-1.5" />
+                    {t('watchVideo')}
+                  </a>
+                </Button>
+              )}
             </div>
-          </button>
+          </div>
         ))}
       </div>
-    </div>
+
+      <ConfirmDialog
+        open={!!deleteId}
+        onOpenChange={(open) => !open && setDeleteId(null)}
+        title={t('deleteDeliverable')}
+        description={t('deleteDeliverableConfirm')}
+        confirmLabel={t('delete')}
+        onConfirm={handleDelete}
+        loading={isDeleting}
+        destructive
+      />
+    </>
   );
 }

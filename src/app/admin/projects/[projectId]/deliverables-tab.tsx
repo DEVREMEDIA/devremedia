@@ -3,36 +3,18 @@
 import { useState, useEffect } from 'react';
 import { VideoUpload } from '@/components/admin/deliverables/video-upload';
 import { DeliverableList } from '@/components/admin/deliverables/deliverable-list';
-import { DeliverableDetail } from '@/components/admin/deliverables/deliverable-detail';
 import { getDeliverablesByProject } from '@/lib/actions/deliverables';
 import { Loader2 } from 'lucide-react';
-import type { DeliverableStatus } from '@/lib/constants';
 import { useTranslations } from 'next-intl';
+import type { Deliverable } from '@/types';
 
-type Deliverable = {
-  id: string;
-  project_id: string;
-  title: string;
-  description: string | null;
-  file_path: string;
-  file_size: number | null;
-  file_type: string | null;
-  version: number;
-  status: DeliverableStatus;
-  download_count: number;
-  expires_at: string | null;
-  uploaded_by: string | null;
-  created_at: string;
-};
-
-type DeliverablesTabProps = {
+interface DeliverablesTabProps {
   projectId: string;
-};
+}
 
 export function DeliverablesTab({ projectId }: DeliverablesTabProps) {
   const t = useTranslations('deliverables');
   const [deliverables, setDeliverables] = useState<Deliverable[]>([]);
-  const [selectedDeliverable, setSelectedDeliverable] = useState<Deliverable | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [refreshCounter, setRefreshCounter] = useState(0);
@@ -47,7 +29,7 @@ export function DeliverablesTab({ projectId }: DeliverablesTabProps) {
       if (result.error) {
         setError(result.error);
       } else {
-        setDeliverables((result.data as unknown as Deliverable[]) ?? []);
+        setDeliverables(result.data ?? []);
       }
 
       setIsLoading(false);
@@ -56,16 +38,7 @@ export function DeliverablesTab({ projectId }: DeliverablesTabProps) {
     fetchDeliverables();
   }, [projectId, refreshCounter]);
 
-  const handleUploadComplete = () => {
-    setRefreshCounter((prev) => prev + 1);
-  };
-
-  const handleDeliverableSelect = (deliverable: Deliverable) => {
-    setSelectedDeliverable(deliverable);
-  };
-
-  const handleBack = () => {
-    setSelectedDeliverable(null);
+  const handleRefresh = () => {
     setRefreshCounter((prev) => prev + 1);
   };
 
@@ -88,20 +61,13 @@ export function DeliverablesTab({ projectId }: DeliverablesTabProps) {
     );
   }
 
-  if (selectedDeliverable) {
-    return (
-      <DeliverableDetail
-        deliverable={selectedDeliverable}
-        projectId={projectId}
-        onBack={handleBack}
-      />
-    );
-  }
-
   return (
     <div className="space-y-6">
-      <VideoUpload projectId={projectId} onUploadComplete={handleUploadComplete} />
-      <DeliverableList deliverables={deliverables} onSelect={handleDeliverableSelect} />
+      <div className="flex items-center justify-between">
+        <h3 className="text-lg font-semibold">{t('title')}</h3>
+        <VideoUpload projectId={projectId} onUploadComplete={handleRefresh} />
+      </div>
+      <DeliverableList deliverables={deliverables} onSelect={() => {}} onRefresh={handleRefresh} />
     </div>
   );
 }
