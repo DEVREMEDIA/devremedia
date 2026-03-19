@@ -63,6 +63,19 @@ export function DeliverableList({ deliverables, onRefresh }: DeliverableListProp
   const isExternalLink = (path: string) =>
     path.startsWith('http://') || path.startsWith('https://');
 
+  const getEmbedUrl = (url: string): string | null => {
+    const driveMatch = url.match(/drive\.google\.com\/file\/d\/([a-zA-Z0-9_-]+)/);
+    if (driveMatch) return `https://drive.google.com/file/d/${driveMatch[1]}/preview`;
+
+    const ytMatch = url.match(/(?:youtube\.com\/watch\?v=|youtu\.be\/)([a-zA-Z0-9_-]+)/);
+    if (ytMatch) return `https://www.youtube.com/embed/${ytMatch[1]}`;
+
+    const vimeoMatch = url.match(/vimeo\.com\/(\d+)/);
+    if (vimeoMatch) return `https://player.vimeo.com/video/${vimeoMatch[1]}`;
+
+    return null;
+  };
+
   if (deliverables.length === 0) {
     return (
       <div className="rounded-lg border border-dashed p-12">
@@ -113,7 +126,7 @@ export function DeliverableList({ deliverables, onRefresh }: DeliverableListProp
                 <span>v{deliverable.version}</span>
               </div>
 
-              {isExternalLink(deliverable.file_path) && (
+              {isExternalLink(deliverable.file_path) && !getEmbedUrl(deliverable.file_path) && (
                 <Button variant="outline" size="sm" asChild>
                   <a href={deliverable.file_path} target="_blank" rel="noopener noreferrer">
                     <ExternalLink className="h-3.5 w-3.5 mr-1.5" />
@@ -122,6 +135,17 @@ export function DeliverableList({ deliverables, onRefresh }: DeliverableListProp
                 </Button>
               )}
             </div>
+
+            {isExternalLink(deliverable.file_path) && getEmbedUrl(deliverable.file_path) && (
+              <div className="aspect-video rounded-md overflow-hidden bg-muted">
+                <iframe
+                  src={getEmbedUrl(deliverable.file_path)!}
+                  className="w-full h-full border-0"
+                  allow="autoplay; encrypted-media"
+                  allowFullScreen
+                />
+              </div>
+            )}
           </div>
         ))}
       </div>
