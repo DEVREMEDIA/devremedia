@@ -50,18 +50,18 @@ export async function GET(request: NextRequest) {
       // Check if user needs onboarding or is in recovery flow
       if (data.user) {
         const adminClient = createAdminClient();
-        const { data: profile } = await adminClient
-          .from('user_profiles')
-          .select('display_name')
-          .eq('id', data.user.id)
-          .single();
 
+        const [{ data: profile }, { data: adminUserData }] = await Promise.all([
+          adminClient.from('user_profiles').select('display_name').eq('id', data.user.id).single(),
+          adminClient.auth.admin.getUserById(data.user.id),
+        ]);
+
+        const fullUser = adminUserData?.user;
         const isInvitedAndNotOnboarded = !!data.user.user_metadata?.invited_by;
 
-        // Detect recovery: recent recovery_sent_at on user
         const isRecovery =
-          data.user.recovery_sent_at &&
-          Date.now() - new Date(data.user.recovery_sent_at).getTime() < 10 * 60 * 1000;
+          fullUser?.recovery_sent_at &&
+          Date.now() - new Date(fullUser.recovery_sent_at).getTime() < 10 * 60 * 1000;
 
         if (!profile?.display_name || isInvitedAndNotOnboarded) {
           redirectPath = '/onboarding';

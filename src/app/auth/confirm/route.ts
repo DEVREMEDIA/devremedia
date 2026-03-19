@@ -62,25 +62,25 @@ export async function GET(request: NextRequest) {
 
       if (data.user) {
         const adminClient = createAdminClient();
-        const { data: profile } = await adminClient
-          .from('user_profiles')
-          .select('display_name')
-          .eq('id', data.user.id)
-          .single();
 
+        // Fetch full user via admin API (includes recovery_sent_at)
+        const [{ data: profile }, { data: adminUserData }] = await Promise.all([
+          adminClient.from('user_profiles').select('display_name').eq('id', data.user.id).single(),
+          adminClient.auth.admin.getUserById(data.user.id),
+        ]);
+
+        const fullUser = adminUserData?.user;
         const isInvitedAndNotOnboarded = !!data.user.user_metadata?.invited_by;
 
-        // Detect recovery: URL type param OR recent recovery_sent_at on user
+        // Detect recovery: URL type param OR recent recovery_sent_at from admin API
         const isRecovery =
           type === 'recovery' ||
-          (data.user.recovery_sent_at &&
-            Date.now() - new Date(data.user.recovery_sent_at).getTime() < 10 * 60 * 1000);
+          (fullUser?.recovery_sent_at &&
+            Date.now() - new Date(fullUser.recovery_sent_at).getTime() < 10 * 60 * 1000);
 
         if (!profile?.display_name || isInvitedAndNotOnboarded) {
-          // Invited user or re-invited user → onboarding to set password + name
           redirectPath = '/onboarding';
         } else if (isRecovery) {
-          // Regular password recovery (not re-invite) → update password page
           redirectPath = '/update-password';
         }
       }
