@@ -24,9 +24,8 @@ interface Message {
   sender_id: string;
   content: string;
   attachments: { file_path: string; file_name: string; file_type: string; file_size: number }[];
-  read_at: string | null;
+  read_by: string[];
   created_at: string;
-  updated_at: string;
   sender: {
     id: string;
     display_name: string | null;
@@ -151,7 +150,7 @@ export function MessageThread({ projectId, currentUserId, className }: MessageTh
                 id={message.id}
                 content={message.content}
                 createdAt={message.created_at}
-                readAt={message.read_at}
+                isRead={(message.read_by ?? []).length > 0}
                 isOwn={message.sender_id === currentUserId}
                 sender={message.sender}
                 attachments={message.attachments}

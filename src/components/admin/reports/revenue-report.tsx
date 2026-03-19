@@ -2,7 +2,19 @@
 
 import { useTranslations } from 'next-intl';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell, Legend } from 'recharts';
+import {
+  BarChart,
+  Bar,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip,
+  ResponsiveContainer,
+  PieChart,
+  Pie,
+  Cell,
+  Legend,
+} from 'recharts';
 import type { MonthlyRevenue, PaymentMethodBreakdown } from '@/lib/queries/reports';
 
 type RevenueReportProps = {
@@ -72,12 +84,17 @@ export function RevenueReport({ monthlyData, paymentMethodData }: RevenueReportP
                   tickFormatter={formatCurrency}
                 />
                 <Tooltip
-                  formatter={(value: number | undefined) => formatCurrency(value ?? 0)}
+                  formatter={(value: unknown) =>
+                    formatCurrency(typeof value === 'number' ? value : 0)
+                  }
                   contentStyle={{
                     backgroundColor: 'hsl(var(--card))',
                     border: '1px solid hsl(var(--border))',
                     borderRadius: '8px',
+                    color: 'hsl(var(--foreground))',
                   }}
+                  labelStyle={{ color: 'hsl(var(--muted-foreground))' }}
+                  itemStyle={{ color: 'hsl(var(--foreground))' }}
                 />
                 <Bar dataKey="value" fill="hsl(var(--primary))" radius={[4, 4, 0, 0]} />
               </BarChart>
@@ -104,22 +121,32 @@ export function RevenueReport({ monthlyData, paymentMethodData }: RevenueReportP
                   cx="50%"
                   cy="50%"
                   labelLine={false}
-                  label={({ name, percent }: { name?: string; percent?: number }) => `${name ?? ''}: ${((percent ?? 0) * 100).toFixed(0)}%`}
+                  label={({ name, percent }: { name?: string; percent?: number }) =>
+                    `${name ?? ''}: ${((percent ?? 0) * 100).toFixed(0)}%`
+                  }
                   outerRadius={80}
                   fill="#8884d8"
                   dataKey="value"
                 >
                   {paymentChartData.map((entry, index) => (
-                    <Cell key={`cell-${index}`} fill={PAYMENT_COLORS[index % PAYMENT_COLORS.length]} />
+                    <Cell
+                      key={`cell-${index}`}
+                      fill={PAYMENT_COLORS[index % PAYMENT_COLORS.length]}
+                    />
                   ))}
                 </Pie>
                 <Tooltip
-                  formatter={(value: number | undefined) => formatCurrency(value ?? 0)}
+                  formatter={(value: unknown) =>
+                    formatCurrency(typeof value === 'number' ? value : 0)
+                  }
                   contentStyle={{
                     backgroundColor: 'hsl(var(--card))',
                     border: '1px solid hsl(var(--border))',
                     borderRadius: '8px',
+                    color: 'hsl(var(--foreground))',
                   }}
+                  labelStyle={{ color: 'hsl(var(--muted-foreground))' }}
+                  itemStyle={{ color: 'hsl(var(--foreground))' }}
                 />
                 <Legend />
               </PieChart>

@@ -15,10 +15,11 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import { MoreHorizontal, Eye, Pencil, Trash } from 'lucide-react';
+import { MoreHorizontal, Eye, Pencil, Trash, ShieldCheck, ShieldOff } from 'lucide-react';
 import { format } from 'date-fns';
 import Link from 'next/link';
 import { useState } from 'react';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { ConfirmDialog } from '@/components/shared/confirm-dialog';
 import { deleteClient } from '@/lib/actions/clients';
 import { toast } from 'sonner';
@@ -146,6 +147,30 @@ export function useClientColumns(): ColumnDef<Client>[] {
       cell: ({ row }) => {
         const phone = row.getValue('phone') as string | null;
         return <div>{phone || '-'}</div>;
+      },
+      enableSorting: false,
+    },
+    {
+      id: 'portal_access',
+      header: t('portalAccess'),
+      cell: ({ row }) => {
+        const hasAuth = !!row.original.user_id;
+        return (
+          <TooltipProvider>
+            <Tooltip>
+              <TooltipTrigger>
+                {hasAuth ? (
+                  <ShieldCheck className="h-4 w-4 text-green-600" />
+                ) : (
+                  <ShieldOff className="h-4 w-4 text-muted-foreground" />
+                )}
+              </TooltipTrigger>
+              <TooltipContent>
+                {hasAuth ? t('hasPortalAccess') : t('noPortalAccess')}
+              </TooltipContent>
+            </Tooltip>
+          </TooltipProvider>
+        );
       },
       enableSorting: false,
     },

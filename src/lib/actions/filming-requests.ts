@@ -392,6 +392,15 @@ export async function createPublicFilmingRequest(
 
     if (error) return { data: null, error: error.message };
 
+    // Notify admins about the new lead
+    const adminIds = await getAdminUserIds();
+    await createNotificationForMany(adminIds, {
+      type: NOTIFICATION_TYPES.BOOKING_SUBMITTED,
+      title: 'New lead from website',
+      body: `${validated.contact_name}${validated.title ? ` — ${validated.title}` : ''}`,
+      actionUrl: '/admin/leads',
+    });
+
     revalidatePath('/admin/leads');
     revalidatePath('/salesman/leads');
     return { data, error: null };

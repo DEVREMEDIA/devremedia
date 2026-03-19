@@ -484,7 +484,16 @@
     "sendInviteOnCreate": "Αποστολή πρόσκλησης στην πλατφόρμα πελάτη",
     "inviteFailedWarning": "Ο πελάτης δημιουργήθηκε, αλλά η πρόσκληση δεν στάλθηκε. Μπορείτε να την στείλετε από τη σελίδα του πελάτη.",
     "activity": "Δραστηριότητα",
-    "created": "Δημιουργήθηκε"
+    "created": "Δημιουργήθηκε",
+    "portalAccess": "Πρόσβαση Portal",
+    "hasPortalAccess": "Έχει πρόσβαση Portal",
+    "noPortalAccess": "Χωρίς πρόσβαση Portal",
+    "cleanup": "Εκκαθάριση",
+    "cleanupTitle": "Εκκαθάριση Ορφανών Πελατών",
+    "cleanupDescription": "{count} πελάτες δεν έχουν λογαριασμό στην πλατφόρμα. Πελάτες με projects θα αρχειοθετηθούν (ανενεργοί). Πελάτες χωρίς δεδομένα θα διαγραφούν οριστικά.",
+    "cleanupConfirm": "Εκκαθάριση Τώρα",
+    "cleanupSuccess": "{archived} αρχειοθετήθηκαν, {deleted} διαγράφηκαν",
+    "cleanupFailed": "Αποτυχία εκκαθάρισης πελατών"
   },
 
   "projects": {

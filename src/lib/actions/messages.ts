@@ -22,7 +22,7 @@ export async function getMessagesByProject(projectId: string): Promise<ActionRes
     const { data, error } = await supabase
       .from('messages')
       .select(
-        'id, project_id, sender_id, content, attachments, read_by, created_at, sender:user_profiles(id, role, display_name, avatar_url, preferences, created_at)',
+        'id, project_id, sender_id, content, attachments, read_by, created_at, sender:user_profiles!messages_sender_id_user_profiles_fkey(id, display_name, avatar_url)',
       )
       .eq('project_id', projectId)
       .order('created_at', { ascending: true });
@@ -51,7 +51,7 @@ export async function createMessage(input: unknown): Promise<ActionResult<Messag
         sender_id: user.id,
       })
       .select(
-        'id, project_id, sender_id, content, attachments, read_by, created_at, sender:user_profiles(id, role, display_name, avatar_url, preferences, created_at)',
+        'id, project_id, sender_id, content, attachments, read_by, created_at, sender:user_profiles!messages_sender_id_user_profiles_fkey(id, display_name, avatar_url)',
       )
       .single();
 
@@ -77,7 +77,7 @@ export async function createMessage(input: unknown): Promise<ActionResult<Messag
           userId: clientUserId,
           type: NOTIFICATION_TYPES.NEW_MESSAGE,
           title: 'New message in your project',
-          actionUrl: `/client/projects/${validated.project_id}`,
+          actionUrl: `/client/projects/${validated.project_id}?tab=messages`,
         });
       }
     } else {
@@ -86,7 +86,7 @@ export async function createMessage(input: unknown): Promise<ActionResult<Messag
       createNotificationForMany(adminIds, {
         type: NOTIFICATION_TYPES.NEW_MESSAGE,
         title: 'New message from client',
-        actionUrl: `/admin/projects/${validated.project_id}`,
+        actionUrl: `/admin/projects/${validated.project_id}?tab=messages`,
       });
     }
 
@@ -108,18 +108,27 @@ export async function markMessagesAsRead(projectId: string): Promise<ActionResul
     } = await supabase.auth.getUser();
     if (!user) return { data: null, error: 'User not authenticated' };
 
-    const { error } = await supabase
+    // Fetch messages not yet read by this user
+    const { data: unread, error: fetchError } = await supabase
       .from('messages')
-      .update({ read_at: new Date().toISOString() })
+      .select('id, read_by')
       .eq('project_id', projectId)
-      .is('read_at', null)
-      .neq('sender_id', user.id);
+      .neq('sender_id', user.id)
+      .not('read_by', 'cs', JSON.stringify([user.id]));
 
-    if (error) return { data: null, error: error.message };
+    if (fetchError) return { data: null, error: fetchError.message };
+    if (!unread || unread.length === 0) return { data: undefined, error: null };
 
-    revalidatePath(`/admin/projects/${projectId}`);
-    revalidatePath(`/client/projects/${projectId}`);
-    revalidatePath(`/employee/projects/${projectId}`);
+    // Append user ID to read_by array for each unread message
+    await Promise.all(
+      unread.map((msg) =>
+        supabase
+          .from('messages')
+          .update({ read_by: [...((msg.read_by as string[]) ?? []), user.id] })
+          .eq('id', msg.id),
+      ),
+    );
+
     return { data: undefined, error: null };
   } catch (err: unknown) {
     return {

@@ -27,7 +27,7 @@ export type UpdateEquipmentListInput = z.infer<typeof updateEquipmentListSchema>
  */
 export const shotSchema = z.object({
   number: z.number(),
-  description: z.string().min(1, 'Description is required').max(500, 'Description must be at most 500 characters'),
+  description: z.string().max(500, 'Description must be at most 500 characters'),
   shot_type: z.enum(SHOT_TYPES),
   location: z.string().max(255, 'Location must be at most 255 characters').optional(),
   duration_est: z.string().max(50, 'Duration estimate must be at most 50 characters').optional(),
@@ -74,7 +74,11 @@ export type CreateConceptNoteInput = z.infer<typeof createConceptNoteSchema>;
  * Update concept note schema validation
  */
 export const updateConceptNoteSchema = z.object({
-  title: z.string().min(1, 'Title is required').max(255, 'Title must be at most 255 characters').optional(),
+  title: z
+    .string()
+    .min(1, 'Title is required')
+    .max(255, 'Title must be at most 255 characters')
+    .optional(),
   content: z.string().max(50000, 'Content must be at most 50000 characters').optional(),
 });
 

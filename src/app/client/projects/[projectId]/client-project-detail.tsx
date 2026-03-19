@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { StatusBadge } from '@/components/shared/status-badge';
@@ -8,7 +8,7 @@ import { MessageThread } from '@/components/shared/message-thread';
 import { PROJECT_TYPE_LABELS, PROJECT_STATUS_LABELS } from '@/lib/constants';
 import { Calendar, MapPin, FileText, Video, MessageSquare, ArrowLeft } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { useTranslations } from 'next-intl';
 import { DeliverablesTab } from '@/components/client/projects/deliverables-tab';
 import { ContractsTab } from '@/components/client/projects/contracts-tab';
@@ -33,8 +33,29 @@ export function ClientProjectDetail({
   currentUserId,
 }: ClientProjectDetailProps) {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const t = useTranslations('client.projects');
-  const [activeTab, setActiveTab] = useState('overview');
+  const tabFromUrl = searchParams.get('tab') || 'overview';
+  const [activeTab, setActiveTab] = useState(tabFromUrl);
+
+  useEffect(() => {
+    setActiveTab(tabFromUrl);
+  }, [tabFromUrl]);
+
+  const handleTabChange = useCallback(
+    (value: string) => {
+      setActiveTab(value);
+      const params = new URLSearchParams(searchParams.toString());
+      if (value === 'overview') {
+        params.delete('tab');
+      } else {
+        params.set('tab', value);
+      }
+      const query = params.toString();
+      router.replace(`?${query}`, { scroll: false });
+    },
+    [router, searchParams],
+  );
 
   return (
     <div className="container mx-auto px-4 py-6 sm:px-6 space-y-6">
@@ -58,7 +79,7 @@ export function ClientProjectDetail({
       </div>
 
       {/* Tabs */}
-      <Tabs value={activeTab} onValueChange={setActiveTab}>
+      <Tabs value={activeTab} onValueChange={handleTabChange}>
         <div className="overflow-x-auto -mx-4 px-4 sm:mx-0 sm:px-0">
           <TabsList className="inline-flex w-auto min-w-full sm:min-w-0">
             <TabsTrigger value="overview">

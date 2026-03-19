@@ -5,13 +5,13 @@ import { cn } from '@/lib/utils';
 import { useTranslations } from 'next-intl';
 
 interface ReadReceiptIndicatorProps {
-  readAt: string | null;
+  isRead: boolean;
   className?: string;
 }
 
-export function ReadReceiptIndicator({ readAt, className }: ReadReceiptIndicatorProps) {
+export function ReadReceiptIndicator({ isRead, className }: ReadReceiptIndicatorProps) {
   const t = useTranslations('messages');
-  if (readAt) {
+  if (isRead) {
     return (
       <div className={cn('flex items-center gap-1 text-xs text-muted-foreground', className)}>
         <CheckCheck className="h-3 w-3" />

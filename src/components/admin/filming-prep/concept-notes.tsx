@@ -179,8 +179,13 @@ export function ConceptNotes({ projectId }: ConceptNotesProps) {
             <Card>
               <CardContent className="p-6 space-y-4">
                 <NoteEditor
+                  key={selectedNote.id}
                   note={selectedNote}
-                  onUpdate={() => loadNotes()}
+                  onNoteChange={(updated) => {
+                    setNotes((prev) =>
+                      prev.map((n) => (n.id === updated.id ? { ...n, ...updated } : n)),
+                    );
+                  }}
                   onDelete={() => setDeleteDialogOpen(true)}
                 />
               </CardContent>
@@ -215,11 +220,11 @@ export function ConceptNotes({ projectId }: ConceptNotesProps) {
 
 interface NoteEditorProps {
   note: ConceptNote;
-  onUpdate: () => void;
+  onNoteChange: (updated: Partial<ConceptNote> & { id: string }) => void;
   onDelete: () => void;
 }
 
-function NoteEditor({ note, onUpdate, onDelete }: NoteEditorProps) {
+function NoteEditor({ note, onNoteChange, onDelete }: NoteEditorProps) {
   const t = useTranslations('filmingPrep');
   const tc = useTranslations('common');
   const [title, setTitle] = useState(note.title);
@@ -228,9 +233,12 @@ function NoteEditor({ note, onUpdate, onDelete }: NoteEditorProps) {
   const saveTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
   useEffect(() => {
-    setTitle(note.title);
-    setContent(note.content || '');
-  }, [note.id, note.title, note.content]);
+    return () => {
+      if (saveTimeoutRef.current) {
+        clearTimeout(saveTimeoutRef.current);
+      }
+    };
+  }, []);
 
   const debouncedSave = (updates: { title?: string; content?: string }) => {
     if (saveTimeoutRef.current) {
@@ -245,7 +253,7 @@ function NoteEditor({ note, onUpdate, onDelete }: NoteEditorProps) {
       if (result.error) {
         toast.error(t('failedToSaveNote'));
       } else {
-        onUpdate();
+        onNoteChange({ id: note.id, ...updates, updated_at: new Date().toISOString() });
       }
     }, 500);
   };

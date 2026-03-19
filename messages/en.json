@@ -484,7 +484,16 @@
     "sendInviteOnCreate": "Send invitation email to client portal",
     "inviteFailedWarning": "Client created, but invitation email failed to send. You can resend from the client details page.",
     "activity": "Activity",
-    "created": "Created"
+    "created": "Created",
+    "portalAccess": "Portal Access",
+    "hasPortalAccess": "Has Portal Access",
+    "noPortalAccess": "No Portal Access",
+    "cleanup": "Cleanup",
+    "cleanupTitle": "Cleanup Orphaned Clients",
+    "cleanupDescription": "{count} clients have no portal account. Clients with projects will be archived (set inactive). Clients without any data will be permanently deleted.",
+    "cleanupConfirm": "Cleanup Now",
+    "cleanupSuccess": "{archived} archived, {deleted} deleted",
+    "cleanupFailed": "Failed to cleanup clients"
   },
 
   "projects": {

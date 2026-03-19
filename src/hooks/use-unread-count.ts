@@ -25,7 +25,7 @@ export function useUnreadCount(currentUserId: string | null): UseUnreadCountResu
         const { count, error } = await supabase
           .from('messages')
           .select('*', { count: 'exact', head: true })
-          .is('read_at', null)
+          .not('read_by', 'cs', JSON.stringify([currentUserId]))
           .neq('sender_id', currentUserId);
 
         if (!error && count !== null) {
@@ -68,12 +68,15 @@ export function useUnreadCount(currentUserId: string | null): UseUnreadCountResu
         },
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         (payload: any) => {
-          // If a message was marked as read
-          if (payload.old.read_at === null && payload.new.read_at !== null) {
-            // Only decrement if it wasn't sent by the current user
-            if (payload.new.sender_id !== currentUserId) {
-              setUnreadCount((prev) => Math.max(0, prev - 1));
-            }
+          // If the current user was added to read_by
+          const oldReadBy = (payload.old?.read_by ?? []) as string[];
+          const newReadBy = (payload.new?.read_by ?? []) as string[];
+          if (
+            !oldReadBy.includes(currentUserId!) &&
+            newReadBy.includes(currentUserId!) &&
+            payload.new.sender_id !== currentUserId
+          ) {
+            setUnreadCount((prev) => Math.max(0, prev - 1));
           }
         },
       )

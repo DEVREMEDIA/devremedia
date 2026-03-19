@@ -12,20 +12,20 @@ interface MessageBubbleProps {
   id: string;
   content: string;
   createdAt: string;
-  readAt: string | null;
+  isRead: boolean;
   isOwn: boolean;
   sender: {
     id: string;
     display_name: string | null;
     avatar_url: string | null;
-  };
+  } | null;
   attachments?: Attachment[];
 }
 
 export function MessageBubble({
   content,
   createdAt,
-  readAt,
+  isRead,
   isOwn,
   sender,
   attachments,
@@ -34,15 +34,17 @@ export function MessageBubble({
   return (
     <div className={cn('flex gap-3 items-start', isOwn ? 'flex-row-reverse' : 'flex-row')}>
       <UserAvatar
-        src={sender.avatar_url}
-        name={sender.display_name || t('unknownUser')}
+        src={sender?.avatar_url ?? null}
+        name={sender?.display_name || t('unknownUser')}
         size="sm"
         className="flex-shrink-0"
       />
 
       <div className={cn('flex flex-col gap-1 max-w-[70%]', isOwn ? 'items-end' : 'items-start')}>
         <div className="flex items-center gap-2 text-xs text-muted-foreground">
-          {!isOwn && <span className="font-medium">{sender.display_name || t('unknownUser')}</span>}
+          {!isOwn && (
+            <span className="font-medium">{sender?.display_name || t('unknownUser')}</span>
+          )}
           <span>{format(new Date(createdAt), 'MMM d, h:mm a')}</span>
         </div>
 
@@ -63,7 +65,7 @@ export function MessageBubble({
           </div>
         )}
 
-        {isOwn && <ReadReceiptIndicator readAt={readAt} />}
+        {isOwn && <ReadReceiptIndicator isRead={isRead} />}
       </div>
     </div>
   );

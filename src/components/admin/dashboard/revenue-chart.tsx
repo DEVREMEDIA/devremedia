@@ -62,12 +62,15 @@ export function RevenueChart({ data }: RevenueChartProps) {
               tickFormatter={formatCurrency}
             />
             <Tooltip
-              formatter={(value: number | undefined) => formatCurrency(value ?? 0)}
+              formatter={(value: unknown) => formatCurrency(typeof value === 'number' ? value : 0)}
               contentStyle={{
                 backgroundColor: 'hsl(var(--card))',
                 border: '1px solid hsl(var(--border))',
                 borderRadius: '8px',
+                color: 'hsl(var(--foreground))',
               }}
+              labelStyle={{ color: 'hsl(var(--muted-foreground))' }}
+              itemStyle={{ color: 'hsl(var(--foreground))' }}
             />
             <Bar dataKey="value" fill="hsl(var(--primary))" radius={[4, 4, 0, 0]} />
           </BarChart>

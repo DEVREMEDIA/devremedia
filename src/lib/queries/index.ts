@@ -22,9 +22,7 @@ export async function getClientCount(): Promise<number> {
 export async function getProjectCount(status?: ProjectStatus): Promise<number> {
   try {
     const supabase = await createClient();
-    let query = supabase
-      .from('projects')
-      .select('*', { count: 'exact', head: true });
+    let query = supabase.from('projects').select('*', { count: 'exact', head: true });
 
     if (status) {
       query = query.eq('status', status);
@@ -62,7 +60,7 @@ export async function getUnreadMessageCount(userId: string): Promise<number> {
     const { count, error } = await supabase
       .from('messages')
       .select('*', { count: 'exact', head: true })
-      .is('read_at', null)
+      .not('read_by', 'cs', JSON.stringify([userId]))
       .neq('sender_id', userId);
 
     if (error) return 0;
@@ -75,10 +73,7 @@ export async function getUnreadMessageCount(userId: string): Promise<number> {
 export async function getTotalRevenue(year?: number): Promise<number> {
   try {
     const supabase = await createClient();
-    let query = supabase
-      .from('invoices')
-      .select('total')
-      .eq('status', 'paid');
+    let query = supabase.from('invoices').select('total').eq('status', 'paid');
 
     if (year) {
       const startDate = `${year}-01-01`;
@@ -98,9 +93,7 @@ export async function getTotalRevenue(year?: number): Promise<number> {
 export async function getTotalExpenses(projectId?: string): Promise<number> {
   try {
     const supabase = await createClient();
-    let query = supabase
-      .from('expenses')
-      .select('amount');
+    let query = supabase.from('expenses').select('amount');
 
     if (projectId) {
       query = query.eq('project_id', projectId);

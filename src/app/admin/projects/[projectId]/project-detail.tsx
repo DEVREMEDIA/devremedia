@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { format } from 'date-fns';
 import { ProjectWithClient, Contract } from '@/types';
 import { PageHeader } from '@/components/shared/page-header';
@@ -27,7 +27,7 @@ import {
   MapPin,
 } from 'lucide-react';
 import Link from 'next/link';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { deleteProject } from '@/lib/actions/projects';
 import { toast } from 'sonner';
 import { differenceInDays } from 'date-fns';
@@ -44,9 +44,16 @@ export function ProjectDetail({ project, contracts }: ProjectDetailProps) {
   const t = useTranslations('projects');
   const tc = useTranslations('common');
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const tabFromUrl = searchParams.get('tab') || 'overview';
+  const [activeTab, setActiveTab] = useState(tabFromUrl);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
   const [currentUserId, setCurrentUserId] = useState<string | null>(null);
+
+  useEffect(() => {
+    setActiveTab(tabFromUrl);
+  }, [tabFromUrl]);
 
   useEffect(() => {
     const supabase = createClient();
@@ -54,6 +61,20 @@ export function ProjectDetail({ project, contracts }: ProjectDetailProps) {
       setCurrentUserId(data.user?.id ?? null);
     });
   }, []);
+
+  const handleTabChange = useCallback(
+    (value: string) => {
+      setActiveTab(value);
+      const params = new URLSearchParams(searchParams.toString());
+      if (value === 'overview') {
+        params.delete('tab');
+      } else {
+        params.set('tab', value);
+      }
+      router.replace(`?${params.toString()}`, { scroll: false });
+    },
+    [router, searchParams],
+  );
 
   const handleDelete = async () => {
     setIsDeleting(true);
@@ -122,7 +143,7 @@ export function ProjectDetail({ project, contracts }: ProjectDetailProps) {
         <StatusBadge status={project.priority} />
       </div>
 
-      <Tabs defaultValue="overview" className="space-y-6">
+      <Tabs value={activeTab} onValueChange={handleTabChange} className="space-y-6">
         <div className="overflow-x-auto -mx-4 px-4 md:mx-0 md:px-0">
           <TabsList className="inline-flex w-auto min-w-full sm:min-w-0">
             <TabsTrigger value="overview">{t('overview')}</TabsTrigger>

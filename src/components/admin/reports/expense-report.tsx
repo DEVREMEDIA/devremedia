@@ -64,7 +64,9 @@ export function ExpenseReport({ expensesByCategory, profitData }: ExpenseReportP
                   cx="50%"
                   cy="50%"
                   labelLine={false}
-                  label={({ name, percent }: { name?: string; percent?: number }) => `${name ?? ''}: ${((percent ?? 0) * 100).toFixed(0)}%`}
+                  label={({ name, percent }: { name?: string; percent?: number }) =>
+                    `${name ?? ''}: ${((percent ?? 0) * 100).toFixed(0)}%`
+                  }
                   outerRadius={80}
                   fill="#8884d8"
                   dataKey="value"
@@ -74,12 +76,17 @@ export function ExpenseReport({ expensesByCategory, profitData }: ExpenseReportP
                   ))}
                 </Pie>
                 <Tooltip
-                  formatter={(value: number | undefined) => formatCurrency(value ?? 0)}
+                  formatter={(value: unknown) =>
+                    formatCurrency(typeof value === 'number' ? value : 0)
+                  }
                   contentStyle={{
                     backgroundColor: 'hsl(var(--card))',
                     border: '1px solid hsl(var(--border))',
                     borderRadius: '8px',
+                    color: 'hsl(var(--foreground))',
                   }}
+                  labelStyle={{ color: 'hsl(var(--muted-foreground))' }}
+                  itemStyle={{ color: 'hsl(var(--foreground))' }}
                 />
                 <Legend />
               </PieChart>
