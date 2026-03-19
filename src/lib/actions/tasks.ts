@@ -190,7 +190,7 @@ export async function updateTaskStatus(
     // Notify based on who changed the status
     if (data.assigned_to && data.assigned_to !== user.id) {
       // Admin changed status → notify assigned employee
-      createNotification({
+      await createNotification({
         userId: data.assigned_to,
         type: NOTIFICATION_TYPES.TASK_UPDATED,
         title: `Task "${data.title}" status changed to ${status}`,
@@ -199,7 +199,7 @@ export async function updateTaskStatus(
     } else if (data.assigned_to === user.id) {
       // Employee changed status → notify all admins
       const adminIds = await getAdminUserIds();
-      createNotificationForMany(adminIds, {
+      await createNotificationForMany(adminIds, {
         type: NOTIFICATION_TYPES.TASK_UPDATED,
         title: `Task "${data.title}" marked as ${status}`,
         actionUrl: `/admin/projects/${data.project_id}?tab=tasks`,
