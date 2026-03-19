@@ -37,46 +37,55 @@ export default function UpdatePasswordPage() {
     try {
       const supabase = createClient();
 
+      // Verify session exists before attempting update — this also forces
+      // the browser client to hydrate its session from cookies
+      const {
+        data: { user: currentUser },
+        error: userError,
+      } = await supabase.auth.getUser();
+      if (userError || !currentUser) {
+        setIsExpired(true);
+        return;
+      }
+
       const { error } = await supabase.auth.updateUser({
         password: data.password,
       });
 
       if (error) {
-        if (error.message.includes('session') || error.status === 403 || error.status === 401) {
-          setIsExpired(true);
-          return;
-        }
         toast.error(error.message);
         return;
       }
 
       toast.success(t('passwordUpdated'));
 
-      // Fetch role for redirect
-      const {
-        data: { user },
-      } = await supabase.auth.getUser();
-      if (user) {
-        const { data: profile } = await supabase
-          .from('user_profiles')
-          .select('role')
-          .eq('id', user.id)
-          .single();
+      const { data: profile } = await supabase
+        .from('user_profiles')
+        .select('role')
+        .eq('id', currentUser.id)
+        .single();
 
-        const dashboards: Record<string, string> = {
-          super_admin: '/admin/dashboard',
-          admin: '/admin/dashboard',
-          employee: '/employee/dashboard',
-          salesman: '/salesman/dashboard',
-          client: '/client/dashboard',
-        };
-        const dashboard = dashboards[profile?.role ?? 'client'] ?? '/client/dashboard';
-        router.replace(dashboard);
+      const dashboards: Record<string, string> = {
+        super_admin: '/admin/dashboard',
+        admin: '/admin/dashboard',
+        employee: '/employee/dashboard',
+        salesman: '/salesman/dashboard',
+        client: '/client/dashboard',
+      };
+      const dashboard = dashboards[profile?.role ?? 'client'] ?? '/client/dashboard';
+      router.replace(dashboard);
+    } catch (err) {
+      // updateUser throws AuthSessionMissingError when no session
+      if (
+        err instanceof Error &&
+        (err.message.toLowerCase().includes('session') ||
+          err.message.toLowerCase().includes('not authenticated') ||
+          err.message.toLowerCase().includes('auth'))
+      ) {
+        setIsExpired(true);
       } else {
-        router.replace('/login');
+        toast.error(t('unexpectedError'));
       }
-    } catch {
-      toast.error(t('unexpectedError'));
     } finally {
       setIsLoading(false);
     }
