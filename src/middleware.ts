@@ -80,6 +80,15 @@ export async function middleware(request: NextRequest) {
 
   const { pathname } = request.nextUrl;
 
+  // If a Supabase auth code arrives on any route (e.g. fallback to site_url),
+  // redirect to /auth/callback to exchange it for a session
+  const authCode = request.nextUrl.searchParams.get('code');
+  if (authCode && !pathname.startsWith('/auth/')) {
+    const url = request.nextUrl.clone();
+    url.pathname = '/auth/callback';
+    return NextResponse.redirect(url);
+  }
+
   // Allow auth callback routes to pass through
   if (pathname.startsWith('/auth/')) {
     return supabaseResponse;

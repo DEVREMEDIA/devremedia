@@ -62,7 +62,9 @@ export async function GET(request: NextRequest) {
           .eq('id', data.user.id)
           .single();
 
-        if (!profile?.display_name) {
+        const isInvitedAndNotOnboarded = !!data.user.user_metadata?.invited_by;
+
+        if (!profile?.display_name || isInvitedAndNotOnboarded) {
           redirectPath = '/onboarding';
         }
       }
