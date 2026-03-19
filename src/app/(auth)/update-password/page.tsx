@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -21,6 +21,22 @@ export default function UpdatePasswordPage() {
   const router = useRouter();
   const t = useTranslations('auth');
   const [isLoading, setIsLoading] = useState(false);
+  const [hasSession, setHasSession] = useState(false);
+  const [isChecking, setIsChecking] = useState(true);
+
+  // Verify session exists before showing the form
+  useEffect(() => {
+    const supabase = createClient();
+    supabase.auth.getUser().then(({ data: { user } }) => {
+      if (!user) {
+        toast.error(t('sessionExpired'));
+        router.replace('/forgot-password');
+        return;
+      }
+      setHasSession(true);
+      setIsChecking(false);
+    });
+  }, [router, t]);
 
   const {
     register,
@@ -34,6 +50,7 @@ export default function UpdatePasswordPage() {
     setIsLoading(true);
     try {
       const supabase = createClient();
+
       const { error } = await supabase.auth.updateUser({
         password: data.password,
       });
@@ -45,17 +62,45 @@ export default function UpdatePasswordPage() {
 
       toast.success(t('passwordUpdated'));
 
-      // Redirect to login after a short delay
-      setTimeout(() => {
-        router.push('/login');
-      }, 1500);
-    } catch (error) {
+      // Fetch role for redirect
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
+      if (user) {
+        const { data: profile } = await supabase
+          .from('user_profiles')
+          .select('role')
+          .eq('id', user.id)
+          .single();
+
+        const dashboards: Record<string, string> = {
+          super_admin: '/admin/dashboard',
+          admin: '/admin/dashboard',
+          employee: '/employee/dashboard',
+          salesman: '/salesman/dashboard',
+          client: '/client/dashboard',
+        };
+        const dashboard = dashboards[profile?.role ?? 'client'] ?? '/client/dashboard';
+        router.replace(dashboard);
+      } else {
+        router.replace('/login');
+      }
+    } catch {
       toast.error(t('unexpectedError'));
-      console.error(error);
     } finally {
       setIsLoading(false);
     }
   };
+
+  if (isChecking || !hasSession) {
+    return (
+      <Card>
+        <CardContent className="py-12">
+          <p className="text-center text-sm text-muted-foreground">{t('loading') ?? '...'}</p>
+        </CardContent>
+      </Card>
+    );
+  }
 
   return (
     <Card>
