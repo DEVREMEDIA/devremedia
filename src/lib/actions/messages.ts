@@ -31,9 +31,19 @@ export async function getMessagesByProject(
       .eq('channel', channel)
       .order('created_at', { ascending: true });
 
-    if (error) return { data: null, error: error.message };
+    if (error) {
+      console.error('[getMessagesByProject ERROR]', {
+        projectId,
+        channel,
+        error: error.message,
+        code: error.code,
+        details: error.details,
+      });
+      return { data: null, error: error.message };
+    }
     return { data, error: null };
   } catch (err: unknown) {
+    console.error('[getMessagesByProject CATCH]', err);
     return { data: null, error: err instanceof Error ? err.message : 'Failed to fetch messages' };
   }
 }
