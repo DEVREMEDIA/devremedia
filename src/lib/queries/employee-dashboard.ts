@@ -62,10 +62,17 @@ export async function getMyProjects(userId: string) {
     .eq('assigned_to', userId);
 
   // Get projects directly assigned to employee
-  const { data: assignedProjects } = await supabase
+  const { data: assignedProjects, error: assignedError } = await supabase
     .from('projects')
     .select('id, title, status, project_type, deadline')
     .eq('assigned_to', userId);
+
+  console.log('[DEBUG getMyProjects]', {
+    userId,
+    assignedProjects,
+    assignedError,
+    taskCount: tasks?.length,
+  });
 
   // Build unified map
   const projectMap = new Map<
