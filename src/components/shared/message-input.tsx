@@ -15,6 +15,7 @@ import { useTranslations } from 'next-intl';
 
 interface MessageInputProps {
   projectId: string;
+  channel?: 'client' | 'team';
   onMessageSent?: () => void;
   className?: string;
 }
@@ -32,7 +33,12 @@ function formatFileSize(bytes: number): string {
   return Math.round((bytes / Math.pow(k, i)) * 100) / 100 + ' ' + sizes[i];
 }
 
-export function MessageInput({ projectId, onMessageSent, className }: MessageInputProps) {
+export function MessageInput({
+  projectId,
+  channel = 'client',
+  onMessageSent,
+  className,
+}: MessageInputProps) {
   const t = useTranslations('messages');
   const [content, setContent] = useState('');
   const [isSending, setIsSending] = useState(false);
@@ -135,6 +141,7 @@ export function MessageInput({ projectId, onMessageSent, className }: MessageInp
         project_id: projectId,
         content: trimmedContent || t('attachment'),
         attachments: attachments.length > 0 ? attachments : undefined,
+        channel,
       });
 
       if (result.error) {

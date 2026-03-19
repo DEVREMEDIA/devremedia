@@ -1317,6 +1317,9 @@
   "messages": {
     "title": "Μηνύματα",
     "description": "Επικοινωνία παραγωγήυ",
+    "conversationWith": "Συνομιλία με",
+    "clientChannel": "Πελάτη",
+    "teamChannel": "Ομάδα",
     "sendMessage": "Αποστολή μηνύματος",
     "typeMessage": "Γράψτε ένα μήνυμα...",
     "noMessages": "Δεν υπάρχουν μηνύματα",

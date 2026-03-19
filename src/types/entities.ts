@@ -159,6 +159,7 @@ export type Message = {
   content: string;
   attachments: MessageAttachment[];
   read_by: string[];
+  channel: 'client' | 'team';
   created_at: string;
 };
 

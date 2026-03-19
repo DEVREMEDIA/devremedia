@@ -1317,6 +1317,9 @@
   "messages": {
     "title": "Messages",
     "description": "Production communication",
+    "conversationWith": "Conversation with",
+    "clientChannel": "Client",
+    "teamChannel": "Team",
     "sendMessage": "Send message",
     "typeMessage": "Type a message...",
     "noMessages": "No messages yet",

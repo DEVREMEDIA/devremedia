@@ -22,6 +22,7 @@ export const createMessageSchema = z.object({
     .min(1, 'Content is required')
     .max(10000, 'Content must be at most 10000 characters'),
   attachments: z.array(attachmentSchema).optional(),
+  channel: z.enum(['client', 'team']).default('client'),
 });
 
 export type CreateMessageInput = z.infer<typeof createMessageSchema>;

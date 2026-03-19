@@ -15,6 +15,13 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
+import {
   ArrowLeft,
   Edit,
   Trash,
@@ -344,7 +351,7 @@ export function ProjectDetail({ project, contracts }: ProjectDetailProps) {
 
         <TabsContent value="messages">
           {currentUserId ? (
-            <MessageThread projectId={project.id} currentUserId={currentUserId} />
+            <MessagesWithChannel projectId={project.id} currentUserId={currentUserId} />
           ) : (
             <EmptyState icon={MessageSquare} title={tc('loading')} description={tc('pleaseWait')} />
           )}
@@ -364,6 +371,40 @@ export function ProjectDetail({ project, contracts }: ProjectDetailProps) {
         onConfirm={handleDelete}
         destructive
         loading={isDeleting}
+      />
+    </div>
+  );
+}
+
+function MessagesWithChannel({
+  projectId,
+  currentUserId,
+}: {
+  projectId: string;
+  currentUserId: string;
+}) {
+  const tm = useTranslations('messages');
+  const [channel, setChannel] = useState<'client' | 'team'>('client');
+
+  return (
+    <div className="space-y-4">
+      <div className="flex items-center gap-2">
+        <span className="text-sm text-muted-foreground">{tm('conversationWith')}:</span>
+        <Select value={channel} onValueChange={(v) => setChannel(v as 'client' | 'team')}>
+          <SelectTrigger className="w-[180px]">
+            <SelectValue />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="client">{tm('clientChannel')}</SelectItem>
+            <SelectItem value="team">{tm('teamChannel')}</SelectItem>
+          </SelectContent>
+        </Select>
+      </div>
+      <MessageThread
+        key={channel}
+        projectId={projectId}
+        currentUserId={currentUserId}
+        channel={channel}
       />
     </div>
   );

@@ -15,6 +15,7 @@ import { useTranslations } from 'next-intl';
 interface MessageThreadProps {
   projectId: string;
   currentUserId: string;
+  channel?: 'client' | 'team';
   className?: string;
 }
 
@@ -33,7 +34,12 @@ interface Message {
   };
 }
 
-export function MessageThread({ projectId, currentUserId, className }: MessageThreadProps) {
+export function MessageThread({
+  projectId,
+  currentUserId,
+  channel = 'client',
+  className,
+}: MessageThreadProps) {
   const t = useTranslations('messages');
   const [initialMessages, setInitialMessages] = useState<Message[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -50,7 +56,7 @@ export function MessageThread({ projectId, currentUserId, className }: MessageTh
       setIsLoading(true);
       setError(null);
 
-      const result = await getMessagesByProject(projectId);
+      const result = await getMessagesByProject(projectId, channel);
 
       if (result.error) {
         setError(result.error);
@@ -164,6 +170,7 @@ export function MessageThread({ projectId, currentUserId, className }: MessageTh
       {/* Input Area */}
       <MessageInput
         projectId={projectId}
+        channel={channel}
         onMessageSent={handleMessageSent}
         className="flex-shrink-0"
       />

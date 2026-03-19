@@ -12,7 +12,10 @@ import {
 } from '@/lib/actions/notifications';
 import { NOTIFICATION_TYPES } from '@/lib/notification-types';
 
-export async function getMessagesByProject(projectId: string): Promise<ActionResult<Message[]>> {
+export async function getMessagesByProject(
+  projectId: string,
+  channel: 'client' | 'team' = 'client',
+): Promise<ActionResult<Message[]>> {
   try {
     const supabase = await createClient();
     const {
@@ -22,9 +25,10 @@ export async function getMessagesByProject(projectId: string): Promise<ActionRes
     const { data, error } = await supabase
       .from('messages')
       .select(
-        'id, project_id, sender_id, content, attachments, read_by, created_at, sender:user_profiles!messages_sender_id_user_profiles_fkey(id, display_name, avatar_url)',
+        'id, project_id, sender_id, content, attachments, read_by, channel, created_at, sender:user_profiles!messages_sender_id_user_profiles_fkey(id, display_name, avatar_url)',
       )
       .eq('project_id', projectId)
+      .eq('channel', channel)
       .order('created_at', { ascending: true });
 
     if (error) return { data: null, error: error.message };
@@ -51,7 +55,7 @@ export async function createMessage(input: unknown): Promise<ActionResult<Messag
         sender_id: user.id,
       })
       .select(
-        'id, project_id, sender_id, content, attachments, read_by, created_at, sender:user_profiles!messages_sender_id_user_profiles_fkey(id, display_name, avatar_url)',
+        'id, project_id, sender_id, content, attachments, read_by, channel, created_at, sender:user_profiles!messages_sender_id_user_profiles_fkey(id, display_name, avatar_url)',
       )
       .single();
 
