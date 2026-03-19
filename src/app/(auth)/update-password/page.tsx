@@ -20,6 +20,7 @@ type UpdatePasswordInput = z.infer<typeof updatePasswordSchema>;
 export default function UpdatePasswordPage() {
   const router = useRouter();
   const t = useTranslations('auth');
+  const tc = useTranslations('common');
   const [isLoading, setIsLoading] = useState(false);
   const [hasSession, setHasSession] = useState(false);
   const [isChecking, setIsChecking] = useState(true);
@@ -31,9 +32,9 @@ export default function UpdatePasswordPage() {
       if (!user) {
         toast.error(t('sessionExpired'));
         router.replace('/forgot-password');
-        return;
+      } else {
+        setHasSession(true);
       }
-      setHasSession(true);
       setIsChecking(false);
     });
   }, [router, t]);
@@ -96,7 +97,7 @@ export default function UpdatePasswordPage() {
     return (
       <Card>
         <CardContent className="py-12">
-          <p className="text-center text-sm text-muted-foreground">{t('loading') ?? '...'}</p>
+          <p className="text-center text-sm text-muted-foreground">{tc('loading')}</p>
         </CardContent>
       </Card>
     );
