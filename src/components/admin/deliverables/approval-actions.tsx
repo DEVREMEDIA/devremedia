@@ -28,7 +28,7 @@ type Deliverable = {
   file_path: string;
   file_size: number | null;
   file_type: string | null;
-  version_number: number;
+  version: number;
   status: DeliverableStatus;
   download_count: number;
   expires_at: string | null;

@@ -32,7 +32,7 @@ type Deliverable = {
   file_path: string;
   file_size: number | null;
   file_type: string | null;
-  version_number: number;
+  version: number;
   status: DeliverableStatus;
   download_count: number;
   expires_at: string | null;
@@ -162,7 +162,7 @@ export function DeliverableDetail({ deliverable, projectId, onBack }: Deliverabl
           </Button>
           <div>
             <h2 className="text-2xl font-bold">{deliverable.title}</h2>
-            <p className="text-sm text-muted-foreground">Version {deliverable.version_number}</p>
+            <p className="text-sm text-muted-foreground">Version {deliverable.version}</p>
           </div>
         </div>
         <Button variant="outline" onClick={handleDownload}>
