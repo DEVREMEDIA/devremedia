@@ -138,23 +138,46 @@ async function ocrFallback(buffer: Buffer): Promise<string> {
     const Tesseract = await import('tesseract.js');
 
     const doc = await pdfjsLib.getDocument({ data: new Uint8Array(buffer) }).promise;
-    const worker = await Tesseract.createWorker('ell+eng');
+
+    // Init tesseract — try ell+eng, fallback to eng only
+    let worker;
+    try {
+      worker = await Tesseract.createWorker('ell+eng');
+    } catch {
+      console.warn('Failed to load ell+eng, trying eng only...');
+      worker = await Tesseract.createWorker('eng');
+    }
+
     const textParts: string[] = [];
 
     for (let i = 1; i <= doc.numPages; i++) {
-      const page = await doc.getPage(i);
-      const viewport = page.getViewport({ scale: 2.0 });
-      const canvas = createCanvas(viewport.width, viewport.height);
-      const ctx = canvas.getContext('2d');
+      try {
+        const page = await doc.getPage(i);
+        const viewport = page.getViewport({ scale: 2.0 });
+        const canvas = createCanvas(viewport.width, viewport.height);
+        const ctx = canvas.getContext('2d');
 
-      await page.render({ canvasContext: ctx as unknown as CanvasRenderingContext2D, viewport })
-        .promise;
+        // Render page — catch errors from inline images (node-canvas limitation)
+        // Text content may already be on canvas before image errors occur
+        try {
+          await page.render({
+            canvasContext: ctx as unknown as CanvasRenderingContext2D,
+            viewport,
+          }).promise;
+        } catch (renderErr) {
+          console.warn(`Page ${i} render partial failure (continuing with partial content)`);
+        }
 
-      const pngBuffer = canvas.toBuffer('image/png');
-      const {
-        data: { text },
-      } = await worker.recognize(pngBuffer);
-      textParts.push(text);
+        const pngBuffer = canvas.toBuffer('image/png');
+        const {
+          data: { text },
+        } = await worker.recognize(pngBuffer);
+        if (text.trim().length > 0) {
+          textParts.push(text);
+        }
+      } catch (pageErr) {
+        console.warn(`Failed to process page ${i}:`, pageErr);
+      }
     }
 
     await worker.terminate();
