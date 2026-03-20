@@ -65,6 +65,7 @@ export const CONTRACT_STATUSES = [
   'draft',
   'sent',
   'viewed',
+  'pending_review',
   'signed',
   'expired',
   'cancelled',

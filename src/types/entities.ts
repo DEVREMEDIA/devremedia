@@ -180,6 +180,10 @@ export type Contract = {
   service_type: string | null;
   agreed_amount: number | null;
   payment_method: string | null;
+  scope_description: string | null;
+  special_terms: string | null;
+  signed_pdf_path: string | null;
+  locale: string;
   created_by: string;
   created_at: string;
 };

@@ -12,6 +12,8 @@ export const createContractSchema = z.object({
   agreed_amount: z.number().positive('Amount must be a positive number'),
   payment_method: z.enum(['bank_transfer', 'cash', 'card', 'installments']),
   expires_at: z.string().date('Invalid date format').optional(),
+  scope_description: z.string().optional(),
+  special_terms: z.string().optional(),
 });
 
 export type CreateContractInput = z.infer<typeof createContractSchema>;
@@ -53,14 +55,13 @@ export const contractResponseSchema = z.object({
 export type ContractResponse = z.infer<typeof contractResponseSchema>;
 
 /**
- * Sign contract schema validation
+ * Upload signed PDF schema validation
  */
-export const signContractSchema = z.object({
-  signature_image: z
-    .string()
-    .min(1, 'Signature is required')
-    .max(500000, 'Signature data is too large')
-    .refine((val) => val.startsWith('data:image/'), 'Signature must be a base64 image'),
+export const uploadSignedSchema = z.object({
+  file: z
+    .instanceof(File)
+    .refine((f) => f.type === 'application/pdf', 'Only PDF files are accepted')
+    .refine((f) => f.size <= 10 * 1024 * 1024, 'File too large (max 10 MB)'),
 });
 
-export type SignContractInput = z.infer<typeof signContractSchema>;
+export type UploadSignedInput = z.infer<typeof uploadSignedSchema>;

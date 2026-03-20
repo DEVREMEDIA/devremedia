@@ -62,6 +62,7 @@ export const CONTRACT_STATUS_LABELS: Record<ContractStatus, string> = {
   draft: 'Draft',
   sent: 'Sent',
   viewed: 'Viewed',
+  pending_review: 'Pending Review',
   signed: 'Signed',
   expired: 'Expired',
   cancelled: 'Cancelled',
