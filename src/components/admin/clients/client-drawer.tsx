@@ -1,9 +1,10 @@
 'use client';
 
+import { useState } from 'react';
 import { useTranslations } from 'next-intl';
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from '@/components/ui/sheet';
 import { ProjectForm } from '@/components/admin/projects/project-form';
-import { InvoiceForm } from '@/components/admin/invoices/invoice-form';
+import { InvoiceUploadForm } from '@/components/admin/invoices/invoice-upload-form';
 import type { ClientDrawerMode } from '@/types/relations';
 import type { Client } from '@/types/index';
 
@@ -22,15 +23,27 @@ const DRAWER_TITLES: Record<ClientDrawerMode['type'], string> = {
 
 export function ClientDrawer({ open, onOpenChange, mode, client, onSuccess }: ClientDrawerProps) {
   const t = useTranslations('clients');
+  const [uploadStep, setUploadStep] = useState<'upload' | 'review'>('upload');
+
+  const handleOpenChange = (open: boolean) => {
+    if (!open) setUploadStep('upload');
+    onOpenChange(open);
+  };
 
   const handleSuccess = () => {
-    onOpenChange(false);
+    handleOpenChange(false);
     onSuccess();
   };
 
   return (
-    <Sheet open={open} onOpenChange={onOpenChange}>
-      <SheetContent className="w-full sm:max-w-lg overflow-y-auto">
+    <Sheet open={open} onOpenChange={handleOpenChange}>
+      <SheetContent
+        className={`w-full overflow-y-auto ${
+          mode?.type === 'create-invoice' && uploadStep === 'review'
+            ? 'sm:max-w-5xl'
+            : 'sm:max-w-lg'
+        }`}
+      >
         <SheetHeader>
           <SheetTitle>{mode ? t(DRAWER_TITLES[mode.type]) : ''}</SheetTitle>
         </SheetHeader>
@@ -39,17 +52,12 @@ export function ClientDrawer({ open, onOpenChange, mode, client, onSuccess }: Cl
             <ProjectForm clients={[client]} onSuccess={handleSuccess} />
           )}
           {mode?.type === 'create-invoice' && (
-            <InvoiceForm
-              clients={[
-                {
-                  id: client.id,
-                  company_name: client.company_name,
-                  contact_name: client.contact_name,
-                },
-              ]}
+            <InvoiceUploadForm
+              clientId={client.id}
               projects={mode.projects}
               nextInvoiceNumber={mode.nextInvoiceNumber}
               onSuccess={handleSuccess}
+              onStepChange={setUploadStep}
             />
           )}
         </div>
