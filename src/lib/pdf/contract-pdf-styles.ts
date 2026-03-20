@@ -1,70 +1,82 @@
-import { StyleSheet } from '@react-pdf/renderer';
+import path from 'path';
+import { Font, StyleSheet } from '@react-pdf/renderer';
+
+// Register Noto Sans for Greek character support
+Font.register({
+  family: 'NotoSans',
+  fonts: [
+    {
+      src: path.join(process.cwd(), 'public', 'fonts', 'NotoSans-Regular.ttf'),
+      fontWeight: 'normal',
+    },
+    {
+      src: path.join(process.cwd(), 'public', 'fonts', 'NotoSans-Bold.ttf'),
+      fontWeight: 'bold',
+    },
+  ],
+});
 
 // Brand palette
 export const C = {
-  primary: '#0f172a',
-  accent: '#2563eb',
-  accentDim: '#3b82f6',
-  muted: '#64748b',
-  mutedLight: '#94a3b8',
-  border: '#e2e8f0',
-  surface: '#f8fafc',
+  dark: '#09090b',
+  darkCard: '#18181b',
+  darkBorder: '#27272a',
+  gold: '#d4a843',
+  goldDark: '#b8942e',
   white: '#ffffff',
-  text: '#1e293b',
-  green: '#16a34a',
+  surface: '#fafafa',
+  muted: '#71717a',
+  mutedLight: '#a1a1aa',
+  text: '#09090b',
+  border: '#e4e4e7',
 };
 
 export const contractStyles = StyleSheet.create({
+  // Page
   page: {
     paddingTop: 0,
     paddingBottom: 70,
     paddingHorizontal: 0,
     fontSize: 10,
-    fontFamily: 'Helvetica',
+    fontFamily: 'NotoSans',
     backgroundColor: C.white,
     color: C.text,
   },
 
-  // Header
+  // Header — dark bg, flex row
   header: {
-    backgroundColor: C.primary,
+    backgroundColor: C.dark,
     paddingHorizontal: 48,
     paddingTop: 28,
     paddingBottom: 28,
     flexDirection: 'row',
     justifyContent: 'space-between',
-    alignItems: 'flex-end',
+    alignItems: 'center',
   },
-  companyName: {
-    fontSize: 20,
-    fontFamily: 'Helvetica-Bold',
-    color: C.white,
-    letterSpacing: 3,
-  },
-  companyTagline: {
-    fontSize: 8,
-    color: '#93c5fd',
-    marginTop: 3,
-    letterSpacing: 1.5,
+  headerLogo: {
+    width: 120,
+    height: 45,
   },
   headerRight: {
     alignItems: 'flex-end',
   },
-  docType: {
+  headerTitle: {
     fontSize: 9,
-    color: '#93c5fd',
+    fontFamily: 'NotoSans',
+    fontWeight: 'bold',
+    color: C.gold,
     letterSpacing: 2,
-    fontFamily: 'Helvetica-Bold',
   },
   contractRef: {
     fontSize: 8,
+    fontFamily: 'NotoSans',
     color: C.mutedLight,
     marginTop: 4,
   },
 
-  // Accent stripe
+  // Gold accent stripe
   stripe: {
-    backgroundColor: C.accent,
+    backgroundColor: C.gold,
     height: 3,
   },
 
@@ -72,6 +84,7 @@ export const contractStyles = StyleSheet.create({
   body: {
     paddingHorizontal: 48,
     paddingTop: 28,
+    backgroundColor: C.white,
   },
 
   // Date row
@@ -82,22 +95,26 @@ export const contractStyles = StyleSheet.create({
   },
   dateLabel: {
     fontSize: 8,
+    fontFamily: 'NotoSans',
     color: C.muted,
     letterSpacing: 0.5,
   },
   dateValue: {
     fontSize: 9,
+    fontFamily: 'NotoSans',
+    fontWeight: 'bold',
     color: C.text,
-    fontFamily: 'Helvetica-Bold',
   },
 
-  // Section title
+  // Section title — gold, uppercase, letter-spacing
   sectionTitle: {
     fontSize: 7.5,
-    fontFamily: 'Helvetica-Bold',
-    color: C.accent,
+    fontFamily: 'NotoSans',
+    fontWeight: 'bold',
+    color: C.gold,
     letterSpacing: 2,
     marginBottom: 10,
+    textTransform: 'uppercase',
   },
 
   // Parties grid
@@ -112,22 +129,33 @@ export const contractStyles = StyleSheet.create({
     borderRadius: 4,
     padding: 14,
     borderLeftWidth: 3,
-    borderLeftColor: C.accent,
+    borderLeftColor: C.gold,
+  },
+  partyCardClient: {
+    flex: 1,
+    backgroundColor: C.surface,
+    borderRadius: 4,
+    padding: 14,
+    borderLeftWidth: 3,
+    borderLeftColor: C.darkBorder,
   },
   partyRole: {
     fontSize: 7,
+    fontFamily: 'NotoSans',
     color: C.muted,
     letterSpacing: 1.5,
     marginBottom: 5,
   },
   partyName: {
     fontSize: 13,
-    fontFamily: 'Helvetica-Bold',
-    color: C.primary,
+    fontFamily: 'NotoSans',
+    fontWeight: 'bold',
+    color: C.dark,
     marginBottom: 2,
   },
   partyDetail: {
     fontSize: 8.5,
+    fontFamily: 'NotoSans',
     color: C.muted,
   },
 
@@ -142,9 +170,10 @@ export const contractStyles = StyleSheet.create({
   },
   scopeText: {
     fontSize: 11,
-    color: C.primary,
+    fontFamily: 'NotoSans',
+    fontWeight: 'bold',
+    color: C.dark,
     lineHeight: 1.6,
-    fontFamily: 'Helvetica-Bold',
   },
 
   // Financial cards
@@ -162,19 +191,22 @@ export const contractStyles = StyleSheet.create({
   },
   financialLabel: {
     fontSize: 7,
+    fontFamily: 'NotoSans',
     color: C.muted,
     letterSpacing: 1.5,
     marginBottom: 6,
   },
   financialValueLarge: {
     fontSize: 18,
-    fontFamily: 'Helvetica-Bold',
-    color: C.primary,
+    fontFamily: 'NotoSans',
+    fontWeight: 'bold',
+    color: C.dark,
   },
   financialValueMed: {
     fontSize: 12,
-    fontFamily: 'Helvetica-Bold',
-    color: C.primary,
+    fontFamily: 'NotoSans',
+    fontWeight: 'bold',
+    color: C.dark,
   },
 
   // Terms
@@ -188,13 +220,15 @@ export const contractStyles = StyleSheet.create({
   },
   termNum: {
     fontSize: 8.5,
-    color: C.accent,
-    fontFamily: 'Helvetica-Bold',
+    fontFamily: 'NotoSans',
+    fontWeight: 'bold',
+    color: C.gold,
     width: 14,
     flexShrink: 0,
   },
   termText: {
     fontSize: 8.5,
+    fontFamily: 'NotoSans',
     color: C.text,
     lineHeight: 1.55,
     flex: 1,
@@ -218,6 +252,7 @@ export const contractStyles = StyleSheet.create({
   },
   sigLabel: {
     fontSize: 7,
+    fontFamily: 'NotoSans',
     color: C.muted,
     letterSpacing: 1.5,
     marginBottom: 8,
@@ -235,22 +270,24 @@ export const contractStyles = StyleSheet.create({
   },
   sigName: {
     fontSize: 9,
-    fontFamily: 'Helvetica-Bold',
+    fontFamily: 'NotoSans',
+    fontWeight: 'bold',
     color: C.text,
   },
   sigDate: {
     fontSize: 7.5,
+    fontFamily: 'NotoSans',
     color: C.muted,
     marginTop: 2,
   },
 
-  // Footer
+  // Footer — dark bg, absolute bottom
   footer: {
     position: 'absolute',
     bottom: 0,
     left: 0,
     right: 0,
-    backgroundColor: C.primary,
+    backgroundColor: C.dark,
     paddingHorizontal: 48,
     paddingVertical: 12,
     flexDirection: 'row',
@@ -259,16 +296,7 @@ export const contractStyles = StyleSheet.create({
   },
   footerText: {
     fontSize: 7.5,
-    color: '#475569',
+    fontFamily: 'NotoSans',
+    color: C.mutedLight,
   },
 });
-
-export const CONTRACT_TERMS = [
-  'The service provider agrees to deliver the services described above within the agreed timeline.',
-  'Payment is due according to the agreed payment terms. Late payments may incur additional fees.',
-  'Client revision requests must be communicated within 7 days of final delivery.',
-  'Upon receipt of full payment, the Client receives a license to use the final deliverables for their intended purpose. Provider retains the right to use the work in their portfolio unless otherwise agreed in writing.',
-  'Either party may cancel with written notice. Advance payments are non-refundable unless otherwise agreed.',
-  "Provider's liability is limited to the total amount paid under this Agreement.",
-  'This Agreement constitutes the entire understanding between the parties and supersedes all prior negotiations, representations, or agreements.',
-];

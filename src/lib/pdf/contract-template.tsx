@@ -1,14 +1,17 @@
 import React from 'react';
 import { Document, Page, Text, View, Image } from '@react-pdf/renderer';
 import { format } from 'date-fns';
+
 import { PAYMENT_METHOD_LABELS } from '@/lib/constants';
-import { C, contractStyles as styles, CONTRACT_TERMS } from './contract-pdf-styles';
+import { PDF_TRANSLATIONS } from './contract-pdf-i18n';
+import { C, contractStyles as styles } from './contract-pdf-styles';
+
+import type { PdfLocale } from './contract-pdf-i18n';
 
 export interface ContractPDFTemplateProps {
   contract: {
     id: string;
     title: string;
-    content: string;
     created_at: string;
     signed_at?: string | null;
     signature_image?: string | null;
@@ -18,16 +21,45 @@ export interface ContractPDFTemplateProps {
     agreed_amount?: number | null;
     payment_method?: string | null;
     expires_at?: string | null;
+    scope_description?: string | null;
+    special_terms?: string | null;
   };
   clientName?: string;
   projectTitle?: string;
+  locale?: PdfLocale;
+  logoBase64?: string;
+  provider?: {
+    companyName: string;
+    vatNumber: string;
+    taxOffice: string;
+    address: string;
+  };
+}
+
+const DEFAULT_PROVIDER = {
+  companyName: 'Devre Media',
+  vatNumber: '—',
+  taxOffice: '—',
+  address: '—',
+};
+
+function formatAmount(amount: number): string {
+  return `\u20AC${amount.toLocaleString('en-US', {
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2,
+  })}`;
 }
 
 export function ContractPDFTemplate({
   contract,
   clientName,
   projectTitle,
+  locale = 'el',
+  logoBase64,
+  provider = DEFAULT_PROVIDER,
 }: ContractPDFTemplateProps) {
+  const t = PDF_TRANSLATIONS[locale];
+
   const signatureImage =
     contract.signature_image ??
     (contract.signature_data?.['signature_image'] as string | undefined);
@@ -37,34 +69,31 @@ export function ContractPDFTemplate({
 
   const paymentLabel = contract.payment_method
     ? (PAYMENT_METHOD_LABELS[contract.payment_method] ?? contract.payment_method)
-    : '—';
+    : '\u2014';
 
   const amountFormatted =
-    contract.agreed_amount != null
-      ? `€${contract.agreed_amount.toLocaleString('en-US', {
-          minimumFractionDigits: 2,
-          maximumFractionDigits: 2,
-        })}`
-      : '—';
+    contract.agreed_amount != null ? formatAmount(contract.agreed_amount) : '\u2014';
 
-  const scopeText = contract.service_type || contract.title;
+  const scopeText = contract.scope_description || contract.service_type || contract.title;
 
   return (
     <Document>
       <Page size="A4" style={styles.page}>
-        {/* Header */}
+        {/* Dark header */}
         <View style={styles.header}>
-          <View>
-            <Text style={styles.companyName}>DEVRE MEDIA</Text>
-            <Text style={styles.companyTagline}>VIDEOGRAPHY & PRODUCTION</Text>
-          </View>
+          {logoBase64 ? (
+            // eslint-disable-next-line jsx-a11y/alt-text
+            <Image src={logoBase64} style={styles.headerLogo} />
+          ) : (
+            <View style={styles.headerLogo} />
+          )}
           <View style={styles.headerRight}>
-            <Text style={styles.docType}>SERVICE AGREEMENT</Text>
+            <Text style={styles.headerTitle}>{t.serviceAgreement}</Text>
             <Text style={styles.contractRef}>{contractRef}</Text>
           </View>
         </View>
 
-        {/* Accent stripe */}
+        {/* Gold stripe */}
         <View style={styles.stripe} />
 
         {/* Body */}
@@ -72,12 +101,12 @@ export function ContractPDFTemplate({
           {/* Date row */}
           <View style={styles.dateRow}>
             <View>
-              <Text style={styles.dateLabel}>AGREEMENT DATE</Text>
+              <Text style={styles.dateLabel}>{t.agreementDate}</Text>
               <Text style={styles.dateValue}>{createdDate}</Text>
             </View>
             {contract.expires_at && (
-              <View style={{ alignItems: 'flex-end' }}>
-                <Text style={styles.dateLabel}>SIGNATURE DEADLINE</Text>
+              <View style={{ alignItems: 'flex-end' as const }}>
+                <Text style={styles.dateLabel}>{t.signatureDeadline}</Text>
                 <Text style={styles.dateValue}>
                   {format(new Date(contract.expires_at), 'MMMM d, yyyy')}
                 </Text>
@@ -86,43 +115,56 @@ export function ContractPDFTemplate({
           </View>
 
           {/* Parties */}
-          <Text style={styles.sectionTitle}>PARTIES</Text>
+          <Text style={styles.sectionTitle}>{t.parties}</Text>
           <View style={styles.partiesRow}>
             <View style={styles.partyCard}>
-              <Text style={styles.partyRole}>SERVICE PROVIDER</Text>
-              <Text style={styles.partyName}>Devre Media</Text>
-              <Text style={styles.partyDetail}>Videography & Production</Text>
+              <Text style={styles.partyRole}>{t.provider}</Text>
+              <Text style={styles.partyName}>{provider.companyName}</Text>
+              <Text style={styles.partyDetail}>
+                {t.vatNumber}: {provider.vatNumber} {'\u00B7'} {t.taxOffice}: {provider.taxOffice}
+              </Text>
+              <Text style={styles.partyDetail}>{provider.address}</Text>
             </View>
-            <View style={styles.partyCard}>
-              <Text style={styles.partyRole}>CLIENT</Text>
-              <Text style={styles.partyName}>{clientName || '—'}</Text>
+            <View style={styles.partyCardClient}>
+              <Text style={styles.partyRole}>{t.client}</Text>
+              <Text style={styles.partyName}>{clientName || '\u2014'}</Text>
               {projectTitle ? <Text style={styles.partyDetail}>{projectTitle}</Text> : null}
             </View>
           </View>
 
           {/* Scope */}
-          <Text style={styles.sectionTitle}>SCOPE OF SERVICES</Text>
+          <Text style={styles.sectionTitle}>{t.scopeOfServices}</Text>
           <View style={styles.scopeBox}>
             <Text style={styles.scopeText}>{scopeText}</Text>
           </View>
 
           {/* Financial Terms */}
-          <Text style={styles.sectionTitle}>FINANCIAL TERMS</Text>
+          <Text style={styles.sectionTitle}>{t.financialTerms}</Text>
           <View style={styles.financialRow}>
-            <View style={[styles.financialCard, { borderTopColor: C.accent }]}>
-              <Text style={styles.financialLabel}>TOTAL AMOUNT</Text>
+            <View style={[styles.financialCard, { borderTopColor: C.gold }]}>
+              <Text style={styles.financialLabel}>{t.totalAmount}</Text>
               <Text style={styles.financialValueLarge}>{amountFormatted}</Text>
             </View>
-            <View style={[styles.financialCard, { borderTopColor: C.mutedLight }]}>
-              <Text style={styles.financialLabel}>PAYMENT METHOD</Text>
+            <View style={[styles.financialCard, { borderTopColor: C.dark }]}>
+              <Text style={styles.financialLabel}>{t.paymentMethod}</Text>
               <Text style={styles.financialValueMed}>{paymentLabel}</Text>
             </View>
           </View>
 
-          {/* Terms */}
-          <Text style={styles.sectionTitle}>TERMS & CONDITIONS</Text>
+          {/* Special Terms — only if non-empty */}
+          {contract.special_terms ? (
+            <>
+              <Text style={styles.sectionTitle}>{t.specialTerms}</Text>
+              <View style={styles.scopeBox}>
+                <Text style={styles.termText}>{contract.special_terms}</Text>
+              </View>
+            </>
+          ) : null}
+
+          {/* General Terms */}
+          <Text style={styles.sectionTitle}>{t.generalTerms}</Text>
           <View style={styles.termsList}>
-            {CONTRACT_TERMS.map((term, i) => (
+            {t.terms.map((term, i) => (
               <View key={i} style={styles.termRow}>
                 <Text style={styles.termNum}>{i + 1}.</Text>
                 <Text style={styles.termText}>{term}</Text>
@@ -133,38 +175,43 @@ export function ContractPDFTemplate({
           <View style={styles.divider} />
 
           {/* Signatures */}
-          <Text style={styles.sectionTitle}>SIGNATURES</Text>
-          <View style={styles.signaturesRow}>
+          <Text style={styles.sectionTitle}>{t.signatures}</Text>
+          <View style={styles.signaturesRow} wrap={false}>
             {/* Client */}
             <View style={styles.sigBlock}>
-              <Text style={styles.sigLabel}>CLIENT</Text>
+              <Text style={styles.sigLabel}>{t.client}</Text>
               {contract.status === 'signed' && signatureImage ? (
                 // eslint-disable-next-line jsx-a11y/alt-text
                 <Image src={signatureImage} style={styles.sigImage} />
               ) : (
                 <View style={styles.sigLine} />
               )}
-              <Text style={styles.sigName}>{clientName || '—'}</Text>
+              <Text style={styles.sigName}>{clientName || '\u2014'}</Text>
               {contract.signed_at && (
                 <Text style={styles.sigDate}>
-                  Signed: {format(new Date(contract.signed_at), 'MMM d, yyyy')}
+                  {format(new Date(contract.signed_at), 'MMM d, yyyy')}
                 </Text>
               )}
             </View>
 
             {/* Provider */}
             <View style={styles.sigBlock}>
-              <Text style={styles.sigLabel}>SERVICE PROVIDER</Text>
+              <Text style={styles.sigLabel}>{t.provider}</Text>
               <View style={styles.sigLine} />
-              <Text style={styles.sigName}>Devre Media</Text>
+              <Text style={styles.sigName}>{provider.companyName}</Text>
             </View>
           </View>
         </View>
 
-        {/* Footer */}
+        {/* Footer — fixed, dark bg, page numbers */}
         <View style={styles.footer} fixed>
-          <Text style={styles.footerText}>Legally binding document · {contractRef}</Text>
-          <Text style={styles.footerText}>devre.media</Text>
+          <Text
+            style={styles.footerText}
+            render={({ pageNumber, totalPages }: { pageNumber: number; totalPages: number }) =>
+              `${t.legallyBinding} \u00B7 ${contractRef}    ${t.page} ${pageNumber}/${totalPages}`
+            }
+          />
+          <Text style={styles.footerText}>devremedia.com</Text>
         </View>
       </Page>
     </Document>
