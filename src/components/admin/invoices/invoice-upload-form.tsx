@@ -11,7 +11,7 @@ import { FileUploadDropzone } from '@/components/shared/file-upload-dropzone';
 import { InvoiceReviewLayout } from '@/components/admin/invoices/invoice-review-layout';
 import { createInvoice } from '@/lib/actions/invoices';
 import { createClient } from '@/lib/supabase/client';
-import type { ParsedInvoice } from '@/lib/invoice-parser';
+import { parseInvoiceClientSide } from '@/lib/pdf-ocr-client';
 
 interface InvoiceUploadFormProps {
   clientId: string;
@@ -81,20 +81,8 @@ export function InvoiceUploadForm({
     setIsParsing(true);
 
     try {
-      const formData = new FormData();
-      formData.append('file', pdf);
-
-      const response = await fetch('/api/invoices/parse', {
-        method: 'POST',
-        body: formData,
-      });
-
-      if (!response.ok) {
-        const err = await response.json();
-        throw new Error(err.error ?? 'Parse failed');
-      }
-
-      const parsed: ParsedInvoice = await response.json();
+      // Parse PDF entirely in the browser (pdfjs-dist + tesseract.js WASM)
+      const parsed = await parseInvoiceClientSide(pdf);
       const issueDate = parsed.date ?? new Date().toISOString().slice(0, 10);
 
       form.reset({
