@@ -7,6 +7,7 @@ import { format, isPast } from 'date-fns';
 import { toast } from 'sonner';
 import { Receipt, Plus, MoreHorizontal, Eye, Pencil, FileDown, CheckCircle } from 'lucide-react';
 
+import { createClient } from '@/lib/supabase/client';
 import { getInvoices, getNextInvoiceNumber, updateInvoiceStatus } from '@/lib/actions/invoices';
 import { getProjects } from '@/lib/actions/projects';
 import type { InvoiceWithRelations, ClientDrawerMode } from '@/types/relations';
@@ -209,6 +210,16 @@ interface InvoiceActionsProps {
 function InvoiceActions({ invoice, onMarkAsPaid }: InvoiceActionsProps) {
   const canMarkAsPaid = invoice.status !== 'paid' && invoice.status !== 'cancelled';
 
+  const handleDownloadOriginal = async () => {
+    const supabase = createClient();
+    const { data } = await supabase.storage
+      .from('invoices')
+      .createSignedUrl(invoice.file_path!, 3600);
+    if (data?.signedUrl) {
+      window.open(data.signedUrl, '_blank');
+    }
+  };
+
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
@@ -236,6 +247,12 @@ function InvoiceActions({ invoice, onMarkAsPaid }: InvoiceActionsProps) {
             Download PDF
           </a>
         </DropdownMenuItem>
+        {invoice.file_path && (
+          <DropdownMenuItem onClick={handleDownloadOriginal}>
+            <FileDown className="mr-2 h-4 w-4" />
+            Download Original
+          </DropdownMenuItem>
+        )}
         {canMarkAsPaid && (
           <>
             <DropdownMenuSeparator />
