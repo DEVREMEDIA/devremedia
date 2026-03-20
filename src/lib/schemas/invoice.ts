@@ -27,6 +27,7 @@ export const createInvoiceSchema = z.object({
   notes: z.string().max(2000, 'Notes must be at most 2000 characters').optional(),
   tax_rate: z.number().default(DEFAULT_TAX_RATE),
   currency: z.string().max(10, 'Currency must be at most 10 characters').default(DEFAULT_CURRENCY),
+  file_path: z.string().nullable().optional(),
 });
 
 export type CreateInvoiceInput = z.infer<typeof createInvoiceSchema>;

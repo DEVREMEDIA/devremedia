@@ -129,6 +129,7 @@ export type Invoice = {
   sent_at: string | null;
   viewed_at: string | null;
   paid_at: string | null;
+  file_path: string | null;
   created_by: string;
   created_at: string;
   updated_at: string;
