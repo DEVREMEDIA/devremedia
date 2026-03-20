@@ -76,7 +76,7 @@ Return null for any field you cannot find.`,
             },
             {
               type: 'image',
-              image: `data:image/png;base64,${image}`,
+              image: Buffer.from(image, 'base64'),
             },
           ],
         },
