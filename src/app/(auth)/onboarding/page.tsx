@@ -7,6 +7,8 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { toast } from 'sonner';
 import { useTranslations } from 'next-intl';
 
+import { Eye, EyeOff } from 'lucide-react';
+
 import { onboardingSchema } from '@/lib/schemas/auth';
 import { completeOnboarding } from '@/lib/actions/auth';
 import { Button } from '@/components/ui/button';
@@ -28,6 +30,8 @@ export default function OnboardingPage() {
   const router = useRouter();
   const t = useTranslations('auth');
   const [isLoading, setIsLoading] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
   const {
     register,
@@ -82,13 +86,24 @@ export default function OnboardingPage() {
 
           <div className="space-y-2">
             <Label htmlFor="password">{t('setPassword')}</Label>
-            <Input
-              id="password"
-              type="password"
-              placeholder={t('enterNewPassword')}
-              autoComplete="new-password"
-              {...register('password')}
-            />
+            <div className="relative">
+              <Input
+                id="password"
+                type={showPassword ? 'text' : 'password'}
+                placeholder={t('enterNewPassword')}
+                autoComplete="new-password"
+                className="pr-10"
+                {...register('password')}
+              />
+              <button
+                type="button"
+                onClick={() => setShowPassword(!showPassword)}
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+                tabIndex={-1}
+              >
+                {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+              </button>
+            </div>
             {errors.password && (
               <p className="text-sm text-destructive">{errors.password.message}</p>
             )}
@@ -96,13 +111,24 @@ export default function OnboardingPage() {
 
           <div className="space-y-2">
             <Label htmlFor="confirmPassword">{t('confirmPassword')}</Label>
-            <Input
-              id="confirmPassword"
-              type="password"
-              placeholder={t('confirmNewPassword')}
-              autoComplete="new-password"
-              {...register('confirmPassword')}
-            />
+            <div className="relative">
+              <Input
+                id="confirmPassword"
+                type={showConfirmPassword ? 'text' : 'password'}
+                placeholder={t('confirmNewPassword')}
+                autoComplete="new-password"
+                className="pr-10"
+                {...register('confirmPassword')}
+              />
+              <button
+                type="button"
+                onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+                tabIndex={-1}
+              >
+                {showConfirmPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+              </button>
+            </div>
             {errors.confirmPassword && (
               <p className="text-sm text-destructive">{errors.confirmPassword.message}</p>
             )}

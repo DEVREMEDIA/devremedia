@@ -35,56 +35,56 @@ export const contractStyles = StyleSheet.create({
   // Page
   page: {
     paddingTop: 0,
-    paddingBottom: 70,
+    paddingBottom: 50,
     paddingHorizontal: 0,
-    fontSize: 10,
+    fontSize: 9,
     fontFamily: 'NotoSans',
     backgroundColor: C.white,
     color: C.text,
   },
 
-  // Header — dark bg, flex row
+  // Header — dark bg, compact
   header: {
     backgroundColor: C.dark,
-    paddingHorizontal: 48,
-    paddingTop: 28,
-    paddingBottom: 28,
+    paddingHorizontal: 40,
+    paddingTop: 18,
+    paddingBottom: 18,
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
   },
   headerLogo: {
-    width: 160,
-    height: 35,
+    width: 140,
+    height: 30,
     objectFit: 'contain' as const,
   },
   headerRight: {
     alignItems: 'flex-end',
   },
   headerTitle: {
-    fontSize: 9,
+    fontSize: 8,
     fontFamily: 'NotoSans',
     fontWeight: 'bold',
     color: C.gold,
     letterSpacing: 2,
   },
   contractRef: {
-    fontSize: 8,
+    fontSize: 7,
     fontFamily: 'NotoSans',
     color: C.mutedLight,
-    marginTop: 4,
+    marginTop: 3,
   },
 
   // Gold accent stripe
   stripe: {
     backgroundColor: C.gold,
-    height: 3,
+    height: 2,
   },
 
-  // Body
+  // Body — tighter padding
   body: {
-    paddingHorizontal: 48,
-    paddingTop: 28,
+    paddingHorizontal: 40,
+    paddingTop: 16,
     backgroundColor: C.white,
   },
 
@@ -92,43 +92,43 @@ export const contractStyles = StyleSheet.create({
   dateRow: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    marginBottom: 24,
+    marginBottom: 14,
   },
   dateLabel: {
-    fontSize: 8,
+    fontSize: 7,
     fontFamily: 'NotoSans',
     color: C.muted,
     letterSpacing: 0.5,
   },
   dateValue: {
-    fontSize: 9,
+    fontSize: 8,
     fontFamily: 'NotoSans',
     fontWeight: 'bold',
     color: C.text,
   },
 
-  // Section title — gold, uppercase, letter-spacing
+  // Section title — gold, uppercase
   sectionTitle: {
-    fontSize: 7.5,
+    fontSize: 7,
     fontFamily: 'NotoSans',
     fontWeight: 'bold',
     color: C.gold,
     letterSpacing: 2,
-    marginBottom: 10,
+    marginBottom: 6,
     textTransform: 'uppercase',
   },
 
   // Parties grid
   partiesRow: {
     flexDirection: 'row',
-    gap: 12,
-    marginBottom: 24,
+    gap: 10,
+    marginBottom: 14,
   },
   partyCard: {
     flex: 1,
     backgroundColor: C.surface,
     borderRadius: 4,
-    padding: 14,
+    padding: 10,
     borderLeftWidth: 3,
     borderLeftColor: C.gold,
   },
@@ -136,26 +136,26 @@ export const contractStyles = StyleSheet.create({
     flex: 1,
     backgroundColor: C.surface,
     borderRadius: 4,
-    padding: 14,
+    padding: 10,
     borderLeftWidth: 3,
     borderLeftColor: C.darkBorder,
   },
   partyRole: {
-    fontSize: 7,
+    fontSize: 6.5,
     fontFamily: 'NotoSans',
     color: C.muted,
     letterSpacing: 1.5,
-    marginBottom: 5,
+    marginBottom: 3,
   },
   partyName: {
-    fontSize: 13,
+    fontSize: 11,
     fontFamily: 'NotoSans',
     fontWeight: 'bold',
     color: C.dark,
     marginBottom: 2,
   },
   partyDetail: {
-    fontSize: 8.5,
+    fontSize: 7.5,
     fontFamily: 'NotoSans',
     color: C.muted,
   },
@@ -164,47 +164,47 @@ export const contractStyles = StyleSheet.create({
   scopeBox: {
     backgroundColor: C.surface,
     borderRadius: 4,
-    padding: 16,
-    marginBottom: 24,
+    padding: 10,
+    marginBottom: 14,
     borderWidth: 1,
     borderColor: C.border,
   },
   scopeText: {
-    fontSize: 11,
+    fontSize: 9,
     fontFamily: 'NotoSans',
     fontWeight: 'bold',
     color: C.dark,
-    lineHeight: 1.6,
+    lineHeight: 1.5,
   },
 
   // Financial cards
   financialRow: {
     flexDirection: 'row',
-    gap: 12,
-    marginBottom: 24,
+    gap: 10,
+    marginBottom: 14,
   },
   financialCard: {
     flex: 1,
     backgroundColor: C.surface,
     borderRadius: 4,
-    padding: 14,
+    padding: 10,
     borderTopWidth: 3,
   },
   financialLabel: {
-    fontSize: 7,
+    fontSize: 6.5,
     fontFamily: 'NotoSans',
     color: C.muted,
     letterSpacing: 1.5,
-    marginBottom: 6,
+    marginBottom: 4,
   },
   financialValueLarge: {
-    fontSize: 18,
+    fontSize: 16,
     fontFamily: 'NotoSans',
     fontWeight: 'bold',
     color: C.dark,
   },
   financialValueMed: {
-    fontSize: 12,
+    fontSize: 11,
     fontFamily: 'NotoSans',
     fontWeight: 'bold',
     color: C.dark,
@@ -212,26 +212,26 @@ export const contractStyles = StyleSheet.create({
 
   // Terms
   termsList: {
-    marginBottom: 24,
+    marginBottom: 14,
   },
   termRow: {
     flexDirection: 'row',
-    marginBottom: 6,
-    gap: 8,
+    marginBottom: 4,
+    gap: 6,
   },
   termNum: {
-    fontSize: 8.5,
+    fontSize: 7.5,
     fontFamily: 'NotoSans',
     fontWeight: 'bold',
     color: C.gold,
-    width: 14,
+    width: 12,
     flexShrink: 0,
   },
   termText: {
-    fontSize: 8.5,
+    fontSize: 7.5,
     fontFamily: 'NotoSans',
     color: C.text,
-    lineHeight: 1.55,
+    lineHeight: 1.45,
     flex: 1,
   },
 
@@ -239,64 +239,64 @@ export const contractStyles = StyleSheet.create({
   divider: {
     borderBottomWidth: 1,
     borderBottomColor: C.border,
-    marginBottom: 20,
+    marginBottom: 12,
   },
 
-  // Signatures
+  // Signatures — compact
   signaturesRow: {
     flexDirection: 'row',
-    gap: 32,
-    marginBottom: 20,
+    gap: 24,
+    marginBottom: 10,
   },
   sigBlock: {
     flex: 1,
   },
   sigLabel: {
-    fontSize: 7,
+    fontSize: 6.5,
     fontFamily: 'NotoSans',
     color: C.muted,
     letterSpacing: 1.5,
-    marginBottom: 8,
+    marginBottom: 6,
   },
   sigImage: {
-    width: 150,
-    height: 55,
-    marginBottom: 6,
+    width: 130,
+    height: 45,
+    marginBottom: 4,
   },
   sigLine: {
     borderBottomWidth: 1,
     borderBottomColor: C.border,
-    height: 50,
-    marginBottom: 6,
+    height: 35,
+    marginBottom: 4,
   },
   sigName: {
-    fontSize: 9,
+    fontSize: 8,
     fontFamily: 'NotoSans',
     fontWeight: 'bold',
     color: C.text,
   },
   sigDate: {
-    fontSize: 7.5,
+    fontSize: 7,
     fontFamily: 'NotoSans',
     color: C.muted,
     marginTop: 2,
   },
 
-  // Footer — dark bg, absolute bottom
+  // Footer — dark bg, absolute bottom, compact
   footer: {
     position: 'absolute',
     bottom: 0,
     left: 0,
     right: 0,
     backgroundColor: C.dark,
-    paddingHorizontal: 48,
-    paddingVertical: 12,
+    paddingHorizontal: 40,
+    paddingVertical: 8,
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
   },
   footerText: {
-    fontSize: 7.5,
+    fontSize: 7,
     fontFamily: 'NotoSans',
     color: C.mutedLight,
   },
