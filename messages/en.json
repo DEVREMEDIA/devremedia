@@ -829,7 +829,9 @@
     "uploading": "Uploading...",
     "uploadSuccess": "Signed contract uploaded successfully",
     "uploadFailed": "Upload failed",
-    "pendingReviewMessage": "Your signed contract is being reviewed. You will be notified once approved."
+    "pendingReviewMessage": "Your signed contract is being reviewed. You will be notified once approved.",
+    "pdfPreviewUnavailable": "PDF preview unavailable",
+    "openPdfNewTab": "Open PDF in new tab"
   },
 
   "deliverables": {

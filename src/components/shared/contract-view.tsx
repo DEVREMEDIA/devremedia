@@ -25,6 +25,27 @@ export function ContractView({ contract }: ContractViewProps) {
 
   return (
     <div className="space-y-4">
+      {/* PDF Preview */}
+      <div className="rounded-lg border bg-muted/30 overflow-hidden" style={{ height: '70vh' }}>
+        <object
+          data={`/api/contracts/${contract.id}/pdf?inline=true`}
+          type="application/pdf"
+          className="w-full h-full"
+        >
+          <div className="flex flex-col items-center justify-center h-full gap-4 text-muted-foreground">
+            <p>{t('pdfPreviewUnavailable')}</p>
+            <a
+              href={`/api/contracts/${contract.id}/pdf`}
+              className="text-primary underline"
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              {t('openPdfNewTab')}
+            </a>
+          </div>
+        </object>
+      </div>
+
       {/* Metadata Cards */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
         <Card>
