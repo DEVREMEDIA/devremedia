@@ -10,7 +10,6 @@ import { toast } from 'sonner';
 import { FileUploadDropzone } from '@/components/shared/file-upload-dropzone';
 import { InvoiceReviewLayout } from '@/components/admin/invoices/invoice-review-layout';
 import { createInvoice } from '@/lib/actions/invoices';
-import { createClient } from '@/lib/supabase/client';
 import { parseInvoiceClientSide } from '@/lib/pdf-ocr-client';
 
 interface InvoiceUploadFormProps {
@@ -119,22 +118,23 @@ export function InvoiceUploadForm({
       setIsSaving(true);
 
       try {
-        // 1. Upload original PDF to Supabase Storage
-        const supabase = createClient();
-        const invoiceId = crypto.randomUUID();
-        const storagePath = `${clientId}/${invoiceId}.pdf`;
+        // 1. Upload original PDF via server API route
+        const uploadData = new FormData();
+        uploadData.append('file', file);
+        uploadData.append('clientId', clientId);
 
-        console.log('Uploading PDF to storage...', storagePath);
-        const { error: uploadError } = await supabase.storage
-          .from('invoices')
-          .upload(storagePath, file, { contentType: 'application/pdf' });
+        const uploadRes = await fetch('/api/invoices/upload', {
+          method: 'POST',
+          body: uploadData,
+        });
 
-        if (uploadError) {
-          console.error('Storage upload failed:', uploadError);
-          toast.error(`Upload failed: ${uploadError.message}`);
+        if (!uploadRes.ok) {
+          const err = await uploadRes.json();
+          toast.error(`Upload failed: ${err.error}`);
           return;
         }
-        console.log('PDF uploaded successfully');
+
+        const { filePath } = await uploadRes.json();
 
         // 2. Save invoice data
         const lineItem = {
@@ -151,7 +151,7 @@ export function InvoiceUploadForm({
           line_items: [lineItem],
           tax_rate: values.vat_percent,
           notes: values.notes || undefined,
-          file_path: storagePath,
+          file_path: filePath,
         });
 
         if (result.error) {
