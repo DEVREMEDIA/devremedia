@@ -495,7 +495,66 @@
     "cleanupDescription": "{count} clients have no portal account. Clients with productions will be archived (set inactive). Clients without any data will be permanently deleted.",
     "cleanupConfirm": "Cleanup Now",
     "cleanupSuccess": "{archived} archived, {deleted} deleted",
-    "cleanupFailed": "Failed to cleanup clients"
+    "cleanupFailed": "Failed to cleanup clients",
+    "tabs": {
+      "overview": "Overview",
+      "projects": "Projects",
+      "invoices": "Invoices",
+      "contracts": "Contracts",
+      "activity": "Activity"
+    },
+    "stats": {
+      "totalProjects": "Total Projects",
+      "activeProjects": "active",
+      "totalInvoiced": "Total Invoiced",
+      "totalPaid": "Total Paid",
+      "unpaidBalance": "Unpaid Balance"
+    },
+    "projects": {
+      "noProjects": "No projects yet",
+      "noProjectsDescription": "Create the first project for this client",
+      "createFirst": "Create Project",
+      "tasks": "Tasks",
+      "deliverables": "Deliverables",
+      "view": "View Project",
+      "edit": "Edit Project"
+    },
+    "invoices": {
+      "noInvoices": "No invoices yet",
+      "noInvoicesDescription": "Create the first invoice for this client",
+      "createFirst": "Create Invoice",
+      "project": "Project",
+      "amount": "Amount",
+      "dueDate": "Due Date",
+      "summary": "Summary"
+    },
+    "contracts": {
+      "noContracts": "No contracts yet",
+      "noContractsDescription": "Create the first contract for this client",
+      "addContract": "New Contract",
+      "view": "View",
+      "downloadPdf": "Download PDF",
+      "resend": "Resend"
+    },
+    "activityTab": {
+      "title": "Activity",
+      "noActivity": "No activity yet",
+      "noActivityDescription": "Activity will appear here as you work with this client",
+      "viewAll": "View all activity",
+      "loadMore": "Load more"
+    },
+    "drawer": {
+      "createProject": "New Project",
+      "createInvoice": "New Invoice",
+      "createContract": "New Contract",
+      "editProject": "Edit Project",
+      "editInvoice": "Edit Invoice",
+      "editContract": "Edit Contract"
+    },
+    "portalStatus": {
+      "active": "Portal Active",
+      "notInvited": "Not Invited"
+    }
   },
 
   "projects": {

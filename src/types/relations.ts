@@ -64,8 +64,18 @@ export type ContractWithRelations = Contract & {
 };
 
 export type ContractWithProject = Contract & {
-  project: { title: string } | null;
+  project: { id: string; title: string } | null;
 };
+
+// Phase 1: Create modes only. Edit modes use existing edit pages via navigation.
+export type ClientDrawerMode =
+  | { type: 'create-project'; clientId: string }
+  | {
+      type: 'create-invoice';
+      clientId: string;
+      projects: { id: string; title: string; client_id: string }[];
+      nextInvoiceNumber: string;
+    };
 
 export type FilmingRequestWithProject = FilmingRequest & {
   converted_project: Project | null;

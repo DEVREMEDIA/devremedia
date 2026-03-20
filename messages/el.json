@@ -495,7 +495,66 @@
     "cleanupDescription": "{count} πελάτες δεν έχουν λογαριασμό στην πλατφόρμα. Πελάτες με projects θα αρχειοθετηθούν (ανενεργοί). Πελάτες χωρίς δεδομένα θα διαγραφούν οριστικά.",
     "cleanupConfirm": "Εκκαθάριση Τώρα",
     "cleanupSuccess": "{archived} αρχειοθετήθηκαν, {deleted} διαγράφηκαν",
-    "cleanupFailed": "Αποτυχία εκκαθάρισης πελατών"
+    "cleanupFailed": "Αποτυχία εκκαθάρισης πελατών",
+    "tabs": {
+      "overview": "Επισκόπηση",
+      "projects": "Projects",
+      "invoices": "Τιμολόγια",
+      "contracts": "Συμβόλαια",
+      "activity": "Δραστηριότητα"
+    },
+    "stats": {
+      "totalProjects": "Σύνολο Projects",
+      "activeProjects": "ενεργά",
+      "totalInvoiced": "Τιμολογημένα",
+      "totalPaid": "Πληρωμένα",
+      "unpaidBalance": "Υπόλοιπο"
+    },
+    "projects": {
+      "noProjects": "Δεν υπάρχουν projects",
+      "noProjectsDescription": "Δημιουργήστε το πρώτο project για αυτόν τον πελάτη",
+      "createFirst": "Δημιουργία Project",
+      "tasks": "Εργασίες",
+      "deliverables": "Παραδοτέα",
+      "view": "Προβολή Project",
+      "edit": "Επεξεργασία Project"
+    },
+    "invoices": {
+      "noInvoices": "Δεν υπάρχουν τιμολόγια",
+      "noInvoicesDescription": "Δημιουργήστε το πρώτο τιμολόγιο για αυτόν τον πελάτη",
+      "createFirst": "Δημιουργία Τιμολογίου",
+      "project": "Project",
+      "amount": "Ποσό",
+      "dueDate": "Ημ. Λήξης",
+      "summary": "Σύνοψη"
+    },
+    "contracts": {
+      "noContracts": "Δεν υπάρχουν συμβόλαια",
+      "noContractsDescription": "Δημιουργήστε το πρώτο συμβόλαιο για αυτόν τον πελάτη",
+      "addContract": "Νέο Συμβόλαιο",
+      "view": "Προβολή",
+      "downloadPdf": "Λήψη PDF",
+      "resend": "Επαναποστολή"
+    },
+    "activityTab": {
+      "title": "Δραστηριότητα",
+      "noActivity": "Δεν υπάρχει δραστηριότητα",
+      "noActivityDescription": "Η δραστηριότητα θα εμφανιστεί εδώ καθώς εργάζεστε με αυτόν τον πελάτη",
+      "viewAll": "Δες όλη τη δραστηριότητα",
+      "loadMore": "Φόρτωσε περισσότερα"
+    },
+    "drawer": {
+      "createProject": "Νέο Project",
+      "createInvoice": "Νέο Τιμολόγιο",
+      "createContract": "Νέο Συμβόλαιο",
+      "editProject": "Επεξεργασία Project",
+      "editInvoice": "Επεξεργασία Τιμολογίου",
+      "editContract": "Επεξεργασία Συμβολαίου"
+    },
+    "portalStatus": {
+      "active": "Portal Ενεργό",
+      "notInvited": "Μη Προσκεκλημένος"
+    }
   },
 
   "projects": {
