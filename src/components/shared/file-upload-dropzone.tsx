@@ -8,6 +8,7 @@ import { useTranslations } from 'next-intl';
 interface FileUploadDropzoneProps {
   accept?: Record<string, string[]>;
   maxSize?: number;
+  multiple?: boolean;
   onFilesSelected: (files: File[]) => void;
   disabled?: boolean;
   className?: string;
@@ -16,6 +17,7 @@ interface FileUploadDropzoneProps {
 export function FileUploadDropzone({
   accept,
   maxSize = 10 * 1024 * 1024, // 10MB default
+  multiple = true,
   onFilesSelected,
   disabled = false,
   className,
@@ -132,7 +134,7 @@ export function FileUploadDropzone({
           'relative flex min-h-[200px] cursor-pointer flex-col items-center justify-center rounded-lg border-2 border-dashed transition-colors',
           isDragOver && 'border-primary bg-primary/5',
           !isDragOver && 'border-muted-foreground/25 hover:border-muted-foreground/50',
-          disabled && 'cursor-not-allowed opacity-50'
+          disabled && 'cursor-not-allowed opacity-50',
         )}
       >
         <input
@@ -142,7 +144,7 @@ export function FileUploadDropzone({
           accept={acceptString}
           onChange={handleFileInput}
           disabled={disabled}
-          multiple
+          multiple={multiple}
         />
 
         <div className="flex flex-col items-center justify-center space-y-2 p-8 text-center">
