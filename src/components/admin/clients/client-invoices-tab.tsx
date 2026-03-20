@@ -165,7 +165,7 @@ export function ClientInvoicesTab({ clientId, refreshKey, onOpenDrawer }: Client
               return (
                 <TableRow key={invoice.id}>
                   <TableCell className="font-mono text-sm">{invoice.invoice_number}</TableCell>
-                  <TableCell className="text-sm">{invoice.project.title}</TableCell>
+                  <TableCell className="text-sm">{invoice.project?.title ?? '—'}</TableCell>
                   <TableCell className="text-sm">{formatCurrency(invoice.total)}</TableCell>
                   <TableCell>
                     <StatusBadge status={overdue ? 'overdue' : invoice.status} />
