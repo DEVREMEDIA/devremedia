@@ -1,11 +1,7 @@
 'use server';
 
 import { createClient } from '@/lib/supabase/server';
-import {
-  createContractSchema,
-  updateContractSchema,
-  signContractSchema,
-} from '@/lib/schemas/contract';
+import { createContractSchema, updateContractSchema } from '@/lib/schemas/contract';
 import type {
   ActionResult,
   Contract,
@@ -14,49 +10,9 @@ import type {
   ContractTemplate,
 } from '@/types/index';
 import { revalidatePath } from 'next/cache';
-import { format } from 'date-fns';
-import {
-  createNotification,
-  createNotificationForMany,
-  getClientUserIdFromClientId,
-  getAdminUserIds,
-} from '@/lib/actions/notifications';
+import { cookies } from 'next/headers';
+import { createNotification, getClientUserIdFromClientId } from '@/lib/actions/notifications';
 import { NOTIFICATION_TYPES } from '@/lib/notification-types';
-
-import { PAYMENT_METHOD_LABELS } from '@/lib/constants';
-
-function generateContractContent(params: {
-  clientName: string;
-  projectTitle: string;
-  serviceType: string;
-  agreedAmount: number;
-  paymentMethod: string;
-  date: string;
-}): string {
-  const paymentLabel = PAYMENT_METHOD_LABELS[params.paymentMethod] ?? params.paymentMethod;
-  const amountFormatted = params.agreedAmount.toLocaleString('en-US', {
-    minimumFractionDigits: 2,
-    maximumFractionDigits: 2,
-  });
-
-  return `<h2>Service Agreement</h2>
-<p>This Service Agreement ("Agreement") is entered into on <strong>${params.date}</strong> between:</p>
-<p><strong>Service Provider:</strong> Devre Media — Professional Videography &amp; Production</p>
-<p><strong>Client:</strong> ${params.clientName}${params.projectTitle ? ` — ${params.projectTitle}` : ''}</p>
-<h2>Scope of Services</h2>
-<p>${params.serviceType}</p>
-<h2>Financial Terms</h2>
-<p><strong>Total Amount:</strong> €${amountFormatted}</p>
-<p><strong>Payment Method:</strong> ${paymentLabel}</p>
-<h2>Terms &amp; Conditions</h2>
-<p>1. The service provider agrees to deliver the services described above within the agreed timeline.</p>
-<p>2. Payment is due according to the agreed payment terms. Late payments may incur additional fees.</p>
-<p>3. Client revision requests must be communicated within 7 days of final delivery.</p>
-<p>4. Upon receipt of full payment, the Client receives a license to use the final deliverables for their intended purpose. Provider retains the right to use the work in their portfolio unless otherwise agreed in writing.</p>
-<p>5. Either party may cancel with written notice. Advance payments are non-refundable unless otherwise agreed.</p>
-<p>6. Provider's liability is limited to the total amount paid under this Agreement.</p>
-<p>7. This Agreement constitutes the entire understanding between the parties and supersedes all prior negotiations, representations, or agreements.</p>`;
-}
 
 export async function getContractsByProject(projectId: string): Promise<ActionResult<Contract[]>> {
   try {
@@ -69,7 +25,7 @@ export async function getContractsByProject(projectId: string): Promise<ActionRe
     const { data, error } = await supabase
       .from('contracts')
       .select(
-        'id, project_id, client_id, template_id, title, content, status, pdf_path, signature_data, sent_at, viewed_at, signed_at, expires_at, service_type, agreed_amount, payment_method, created_by, created_at',
+        'id, project_id, client_id, template_id, title, content, status, pdf_path, signature_data, sent_at, viewed_at, signed_at, expires_at, service_type, agreed_amount, payment_method, scope_description, special_terms, signed_pdf_path, locale, created_by, created_at',
       )
       .eq('project_id', projectId)
       .order('created_at', { ascending: false });
@@ -117,7 +73,7 @@ export async function getContract(id: string): Promise<ActionResult<ContractWith
     const { data, error } = await supabase
       .from('contracts')
       .select(
-        'id, project_id, client_id, template_id, title, content, status, pdf_path, signature_data, sent_at, viewed_at, signed_at, expires_at, service_type, agreed_amount, payment_method, created_by, created_at, client:clients!inner(id, user_id, company_name, contact_name, email, phone, address, vat_number, avatar_url, notes, status, created_at, updated_at), project:projects(id, client_id, title, description, project_type, status, priority, budget, deadline, start_date, created_at, updated_at)',
+        'id, project_id, client_id, template_id, title, content, status, pdf_path, signature_data, sent_at, viewed_at, signed_at, expires_at, service_type, agreed_amount, payment_method, scope_description, special_terms, signed_pdf_path, locale, created_by, created_at, client:clients!inner(id, user_id, company_name, contact_name, email, phone, address, vat_number, avatar_url, notes, status, created_at, updated_at), project:projects(id, client_id, title, description, project_type, status, priority, budget, deadline, start_date, created_at, updated_at)',
       )
       .eq('id', id)
       .single();
@@ -223,27 +179,10 @@ export async function createContract(input: unknown): Promise<ActionResult<Contr
 
     const clientName = client?.company_name || client?.contact_name || 'Client';
 
-    // Fetch project title if available
-    let projectTitle = '';
-    if (validated.project_id) {
-      const { data: project } = await supabase
-        .from('projects')
-        .select('title')
-        .eq('id', validated.project_id)
-        .single();
-      projectTitle = project?.title || '';
-    }
-
-    const dateFormatted = format(new Date(), 'MMMM d, yyyy');
     const title = `${validated.service_type} Agreement — ${clientName}`;
-    const content = generateContractContent({
-      clientName,
-      projectTitle,
-      serviceType: validated.service_type,
-      agreedAmount: validated.agreed_amount,
-      paymentMethod: validated.payment_method,
-      date: dateFormatted,
-    });
+
+    const cookieStore = await cookies();
+    const locale = cookieStore.get('NEXT_LOCALE')?.value === 'en' ? 'en' : 'el';
 
     const { data, error } = await supabase
       .from('contracts')
@@ -251,17 +190,20 @@ export async function createContract(input: unknown): Promise<ActionResult<Contr
         project_id: validated.project_id ?? null,
         client_id: validated.client_id,
         title,
-        content,
+        content: '',
         service_type: validated.service_type,
         agreed_amount: validated.agreed_amount,
         payment_method: validated.payment_method,
         expires_at: validated.expires_at || null,
+        scope_description: validated.scope_description ?? null,
+        special_terms: validated.special_terms ?? null,
+        locale,
         status: 'sent',
         sent_at: new Date().toISOString(),
         created_by: user.id,
       })
       .select(
-        'id, project_id, client_id, template_id, title, content, status, pdf_path, signature_data, sent_at, viewed_at, signed_at, expires_at, service_type, agreed_amount, payment_method, created_by, created_at',
+        'id, project_id, client_id, template_id, title, content, status, pdf_path, signature_data, sent_at, viewed_at, signed_at, expires_at, service_type, agreed_amount, payment_method, scope_description, special_terms, signed_pdf_path, locale, created_by, created_at',
       )
       .single();
 
@@ -321,7 +263,7 @@ export async function updateContract(id: string, input: unknown): Promise<Action
       .update(validated)
       .eq('id', id)
       .select(
-        'id, project_id, client_id, template_id, title, content, status, pdf_path, signature_data, sent_at, viewed_at, signed_at, expires_at, service_type, agreed_amount, payment_method, created_by, created_at',
+        'id, project_id, client_id, template_id, title, content, status, pdf_path, signature_data, sent_at, viewed_at, signed_at, expires_at, service_type, agreed_amount, payment_method, scope_description, special_terms, signed_pdf_path, locale, created_by, created_at',
       )
       .single();
 
@@ -341,77 +283,87 @@ export async function updateContract(id: string, input: unknown): Promise<Action
   }
 }
 
-export async function signContract(
+export async function reviewSignedContract(
   id: string,
-  signatureData: unknown,
+  decision: 'approve' | 'reject',
 ): Promise<ActionResult<Contract>> {
-  try {
-    const validated = signContractSchema.parse(signatureData);
-    const supabase = await createClient();
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user) return { data: null, error: 'Unauthorized' };
 
-    const {
-      data: { user },
-    } = await supabase.auth.getUser();
-    if (!user) return { data: null, error: 'User not authenticated' };
+  const { data: profile } = await supabase
+    .from('user_profiles')
+    .select('role')
+    .eq('id', user.id)
+    .single();
 
-    // Verify the signer is associated with this contract's client
-    const { data: existing, error: fetchError } = await supabase
-      .from('contracts')
-      .select('id, client:clients(user_id)')
-      .eq('id', id)
-      .single();
+  if (!profile || !['admin', 'super_admin'].includes(profile.role)) {
+    return { data: null, error: 'Forbidden' };
+  }
 
-    if (fetchError || !existing) return { data: null, error: 'Contract not found' };
+  const { data: contract, error: fetchError } = await supabase
+    .from('contracts')
+    .select('id, status, signed_pdf_path, client_id')
+    .eq('id', id)
+    .single();
 
-    const clientData = Array.isArray(existing.client) ? existing.client[0] : existing.client;
-    const clientUserId = (clientData as { user_id: string | null } | null)?.user_id;
-    if (!clientUserId || clientUserId !== user.id) {
-      return { data: null, error: 'You are not authorized to sign this contract' };
-    }
+  if (fetchError || !contract) return { data: null, error: 'Contract not found' };
+  if (contract.status !== 'pending_review') {
+    return { data: null, error: 'Contract is not pending review' };
+  }
+
+  const COLUMNS =
+    'id, project_id, client_id, template_id, title, content, status, pdf_path, signature_data, sent_at, viewed_at, signed_at, expires_at, service_type, agreed_amount, payment_method, scope_description, special_terms, signed_pdf_path, locale, created_by, created_at';
+
+  if (decision === 'approve') {
+    if (!contract.signed_pdf_path) return { data: null, error: 'No signed PDF uploaded' };
 
     const { data, error } = await supabase
       .from('contracts')
-      .update({
-        status: 'signed',
-        signature_data: {
-          signature_image: validated.signature_image,
-          signed_at: new Date().toISOString(),
-        },
-        signed_at: new Date().toISOString(),
-      })
+      .update({ status: 'signed', signed_at: new Date().toISOString() })
       .eq('id', id)
-      .select(
-        'id, project_id, client_id, template_id, title, content, status, pdf_path, signature_data, sent_at, viewed_at, signed_at, expires_at, service_type, agreed_amount, payment_method, created_by, created_at',
-      )
+      .select(COLUMNS)
       .single();
 
     if (error) return { data: null, error: error.message };
 
-    if (data?.project_id) {
-      revalidatePath(`/admin/projects/${data.project_id}`);
-    }
+    revalidatePath('/admin/contracts');
     revalidatePath(`/admin/contracts/${id}`);
     revalidatePath('/client/contracts');
-    revalidatePath('/client/dashboard');
-    revalidatePath('/admin/contracts');
-    revalidatePath('/admin/dashboard');
-
-    // Notify all admins about signed contract
-    const adminIds = await getAdminUserIds();
-    createNotificationForMany(adminIds, {
-      type: NOTIFICATION_TYPES.CONTRACT_SIGNED,
-      title: 'Contract signed by client',
-      body: data.title ?? undefined,
-      actionUrl: `/admin/contracts/${id}`,
-    });
-
     return { data, error: null };
-  } catch (error) {
-    if (error instanceof Error) {
-      return { data: null, error: error.message };
-    }
-    return { data: null, error: 'Failed to sign contract' };
   }
+
+  // Reject — set back to sent
+  const { data, error } = await supabase
+    .from('contracts')
+    .update({ status: 'sent' })
+    .eq('id', id)
+    .select(COLUMNS)
+    .single();
+
+  if (error) return { data: null, error: error.message };
+
+  const { data: clientData } = await supabase
+    .from('clients')
+    .select('user_id')
+    .eq('id', contract.client_id)
+    .single();
+
+  if (clientData?.user_id) {
+    await createNotification({
+      userId: clientData.user_id,
+      type: NOTIFICATION_TYPES.CONTRACT_UPLOAD_REJECTED,
+      title: 'Contract needs re-signing',
+      actionUrl: `/client/contracts/${id}`,
+    });
+  }
+
+  revalidatePath('/admin/contracts');
+  revalidatePath(`/admin/contracts/${id}`);
+  revalidatePath('/client/contracts');
+  return { data, error: null };
 }
 
 export async function sendContract(id: string): Promise<ActionResult<{ id: string }>> {
