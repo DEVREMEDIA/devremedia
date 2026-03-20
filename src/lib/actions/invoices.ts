@@ -33,7 +33,7 @@ export async function getInvoices(
     let query = supabase
       .from('invoices')
       .select(
-        'id, project_id, client_id, invoice_number, issue_date, due_date, status, subtotal, tax_amount, total, currency, line_items, notes, terms, tax_rate, sent_at, viewed_at, paid_at, created_by, created_at, updated_at, client:clients(id, contact_name, company_name, email, phone, address, vat_number, avatar_url, notes, status, user_id, created_at, updated_at), project:projects(id, title, client_id, description, project_type, status, priority, budget, deadline, start_date, created_at, updated_at)',
+        'id, project_id, client_id, invoice_number, issue_date, due_date, status, subtotal, tax_amount, total, currency, line_items, notes, terms, tax_rate, sent_at, viewed_at, paid_at, created_by, created_at, updated_at, file_path, client:clients(id, contact_name, company_name, email, phone, address, vat_number, avatar_url, notes, status, user_id, created_at, updated_at), project:projects(id, title, client_id, description, project_type, status, priority, budget, deadline, start_date, created_at, updated_at)',
       )
       .order('created_at', { ascending: false });
 
@@ -75,7 +75,7 @@ export async function getInvoice(id: string): Promise<ActionResult<InvoiceWithRe
     const { data, error } = await supabase
       .from('invoices')
       .select(
-        'id, project_id, client_id, invoice_number, issue_date, due_date, status, subtotal, tax_amount, total, currency, line_items, notes, terms, tax_rate, sent_at, viewed_at, paid_at, created_by, created_at, updated_at, client:clients(id, contact_name, company_name, email, phone, address, vat_number, avatar_url, notes, status, user_id, created_at, updated_at), project:projects(id, title, client_id, description, project_type, status, priority, budget, deadline, start_date, created_at, updated_at)',
+        'id, project_id, client_id, invoice_number, issue_date, due_date, status, subtotal, tax_amount, total, currency, line_items, notes, terms, tax_rate, sent_at, viewed_at, paid_at, created_by, created_at, updated_at, file_path, client:clients(id, contact_name, company_name, email, phone, address, vat_number, avatar_url, notes, status, user_id, created_at, updated_at), project:projects(id, title, client_id, description, project_type, status, priority, budget, deadline, start_date, created_at, updated_at)',
       )
       .eq('id', id)
       .single();
@@ -144,7 +144,7 @@ export async function createInvoice(input: unknown): Promise<ActionResult<Invoic
         created_by: user.id,
       })
       .select(
-        'id, project_id, client_id, invoice_number, issue_date, due_date, status, subtotal, tax_amount, total, currency, line_items, notes, terms, tax_rate, sent_at, viewed_at, paid_at, created_by, created_at, updated_at, client:clients(id, contact_name, company_name, email, phone, address, vat_number, avatar_url, notes, status, user_id, created_at, updated_at), project:projects(id, title, client_id, description, project_type, status, priority, budget, deadline, start_date, created_at, updated_at)',
+        'id, project_id, client_id, invoice_number, issue_date, due_date, status, subtotal, tax_amount, total, currency, line_items, notes, terms, tax_rate, sent_at, viewed_at, paid_at, created_by, created_at, updated_at, file_path, client:clients(id, contact_name, company_name, email, phone, address, vat_number, avatar_url, notes, status, user_id, created_at, updated_at), project:projects(id, title, client_id, description, project_type, status, priority, budget, deadline, start_date, created_at, updated_at)',
       )
       .single();
 
@@ -198,7 +198,7 @@ export async function updateInvoice(
       .update(updateData)
       .eq('id', id)
       .select(
-        'id, project_id, client_id, invoice_number, issue_date, due_date, status, subtotal, tax_amount, total, currency, line_items, notes, terms, tax_rate, sent_at, viewed_at, paid_at, created_by, created_at, updated_at, client:clients(id, contact_name, company_name, email, phone, address, vat_number, avatar_url, notes, status, user_id, created_at, updated_at), project:projects(id, title, client_id, description, project_type, status, priority, budget, deadline, start_date, created_at, updated_at)',
+        'id, project_id, client_id, invoice_number, issue_date, due_date, status, subtotal, tax_amount, total, currency, line_items, notes, terms, tax_rate, sent_at, viewed_at, paid_at, created_by, created_at, updated_at, file_path, client:clients(id, contact_name, company_name, email, phone, address, vat_number, avatar_url, notes, status, user_id, created_at, updated_at), project:projects(id, title, client_id, description, project_type, status, priority, budget, deadline, start_date, created_at, updated_at)',
       )
       .single();
 
@@ -242,7 +242,7 @@ export async function updateInvoiceStatus(
       .update(updateData)
       .eq('id', id)
       .select(
-        'id, project_id, client_id, invoice_number, issue_date, due_date, status, subtotal, tax_amount, total, currency, line_items, notes, terms, tax_rate, sent_at, viewed_at, paid_at, created_by, created_at, updated_at',
+        'id, project_id, client_id, invoice_number, issue_date, due_date, status, subtotal, tax_amount, total, currency, line_items, notes, terms, tax_rate, sent_at, viewed_at, paid_at, file_path, created_by, created_at, updated_at',
       )
       .single();
 
@@ -293,6 +293,19 @@ export async function deleteInvoice(id: string): Promise<ActionResult<void>> {
       data: { user },
     } = await supabase.auth.getUser();
     if (!user) return { data: null, error: 'Unauthorized' };
+
+    // Fetch file_path before deleting
+    const { data: invoice } = await supabase
+      .from('invoices')
+      .select('file_path')
+      .eq('id', id)
+      .single();
+
+    // Clean up Storage file if exists
+    if (invoice?.file_path) {
+      await supabase.storage.from('invoices').remove([invoice.file_path]);
+    }
+
     const { error } = await supabase.from('invoices').delete().eq('id', id);
 
     if (error) return { data: null, error: error.message };
