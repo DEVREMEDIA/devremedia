@@ -21,6 +21,11 @@ export async function parseInvoiceClientSide(file: File): Promise<ParsedInvoice>
     text = await ocrInBrowser(bufferCopy);
   }
 
+  // DEBUG: log OCR text so we can tune regex
+  console.log('--- FINAL TEXT FOR PARSING ---');
+  console.log(text);
+  console.log('--- END ---');
+
   if (text.length < 50) {
     return {
       date: null,
@@ -75,7 +80,7 @@ async function extractTextLayerBrowser(arrayBuffer: ArrayBuffer): Promise<string
   }
 }
 
-/** OCR PDF pages in the browser: render to canvas → tesseract.js WASM */
+/** OCR PDF pages in the browser: render to canvas → preprocess → tesseract.js WASM */
 async function ocrInBrowser(arrayBuffer: ArrayBuffer): Promise<string> {
   try {
     const pdfjsLib = await import('pdfjs-dist');
@@ -85,21 +90,42 @@ async function ocrInBrowser(arrayBuffer: ArrayBuffer): Promise<string> {
 
     const doc = await pdfjsLib.getDocument({ data: new Uint8Array(arrayBuffer) }).promise;
     const worker = await Tesseract.createWorker('ell+eng');
+
+    // Configure tesseract for invoice-style documents
+    await worker.setParameters({
+      tessedit_pageseg_mode: '6', // Assume uniform block of text
+    });
+
     const textParts: string[] = [];
 
     for (let i = 1; i <= doc.numPages; i++) {
       const page = await doc.getPage(i);
-      const viewport = page.getViewport({ scale: 2.0 });
+      // Higher scale = better OCR accuracy (3x instead of 2x)
+      const viewport = page.getViewport({ scale: 3.0 });
 
-      // Create browser canvas
       const canvas = document.createElement('canvas');
       canvas.width = viewport.width;
       canvas.height = viewport.height;
       const ctx = canvas.getContext('2d')!;
 
+      // White background (some PDFs have transparent bg → black in OCR)
+      ctx.fillStyle = '#ffffff';
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+
       await page.render({ canvasContext: ctx, viewport }).promise;
 
-      // Convert canvas to blob → tesseract
+      // Preprocess: convert to grayscale + increase contrast for better OCR
+      const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+      const data = imageData.data;
+      for (let j = 0; j < data.length; j += 4) {
+        // Grayscale
+        const gray = 0.299 * data[j] + 0.587 * data[j + 1] + 0.114 * data[j + 2];
+        // Sharpen contrast: push toward black or white
+        const sharp = gray < 128 ? Math.max(0, gray - 30) : Math.min(255, gray + 30);
+        data[j] = data[j + 1] = data[j + 2] = sharp;
+      }
+      ctx.putImageData(imageData, 0, 0);
+
       const blob = await new Promise<Blob>((resolve) => {
         canvas.toBlob((b) => resolve(b!), 'image/png');
       });
@@ -111,7 +137,6 @@ async function ocrInBrowser(arrayBuffer: ArrayBuffer): Promise<string> {
         textParts.push(text);
       }
 
-      // Cleanup
       canvas.width = 0;
       canvas.height = 0;
     }

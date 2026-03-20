@@ -124,46 +124,121 @@ export function extractAmounts(text: string): {
     totalAmount: null as number | null,
   };
 
-  const pliroteoMatch = text.match(/Πληρωτέο\s*\(?€?\)?\s*:?\s*([\d.,]+)/);
+  // --- Labeled amounts (most reliable) ---
+
+  // Πληρωτέο / Σύνολο πληρωτέο
+  const pliroteoMatch = text.match(/[ΠП][λl]ηρωτ[έε]ο\s*\(?€?\)?\s*:?\s*([\d.,]+)/i);
   if (pliroteoMatch) result.totalAmount = parseEuAmount(pliroteoMatch[1]);
 
-  const synolaMatch = text.match(/Σύνολα?\s+([\d.,]+)\s+([\d.,]+)\s+([\d.,]+)\s+([\d.,]+)/);
-  if (synolaMatch) {
-    const vals = [1, 2, 3, 4].map((i) => parseEuAmount(synolaMatch[i]));
-    const nonZero = vals.filter((v): v is number => v !== null && v > 0);
-    if (nonZero.length >= 2) {
-      result.netAmount = nonZero[0];
-      if (nonZero.length >= 3) result.vatAmount = nonZero[1];
-    }
-  }
+  // Καθαρή αξία / Καθ. Αξία
+  const kathari = text.match(/[ΚK]αθ(?:αρή|\.)\s*[ΑA]ξ[ίι]α\s*:?\s*([\d.,]+)/i);
+  if (kathari) result.netAmount = parseEuAmount(kathari[1]);
 
-  const axiaMatch = text.match(/Συνολ\.?\s*Αξία[^0-9]*([\d.,]+)/);
+  // Συνολική αξία / Συνολ. Αξία
+  const axiaMatch = text.match(/Συνολ[ιί.]?\s*[κ.]?\s*[ΑA]ξ[ίι]α[^0-9]*([\d.,]+)/i);
   if (axiaMatch) {
     const v = parseEuAmount(axiaMatch[1]);
     if (v && v > 0) result.netAmount = result.netAmount ?? v;
   }
 
-  const fpaMatch = text.match(/(\d{1,2})\s*%/);
-  if (fpaMatch) result.vatPercent = parseInt(fpaMatch[1], 10);
+  // ΦΠΑ amount (labeled)
+  const fpaAmountMatch = text.match(/(?:ΦΠΑ|Φ\.?Π\.?Α\.?)\s*(?:\d+%?)?\s*:?\s*([\d.,]+)/);
+  if (fpaAmountMatch) {
+    const v = parseEuAmount(fpaAmountMatch[1]);
+    if (v && v > 0) result.vatAmount = v;
+  }
 
+  // --- ΦΠΑ percentage ---
+  // Look for "24%" or "24 %" specifically near ΦΠΑ context
+  const fpaPercentNear = text.match(/(?:ΦΠΑ|φπα)\s*:?\s*(\d{1,2})\s*%/);
+  if (fpaPercentNear) {
+    result.vatPercent = parseInt(fpaPercentNear[1], 10);
+  }
+  // Fallback: any "24%" in text (common Greek VAT rates: 6, 13, 24)
+  if (!result.vatPercent) {
+    const anyPercent = text.match(/(\d{1,2})\s*%/);
+    if (anyPercent) {
+      const pct = parseInt(anyPercent[1], 10);
+      if ([6, 13, 24].includes(pct)) result.vatPercent = pct;
+    }
+  }
+
+  // --- Σύνολα row: "Σύνολα 0,00 1000,00 240,00 1240,00" ---
+  const synolaMatch = text.match(/Σ[υύ]νολ[αο]?\s+([\d.,]+)\s+([\d.,]+)\s+([\d.,]+)\s+([\d.,]+)/);
+  if (synolaMatch) {
+    const vals = [1, 2, 3, 4].map((i) => parseEuAmount(synolaMatch[i]));
+    const nonZero = vals.filter((v): v is number => v !== null && v > 0);
+    if (nonZero.length >= 3) {
+      result.netAmount = result.netAmount ?? nonZero[0];
+      result.vatAmount = result.vatAmount ?? nonZero[1];
+      result.totalAmount = result.totalAmount ?? nonZero[2];
+    } else if (nonZero.length >= 2) {
+      result.netAmount = result.netAmount ?? nonZero[0];
+      result.totalAmount = result.totalAmount ?? nonZero[nonZero.length - 1];
+    }
+  }
+
+  // --- Item row: "1000,00 0,00 1000,00 24% 240,00 1240,00" ---
   const itemRow = text.match(
-    /([\d][\d.,]+)\s+0,00\s+([\d][\d.,]+)\s+(\d+)%\s+([\d][\d.,]+)\s+([\d][\d.,]+)/,
+    /([\d][\d.,]+)\s+0[,.]00\s+([\d][\d.,]+)\s+(\d+)\s*%\s+([\d][\d.,]+)\s+([\d][\d.,]+)/,
   );
   if (itemRow) {
     result.netAmount = result.netAmount ?? parseEuAmount(itemRow[2]);
     result.vatPercent = result.vatPercent ?? parseInt(itemRow[3], 10);
     result.vatAmount = result.vatAmount ?? parseEuAmount(itemRow[4]);
+    result.totalAmount = result.totalAmount ?? parseEuAmount(itemRow[5]);
   }
 
-  if (!result.totalAmount) {
-    const allAmounts = text.match(/[\d]{1,3}(?:\.[\d]{3})*,\d{2}/g);
-    if (allAmounts) {
-      const parsed = allAmounts.map((a) => parseEuAmount(a)).filter((v): v is number => v !== null);
-      if (parsed.length > 0) result.totalAmount = Math.max(...parsed);
+  // --- Smart fallback: collect all EU-format amounts, deduce by math ---
+  if (!result.totalAmount || !result.netAmount) {
+    const allAmounts = findAllAmounts(text);
+    if (allAmounts.length >= 2) {
+      const sorted = [...allAmounts].sort((a, b) => b - a);
+      // Largest is likely total, second largest is likely net
+      if (!result.totalAmount) result.totalAmount = sorted[0];
+      if (!result.netAmount && sorted.length >= 2) result.netAmount = sorted[1];
     }
   }
 
+  // --- Compute missing values from what we have ---
+  if (result.netAmount && result.vatPercent && !result.vatAmount) {
+    result.vatAmount = Math.round(result.netAmount * (result.vatPercent / 100) * 100) / 100;
+  }
+  if (result.netAmount && result.vatAmount && !result.totalAmount) {
+    result.totalAmount = Math.round((result.netAmount + result.vatAmount) * 100) / 100;
+  }
+  if (result.totalAmount && result.netAmount && !result.vatAmount) {
+    result.vatAmount = Math.round((result.totalAmount - result.netAmount) * 100) / 100;
+  }
+  if (result.totalAmount && result.vatAmount && !result.netAmount) {
+    result.netAmount = Math.round((result.totalAmount - result.vatAmount) * 100) / 100;
+  }
+
   return result;
+}
+
+/** Find all EU-format amounts in text (e.g. "1.240,00" or "240,00") */
+function findAllAmounts(text: string): number[] {
+  // Match: "1.240,00", "240,00", "1000,00", "1000.00"
+  const patterns = [
+    /\d{1,3}(?:\.\d{3})+,\d{2}/g, // 1.240,00
+    /\d+,\d{2}/g, // 240,00 or 1000,00
+    /\d+\.\d{2}/g, // 1000.00
+  ];
+
+  const amounts: number[] = [];
+  for (const pattern of patterns) {
+    const matches = text.match(pattern);
+    if (matches) {
+      for (const m of matches) {
+        const v = parseEuAmount(m);
+        if (v !== null && v > 0 && !amounts.includes(v)) {
+          amounts.push(v);
+        }
+      }
+    }
+  }
+  return amounts;
 }
 
 /** Extract issuer and customer names (Επωνυμία) */
