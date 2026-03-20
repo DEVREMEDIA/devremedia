@@ -129,61 +129,35 @@ async function extractTextLayer(buffer: Buffer): Promise<string> {
   }
 }
 
-/** OCR fallback: render PDF pages to PNG via canvas, then tesseract */
+/** OCR fallback: call Python pytesseract via subprocess (reliable for Greek invoices) */
 async function ocrFallback(buffer: Buffer): Promise<string> {
+  const { writeFile, unlink } = await import('fs/promises');
+  const { execFile } = await import('child_process');
+  const { promisify } = await import('util');
+  const path = await import('path');
+  const os = await import('os');
+
+  const execFileAsync = promisify(execFile);
+  const tmpPath = path.join(os.tmpdir(), `invoice-${Date.now()}.pdf`);
+
   try {
-    // @ts-expect-error — pdfjs-dist ESM module, no matching .d.ts for .mjs path
-    const pdfjsLib = await import('pdfjs-dist/legacy/build/pdf.mjs');
-    const { createCanvas } = await import('canvas');
-    const Tesseract = await import('tesseract.js');
+    await writeFile(tmpPath, buffer);
 
-    const doc = await pdfjsLib.getDocument({ data: new Uint8Array(buffer) }).promise;
+    const scriptPath = path.join(process.cwd(), 'scripts', 'ocr-invoice.py');
+    const { stdout } = await execFileAsync('python', [scriptPath, tmpPath], {
+      timeout: 60000,
+      maxBuffer: 10 * 1024 * 1024,
+    });
 
-    // Init tesseract — try ell+eng, fallback to eng only
-    let worker;
-    try {
-      worker = await Tesseract.createWorker('ell+eng');
-    } catch {
-      console.warn('Failed to load ell+eng, trying eng only...');
-      worker = await Tesseract.createWorker('eng');
-    }
-
-    const textParts: string[] = [];
-
-    for (let i = 1; i <= doc.numPages; i++) {
-      try {
-        const page = await doc.getPage(i);
-        const viewport = page.getViewport({ scale: 2.0 });
-        const canvas = createCanvas(viewport.width, viewport.height);
-        const ctx = canvas.getContext('2d');
-
-        // Render page — catch errors from inline images (node-canvas limitation)
-        // Text content may already be on canvas before image errors occur
-        try {
-          await page.render({
-            canvasContext: ctx as unknown as CanvasRenderingContext2D,
-            viewport,
-          }).promise;
-        } catch (renderErr) {
-          console.warn(`Page ${i} render partial failure (continuing with partial content)`);
-        }
-
-        const pngBuffer = canvas.toBuffer('image/png');
-        const {
-          data: { text },
-        } = await worker.recognize(pngBuffer);
-        if (text.trim().length > 0) {
-          textParts.push(text);
-        }
-      } catch (pageErr) {
-        console.warn(`Failed to process page ${i}:`, pageErr);
-      }
-    }
-
-    await worker.terminate();
-    return textParts.join('\n');
+    return stdout;
   } catch (err) {
     console.error('OCR fallback failed:', err);
     return '';
+  } finally {
+    try {
+      await unlink(tmpPath);
+    } catch {
+      // ignore cleanup errors
+    }
   }
 }
