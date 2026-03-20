@@ -53,9 +53,7 @@ export function ActivityFeed({ activities }: ActivityFeedProps) {
           <CardDescription>{t('latestActionsDesc')}</CardDescription>
         </CardHeader>
         <CardContent>
-          <p className="text-sm text-muted-foreground text-center py-8">
-            {t('noActivity')}
-          </p>
+          <p className="text-sm text-muted-foreground text-center py-8">{t('noActivity')}</p>
         </CardContent>
       </Card>
     );
@@ -65,24 +63,23 @@ export function ActivityFeed({ activities }: ActivityFeedProps) {
     <Card>
       <CardHeader>
         <CardTitle>{t('recentActivity')}</CardTitle>
-        <CardDescription>Latest actions and changes in the system</CardDescription>
+        <CardDescription>{t('latestActionsDesc')}</CardDescription>
       </CardHeader>
       <CardContent>
         <div className="space-y-4">
           {activities.map((activity) => {
             const link = getActivityLink(activity);
+            const user = activity.user;
             const content = (
               <>
                 <Avatar className="h-9 w-9">
-                  <AvatarImage src={activity.user.avatar_url || undefined} />
-                  <AvatarFallback>
-                    {getInitials(activity.user.display_name || t('user'))}
-                  </AvatarFallback>
+                  <AvatarImage src={user?.avatar_url || undefined} />
+                  <AvatarFallback>{getInitials(user?.display_name || t('user'))}</AvatarFallback>
                 </Avatar>
                 <div className="flex-1 space-y-1">
                   <div className="flex items-center justify-between">
                     <p className="text-sm font-medium leading-none">
-                      {activity.user.display_name}
+                      {user?.display_name ?? t('user')}
                     </p>
                     <p className="text-xs text-muted-foreground">
                       {formatDistanceToNow(new Date(activity.created_at), {
@@ -90,9 +87,7 @@ export function ActivityFeed({ activities }: ActivityFeedProps) {
                       })}
                     </p>
                   </div>
-                  <p className="text-sm text-muted-foreground">
-                    {formatAction(activity)}
-                  </p>
+                  <p className="text-sm text-muted-foreground">{formatAction(activity)}</p>
                 </div>
               </>
             );

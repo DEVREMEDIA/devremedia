@@ -115,50 +115,56 @@ export function ContractPDFTemplate({
           </View>
 
           {/* Parties */}
-          <Text style={styles.sectionTitle}>{t.parties}</Text>
-          <View style={styles.partiesRow}>
-            <View style={styles.partyCard}>
-              <Text style={styles.partyRole}>{t.provider}</Text>
-              <Text style={styles.partyName}>{provider.companyName}</Text>
-              <Text style={styles.partyDetail}>
-                {t.vatNumber}: {provider.vatNumber} {'\u00B7'} {t.taxOffice}: {provider.taxOffice}
-              </Text>
-              <Text style={styles.partyDetail}>{provider.address}</Text>
-            </View>
-            <View style={styles.partyCardClient}>
-              <Text style={styles.partyRole}>{t.client}</Text>
-              <Text style={styles.partyName}>{clientName || '\u2014'}</Text>
-              {projectTitle ? <Text style={styles.partyDetail}>{projectTitle}</Text> : null}
+          <View wrap={false}>
+            <Text style={styles.sectionTitle}>{t.parties}</Text>
+            <View style={styles.partiesRow}>
+              <View style={styles.partyCard}>
+                <Text style={styles.partyRole}>{t.provider}</Text>
+                <Text style={styles.partyName}>{provider.companyName}</Text>
+                <Text style={styles.partyDetail}>
+                  {t.vatNumber}: {provider.vatNumber} {'\u00B7'} {t.taxOffice}: {provider.taxOffice}
+                </Text>
+                <Text style={styles.partyDetail}>{provider.address}</Text>
+              </View>
+              <View style={styles.partyCardClient}>
+                <Text style={styles.partyRole}>{t.client}</Text>
+                <Text style={styles.partyName}>{clientName || '\u2014'}</Text>
+                {projectTitle ? <Text style={styles.partyDetail}>{projectTitle}</Text> : null}
+              </View>
             </View>
           </View>
 
           {/* Scope */}
-          <Text style={styles.sectionTitle}>{t.scopeOfServices}</Text>
-          <View style={styles.scopeBox}>
-            <Text style={styles.scopeText}>{scopeText}</Text>
+          <View wrap={false}>
+            <Text style={styles.sectionTitle}>{t.scopeOfServices}</Text>
+            <View style={styles.scopeBox}>
+              <Text style={styles.scopeText}>{scopeText}</Text>
+            </View>
           </View>
 
           {/* Financial Terms */}
-          <Text style={styles.sectionTitle}>{t.financialTerms}</Text>
-          <View style={styles.financialRow}>
-            <View style={[styles.financialCard, { borderTopColor: C.gold }]}>
-              <Text style={styles.financialLabel}>{t.totalAmount}</Text>
-              <Text style={styles.financialValueLarge}>{amountFormatted}</Text>
-            </View>
-            <View style={[styles.financialCard, { borderTopColor: C.dark }]}>
-              <Text style={styles.financialLabel}>{t.paymentMethod}</Text>
-              <Text style={styles.financialValueMed}>{paymentLabel}</Text>
+          <View wrap={false}>
+            <Text style={styles.sectionTitle}>{t.financialTerms}</Text>
+            <View style={styles.financialRow}>
+              <View style={[styles.financialCard, { borderTopColor: C.gold }]}>
+                <Text style={styles.financialLabel}>{t.totalAmount}</Text>
+                <Text style={styles.financialValueLarge}>{amountFormatted}</Text>
+              </View>
+              <View style={[styles.financialCard, { borderTopColor: C.dark }]}>
+                <Text style={styles.financialLabel}>{t.paymentMethod}</Text>
+                <Text style={styles.financialValueMed}>{paymentLabel}</Text>
+              </View>
             </View>
           </View>
 
           {/* Special Terms — only if non-empty */}
           {contract.special_terms ? (
-            <>
+            <View wrap={false}>
               <Text style={styles.sectionTitle}>{t.specialTerms}</Text>
               <View style={styles.scopeBox}>
                 <Text style={styles.termText}>{contract.special_terms}</Text>
               </View>
-            </>
+            </View>
           ) : null}
 
           {/* General Terms */}
@@ -172,33 +178,35 @@ export function ContractPDFTemplate({
             ))}
           </View>
 
-          <View style={styles.divider} />
+          <View wrap={false}>
+            <View style={styles.divider} />
 
-          {/* Signatures */}
-          <Text style={styles.sectionTitle}>{t.signatures}</Text>
-          <View style={styles.signaturesRow} wrap={false}>
-            {/* Client */}
-            <View style={styles.sigBlock}>
-              <Text style={styles.sigLabel}>{t.client}</Text>
-              {contract.status === 'signed' && signatureImage ? (
-                // eslint-disable-next-line jsx-a11y/alt-text
-                <Image src={signatureImage} style={styles.sigImage} />
-              ) : (
+            {/* Signatures */}
+            <Text style={styles.sectionTitle}>{t.signatures}</Text>
+            <View style={styles.signaturesRow}>
+              {/* Client */}
+              <View style={styles.sigBlock}>
+                <Text style={styles.sigLabel}>{t.client}</Text>
+                {contract.status === 'signed' && signatureImage ? (
+                  // eslint-disable-next-line jsx-a11y/alt-text
+                  <Image src={signatureImage} style={styles.sigImage} />
+                ) : (
+                  <View style={styles.sigLine} />
+                )}
+                <Text style={styles.sigName}>{clientName || '\u2014'}</Text>
+                {contract.signed_at && (
+                  <Text style={styles.sigDate}>
+                    {format(new Date(contract.signed_at), 'MMM d, yyyy')}
+                  </Text>
+                )}
+              </View>
+
+              {/* Provider */}
+              <View style={styles.sigBlock}>
+                <Text style={styles.sigLabel}>{t.provider}</Text>
                 <View style={styles.sigLine} />
-              )}
-              <Text style={styles.sigName}>{clientName || '\u2014'}</Text>
-              {contract.signed_at && (
-                <Text style={styles.sigDate}>
-                  {format(new Date(contract.signed_at), 'MMM d, yyyy')}
-                </Text>
-              )}
-            </View>
-
-            {/* Provider */}
-            <View style={styles.sigBlock}>
-              <Text style={styles.sigLabel}>{t.provider}</Text>
-              <View style={styles.sigLine} />
-              <Text style={styles.sigName}>{provider.companyName}</Text>
+                <Text style={styles.sigName}>{provider.companyName}</Text>
+              </View>
             </View>
           </View>
         </View>

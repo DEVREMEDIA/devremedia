@@ -1,0 +1,229 @@
+<h2>Contract System — Final Design Overview</h2>
+<p class="subtitle">Complete redesign: PDF, platform view, signing flow</p>
+
+<!-- Section 1: PDF Design -->
+<div class="section">
+  <h3>1. PDF Design — Dark Header/Footer + White Body + Gold</h3>
+  <div class="mockup">
+    <div class="mockup-header">Contract PDF — New Design</div>
+    <div class="mockup-body" style="padding:0;overflow:hidden;">
+      <div style="font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;">
+        <!-- Dark Header -->
+        <div style="background:#09090b;padding:20px 24px;">
+          <div style="display:flex;justify-content:space-between;align-items:flex-end;">
+            <div>
+              <div style="font-size:18px;font-weight:800;color:#ffffff;letter-spacing:-0.5px;font-family:Georgia,'Times New Roman',serif;">Devre Media.</div>
+              <div style="font-size:7px;color:#71717a;letter-spacing:2px;text-transform:uppercase;margin-top:2px;">social entertainment</div>
+            </div>
+            <div style="text-align:right;">
+              <div style="font-size:8px;color:#d4a843;letter-spacing:2px;font-weight:700;">ΣΥΜΒΑΣΗ ΠΑΡΟΧΗΣ ΥΠΗΡΕΣΙΩΝ</div>
+              <div style="font-size:7px;color:#52525b;margin-top:2px;">DM-2026-A1B2C3</div>
+            </div>
+          </div>
+        </div>
+        <div style="height:2px;background:linear-gradient(90deg,#d4a843,#b8942e);"></div>
+
+        <!-- White Body -->
+        <div style="background:#ffffff;padding:18px 24px;">
+          <!-- Dates -->
+          <div style="display:flex;justify-content:space-between;margin-bottom:14px;">
+            <div><div style="font-size:6px;color:#71717a;letter-spacing:1px;">ΗΜΕΡΟΜΗΝΙΑ</div><div style="font-size:9px;color:#09090b;font-weight:600;">20 Μαρτίου 2026</div></div>
+            <div style="text-align:right;"><div style="font-size:6px;color:#71717a;letter-spacing:1px;">ΠΡΟΘΕΣΜΙΑ ΥΠΟΓΡΑΦΗΣ</div><div style="font-size:9px;color:#09090b;font-weight:600;">15 Απριλίου 2026</div></div>
+          </div>
+
+          <!-- Parties -->
+          <div style="font-size:7px;color:#d4a843;letter-spacing:2px;font-weight:700;margin-bottom:6px;">ΣΥΜΒΑΛΛΟΜΕΝΑ ΜΕΡΗ</div>
+          <div style="display:flex;gap:10px;margin-bottom:14px;">
+            <div style="flex:1;background:#fafafa;border-radius:6px;padding:10px;border-left:3px solid #d4a843;">
+              <div style="font-size:6px;color:#71717a;letter-spacing:1px;">ΠΑΡΟΧΟΣ ΥΠΗΡΕΣΙΩΝ</div>
+              <div style="font-size:10px;color:#09090b;font-weight:700;">ΝΤΕΒΡΕΝΤΛΗΣ ΑΓΓΕΛΟΣ ΝΙΚΟΛΑΟΣ</div>
+              <div style="font-size:7px;color:#71717a;margin-top:2px;">ΑΦΜ: 160594763 · ΔΟΥ: ΚΑΛΑΜΑΡΙΑΣ</div>
+              <div style="font-size:7px;color:#71717a;">Σοφούλη Θεμιστοκλή 88, Καλαμαριά</div>
+            </div>
+            <div style="flex:1;background:#fafafa;border-radius:6px;padding:10px;border-left:3px solid #27272a;">
+              <div style="font-size:6px;color:#71717a;letter-spacing:1px;">ΠΕΛΑΤΗΣ</div>
+              <div style="font-size:10px;color:#09090b;font-weight:700;">Κώστας Παπαδόπουλος</div>
+              <div style="font-size:7px;color:#71717a;margin-top:2px;">Brand Campaign 2026</div>
+            </div>
+          </div>
+
+          <!-- Scope -->
+          <div style="font-size:7px;color:#d4a843;letter-spacing:2px;font-weight:700;margin-bottom:6px;">ΑΝΤΙΚΕΙΜΕΝΟ ΥΠΗΡΕΣΙΩΝ</div>
+          <div style="background:#fafafa;border:1px solid #e4e4e7;border-radius:6px;padding:10px;margin-bottom:14px;">
+            <div style="font-size:8px;color:#09090b;line-height:1.6;">Παραγωγή 3 promotional videos (60sec each), drone footage, color grading, sound design. Includes 2 revision rounds per video.</div>
+          </div>
+
+          <!-- Financial -->
+          <div style="font-size:7px;color:#d4a843;letter-spacing:2px;font-weight:700;margin-bottom:6px;">ΟΙΚΟΝΟΜΙΚΟΙ ΟΡΟΙ</div>
+          <div style="display:flex;gap:10px;margin-bottom:14px;">
+            <div style="flex:1;background:#fafafa;border-radius:6px;padding:10px;border-top:2px solid #d4a843;">
+              <div style="font-size:6px;color:#71717a;letter-spacing:1px;">ΣΥΝΟΛΙΚΟ ΠΟΣΟ</div>
+              <div style="font-size:16px;color:#09090b;font-weight:800;">€5.000,00</div>
+            </div>
+            <div style="flex:1;background:#fafafa;border-radius:6px;padding:10px;border-top:2px solid #27272a;">
+              <div style="font-size:6px;color:#71717a;letter-spacing:1px;">ΤΡΟΠΟΣ ΠΛΗΡΩΜΗΣ</div>
+              <div style="font-size:11px;color:#09090b;font-weight:600;">Τραπεζική Κατάθεση</div>
+            </div>
+          </div>
+
+          <!-- Special Terms -->
+          <div style="font-size:7px;color:#d4a843;letter-spacing:2px;font-weight:700;margin-bottom:6px;">ΕΙΔΙΚΟΙ ΟΡΟΙ ΠΡΟΤΑΣΗΣ</div>
+          <div style="background:#fafafa;border:1px solid #e4e4e7;border-radius:6px;padding:10px;margin-bottom:14px;">
+            <div style="font-size:8px;color:#09090b;line-height:1.6;">
+              <div style="margin-bottom:3px;">• Προκαταβολή 40% πριν την έναρξη</div>
+              <div style="margin-bottom:3px;">• Παράδοση εντός 30 ημερών</div>
+              <div>• Τα raw files παραμένουν ιδιοκτησία του παρόχου</div>
+            </div>
+          </div>
+
+          <!-- General Terms (abbreviated) -->
+          <div style="font-size:7px;color:#d4a843;letter-spacing:2px;font-weight:700;margin-bottom:6px;">ΓΕΝΙΚΟΙ ΟΡΟΙ</div>
+          <div style="font-size:7px;color:#52525b;line-height:1.5;margin-bottom:14px;">
+            <div style="margin-bottom:3px;"><span style="color:#d4a843;font-weight:700;">1.</span> Ο πάροχος δεσμεύεται να παραδώσει τις υπηρεσίες...</div>
+            <div style="margin-bottom:3px;"><span style="color:#d4a843;font-weight:700;">2.</span> Η πληρωμή οφείλεται σύμφωνα με τους συμφωνημένους...</div>
+            <div style="margin-bottom:3px;"><span style="color:#d4a843;font-weight:700;">3.</span> Αιτήματα αναθεώρησης εντός 7 ημερών...</div>
+            <div style="color:#a1a1aa;font-style:italic;">... +4 more terms</div>
+          </div>
+
+          <!-- Signatures -->
+          <div style="border-top:1px solid #e4e4e7;padding-top:12px;">
+            <div style="font-size:7px;color:#d4a843;letter-spacing:2px;font-weight:700;margin-bottom:8px;">ΥΠΟΓΡΑΦΕΣ</div>
+            <div style="display:flex;gap:24px;">
+              <div style="flex:1;">
+                <div style="font-size:6px;color:#71717a;letter-spacing:1px;margin-bottom:6px;">ΠΕΛΑΤΗΣ</div>
+                <div style="border-bottom:1px solid #d4d4d8;height:40px;margin-bottom:4px;"></div>
+                <div style="font-size:8px;color:#09090b;font-weight:600;">Κώστας Παπαδόπουλος</div>
+              </div>
+              <div style="flex:1;">
+                <div style="font-size:6px;color:#71717a;letter-spacing:1px;margin-bottom:6px;">ΠΑΡΟΧΟΣ ΥΠΗΡΕΣΙΩΝ</div>
+                <div style="border-bottom:1px solid #d4d4d8;height:40px;margin-bottom:4px;"></div>
+                <div style="font-size:8px;color:#09090b;font-weight:600;">Devre Media</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Dark Footer -->
+        <div style="background:#09090b;padding:10px 24px;display:flex;justify-content:space-between;align-items:center;">
+          <div style="font-size:6px;color:#52525b;">Νομικά δεσμευτικό έγγραφο · DM-2026-A1B2C3</div>
+          <div style="font-size:6px;color:#52525b;">Σελ. 1/1 · devremedia.com</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Section 2: Platform View -->
+<div class="section">
+  <h3>2. Platform View — Embedded PDF Preview</h3>
+  <div class="mockup">
+    <div class="mockup-header">Contract Page — Admin/Client View</div>
+    <div class="mockup-body" style="background:#09090b;padding:20px;">
+      <!-- Page Header -->
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;">
+        <div>
+          <div style="font-size:8px;color:#71717a;">← Back to Project</div>
+          <div style="font-size:16px;font-weight:700;color:#ffffff;margin-top:4px;">Video Production Agreement</div>
+          <div style="display:flex;gap:8px;margin-top:6px;">
+            <span style="background:#d4a843;color:#09090b;font-size:7px;padding:2px 8px;border-radius:10px;font-weight:600;">Sent</span>
+            <span style="font-size:7px;color:#71717a;">Created March 20, 2026</span>
+          </div>
+        </div>
+        <div style="display:flex;gap:6px;">
+          <div style="background:#18181b;border:1px solid #27272a;border-radius:6px;padding:6px 12px;font-size:8px;color:#ffffff;cursor:pointer;">⬇ Download PDF</div>
+          <div style="background:#d4a843;border-radius:6px;padding:6px 12px;font-size:8px;color:#09090b;font-weight:600;cursor:pointer;">⬆ Upload Signed</div>
+        </div>
+      </div>
+
+      <!-- PDF Embed -->
+      <div style="background:#525252;border-radius:8px;padding:8px;min-height:200px;display:flex;align-items:center;justify-content:center;">
+        <div style="background:#ffffff;width:85%;border-radius:4px;padding:16px;box-shadow:0 4px 12px rgba(0,0,0,0.3);">
+          <div style="background:#09090b;border-radius:4px;padding:10px;margin-bottom:8px;">
+            <div style="display:flex;justify-content:space-between;align-items:center;">
+              <div style="font-size:10px;font-weight:800;color:#ffffff;font-family:Georgia,serif;">Devre Media.</div>
+              <div style="font-size:6px;color:#d4a843;">ΣΥΜΒΑΣΗ ΠΑΡΟΧΗΣ ΥΠΗΡΕΣΙΩΝ</div>
+            </div>
+          </div>
+          <div style="height:2px;background:#d4a843;margin-bottom:8px;border-radius:1px;"></div>
+          <div style="font-size:7px;color:#999;text-align:center;padding:20px 0;">
+            [ Embedded PDF Preview — full contract visible here ]
+          </div>
+        </div>
+      </div>
+
+      <!-- Contract Info Cards below -->
+      <div style="display:flex;gap:8px;margin-top:12px;">
+        <div style="flex:1;background:#18181b;border:1px solid #27272a;border-radius:8px;padding:10px;">
+          <div style="font-size:6px;color:#71717a;letter-spacing:1px;">CLIENT</div>
+          <div style="font-size:10px;color:#ffffff;font-weight:600;margin-top:2px;">Κώστας Παπαδόπουλος</div>
+        </div>
+        <div style="flex:1;background:#18181b;border:1px solid #27272a;border-radius:8px;padding:10px;">
+          <div style="font-size:6px;color:#71717a;letter-spacing:1px;">AMOUNT</div>
+          <div style="font-size:10px;color:#d4a843;font-weight:600;margin-top:2px;">€5.000,00</div>
+        </div>
+        <div style="flex:1;background:#18181b;border:1px solid #27272a;border-radius:8px;padding:10px;">
+          <div style="font-size:6px;color:#71717a;letter-spacing:1px;">DEADLINE</div>
+          <div style="font-size:10px;color:#ffffff;font-weight:600;margin-top:2px;">15 Απρ 2026</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Section 3: Signing Flow -->
+<div class="section">
+  <h3>3. Signing Flow — Download → Sign → Upload</h3>
+  <div style="display:flex;gap:12px;margin-top:12px;">
+    <div style="flex:1;background:rgba(212,168,67,0.08);border:1px solid rgba(212,168,67,0.2);border-radius:10px;padding:16px;text-align:center;">
+      <div style="font-size:28px;margin-bottom:8px;">📥</div>
+      <h4 style="margin:0 0 4px;font-size:14px;">Step 1</h4>
+      <p style="margin:0;font-size:12px;color:#a1a1aa;">Client downloads PDF from platform</p>
+    </div>
+    <div style="flex:1;background:rgba(212,168,67,0.08);border:1px solid rgba(212,168,67,0.2);border-radius:10px;padding:16px;text-align:center;">
+      <div style="font-size:28px;margin-bottom:8px;">✍️</div>
+      <h4 style="margin:0 0 4px;font-size:14px;">Step 2</h4>
+      <p style="margin:0;font-size:12px;color:#a1a1aa;">Client signs physically or digitally (offline)</p>
+    </div>
+    <div style="flex:1;background:rgba(212,168,67,0.08);border:1px solid rgba(212,168,67,0.2);border-radius:10px;padding:16px;text-align:center;">
+      <div style="font-size:28px;margin-bottom:8px;">📤</div>
+      <h4 style="margin:0 0 4px;font-size:14px;">Step 3</h4>
+      <p style="margin:0;font-size:12px;color:#a1a1aa;">Client uploads signed PDF back to platform</p>
+    </div>
+    <div style="flex:1;background:rgba(212,168,67,0.08);border:1px solid rgba(212,168,67,0.2);border-radius:10px;padding:16px;text-align:center;">
+      <div style="font-size:28px;margin-bottom:8px;">✅</div>
+      <h4 style="margin:0 0 4px;font-size:14px;">Step 4</h4>
+      <p style="margin:0;font-size:12px;color:#a1a1aa;">Admin reviews & marks contract as signed</p>
+    </div>
+  </div>
+</div>
+
+<!-- Section 4: What Changes -->
+<div class="section">
+  <h3>4. Summary of Changes</h3>
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:8px;">
+    <div style="background:rgba(239,68,68,0.08);border:1px solid rgba(239,68,68,0.2);border-radius:10px;padding:16px;">
+      <h4 style="color:#ef4444;margin:0 0 8px;font-size:13px;">Removing</h4>
+      <ul style="margin:0;padding-left:16px;font-size:12px;color:#a1a1aa;line-height:1.8;">
+        <li>Raw HTML contract view</li>
+        <li>Digital signature pad</li>
+        <li>Old blue/slate color scheme</li>
+        <li>Hardcoded English-only terms</li>
+        <li>generateContractContent() HTML builder</li>
+      </ul>
+    </div>
+    <div style="background:rgba(34,197,94,0.08);border:1px solid rgba(34,197,94,0.2);border-radius:10px;padding:16px;">
+      <h4 style="color:#22c55e;margin:0 0 8px;font-size:13px;">Adding</h4>
+      <ul style="margin:0;padding-left:16px;font-size:12px;color:#a1a1aa;line-height:1.8;">
+        <li>Dark/gold branded PDF template</li>
+        <li>Embedded PDF preview in platform</li>
+        <li>Scope description textarea (admin form)</li>
+        <li>Special terms textarea (admin form)</li>
+        <li>Signed PDF upload flow (client)</li>
+        <li>Bilingual labels & terms (el/en)</li>
+        <li>Provider details from env vars</li>
+        <li>Smart page breaks (no mid-section cuts)</li>
+        <li>Page numbers in footer</li>
+      </ul>
+    </div>
+  </div>
+</div>

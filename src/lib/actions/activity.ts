@@ -32,9 +32,9 @@ export async function getActivityByClient(
     const projectIds = (projects ?? []).map((p) => p.id);
 
     // Build filter: client entity OR project entities
-    // activity_logs has entity_type + entity_id but no client_id column
+    // activity_log has entity_type + entity_id but no client_id column
     let query = supabase
-      .from('activity_logs')
+      .from('activity_log')
       .select(
         'id, entity_type, entity_id, action, user_id, changes, created_at, user:user_profiles(id, display_name, avatar_url, role)',
       )

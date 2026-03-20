@@ -53,6 +53,13 @@ const nextConfig: NextConfig = {
   async headers() {
     return [
       {
+        source: '/api/contracts/:contractId/pdf',
+        headers: [
+          ...securityHeaders.filter((h) => h.key !== 'X-Frame-Options'),
+          { key: 'X-Frame-Options', value: 'SAMEORIGIN' },
+        ],
+      },
+      {
         source: '/(.*)',
         headers: securityHeaders,
       },

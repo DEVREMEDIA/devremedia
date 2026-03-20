@@ -112,7 +112,7 @@ export async function getRecentActivity(limit: number = 10): Promise<ActivityLog
   try {
     const supabase = await createClient();
     const { data, error } = await supabase
-      .from('activity_logs')
+      .from('activity_log')
       .select('*, user:user_profiles(*)')
       .order('created_at', { ascending: false })
       .limit(limit);
@@ -124,19 +124,22 @@ export async function getRecentActivity(limit: number = 10): Promise<ActivityLog
   }
 }
 
-export async function getUpcomingDeadlines(limit: number = 5): Promise<ProjectWithClient[]> {
+export async function getUpcomingDeadlines(daysAhead: number = 30): Promise<ProjectWithClient[]> {
   try {
     const supabase = await createClient();
     const today = new Date().toISOString().split('T')[0];
+    const futureDate = new Date();
+    futureDate.setDate(futureDate.getDate() + daysAhead);
+    const futureDateStr = futureDate.toISOString().split('T')[0];
 
     const { data, error } = await supabase
       .from('projects')
       .select('*, client:clients(*)')
       .gte('deadline', today)
+      .lte('deadline', futureDateStr)
       .neq('status', 'archived')
       .neq('status', 'delivered')
-      .order('deadline', { ascending: true })
-      .limit(limit);
+      .order('deadline', { ascending: true });
 
     if (error || !data) return [];
     return data as ProjectWithClient[];

@@ -25,15 +25,6 @@ export function ContractView({ contract }: ContractViewProps) {
 
   return (
     <div className="space-y-4">
-      {/* PDF Preview */}
-      <div className="rounded-lg border bg-muted/30 overflow-hidden" style={{ height: '70vh' }}>
-        <iframe
-          src={`/api/contracts/${contract.id}/pdf?inline=true`}
-          className="w-full h-full border-0"
-          title={contract.title}
-        />
-      </div>
-
       {/* Metadata Cards */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
         <Card>

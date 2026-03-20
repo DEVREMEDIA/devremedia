@@ -54,8 +54,9 @@ export const contractStyles = StyleSheet.create({
     alignItems: 'center',
   },
   headerLogo: {
-    width: 120,
-    height: 45,
+    width: 160,
+    height: 35,
+    objectFit: 'contain' as const,
   },
   headerRight: {
     alignItems: 'flex-end',

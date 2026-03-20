@@ -1,10 +1,16 @@
 'use client';
 
 import * as React from 'react';
+import Link from 'next/link';
+import { useTranslations } from 'next-intl';
+import { format } from 'date-fns';
+import { isPast } from 'date-fns';
+import { Search, ChevronDown, ChevronUp, AlertTriangle, Building2 } from 'lucide-react';
 import { PageHeader } from '@/components/shared/page-header';
-import { DataTable } from '@/components/shared/data-table';
 import { StatusBadge } from '@/components/shared/status-badge';
-import { Button } from '@/components/ui/button';
+import { Card, CardContent } from '@/components/ui/card';
+import { Input } from '@/components/ui/input';
+import { Badge } from '@/components/ui/badge';
 import {
   Select,
   SelectContent,
@@ -12,27 +18,11 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { ConfirmDialog } from '@/components/shared/confirm-dialog';
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu';
-import { ColumnDef } from '@tanstack/react-table';
-import { MoreHorizontal, Eye, Trash2 } from 'lucide-react';
-import { INVOICE_STATUSES, INVOICE_STATUS_LABELS } from '@/lib/constants';
-import { deleteInvoice } from '@/lib/actions/invoices';
-import { toast } from 'sonner';
-import { useRouter } from 'next/navigation';
-import Link from 'next/link';
-import { format } from 'date-fns';
-import { useTranslations } from 'next-intl';
 
 interface Invoice {
   id: string;
   invoice_number: string;
-  client: { id: string; contact_name: string; company_name?: string };
+  client: { id: string; contact_name: string; company_name?: string | null };
   total: number;
   status: string;
   issue_date: string;
@@ -43,160 +33,283 @@ interface InvoicesContentProps {
   invoices: Invoice[];
 }
 
+interface ClientGroup {
+  clientId: string;
+  clientName: string;
+  invoices: Invoice[];
+  totalInvoiced: number;
+  totalPaid: number;
+  balance: number;
+  overdueCount: number;
+}
+
 const formatCurrency = (amount: number) => {
   return new Intl.NumberFormat('el-GR', { style: 'currency', currency: 'EUR' }).format(amount);
 };
 
-export function InvoicesContent({ invoices: initialInvoices }: InvoicesContentProps) {
-  const router = useRouter();
-  const t = useTranslations('invoices');
-  const tc = useTranslations('common');
-  const [statusFilter, setStatusFilter] = React.useState<string>('all');
-  const [deleteDialogOpen, setDeleteDialogOpen] = React.useState(false);
-  const [deletingId, setDeletingId] = React.useState<string | null>(null);
-  const [isDeleting, setIsDeleting] = React.useState(false);
+function groupByClient(invoices: Invoice[]): ClientGroup[] {
+  const groups = new Map<string, ClientGroup>();
 
-  const filteredInvoices = React.useMemo(() => {
-    if (statusFilter === 'all') return initialInvoices;
-    return initialInvoices.filter((invoice) => invoice.status === statusFilter);
-  }, [initialInvoices, statusFilter]);
+  for (const invoice of invoices) {
+    const clientId = invoice.client?.id ?? 'unknown';
+    const clientName = invoice.client?.company_name || invoice.client?.contact_name || '—';
 
-  const handleDelete = async () => {
-    if (!deletingId) return;
-
-    setIsDeleting(true);
-    const result = await deleteInvoice(deletingId);
-    setIsDeleting(false);
-
-    if (result.error) {
-      toast.error(tc('failedToDelete'), { description: result.error });
-    } else {
-      toast.success(t('invoiceDeleted'));
-      setDeleteDialogOpen(false);
-      setDeletingId(null);
-      router.refresh();
+    if (!groups.has(clientId)) {
+      groups.set(clientId, {
+        clientId,
+        clientName,
+        invoices: [],
+        totalInvoiced: 0,
+        totalPaid: 0,
+        balance: 0,
+        overdueCount: 0,
+      });
     }
+
+    const group = groups.get(clientId)!;
+    group.invoices.push(invoice);
+    group.totalInvoiced += invoice.total ?? 0;
+
+    if (invoice.status === 'paid') {
+      group.totalPaid += invoice.total ?? 0;
+    } else if (invoice.status !== 'cancelled' && invoice.status !== 'draft') {
+      group.balance += invoice.total ?? 0;
+    }
+
+    const isOverdue =
+      invoice.status !== 'paid' &&
+      invoice.status !== 'cancelled' &&
+      invoice.status !== 'draft' &&
+      isPast(new Date(invoice.due_date));
+    if (isOverdue) {
+      group.overdueCount += 1;
+    }
+  }
+
+  return Array.from(groups.values()).sort((a, b) => a.clientName.localeCompare(b.clientName, 'el'));
+}
+
+export function InvoicesContent({ invoices: initialInvoices }: InvoicesContentProps) {
+  const t = useTranslations('invoices');
+  const [search, setSearch] = React.useState('');
+  const [filter, setFilter] = React.useState<string>('all');
+  const [expandedClient, setExpandedClient] = React.useState<string | null>(null);
+
+  const clientGroups = React.useMemo(() => groupByClient(initialInvoices), [initialInvoices]);
+
+  const filteredGroups = React.useMemo(() => {
+    let groups = clientGroups;
+
+    if (search) {
+      const q = search.toLowerCase();
+      groups = groups.filter((g) => g.clientName.toLowerCase().includes(q));
+    }
+
+    if (filter === 'withBalance') {
+      groups = groups.filter((g) => g.balance > 0);
+    } else if (filter === 'withOverdue') {
+      groups = groups.filter((g) => g.overdueCount > 0);
+    }
+
+    return groups;
+  }, [clientGroups, search, filter]);
+
+  const handleToggle = (clientId: string) => {
+    setExpandedClient((prev) => (prev === clientId ? null : clientId));
   };
 
-  const columns: ColumnDef<Invoice>[] = [
-    {
-      accessorKey: 'invoice_number',
-      header: t('invoiceNumber'),
-      cell: ({ row }) => (
-        <Link
-          href={`/admin/invoices/${row.original.id}`}
-          className="font-medium text-primary hover:underline"
-        >
-          {row.original.invoice_number}
-        </Link>
-      ),
-    },
-    {
-      accessorKey: 'client',
-      header: tc('client'),
-      cell: ({ row }) => {
-        const client = row.original.client;
-        return client?.company_name || client?.contact_name || '—';
-      },
-    },
-    {
-      accessorKey: 'total',
-      header: tc('amount'),
-      cell: ({ row }) => formatCurrency(row.original.total),
-    },
-    {
-      accessorKey: 'status',
-      header: tc('status'),
-      cell: ({ row }) => <StatusBadge status={row.original.status} />,
-    },
-    {
-      accessorKey: 'issue_date',
-      header: t('issueDate'),
-      cell: ({ row }) => format(new Date(row.original.issue_date), 'MMM d, yyyy'),
-    },
-    {
-      accessorKey: 'due_date',
-      header: t('dueDate'),
-      cell: ({ row }) => format(new Date(row.original.due_date), 'MMM d, yyyy'),
-    },
-    {
-      id: 'actions',
-      cell: ({ row }) => {
-        const invoice = row.original;
-        return (
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
-                <span className="sr-only">Open menu</span>
-                <MoreHorizontal className="h-4 w-4" />
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end">
-              <DropdownMenuItem asChild>
-                <Link href={`/admin/invoices/${invoice.id}`}>
-                  <Eye className="mr-2 h-4 w-4" />
-                  {tc('view')}
-                </Link>
-              </DropdownMenuItem>
-              <DropdownMenuItem
-                className="text-destructive focus:text-destructive"
-                onClick={() => {
-                  setDeletingId(invoice.id);
-                  setDeleteDialogOpen(true);
-                }}
-              >
-                <Trash2 className="mr-2 h-4 w-4" />
-                {tc('delete')}
-              </DropdownMenuItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
-        );
-      },
-    },
-  ];
-
   return (
-    <>
-      <div className="space-y-6">
-        <PageHeader title={t('title')}>
-          {/* Invoices are created from client detail page via upload */}
-        </PageHeader>
+    <div className="space-y-6">
+      <PageHeader title={t('title')} description={t('description')} />
 
-        <div className="flex items-center gap-4">
-          <Select value={statusFilter} onValueChange={setStatusFilter}>
-            <SelectTrigger className="w-full sm:w-[180px]">
-              <SelectValue placeholder={tc('filterByStatus')} />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">{tc('allStatuses')}</SelectItem>
-              {INVOICE_STATUSES.map((status) => (
-                <SelectItem key={status} value={status}>
-                  {INVOICE_STATUS_LABELS[status]}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
+        <div className="relative flex-1">
+          <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+          <Input
+            placeholder={t('searchClient')}
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            className="pl-9"
+          />
         </div>
-
-        <DataTable
-          columns={columns}
-          data={filteredInvoices}
-          searchKey="invoice_number"
-          searchPlaceholder={tc('searchPlaceholder', { item: t('title').toLowerCase() })}
-          mobileHiddenColumns={['client', 'issue_date', 'due_date']}
-        />
+        <Select value={filter} onValueChange={setFilter}>
+          <SelectTrigger className="w-full sm:w-[200px]">
+            <SelectValue />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="all">{t('allClients')}</SelectItem>
+            <SelectItem value="withBalance">{t('withBalance')}</SelectItem>
+            <SelectItem value="withOverdue">{t('withOverdue')}</SelectItem>
+          </SelectContent>
+        </Select>
       </div>
 
-      <ConfirmDialog
-        open={deleteDialogOpen}
-        onOpenChange={setDeleteDialogOpen}
-        title={t('deleteInvoice')}
-        description={tc('deleteConfirmation')}
-        confirmLabel={tc('delete')}
-        onConfirm={handleDelete}
-        destructive
-        loading={isDeleting}
-      />
-    </>
+      {filteredGroups.length === 0 ? (
+        <div className="py-12 text-center text-muted-foreground">
+          {search || filter !== 'all' ? t('noClientsFound') : t('noClientsWithInvoices')}
+        </div>
+      ) : (
+        <div className="space-y-3">
+          {filteredGroups.map((group) => {
+            const isExpanded = expandedClient === group.clientId;
+            const invoiceCount = group.invoices.length;
+
+            return (
+              <Card key={group.clientId} className="overflow-hidden">
+                <button
+                  type="button"
+                  onClick={() => handleToggle(group.clientId)}
+                  className="w-full text-left cursor-pointer hover:bg-accent/50 transition-colors"
+                >
+                  <CardContent className="p-4 sm:p-5">
+                    <div className="flex items-start justify-between gap-3">
+                      <div className="flex items-center gap-3 min-w-0">
+                        <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-primary/10">
+                          <Building2 className="h-5 w-5 text-primary" />
+                        </div>
+                        <div className="min-w-0">
+                          <div className="flex items-center gap-2">
+                            <h3 className="font-semibold truncate">{group.clientName}</h3>
+                            {group.overdueCount > 0 && (
+                              <Badge variant="destructive" className="text-xs shrink-0">
+                                <AlertTriangle className="mr-1 h-3 w-3" />
+                                {t('overdueCount', { count: group.overdueCount })}
+                              </Badge>
+                            )}
+                          </div>
+                          <p className="text-sm text-muted-foreground">
+                            {invoiceCount === 1
+                              ? t('invoiceCountOne', { count: invoiceCount })
+                              : t('invoiceCount', { count: invoiceCount })}
+                          </p>
+                        </div>
+                      </div>
+
+                      <div className="flex items-center gap-4 sm:gap-6 shrink-0">
+                        <div className="hidden sm:grid sm:grid-cols-3 gap-4 text-right">
+                          <div>
+                            <p className="text-xs text-muted-foreground">{t('totalInvoiced')}</p>
+                            <p className="text-sm font-medium">
+                              {formatCurrency(group.totalInvoiced)}
+                            </p>
+                          </div>
+                          <div>
+                            <p className="text-xs text-muted-foreground">{t('totalPaid')}</p>
+                            <p className="text-sm font-medium text-green-600">
+                              {formatCurrency(group.totalPaid)}
+                            </p>
+                          </div>
+                          <div>
+                            <p className="text-xs text-muted-foreground">{t('balance')}</p>
+                            <p
+                              className={`text-sm font-bold ${group.balance > 0 ? 'text-orange-600' : 'text-muted-foreground'}`}
+                            >
+                              {formatCurrency(group.balance)}
+                            </p>
+                          </div>
+                        </div>
+                        {isExpanded ? (
+                          <ChevronUp className="h-5 w-5 text-muted-foreground" />
+                        ) : (
+                          <ChevronDown className="h-5 w-5 text-muted-foreground" />
+                        )}
+                      </div>
+                    </div>
+
+                    {/* Mobile stats row */}
+                    <div className="mt-3 grid grid-cols-3 gap-2 text-center sm:hidden">
+                      <div>
+                        <p className="text-xs text-muted-foreground">{t('totalInvoiced')}</p>
+                        <p className="text-sm font-medium">{formatCurrency(group.totalInvoiced)}</p>
+                      </div>
+                      <div>
+                        <p className="text-xs text-muted-foreground">{t('totalPaid')}</p>
+                        <p className="text-sm font-medium text-green-600">
+                          {formatCurrency(group.totalPaid)}
+                        </p>
+                      </div>
+                      <div>
+                        <p className="text-xs text-muted-foreground">{t('balance')}</p>
+                        <p
+                          className={`text-sm font-bold ${group.balance > 0 ? 'text-orange-600' : 'text-muted-foreground'}`}
+                        >
+                          {formatCurrency(group.balance)}
+                        </p>
+                      </div>
+                    </div>
+                  </CardContent>
+                </button>
+
+                {isExpanded && (
+                  <div className="border-t bg-muted/30">
+                    <div className="overflow-x-auto">
+                      <table className="w-full text-sm">
+                        <thead>
+                          <tr className="border-b text-left text-muted-foreground">
+                            <th className="px-4 py-3 font-medium">{t('invoiceNumber')}</th>
+                            <th className="px-4 py-3 font-medium hidden sm:table-cell">
+                              {t('issueDate')}
+                            </th>
+                            <th className="px-4 py-3 font-medium hidden sm:table-cell">
+                              {t('dueDate')}
+                            </th>
+                            <th className="px-4 py-3 font-medium text-right">{t('lineTotal')}</th>
+                            <th className="px-4 py-3 font-medium text-center">
+                              {t('paymentStatus')}
+                            </th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {group.invoices.map((invoice) => {
+                            const isOverdue =
+                              invoice.status !== 'paid' &&
+                              invoice.status !== 'cancelled' &&
+                              invoice.status !== 'draft' &&
+                              isPast(new Date(invoice.due_date));
+
+                            return (
+                              <tr
+                                key={invoice.id}
+                                className="border-b last:border-b-0 hover:bg-accent/30 transition-colors"
+                              >
+                                <td className="px-4 py-3">
+                                  <Link
+                                    href={`/admin/invoices/${invoice.id}`}
+                                    className="font-medium text-primary hover:underline"
+                                  >
+                                    {invoice.invoice_number}
+                                  </Link>
+                                  <div className="text-xs text-muted-foreground sm:hidden mt-0.5">
+                                    {format(new Date(invoice.issue_date), 'dd/MM/yy')}
+                                  </div>
+                                </td>
+                                <td className="px-4 py-3 hidden sm:table-cell">
+                                  {format(new Date(invoice.issue_date), 'dd/MM/yyyy')}
+                                </td>
+                                <td className="px-4 py-3 hidden sm:table-cell">
+                                  <span className={isOverdue ? 'text-destructive font-medium' : ''}>
+                                    {format(new Date(invoice.due_date), 'dd/MM/yyyy')}
+                                  </span>
+                                </td>
+                                <td className="px-4 py-3 text-right font-medium">
+                                  {formatCurrency(invoice.total)}
+                                </td>
+                                <td className="px-4 py-3 text-center">
+                                  <StatusBadge status={isOverdue ? 'overdue' : invoice.status} />
+                                </td>
+                              </tr>
+                            );
+                          })}
+                        </tbody>
+                      </table>
+                    </div>
+                  </div>
+                )}
+              </Card>
+            );
+          })}
+        </div>
+      )}
+    </div>
   );
 }

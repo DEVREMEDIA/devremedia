@@ -8,7 +8,7 @@ import { getContract } from '@/lib/actions/contracts';
 import { ContractPDFTemplate } from '@/lib/pdf/contract-template';
 
 // Cache logo as base64 at module level (read once)
-const logoPath = path.join(process.cwd(), 'public', 'images', 'LOGO_WhiteLetter.png');
+const logoPath = path.join(process.cwd(), 'public', 'images', 'Logo_Horizontal_Transparent.png');
 const logoBase64 = `data:image/png;base64,${readFileSync(logoPath).toString('base64')}`;
 
 const provider = {
@@ -73,7 +73,8 @@ export async function GET(
         'Content-Disposition': disposition,
       },
     });
-  } catch {
+  } catch (err) {
+    console.error('PDF generation error:', err);
     return NextResponse.json({ error: 'Failed to generate PDF' }, { status: 500 });
   }
 }
