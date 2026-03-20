@@ -81,7 +81,9 @@ export async function getContractsByProject(projectId: string): Promise<ActionRe
   }
 }
 
-export async function getContractsByClient(clientId: string): Promise<ActionResult<Contract[]>> {
+export async function getContractsByClient(
+  clientId: string,
+): Promise<ActionResult<ContractWithProject[]>> {
   try {
     const supabase = await createClient();
     const {
@@ -91,12 +93,14 @@ export async function getContractsByClient(clientId: string): Promise<ActionResu
 
     const { data, error } = await supabase
       .from('contracts')
-      .select('*, project:projects(title)')
+      .select(
+        'id, title, status, client_id, project_id, sent_at, viewed_at, signed_at, created_at, project:projects(id, title)',
+      )
       .eq('client_id', clientId)
       .order('created_at', { ascending: false });
 
     if (error) return { data: null, error: error.message };
-    return { data, error: null };
+    return { data: data as unknown as ContractWithProject[], error: null };
   } catch (err: unknown) {
     return { data: null, error: err instanceof Error ? err.message : 'Failed to fetch contracts' };
   }
