@@ -1,6 +1,6 @@
 'use client';
 
-import { ArrowLeft, Download, Send, Trash2 } from 'lucide-react';
+import { ArrowLeft, Check, Download, Send, Trash2, X } from 'lucide-react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';
@@ -10,7 +10,7 @@ import { Button } from '@/components/ui/button';
 import { PageHeader } from '@/components/shared/page-header';
 import { ContractView } from '@/components/shared/contract-view';
 import { ConfirmDialog } from '@/components/shared/confirm-dialog';
-import { deleteContract, sendContract } from '@/lib/actions/contracts';
+import { deleteContract, sendContract, reviewSignedContract } from '@/lib/actions/contracts';
 import type { Contract } from '@/types';
 
 interface ContractViewPageProps {
@@ -22,6 +22,8 @@ export function ContractViewPage({ contract }: ContractViewPageProps) {
   const t = useTranslations('contracts');
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
+  const [isApproving, setIsApproving] = useState(false);
+  const [isRejecting, setIsRejecting] = useState(false);
 
   const handleDelete = async () => {
     setIsDeleting(true);
@@ -79,6 +81,32 @@ export function ContractViewPage({ contract }: ContractViewPageProps) {
     }
   };
 
+  const handleApprove = async () => {
+    setIsApproving(true);
+    const result = await reviewSignedContract(contract.id, 'approve');
+    if (result.error) {
+      toast.error(result.error);
+      setIsApproving(false);
+      return;
+    }
+    toast.success(t('contractApproved'));
+    router.refresh();
+    setIsApproving(false);
+  };
+
+  const handleReject = async () => {
+    setIsRejecting(true);
+    const result = await reviewSignedContract(contract.id, 'reject');
+    if (result.error) {
+      toast.error(result.error);
+      setIsRejecting(false);
+      return;
+    }
+    toast.success(t('contractRejected'));
+    router.refresh();
+    setIsRejecting(false);
+  };
+
   return (
     <div className="max-w-4xl mx-auto">
       <PageHeader title={contract.title}>
@@ -89,17 +117,27 @@ export function ContractViewPage({ contract }: ContractViewPageProps) {
               {t('backToProject')}
             </Link>
           </Button>
-          {contract.status === 'signed' && (
-            <Button size="sm" variant="outline" onClick={handleDownloadPDF}>
-              <Download className="h-4 w-4 mr-2" />
-              {t('downloadPdf')}
-            </Button>
-          )}
+          <Button size="sm" variant="outline" onClick={handleDownloadPDF}>
+            <Download className="h-4 w-4 mr-2" />
+            {t('downloadPdf')}
+          </Button>
           {contract.status === 'draft' && (
             <Button size="sm" onClick={handleSendToClient} disabled={isSending}>
               <Send className="h-4 w-4 mr-2" />
               {isSending ? t('sending') : t('sendToClient')}
             </Button>
+          )}
+          {contract.status === 'pending_review' && (
+            <>
+              <Button size="sm" onClick={handleApprove} disabled={isApproving}>
+                <Check className="h-4 w-4 mr-2" />
+                {isApproving ? t('approving') : t('approveContract')}
+              </Button>
+              <Button size="sm" variant="outline" onClick={handleReject} disabled={isRejecting}>
+                <X className="h-4 w-4 mr-2" />
+                {isRejecting ? t('rejecting') : t('rejectContract')}
+              </Button>
+            </>
           )}
           <Button
             size="sm"
@@ -114,7 +152,7 @@ export function ContractViewPage({ contract }: ContractViewPageProps) {
       </PageHeader>
 
       <div className="mt-6">
-        <ContractView contract={contract} showSignature />
+        <ContractView contract={contract} />
       </div>
 
       <ConfirmDialog

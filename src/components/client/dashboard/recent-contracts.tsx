@@ -3,7 +3,7 @@
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { StatusBadge } from '@/components/shared/status-badge';
-import { FileText, Download, Pen } from 'lucide-react';
+import { FileText, Download, Upload } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { format } from 'date-fns';
 import { EmptyState } from '@/components/shared/empty-state';
@@ -69,15 +69,12 @@ export function RecentContracts({ contracts }: RecentContractsProps) {
               </div>
               <div className="flex items-center gap-2 shrink-0 ml-2">
                 {isContractSignable(contract.status) && (
-                  <Button
-                    size="sm"
-                    onClick={() => router.push(`/client/contracts/${contract.id}/sign`)}
-                  >
-                    <Pen className="h-3.5 w-3.5 mr-1" />
-                    {t('signContract')}
+                  <Button size="sm" onClick={() => router.push(`/client/contracts/${contract.id}`)}>
+                    <Upload className="h-3.5 w-3.5 mr-1" />
+                    {t('uploadSigned')}
                   </Button>
                 )}
-                {contract.status === 'signed' && (
+                {['signed', 'pending_review'].includes(contract.status) && (
                   <Button
                     size="sm"
                     variant="outline"
@@ -87,15 +84,17 @@ export function RecentContracts({ contracts }: RecentContractsProps) {
                     {t('downloadPdf')}
                   </Button>
                 )}
-                {!isContractSignable(contract.status) && contract.status !== 'signed' && (
-                  <Button
-                    size="sm"
-                    variant="outline"
-                    onClick={() => router.push(`/client/contracts/${contract.id}`)}
-                  >
-                    {t('viewContract')}
-                  </Button>
-                )}
+                {!isContractSignable(contract.status) &&
+                  contract.status !== 'signed' &&
+                  contract.status !== 'pending_review' && (
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      onClick={() => router.push(`/client/contracts/${contract.id}`)}
+                    >
+                      {t('viewContract')}
+                    </Button>
+                  )}
               </div>
             </div>
           ))}

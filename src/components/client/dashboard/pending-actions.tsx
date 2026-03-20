@@ -32,9 +32,9 @@ export function PendingActions({ invoices, unsignedContracts = [] }: PendingActi
       id: contract.id,
       title: contract.title,
       description: t('signatureRequired'),
-      action: t('signContract'),
+      action: t('uploadSigned'),
       icon: FileText,
-      onClick: () => router.push(`/client/contracts/${contract.id}/sign`),
+      onClick: () => router.push(`/client/contracts/${contract.id}`),
     })),
   ];
 

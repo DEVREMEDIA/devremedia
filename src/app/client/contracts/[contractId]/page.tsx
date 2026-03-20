@@ -1,5 +1,5 @@
 import { getContract } from '@/lib/actions/contracts';
-import { notFound, redirect } from 'next/navigation';
+import { notFound } from 'next/navigation';
 import { ContractViewClient } from './contract-view-client';
 
 interface ClientContractPageProps {
@@ -26,11 +26,6 @@ export default async function ClientContractPage({ params }: ClientContractPageP
   }
 
   const contract = result.data;
-
-  // Redirect to sign page if contract is not signed yet
-  if (contract.status === 'sent' || contract.status === 'viewed') {
-    redirect(`/client/contracts/${contractId}/sign`);
-  }
 
   return (
     <div className="container mx-auto px-4 py-6 sm:px-6 max-w-4xl">

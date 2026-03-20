@@ -1,109 +1,86 @@
 'use client';
 
-import Image from 'next/image';
 import { format } from 'date-fns';
-import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import { StatusBadge } from '@/components/shared/status-badge';
-import { Badge } from '@/components/ui/badge';
-import { FileText } from 'lucide-react';
-import { sanitizeHtml } from '@/lib/sanitize';
+import { Card, CardContent } from '@/components/ui/card';
 import { useTranslations } from 'next-intl';
 
 interface Contract {
   id: string;
   title: string;
-  content: string;
   status: string;
   created_at: string;
   expires_at?: string | null;
-  signature_image?: string | null;
-  signed_at?: string | null;
+  agreed_amount?: number | null;
+  payment_method?: string | null;
+  client?: { contact_name?: string | null; company_name?: string | null } | null;
 }
 
 interface ContractViewProps {
   contract: Contract;
-  showSignature?: boolean;
 }
 
-export function ContractView({ contract, showSignature = false }: ContractViewProps) {
+export function ContractView({ contract }: ContractViewProps) {
   const t = useTranslations('contracts');
+
   return (
-    <div className="space-y-6">
-      <Card>
-        <CardHeader className="space-y-4 border-b">
-          <div className="flex items-start justify-between">
-            <div className="flex items-center gap-3">
-              <div className="h-12 w-12 rounded-lg bg-primary/10 flex items-center justify-center">
-                <FileText className="h-6 w-6 text-primary" />
-              </div>
-              <div>
-                <h1 className="text-2xl font-bold">{contract.title}</h1>
-                <div className="flex items-center gap-3 mt-2">
-                  <StatusBadge status={contract.status} />
-                  <span className="text-sm text-muted-foreground">
-                    {t('created')}{' '}
-                    {new Date(contract.created_at).toLocaleDateString(undefined, {
-                      year: 'numeric',
-                      month: 'long',
-                      day: 'numeric',
-                    })}
-                  </span>
-                </div>
-              </div>
+    <div className="space-y-4">
+      {/* PDF Preview */}
+      <div className="rounded-lg border bg-muted/30 overflow-hidden" style={{ height: '70vh' }}>
+        <iframe
+          src={`/api/contracts/${contract.id}/pdf?inline=true`}
+          className="w-full h-full border-0"
+          title={contract.title}
+        />
+      </div>
+
+      {/* Metadata Cards */}
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+        <Card>
+          <CardContent className="pt-4 pb-4">
+            <p className="text-xs text-muted-foreground uppercase tracking-wider">{t('status')}</p>
+            <div className="mt-1">
+              <StatusBadge status={contract.status} />
             </div>
-          </div>
-
-          {contract.expires_at && (
-            <div className="flex items-center gap-2">
-              <Badge variant="outline">
-                {t('expires')}{' '}
-                {new Date(contract.expires_at).toLocaleDateString(undefined, {
-                  year: 'numeric',
-                  month: 'long',
-                  day: 'numeric',
-                })}
-              </Badge>
-            </div>
-          )}
-        </CardHeader>
-
-        <CardContent className="pt-6">
-          <div
-            className="prose prose-sm max-w-none"
-            dangerouslySetInnerHTML={{ __html: sanitizeHtml(contract.content) }}
-          />
-        </CardContent>
-      </Card>
-
-      {showSignature &&
-        contract.status === 'signed' &&
-        contract.signature_image &&
-        contract.signed_at && (
+          </CardContent>
+        </Card>
+        {contract.client && (
           <Card>
-            <CardHeader>
-              <h2 className="text-lg font-semibold">{t('signatureLabel')}</h2>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-2">
-                <div className="border rounded-lg p-4 bg-muted/10 inline-block">
-                  <Image
-                    src={contract.signature_image}
-                    alt={t('contractSignature')}
-                    width={200}
-                    height={96}
-                    className="h-24 w-auto"
-                  />
-                </div>
-                <p className="text-sm text-muted-foreground">
-                  {t('signedOn', {
-                    date: format(new Date(contract.signed_at!), 'MMMM d, yyyy'),
-                    time: format(new Date(contract.signed_at!), 'h:mm a'),
-                  })}
-                </p>
-              </div>
+            <CardContent className="pt-4 pb-4">
+              <p className="text-xs text-muted-foreground uppercase tracking-wider">
+                {t('client')}
+              </p>
+              <p className="mt-1 font-semibold text-sm">
+                {contract.client.contact_name || contract.client.company_name}
+              </p>
             </CardContent>
           </Card>
         )}
+        {contract.agreed_amount != null && (
+          <Card>
+            <CardContent className="pt-4 pb-4">
+              <p className="text-xs text-muted-foreground uppercase tracking-wider">
+                {t('amount')}
+              </p>
+              <p className="mt-1 font-semibold text-sm">
+                &euro;{contract.agreed_amount.toLocaleString()}
+              </p>
+            </CardContent>
+          </Card>
+        )}
+        {contract.expires_at && (
+          <Card>
+            <CardContent className="pt-4 pb-4">
+              <p className="text-xs text-muted-foreground uppercase tracking-wider">
+                {t('deadline')}
+              </p>
+              <p className="mt-1 font-semibold text-sm">
+                {format(new Date(contract.expires_at), 'dd/MM/yyyy')}
+              </p>
+            </CardContent>
+          </Card>
+        )}
+      </div>
     </div>
   );
 }

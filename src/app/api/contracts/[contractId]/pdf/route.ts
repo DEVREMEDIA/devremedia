@@ -49,6 +49,7 @@ export async function GET(
         | string
         | undefined);
 
+    // TODO: @react-pdf/renderer type mismatch — createElement returns JSX.Element, renderToBuffer expects ReactElement<DocumentProps>
     const pdfBuffer = await renderToBuffer(
       React.createElement(ContractPDFTemplate, {
         contract: { ...contract, signature_image: signatureImage ?? null },
@@ -57,7 +58,7 @@ export async function GET(
         locale,
         logoBase64,
         provider,
-      }),
+      }) as any,
     );
 
     // Check for inline preview vs download

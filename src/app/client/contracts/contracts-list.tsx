@@ -4,7 +4,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { StatusBadge } from '@/components/shared/status-badge';
 import { EmptyState } from '@/components/shared/empty-state';
-import { FileText, Download, Pen, Eye } from 'lucide-react';
+import { FileText, Download, Upload, Eye } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { format } from 'date-fns';
 import { useTranslations } from 'next-intl';
@@ -64,15 +64,12 @@ export function ContractsList({ contracts }: ContractsListProps) {
             </div>
             <div className="flex items-center gap-2 shrink-0 ml-4">
               {isContractSignable(contract.status) && (
-                <Button
-                  size="sm"
-                  onClick={() => router.push(`/client/contracts/${contract.id}/sign`)}
-                >
-                  <Pen className="h-3.5 w-3.5 mr-1.5" />
-                  {t('signContract')}
+                <Button size="sm" onClick={() => router.push(`/client/contracts/${contract.id}`)}>
+                  <Upload className="h-3.5 w-3.5 mr-1.5" />
+                  {t('uploadSigned')}
                 </Button>
               )}
-              {contract.status === 'signed' && (
+              {['signed', 'pending_review'].includes(contract.status) && (
                 <Button
                   size="sm"
                   variant="outline"
