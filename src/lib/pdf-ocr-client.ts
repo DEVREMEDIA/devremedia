@@ -1,25 +1,20 @@
 /**
- * Client-side PDF → image rendering + server-side AI extraction.
- * Renders PDF pages to images in the browser, sends to GPT-4o-mini vision.
+ * Client-side invoice upload → server-side AI extraction via OpenAI vision.
+ * Sends raw PDF to API route; GPT-4o-mini handles the rest.
  */
 import type { ParsedInvoice } from '@/lib/invoice-parser';
 
-/** Parse a PDF: render to image in browser, send to AI for extraction */
+/** Parse an invoice PDF: sends to server API for OpenAI extraction */
 export async function parseInvoiceClientSide(file: File): Promise<ParsedInvoice> {
   const arrayBuffer = await file.arrayBuffer();
+  const base64 = btoa(
+    new Uint8Array(arrayBuffer).reduce((data, byte) => data + String.fromCharCode(byte), ''),
+  );
 
-  // Render first page to base64 PNG
-  const base64Image = await renderPdfPageToBase64(arrayBuffer);
-
-  if (!base64Image) {
-    return emptyResult();
-  }
-
-  // Send to API route for AI extraction
   const response = await fetch('/api/invoices/parse', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ image: base64Image }),
+    body: JSON.stringify({ pdf: base64 }),
   });
 
   if (!response.ok) {
@@ -28,58 +23,4 @@ export async function parseInvoiceClientSide(file: File): Promise<ParsedInvoice>
   }
 
   return response.json();
-}
-
-/** Render first page of PDF to base64 PNG using browser canvas */
-async function renderPdfPageToBase64(arrayBuffer: ArrayBuffer): Promise<string | null> {
-  try {
-    const pdfjsLib = await import('pdfjs-dist');
-    pdfjsLib.GlobalWorkerOptions.workerSrc = `https://unpkg.com/pdfjs-dist@${pdfjsLib.version}/build/pdf.worker.min.mjs`;
-
-    const doc = await pdfjsLib.getDocument({ data: new Uint8Array(arrayBuffer) }).promise;
-    const page = await doc.getPage(1);
-    const viewport = page.getViewport({ scale: 2.0 });
-
-    const canvas = document.createElement('canvas');
-    canvas.width = viewport.width;
-    canvas.height = viewport.height;
-    const ctx = canvas.getContext('2d')!;
-
-    // White background
-    ctx.fillStyle = '#ffffff';
-    ctx.fillRect(0, 0, canvas.width, canvas.height);
-
-    // @ts-expect-error — pdfjs-dist types mismatch with browser CanvasRenderingContext2D
-    await page.render({ canvasContext: ctx, viewport }).promise;
-
-    const dataUrl = canvas.toDataURL('image/png');
-    // Strip "data:image/png;base64," prefix
-    const base64 = dataUrl.split(',')[1];
-
-    canvas.width = 0;
-    canvas.height = 0;
-
-    return base64;
-  } catch (err) {
-    console.error('PDF render failed:', err);
-    return null;
-  }
-}
-
-function emptyResult(): ParsedInvoice {
-  return {
-    date: null,
-    invoiceNumber: null,
-    invoiceType: null,
-    mark: null,
-    issuerName: null,
-    issuerAfm: null,
-    customerName: null,
-    customerAfm: null,
-    description: null,
-    netAmount: null,
-    vatPercent: null,
-    vatAmount: null,
-    totalAmount: null,
-  };
 }

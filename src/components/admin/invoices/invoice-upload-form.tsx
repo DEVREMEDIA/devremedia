@@ -82,7 +82,7 @@ export function InvoiceUploadForm({
     setIsParsing(true);
 
     try {
-      // Parse PDF entirely in the browser (pdfjs-dist + tesseract.js WASM)
+      // Send PDF to server for OpenAI extraction
       const parsed = await parseInvoiceClientSide(pdf);
       const issueDate = parsed.date ?? new Date().toISOString().slice(0, 10);
 

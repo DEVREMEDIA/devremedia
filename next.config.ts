@@ -17,7 +17,7 @@ const securityHeaders = [
 ];
 
 const nextConfig: NextConfig = {
-  serverExternalPackages: ['canvas', '@react-pdf/renderer', 'pdfjs-dist', 'tesseract.js'],
+  serverExternalPackages: ['@react-pdf/renderer'],
   turbopack: {
     root: path.resolve(__dirname),
   },

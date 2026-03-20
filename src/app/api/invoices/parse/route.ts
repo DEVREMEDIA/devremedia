@@ -47,13 +47,13 @@ export async function POST(
     }
 
     const body = await request.json();
-    const { image } = body as { image: string };
+    const { pdf } = body as { pdf: string };
 
-    if (!image) {
-      return NextResponse.json({ error: 'No image provided' }, { status: 400 });
+    if (!pdf) {
+      return NextResponse.json({ error: 'No PDF provided' }, { status: 400 });
     }
 
-    // Call GPT-4o-mini with vision to extract invoice data
+    // Call GPT-4o-mini with the PDF file for extraction
     const { object } = await generateObject({
       model: openai('gpt-4o-mini'),
       schema: parsedInvoiceSchema,
@@ -63,7 +63,7 @@ export async function POST(
           content: [
             {
               type: 'text',
-              text: `Extract all invoice data from this Greek invoice image.
+              text: `Extract all invoice data from this Greek invoice PDF.
 This is a Greek tax invoice (τιμολόγιο). Extract:
 - Date (ημερομηνία) in YYYY-MM-DD format
 - Invoice number (Α.Α.) and type (ΤΠΥ/ΤΔΑ/ΑΠΥ)
@@ -75,8 +75,9 @@ This is a Greek tax invoice (τιμολόγιο). Extract:
 Return null for any field you cannot find.`,
             },
             {
-              type: 'image',
-              image: Buffer.from(image, 'base64'),
+              type: 'file',
+              data: Buffer.from(pdf, 'base64'),
+              mediaType: 'application/pdf',
             },
           ],
         },
