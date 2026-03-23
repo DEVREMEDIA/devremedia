@@ -136,19 +136,31 @@ export function InvoiceUploadForm({
 
         const { filePath } = await uploadRes.json();
 
-        // 2. Save invoice data
-        const lineItem = {
-          description: values.description || 'Υπηρεσία',
-          quantity: 1,
-          unit_price: values.net_amount,
-        };
+        // 2. Save invoice data — parse multi-line description into line items
+        const descLines = (values.description || 'Υπηρεσία')
+          .split('\n')
+          .filter((l: string) => l.trim());
+        const lineItems =
+          descLines.length > 1
+            ? descLines.map((desc: string) => ({
+                description: desc.replace(/^\d+\.\s*/, ''),
+                quantity: 1,
+                unit_price: Math.round((values.net_amount / descLines.length) * 100) / 100,
+              }))
+            : [
+                {
+                  description: values.description || 'Υπηρεσία',
+                  quantity: 1,
+                  unit_price: values.net_amount,
+                },
+              ];
 
         const result = await createInvoice({
           client_id: clientId,
           project_id: values.project_id || undefined,
           issue_date: values.issue_date,
           due_date: values.due_date || values.issue_date,
-          line_items: [lineItem],
+          line_items: lineItems,
           tax_rate: values.vat_percent,
           notes: values.notes || undefined,
           file_path: filePath,

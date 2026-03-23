@@ -1,11 +1,13 @@
 'use client';
 
+import { useState, useEffect } from 'react';
 import { UseFormReturn } from 'react-hook-form';
 
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
+import { Card, CardContent } from '@/components/ui/card';
 import {
   Select,
   SelectContent,
@@ -14,10 +16,16 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { PdfPreview } from '@/components/shared/pdf-preview';
-import { Loader2 } from 'lucide-react';
+import { Loader2, Plus, Trash2 } from 'lucide-react';
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 type ReviewForm = UseFormReturn<any>;
+
+interface LineItemEntry {
+  description: string;
+  quantity: number;
+  unit_price: number;
+}
 
 interface InvoiceReviewLayoutProps {
   file: File;
@@ -37,6 +45,45 @@ export function InvoiceReviewLayout({
   onChangeFile,
 }: InvoiceReviewLayoutProps) {
   const watched = form.watch();
+
+  // Initialize line items from the form's description + net_amount
+  const [lineItems, setLineItems] = useState<LineItemEntry[]>(() => {
+    const desc = form.getValues('description') || '';
+    const net = form.getValues('net_amount') || 0;
+    return desc || net ? [{ description: desc, quantity: 1, unit_price: net }] : [];
+  });
+
+  // Recalculate totals when line items or vat_percent change
+  useEffect(() => {
+    const subtotal = lineItems.reduce((sum, item) => sum + item.quantity * item.unit_price, 0);
+    const vatPercent = form.getValues('vat_percent') || 0;
+    const vatAmount = subtotal * (vatPercent / 100);
+    const total = subtotal + vatAmount;
+
+    form.setValue('net_amount', Math.round(subtotal * 100) / 100);
+    form.setValue('vat_amount', Math.round(vatAmount * 100) / 100);
+    form.setValue('total_amount', Math.round(total * 100) / 100);
+
+    // Build combined description for single-item storage
+    const combinedDesc = lineItems
+      .map((item, i) => (lineItems.length > 1 ? `${i + 1}. ${item.description}` : item.description))
+      .join('\n');
+    form.setValue('description', combinedDesc || '');
+  }, [lineItems, form]);
+
+  const addLineItem = () => {
+    setLineItems((prev) => [...prev, { description: '', quantity: 1, unit_price: 0 }]);
+  };
+
+  const removeLineItem = (index: number) => {
+    setLineItems((prev) => prev.filter((_, i) => i !== index));
+  };
+
+  const updateLineItem = (index: number, updates: Partial<LineItemEntry>) => {
+    setLineItems((prev) => prev.map((item, i) => (i === index ? { ...item, ...updates } : item)));
+  };
+
+  const subtotal = lineItems.reduce((sum, item) => sum + item.quantity * item.unit_price, 0);
 
   return (
     <form onSubmit={onSubmit} className="flex gap-4 h-[calc(100vh-8rem)]">
@@ -93,38 +140,133 @@ export function InvoiceReviewLayout({
           </div>
         </div>
 
-        {/* Description */}
-        <div className="space-y-1.5">
-          <Label htmlFor="description">Περιγραφή</Label>
-          <Textarea id="description" rows={3} {...form.register('description')} />
-          {form.formState.errors.description && (
-            <p className="text-xs text-destructive">
-              {String(form.formState.errors.description.message)}
-            </p>
+        {/* Line Items as Step Cards */}
+        <div className="space-y-3">
+          <div className="flex items-center justify-between">
+            <Label className="text-base font-semibold">Υπηρεσίες / Είδη</Label>
+            <Button type="button" variant="outline" size="sm" onClick={addLineItem}>
+              <Plus className="h-4 w-4 mr-1" />
+              Προσθήκη
+            </Button>
+          </div>
+
+          {lineItems.map((item, index) => (
+            <Card key={index} className="relative">
+              <CardContent className="p-4 space-y-3">
+                <div className="flex items-center justify-between">
+                  <span className="text-sm font-semibold text-muted-foreground">
+                    Βήμα {index + 1}
+                  </span>
+                  {lineItems.length > 1 && (
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => removeLineItem(index)}
+                      className="text-destructive hover:text-destructive"
+                    >
+                      <Trash2 className="h-4 w-4" />
+                    </Button>
+                  )}
+                </div>
+                <div className="space-y-1.5">
+                  <Label>Περιγραφή</Label>
+                  <Textarea
+                    value={item.description}
+                    onChange={(e) => updateLineItem(index, { description: e.target.value })}
+                    placeholder="Περιγραφή υπηρεσίας..."
+                    rows={2}
+                  />
+                </div>
+                <div className="grid grid-cols-2 gap-3">
+                  <div className="space-y-1.5">
+                    <Label>Ποσότητα</Label>
+                    <Input
+                      type="number"
+                      min="1"
+                      value={item.quantity}
+                      onChange={(e) =>
+                        updateLineItem(index, { quantity: parseInt(e.target.value) || 1 })
+                      }
+                    />
+                  </div>
+                  <div className="space-y-1.5">
+                    <Label>Τιμή μονάδας (€)</Label>
+                    <Input
+                      type="number"
+                      step="0.01"
+                      value={item.unit_price}
+                      onChange={(e) =>
+                        updateLineItem(index, { unit_price: parseFloat(e.target.value) || 0 })
+                      }
+                    />
+                  </div>
+                </div>
+                <div className="text-right text-sm font-medium text-muted-foreground">
+                  Σύνολο: €{(item.quantity * item.unit_price).toFixed(2)}
+                </div>
+              </CardContent>
+            </Card>
+          ))}
+
+          {lineItems.length === 0 && (
+            <Button type="button" variant="outline" className="w-full" onClick={addLineItem}>
+              <Plus className="h-4 w-4 mr-2" />
+              Προσθήκη υπηρεσίας
+            </Button>
           )}
         </div>
 
-        {/* Amounts row 1 */}
-        <div className="grid grid-cols-2 gap-3">
-          <div className="space-y-1.5">
-            <Label htmlFor="net_amount">Καθαρή Αξία (€)</Label>
-            <Input type="number" step="0.01" id="net_amount" {...form.register('net_amount')} />
+        {/* Totals */}
+        <div className="rounded-lg border bg-muted/30 p-4 space-y-2">
+          <div className="grid grid-cols-2 gap-3">
+            <div className="space-y-1.5">
+              <Label>Καθαρή Αξία (€)</Label>
+              <Input
+                type="number"
+                step="0.01"
+                readOnly
+                value={subtotal.toFixed(2)}
+                className="bg-muted"
+              />
+            </div>
+            <div className="space-y-1.5">
+              <Label htmlFor="vat_percent">ΦΠΑ %</Label>
+              <Input
+                type="number"
+                id="vat_percent"
+                {...form.register('vat_percent')}
+                onChange={(e) => {
+                  form.setValue('vat_percent', parseFloat(e.target.value) || 0);
+                  // Force recalc
+                  setLineItems((prev) => [...prev]);
+                }}
+              />
+            </div>
           </div>
-          <div className="space-y-1.5">
-            <Label htmlFor="vat_percent">ΦΠΑ %</Label>
-            <Input type="number" id="vat_percent" {...form.register('vat_percent')} />
-          </div>
-        </div>
-
-        {/* Amounts row 2 */}
-        <div className="grid grid-cols-2 gap-3">
-          <div className="space-y-1.5">
-            <Label htmlFor="vat_amount">Ποσό ΦΠΑ (€)</Label>
-            <Input type="number" step="0.01" id="vat_amount" {...form.register('vat_amount')} />
-          </div>
-          <div className="space-y-1.5">
-            <Label htmlFor="total_amount">Σύνολο (€)</Label>
-            <Input type="number" step="0.01" id="total_amount" {...form.register('total_amount')} />
+          <div className="grid grid-cols-2 gap-3">
+            <div className="space-y-1.5">
+              <Label>Ποσό ΦΠΑ (€)</Label>
+              <Input
+                type="number"
+                step="0.01"
+                readOnly
+                value={(subtotal * ((form.getValues('vat_percent') || 0) / 100)).toFixed(2)}
+                className="bg-muted"
+              />
+            </div>
+            <div className="space-y-1.5">
+              <Label className="font-bold">Σύνολο (€)</Label>
+              <Input
+                type="number"
+                step="0.01"
+                readOnly
+                value={(subtotal + subtotal * ((form.getValues('vat_percent') || 0) / 100)).toFixed(
+                  2,
+                )}
+                className="bg-muted font-bold"
+              />
+            </div>
           </div>
         </div>
 
