@@ -4,13 +4,17 @@ import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { Plus, Trash2 } from 'lucide-react';
+import { Plus, Trash2, GripVertical } from 'lucide-react';
 import { useTranslations } from 'next-intl';
-import {
-  createKbArticleSchema,
-  type CreateKbArticleInput,
-} from '@/lib/schemas/kb-article';
+import dynamic from 'next/dynamic';
+import { createKbArticleSchema, type CreateKbArticleInput } from '@/lib/schemas/kb-article';
 import { createKbArticle, updateKbArticle } from '@/lib/actions/kb-articles';
+import {
+  parseSections,
+  serializeSections,
+  createEmptySection,
+  type ArticleSection,
+} from '@/lib/article-sections';
 import { Button } from '@/components/ui/button';
 import {
   Form,
@@ -31,9 +35,21 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { Switch } from '@/components/ui/switch';
-import { TiptapEditor } from '@/components/shared/tiptap-editor';
-import { toast } from 'sonner';
+import { Card, CardContent } from '@/components/ui/card';
 import { LoadingSpinner } from '@/components/shared/loading-spinner';
+import { toast } from 'sonner';
+
+const TiptapEditor = dynamic(
+  () => import('@/components/shared/tiptap-editor').then((mod) => mod.TiptapEditor),
+  {
+    ssr: false,
+    loading: () => (
+      <div className="flex items-center justify-center min-h-[120px] border rounded-lg">
+        <LoadingSpinner size="sm" />
+      </div>
+    ),
+  },
+);
 
 interface Category {
   id: string;
@@ -64,6 +80,15 @@ export function ArticleForm({ article, categories }: ArticleFormProps) {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [videoUrls, setVideoUrls] = useState<string[]>(article?.video_urls ?? []);
   const isEditing = !!article;
+
+  // Initialize sections from existing content or start with one empty section
+  const [sections, setSections] = useState<ArticleSection[]>(() => {
+    if (article?.content) {
+      const parsed = parseSections(article.content);
+      if (parsed && parsed.length > 0) return parsed;
+    }
+    return [createEmptySection()];
+  });
 
   const form = useForm<CreateKbArticleInput>({
     resolver: zodResolver(createKbArticleSchema),
@@ -110,18 +135,49 @@ export function ArticleForm({ article, categories }: ArticleFormProps) {
     form.setValue('video_urls', newUrls);
   };
 
+  // Section management
+  const addSection = () => {
+    setSections((prev) => [...prev, createEmptySection()]);
+  };
+
+  const removeSection = (id: string) => {
+    setSections((prev) => prev.filter((s) => s.id !== id));
+  };
+
+  const updateSection = (id: string, updates: Partial<ArticleSection>) => {
+    setSections((prev) => prev.map((s) => (s.id === id ? { ...s, ...updates } : s)));
+  };
+
+  const moveSection = (index: number, direction: 'up' | 'down') => {
+    const newIndex = direction === 'up' ? index - 1 : index + 1;
+    if (newIndex < 0 || newIndex >= sections.length) return;
+    setSections((prev) => {
+      const copy = [...prev];
+      [copy[index], copy[newIndex]] = [copy[newIndex], copy[index]];
+      return copy;
+    });
+  };
+
   const onSubmit = async (data: CreateKbArticleInput) => {
+    // Validate sections have at least one with title
+    const validSections = sections.filter((s) => s.title.trim());
+    if (validSections.length === 0) {
+      toast.error('Προσθέστε τουλάχιστον ένα section με τίτλο');
+      return;
+    }
+
     setIsSubmitting(true);
 
-    // Filter out empty video URLs
     const cleanedData = {
       ...data,
+      content: serializeSections(validSections),
       video_urls: (data.video_urls ?? []).filter((url) => url.trim() !== ''),
     };
 
-    const result = isEditing && article
-      ? await updateKbArticle(article.id, cleanedData)
-      : await createKbArticle(cleanedData);
+    const result =
+      isEditing && article
+        ? await updateKbArticle(article.id, cleanedData)
+        : await createKbArticle(cleanedData);
 
     setIsSubmitting(false);
 
@@ -185,9 +241,7 @@ export function ArticleForm({ article, categories }: ArticleFormProps) {
               <FormControl>
                 <Input placeholder="how-to-create-a-project" {...field} />
               </FormControl>
-              <FormDescription>
-                URL-friendly identifier (lowercase, hyphens only)
-              </FormDescription>
+              <FormDescription>URL-friendly identifier (lowercase, hyphens only)</FormDescription>
               <FormMessage />
             </FormItem>
           )}
@@ -211,23 +265,68 @@ export function ArticleForm({ article, categories }: ArticleFormProps) {
           )}
         />
 
-        <FormField
-          control={form.control}
-          name="content"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Content</FormLabel>
-              <FormControl>
+        {/* Sections Editor */}
+        <div className="space-y-3">
+          <div className="flex items-center justify-between">
+            <FormLabel className="text-base font-semibold">Sections</FormLabel>
+            <Button type="button" variant="outline" size="sm" onClick={addSection}>
+              <Plus className="h-4 w-4 mr-1" />
+              Προσθήκη Section
+            </Button>
+          </div>
+
+          {sections.map((section, index) => (
+            <Card key={section.id} className="border-l-4 border-l-primary/30">
+              <CardContent className="p-4 space-y-3">
+                <div className="flex items-center gap-2">
+                  <div className="flex flex-col gap-0.5">
+                    <button
+                      type="button"
+                      onClick={() => moveSection(index, 'up')}
+                      disabled={index === 0}
+                      className="text-muted-foreground hover:text-foreground disabled:opacity-30 p-0.5"
+                    >
+                      <GripVertical className="h-3 w-3 rotate-180" />
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => moveSection(index, 'down')}
+                      disabled={index === sections.length - 1}
+                      className="text-muted-foreground hover:text-foreground disabled:opacity-30 p-0.5"
+                    >
+                      <GripVertical className="h-3 w-3" />
+                    </button>
+                  </div>
+                  <span className="text-xs font-bold text-muted-foreground shrink-0 w-6 text-center">
+                    {index + 1}
+                  </span>
+                  <Input
+                    value={section.title}
+                    onChange={(e) => updateSection(section.id, { title: e.target.value })}
+                    placeholder="Τίτλος section..."
+                    className="font-semibold"
+                  />
+                  {sections.length > 1 && (
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => removeSection(section.id)}
+                      className="text-destructive hover:text-destructive shrink-0"
+                    >
+                      <Trash2 className="h-4 w-4" />
+                    </Button>
+                  )}
+                </div>
                 <TiptapEditor
-                  content={field.value as string}
-                  onChange={field.onChange}
-                  placeholder={t('articleContentPlaceholder')}
+                  content={section.content}
+                  onChange={(val) => updateSection(section.id, { content: val })}
+                  placeholder="Περιεχόμενο section..."
                 />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
+              </CardContent>
+            </Card>
+          ))}
+        </div>
 
         <div className="space-y-2">
           <FormLabel>Video URLs (Optional)</FormLabel>
@@ -251,12 +350,7 @@ export function ArticleForm({ article, categories }: ArticleFormProps) {
               </Button>
             </div>
           ))}
-          <Button
-            type="button"
-            variant="outline"
-            size="sm"
-            onClick={handleAddVideoUrl}
-          >
+          <Button type="button" variant="outline" size="sm" onClick={handleAddVideoUrl}>
             <Plus className="h-4 w-4 mr-2" />
             Add Video URL
           </Button>
@@ -292,9 +386,7 @@ export function ArticleForm({ article, categories }: ArticleFormProps) {
             <FormItem className="flex flex-row items-center justify-between rounded-lg border p-4">
               <div className="space-y-0.5">
                 <FormLabel className="text-base">Published</FormLabel>
-                <FormDescription>
-                  Make this article visible to employees
-                </FormDescription>
+                <FormDescription>Make this article visible to employees</FormDescription>
               </div>
               <FormControl>
                 <Switch checked={field.value} onCheckedChange={field.onChange} />

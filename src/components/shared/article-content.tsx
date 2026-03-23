@@ -1,6 +1,13 @@
 'use client';
 
 import { sanitizeHtml } from '@/lib/sanitize';
+import { parseSections } from '@/lib/article-sections';
+import {
+  Accordion,
+  AccordionContent,
+  AccordionItem,
+  AccordionTrigger,
+} from '@/components/ui/accordion';
 
 // Helper to extract video ID from YouTube URL
 function getYouTubeEmbedUrl(url: string): string | null {
@@ -28,12 +35,44 @@ interface ArticleContentProps {
 }
 
 export function ArticleContent({ content, videoUrls }: ArticleContentProps) {
+  const sections = parseSections(content);
+
   return (
     <>
-      <div
-        className="prose prose-sm max-w-none dark:prose-invert"
-        dangerouslySetInnerHTML={{ __html: sanitizeHtml(content) }}
-      />
+      {sections ? (
+        <Accordion type="multiple" defaultValue={[sections[0]?.id]} className="space-y-2">
+          {sections.map((section, index) => (
+            <AccordionItem
+              key={section.id}
+              value={section.id}
+              className="border rounded-lg px-0 overflow-hidden"
+            >
+              <AccordionTrigger className="px-5 py-4 hover:no-underline hover:bg-accent/50 transition-colors">
+                <div className="flex items-center gap-3 text-left">
+                  <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-primary text-primary-foreground text-xs font-bold">
+                    {index + 1}
+                  </span>
+                  <span className="font-semibold text-base">{section.title}</span>
+                </div>
+              </AccordionTrigger>
+              <AccordionContent className="px-5 pb-5 pt-0">
+                <div className="ml-10">
+                  <div
+                    className="prose prose-sm max-w-none dark:prose-invert"
+                    dangerouslySetInnerHTML={{ __html: sanitizeHtml(section.content) }}
+                  />
+                </div>
+              </AccordionContent>
+            </AccordionItem>
+          ))}
+        </Accordion>
+      ) : (
+        /* Legacy HTML content fallback */
+        <div
+          className="prose prose-sm max-w-none dark:prose-invert"
+          dangerouslySetInnerHTML={{ __html: sanitizeHtml(content) }}
+        />
+      )}
 
       {videoUrls && videoUrls.length > 0 && (
         <div className="mt-8 space-y-4">
