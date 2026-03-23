@@ -11,12 +11,29 @@ import { ContractPDFTemplate } from '@/lib/pdf/contract-template';
 const logoPath = path.join(process.cwd(), 'public', 'images', 'Logo_Horizontal_Transparent.png');
 const logoBase64 = `data:image/png;base64,${readFileSync(logoPath).toString('base64')}`;
 
-const provider = {
-  companyName: process.env.PROVIDER_COMPANY_NAME ?? '',
-  vatNumber: process.env.PROVIDER_VAT_NUMBER ?? '',
-  taxOffice: process.env.PROVIDER_TAX_OFFICE ?? '',
-  address: process.env.PROVIDER_ADDRESS ?? '',
+const DEFAULT_PROVIDER = {
+  companyName: 'ΝΤΕΒΡΕΝΤΛΗΣ ΑΓΓΕΛΟΣ ΝΙΚΟΛΑΟΣ',
+  vatNumber: '160594763',
+  taxOffice: 'ΚΑΛΑΜΑΡΙΑΣ',
+  address: 'ΣΟΦΟΥΛΗ ΘΕΜΙΣΤΟΚΛΗ 88, ΚΑΛΑΜΑΡΙΑ',
 };
+
+async function getProvider(supabase: Awaited<ReturnType<typeof createClient>>) {
+  const { data } = await supabase
+    .from('settings')
+    .select('value')
+    .eq('key', 'company_settings')
+    .single();
+
+  const s = data?.value as Record<string, string> | null;
+  return {
+    companyName:
+      s?.company_name || process.env.PROVIDER_COMPANY_NAME || DEFAULT_PROVIDER.companyName,
+    vatNumber: s?.vat_number || process.env.PROVIDER_VAT_NUMBER || DEFAULT_PROVIDER.vatNumber,
+    taxOffice: s?.tax_office || process.env.PROVIDER_TAX_OFFICE || DEFAULT_PROVIDER.taxOffice,
+    address: s?.address || process.env.PROVIDER_ADDRESS || DEFAULT_PROVIDER.address,
+  };
+}
 
 export async function GET(
   request: NextRequest,
@@ -48,6 +65,8 @@ export async function GET(
       ((contract.signature_data as Record<string, unknown> | null)?.['signature_image'] as
         | string
         | undefined);
+
+    const provider = await getProvider(supabase);
 
     // TODO: @react-pdf/renderer type mismatch — createElement returns JSX.Element, renderToBuffer expects ReactElement<DocumentProps>
     const pdfBuffer = await renderToBuffer(

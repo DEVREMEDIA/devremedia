@@ -832,7 +832,13 @@
     "pendingReviewMessage": "Your signed contract is being reviewed. You will be notified once approved.",
     "loadingPdf": "Loading PDF...",
     "pdfPreviewUnavailable": "PDF preview unavailable",
-    "openPdfNewTab": "Open PDF in new tab"
+    "openPdfNewTab": "Open PDF in new tab",
+    "newContract": "New Contract",
+    "newContractDescription": "Create a new contract for a client",
+    "selectClient": "Select a client",
+    "selectProject": "Link to project (optional)",
+    "noProject": "No project",
+    "creating": "Creating..."
   },
 
   "deliverables": {
@@ -1191,6 +1197,7 @@
     "companyLogo": "Logo",
     "companyTaxId": "Tax ID (AFM)",
     "companyTaxOffice": "Tax Office (DOY)",
+    "companyProfession": "Profession / Activity",
     "teamMembers": "Team Members",
     "inviteMember": "Invite Member",
     "role": "Role",

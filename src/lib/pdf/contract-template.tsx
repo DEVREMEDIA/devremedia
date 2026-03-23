@@ -37,10 +37,10 @@ export interface ContractPDFTemplateProps {
 }
 
 const DEFAULT_PROVIDER = {
-  companyName: 'Devre Media',
-  vatNumber: '—',
-  taxOffice: '—',
-  address: '—',
+  companyName: 'ΝΤΕΒΡΕΝΤΛΗΣ ΑΓΓΕΛΟΣ ΝΙΚΟΛΑΟΣ',
+  vatNumber: '160594763',
+  taxOffice: 'ΚΑΛΑΜΑΡΙΑΣ',
+  address: 'ΣΟΦΟΥΛΗ ΘΕΜΙΣΤΟΚΛΗ 88, ΚΑΛΑΜΑΡΙΑ',
 };
 
 function formatAmount(amount: number): string {

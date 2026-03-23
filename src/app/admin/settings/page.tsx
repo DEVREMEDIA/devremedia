@@ -17,21 +17,22 @@ export default async function SettingsPage() {
     data: { user },
   } = await supabase.auth.getUser();
 
-  const [teamMembersResult, companySettingsResult, notificationSettingsResult] =
-    await Promise.all([
-      getTeamMembers(),
-      getCompanySettings(),
-      user ? getNotificationSettings(user.id) : null,
-    ]);
+  const [teamMembersResult, companySettingsResult, notificationSettingsResult] = await Promise.all([
+    getTeamMembers(),
+    getCompanySettings(),
+    user ? getNotificationSettings(user.id) : null,
+  ]);
 
   const teamMembers = teamMembersResult.data ?? [];
   const companySettings = companySettingsResult.data ?? {
-    company_name: 'Devre Media',
+    company_name: 'ΝΤΕΒΡΕΝΤΛΗΣ ΑΓΓΕΛΟΣ ΝΙΚΟΛΑΟΣ',
     logo_url: null,
-    address: null,
+    address: 'ΣΟΦΟΥΛΗ ΘΕΜΙΣΤΟΚΛΗ 88, ΚΑΛΑΜΑΡΙΑ',
     phone: null,
     email: null,
-    vat_number: null,
+    vat_number: '160594763',
+    tax_office: 'ΚΑΛΑΜΑΡΙΑΣ',
+    profession: 'ΥΠΗΡΕΣΙΕΣ ΦΩΤΟΓΡΑΦΙΣΗΣ ΚΑΙ ΒΙΝΤΕΟΣΚΟΠΗΣΗΣ',
     primary_color: null,
   };
   const notificationSettings = notificationSettingsResult?.data ?? {
@@ -44,10 +45,7 @@ export default async function SettingsPage() {
 
   return (
     <div className="space-y-6">
-      <PageHeader
-        title={t('title')}
-        description={t('description')}
-      />
+      <PageHeader title={t('title')} description={t('description')} />
 
       <Tabs defaultValue="company" className="space-y-6">
         <div className="overflow-x-auto -mx-4 px-4 md:mx-0 md:px-0">
@@ -78,10 +76,7 @@ export default async function SettingsPage() {
 
         <TabsContent value="notifications" className="space-y-6">
           {user && (
-            <NotificationSettingsComponent
-              userId={user.id}
-              settings={notificationSettings}
-            />
+            <NotificationSettingsComponent userId={user.id} settings={notificationSettings} />
           )}
         </TabsContent>
       </Tabs>

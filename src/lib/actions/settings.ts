@@ -10,6 +10,8 @@ export type CompanySettings = {
   phone: string | null;
   email: string | null;
   vat_number: string | null;
+  tax_office: string | null;
+  profession: string | null;
   primary_color: string | null;
 };
 
@@ -52,12 +54,14 @@ export async function getCompanySettings(): Promise<ActionResult<CompanySettings
     }
 
     const settings: CompanySettings = data?.value || {
-      company_name: 'Devre Media',
+      company_name: 'ΝΤΕΒΡΕΝΤΛΗΣ ΑΓΓΕΛΟΣ ΝΙΚΟΛΑΟΣ',
       logo_url: null,
-      address: null,
+      address: 'ΣΟΦΟΥΛΗ ΘΕΜΙΣΤΟΚΛΗ 88, ΚΑΛΑΜΑΡΙΑ',
       phone: null,
       email: null,
-      vat_number: null,
+      vat_number: '160594763',
+      tax_office: 'ΚΑΛΑΜΑΡΙΑΣ',
+      profession: 'ΥΠΗΡΕΣΙΕΣ ΦΩΤΟΓΡΑΦΙΣΗΣ ΚΑΙ ΒΙΝΤΕΟΣΚΟΠΗΣΗΣ',
       primary_color: null,
     };
 

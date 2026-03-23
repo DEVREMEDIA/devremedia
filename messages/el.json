@@ -832,7 +832,13 @@
     "pendingReviewMessage": "Το υπογεγραμμένο συμβόλαιο σας ελέγχεται. Θα ειδοποιηθείτε μόλις εγκριθεί.",
     "loadingPdf": "Φόρτωση PDF...",
     "pdfPreviewUnavailable": "Η προεπισκόπηση PDF δεν είναι διαθέσιμη",
-    "openPdfNewTab": "Άνοιγμα PDF σε νέα καρτέλα"
+    "openPdfNewTab": "Άνοιγμα PDF σε νέα καρτέλα",
+    "newContract": "Νέο Συμβόλαιο",
+    "newContractDescription": "Δημιουργία νέου συμβολαίου για πελάτη",
+    "selectClient": "Επιλέξτε πελάτη",
+    "selectProject": "Σύνδεση με παραγωγή (προαιρετικό)",
+    "noProject": "Χωρίς παραγωγή",
+    "creating": "Δημιουργία..."
   },
 
   "deliverables": {
@@ -1191,6 +1197,7 @@
     "companyLogo": "Λογότυπο",
     "companyTaxId": "ΑΦΜ",
     "companyTaxOffice": "ΔΟΥ",
+    "companyProfession": "Επάγγελμα / Δραστηριότητα",
     "teamMembers": "Μέλη Ομάδας",
     "inviteMember": "Πρόσκληση Μέλους",
     "role": "Ρόλος",

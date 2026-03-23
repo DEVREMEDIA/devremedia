@@ -44,9 +44,7 @@ export function CompanyProfile({ settings }: CompanyProfileProps) {
     <Card>
       <CardHeader>
         <CardTitle>{t('companyProfile')}</CardTitle>
-        <CardDescription>
-          {t('companyProfileDescription')}
-        </CardDescription>
+        <CardDescription>{t('companyProfileDescription')}</CardDescription>
       </CardHeader>
       <CardContent>
         <form onSubmit={handleSubmit} className="space-y-4">
@@ -55,9 +53,7 @@ export function CompanyProfile({ settings }: CompanyProfileProps) {
             <Input
               id="company_name"
               value={formData.company_name}
-              onChange={(e) =>
-                setFormData({ ...formData, company_name: e.target.value })
-              }
+              onChange={(e) => setFormData({ ...formData, company_name: e.target.value })}
               required
             />
           </div>
@@ -68,9 +64,7 @@ export function CompanyProfile({ settings }: CompanyProfileProps) {
               id="email"
               type="email"
               value={formData.email || ''}
-              onChange={(e) =>
-                setFormData({ ...formData, email: e.target.value })
-              }
+              onChange={(e) => setFormData({ ...formData, email: e.target.value })}
             />
           </div>
 
@@ -79,9 +73,7 @@ export function CompanyProfile({ settings }: CompanyProfileProps) {
             <Input
               id="phone"
               value={formData.phone || ''}
-              onChange={(e) =>
-                setFormData({ ...formData, phone: e.target.value })
-              }
+              onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
             />
           </div>
 
@@ -90,9 +82,7 @@ export function CompanyProfile({ settings }: CompanyProfileProps) {
             <Textarea
               id="address"
               value={formData.address || ''}
-              onChange={(e) =>
-                setFormData({ ...formData, address: e.target.value })
-              }
+              onChange={(e) => setFormData({ ...formData, address: e.target.value })}
               rows={3}
             />
           </div>
@@ -102,9 +92,25 @@ export function CompanyProfile({ settings }: CompanyProfileProps) {
             <Input
               id="vat_number"
               value={formData.vat_number || ''}
-              onChange={(e) =>
-                setFormData({ ...formData, vat_number: e.target.value })
-              }
+              onChange={(e) => setFormData({ ...formData, vat_number: e.target.value })}
+            />
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="tax_office">{t('companyTaxOffice')}</Label>
+            <Input
+              id="tax_office"
+              value={formData.tax_office || ''}
+              onChange={(e) => setFormData({ ...formData, tax_office: e.target.value })}
+            />
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="profession">{t('companyProfession')}</Label>
+            <Input
+              id="profession"
+              value={formData.profession || ''}
+              onChange={(e) => setFormData({ ...formData, profession: e.target.value })}
             />
           </div>
 
@@ -114,9 +120,7 @@ export function CompanyProfile({ settings }: CompanyProfileProps) {
               id="logo_url"
               type="url"
               value={formData.logo_url || ''}
-              onChange={(e) =>
-                setFormData({ ...formData, logo_url: e.target.value })
-              }
+              onChange={(e) => setFormData({ ...formData, logo_url: e.target.value })}
               placeholder="https://example.com/logo.png"
             />
           </div>

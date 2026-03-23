@@ -56,7 +56,7 @@ export function ClientContractsTab({ clientId, refreshKey }: ClientContractsTabP
             action={{
               label: t('contracts.addContract'),
               onClick: () => {
-                window.location.href = '/admin/contracts/new';
+                window.location.href = '/admin/contracts/new?clientId=${clientId}';
               },
             }}
           />
@@ -72,7 +72,7 @@ export function ClientContractsTab({ clientId, refreshKey }: ClientContractsTabP
           {t('tabs.contracts')} ({contracts.length})
         </h3>
         <Button size="sm" asChild>
-          <Link href="/admin/contracts/new">
+          <Link href="/admin/contracts/new?clientId=${clientId}">
             <Plus className="mr-2 h-4 w-4" />
             {t('contracts.addContract')}
           </Link>
