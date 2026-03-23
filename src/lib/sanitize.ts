@@ -1,18 +1,42 @@
-import DOMPurify from 'dompurify';
+import sanitize from 'sanitize-html';
+
+const ALLOWED_TAGS = [
+  'p',
+  'br',
+  'strong',
+  'em',
+  'u',
+  'ol',
+  'ul',
+  'li',
+  'h1',
+  'h2',
+  'h3',
+  'h4',
+  'h5',
+  'h6',
+  'blockquote',
+  'a',
+  'img',
+  'table',
+  'thead',
+  'tbody',
+  'tr',
+  'th',
+  'td',
+  'span',
+  'div',
+];
+
+const ALLOWED_ATTRIBUTES: Record<string, string[]> = {
+  a: ['href', 'target', 'rel'],
+  img: ['src', 'alt'],
+  '*': ['class', 'style'],
+};
 
 export function sanitizeHtml(dirty: string): string {
-  if (typeof window === 'undefined') {
-    // Server-side: strip all HTML tags as a safe fallback
-    return dirty.replace(/<[^>]*>/g, '');
-  }
-  return DOMPurify.sanitize(dirty, {
-    ALLOWED_TAGS: [
-      'p', 'br', 'strong', 'em', 'u', 'ol', 'ul', 'li',
-      'h1', 'h2', 'h3', 'h4', 'h5', 'h6',
-      'blockquote', 'a', 'img',
-      'table', 'thead', 'tbody', 'tr', 'th', 'td',
-      'span', 'div',
-    ],
-    ALLOWED_ATTR: ['href', 'src', 'alt', 'class', 'style', 'target', 'rel'],
+  return sanitize(dirty, {
+    allowedTags: ALLOWED_TAGS,
+    allowedAttributes: ALLOWED_ATTRIBUTES,
   });
 }
