@@ -746,7 +746,8 @@
     "invoiceCountOne": "{count} invoice",
     "overdueCount": "{count} overdue",
     "noClientsFound": "No clients found",
-    "noClientsWithInvoices": "No clients with invoices"
+    "noClientsWithInvoices": "No clients with invoices",
+    "pdfDownloadFailed": "Failed to load PDF"
   },
 
   "contracts": {

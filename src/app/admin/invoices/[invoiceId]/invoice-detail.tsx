@@ -67,6 +67,8 @@ export function InvoiceDetail({ invoice: initialInvoice }: InvoiceDetailProps) {
   const [previewUrl, setPreviewUrl] = React.useState<string | null>(null);
   const [isDeleting, setIsDeleting] = React.useState(false);
   const [isUpdatingStatus, setIsUpdatingStatus] = React.useState(false);
+  const [isPreviewLoading, setIsPreviewLoading] = React.useState(false);
+  const [isDownloadLoading, setIsDownloadLoading] = React.useState(false);
 
   const handleDelete = async () => {
     setIsDeleting(true);
@@ -98,33 +100,55 @@ export function InvoiceDetail({ invoice: initialInvoice }: InvoiceDetailProps) {
   };
 
   const handlePreview = async () => {
-    if (invoice.file_path) {
-      const supabase = createClient();
-      const { data } = await supabase.storage
-        .from('invoices')
-        .createSignedUrl(invoice.file_path, 3600);
-      if (data?.signedUrl) {
+    setIsPreviewLoading(true);
+    try {
+      if (invoice.file_path) {
+        const supabase = createClient();
+        const { data, error } = await supabase.storage
+          .from('invoices')
+          .createSignedUrl(invoice.file_path, 3600);
+        if (error || !data?.signedUrl) {
+          toast.error(t('pdfDownloadFailed'));
+          return;
+        }
         setPreviewUrl(data.signedUrl);
-        setPreviewOpen(true);
+      } else {
+        setPreviewUrl(`/api/invoices/${invoice.id}/pdf?t=${Date.now()}`);
       }
-    } else {
-      setPreviewUrl(`/api/invoices/${invoice.id}/pdf`);
       setPreviewOpen(true);
+    } catch {
+      toast.error(t('pdfDownloadFailed'));
+    } finally {
+      setIsPreviewLoading(false);
     }
   };
 
   const handleDownload = async () => {
-    if (invoice.file_path) {
-      const supabase = createClient();
-      const { data } = await supabase.storage
-        .from('invoices')
-        .createSignedUrl(invoice.file_path, 3600);
-      if (data?.signedUrl) {
+    setIsDownloadLoading(true);
+    try {
+      if (invoice.file_path) {
+        const supabase = createClient();
+        const { data, error } = await supabase.storage
+          .from('invoices')
+          .createSignedUrl(invoice.file_path, 3600);
+        if (error || !data?.signedUrl) {
+          toast.error(t('pdfDownloadFailed'));
+          return;
+        }
         window.open(data.signedUrl, '_blank');
+      } else {
+        window.open(`/api/invoices/${invoice.id}/pdf?t=${Date.now()}`, '_blank');
       }
-    } else {
-      window.open(`/api/invoices/${invoice.id}/pdf`, '_blank');
+    } catch {
+      toast.error(t('pdfDownloadFailed'));
+    } finally {
+      setIsDownloadLoading(false);
     }
+  };
+
+  const handlePreviewClose = (open: boolean) => {
+    setPreviewOpen(open);
+    if (!open) setPreviewUrl(null);
   };
 
   const handleStatusChange = () => {
@@ -140,13 +164,13 @@ export function InvoiceDetail({ invoice: initialInvoice }: InvoiceDetailProps) {
             <p className="text-muted-foreground mt-2">{t('invoiceDetailsDescription')}</p>
           </div>
           <div className="flex items-center gap-2">
-            <Button variant="outline" onClick={handlePreview}>
+            <Button variant="outline" onClick={handlePreview} disabled={isPreviewLoading}>
               <Eye className="mr-2 h-4 w-4" />
-              Preview
+              {isPreviewLoading ? '...' : 'Preview'}
             </Button>
-            <Button variant="outline" onClick={handleDownload}>
+            <Button variant="outline" onClick={handleDownload} disabled={isDownloadLoading}>
               <Download className="mr-2 h-4 w-4" />
-              Download
+              {isDownloadLoading ? '...' : 'Download'}
             </Button>
             <Button variant="destructive" onClick={() => setDeleteDialogOpen(true)}>
               <Trash2 className="mr-2 h-4 w-4" />
@@ -302,13 +326,14 @@ export function InvoiceDetail({ invoice: initialInvoice }: InvoiceDetailProps) {
       </div>
 
       {/* PDF Preview Dialog */}
-      <Dialog open={previewOpen} onOpenChange={setPreviewOpen}>
+      <Dialog open={previewOpen} onOpenChange={handlePreviewClose}>
         <DialogContent className="max-w-4xl h-[85vh]">
           <DialogHeader>
             <DialogTitle>{invoice.invoice_number} — Preview</DialogTitle>
           </DialogHeader>
           {previewUrl && (
             <iframe
+              key={previewUrl}
               src={previewUrl}
               className="w-full h-full rounded-md border"
               title="Invoice Preview"

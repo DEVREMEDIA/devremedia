@@ -746,7 +746,8 @@
     "invoiceCountOne": "{count} τιμολόγιο",
     "overdueCount": "{count} ληξιπρόθεσμα",
     "noClientsFound": "Δεν βρέθηκαν πελάτες",
-    "noClientsWithInvoices": "Δεν υπάρχουν πελάτες με τιμολόγια"
+    "noClientsWithInvoices": "Δεν υπάρχουν πελάτες με τιμολόγια",
+    "pdfDownloadFailed": "Αποτυχία φόρτωσης PDF"
   },
 
   "contracts": {
