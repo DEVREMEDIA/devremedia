@@ -9,24 +9,43 @@ import {
   AccordionTrigger,
 } from '@/components/ui/accordion';
 
-// Helper to extract video ID from YouTube URL
-function getYouTubeEmbedUrl(url: string): string | null {
-  const regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|&v=)([^#&?]*).*/;
-  const match = url.match(regExp);
-  if (match && match[2].length === 11) {
-    return `https://www.youtube.com/embed/${match[2]}`;
-  }
-  return null;
-}
+/** Try to get an embeddable URL from any video link */
+function getEmbedUrl(url: string): { type: 'iframe' | 'video' | 'link'; src: string } {
+  const trimmed = url.trim();
 
-// Helper to extract video ID from Vimeo URL
-function getVimeoEmbedUrl(url: string): string | null {
-  const regExp = /vimeo.com\/(\d+)/;
-  const match = url.match(regExp);
-  if (match) {
-    return `https://player.vimeo.com/video/${match[1]}`;
+  // YouTube standard
+  const ytMatch = trimmed.match(
+    /(?:youtu\.be\/|youtube\.com\/(?:watch\?v=|embed\/|v\/|shorts\/))([a-zA-Z0-9_-]{11})/,
+  );
+  if (ytMatch) {
+    return { type: 'iframe', src: `https://www.youtube.com/embed/${ytMatch[1]}` };
   }
-  return null;
+
+  // Vimeo
+  const vimeoMatch = trimmed.match(/vimeo\.com\/(\d+)/);
+  if (vimeoMatch) {
+    return { type: 'iframe', src: `https://player.vimeo.com/video/${vimeoMatch[1]}` };
+  }
+
+  // Google Drive
+  const driveMatch = trimmed.match(/drive\.google\.com\/file\/d\/([a-zA-Z0-9_-]+)/);
+  if (driveMatch) {
+    return { type: 'iframe', src: `https://drive.google.com/file/d/${driveMatch[1]}/preview` };
+  }
+
+  // Loom
+  const loomMatch = trimmed.match(/loom\.com\/share\/([a-zA-Z0-9]+)/);
+  if (loomMatch) {
+    return { type: 'iframe', src: `https://www.loom.com/embed/${loomMatch[1]}` };
+  }
+
+  // Direct video file
+  if (/\.(mp4|webm|ogg|mov)(\?|$)/i.test(trimmed)) {
+    return { type: 'video', src: trimmed };
+  }
+
+  // Fallback - try as iframe (works for many embeddable URLs)
+  return { type: 'link', src: trimmed };
 }
 
 interface ArticleContentProps {
@@ -67,7 +86,6 @@ export function ArticleContent({ content, videoUrls }: ArticleContentProps) {
           ))}
         </Accordion>
       ) : (
-        /* Legacy HTML content fallback */
         <div
           className="prose prose-sm max-w-none dark:prose-invert"
           dangerouslySetInnerHTML={{ __html: sanitizeHtml(content) }}
@@ -79,21 +97,45 @@ export function ArticleContent({ content, videoUrls }: ArticleContentProps) {
           <h2 className="text-xl font-semibold">Videos</h2>
           <div className="grid gap-4 md:grid-cols-2">
             {videoUrls.map((url, index) => {
-              const youtubeUrl = getYouTubeEmbedUrl(url);
-              const vimeoUrl = getVimeoEmbedUrl(url);
-              const embedUrl = youtubeUrl || vimeoUrl;
+              const embed = getEmbedUrl(url);
 
-              if (!embedUrl) return null;
+              if (embed.type === 'iframe') {
+                return (
+                  <div key={index} className="aspect-video rounded-lg overflow-hidden border">
+                    <iframe
+                      src={embed.src}
+                      className="w-full h-full"
+                      allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; fullscreen"
+                      allowFullScreen
+                    />
+                  </div>
+                );
+              }
 
+              if (embed.type === 'video') {
+                return (
+                  <div key={index} className="aspect-video rounded-lg overflow-hidden border">
+                    <video
+                      src={embed.src}
+                      controls
+                      className="w-full h-full object-contain bg-black"
+                    />
+                  </div>
+                );
+              }
+
+              // Fallback: show as clickable link
               return (
-                <div key={index} className="aspect-video">
-                  <iframe
-                    src={embedUrl}
-                    className="w-full h-full rounded-lg"
-                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                    allowFullScreen
-                  />
-                </div>
+                <a
+                  key={index}
+                  href={embed.src}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="flex items-center gap-2 rounded-lg border p-4 hover:bg-accent/50 transition-colors"
+                >
+                  <span className="text-2xl">🎬</span>
+                  <span className="text-sm text-primary underline truncate">{embed.src}</span>
+                </a>
               );
             })}
           </div>

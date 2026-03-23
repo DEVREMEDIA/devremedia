@@ -158,8 +158,25 @@ export function ArticleForm({ article, categories }: ArticleFormProps) {
     });
   };
 
-  const onSubmit = async (data: CreateKbArticleInput) => {
-    // Validate sections have at least one with title
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+
+    // Validate required form fields manually
+    const values = form.getValues();
+    if (!values.category_id) {
+      toast.error('Επιλέξτε κατηγορία');
+      return;
+    }
+    if (!values.title?.trim()) {
+      toast.error('Ο τίτλος είναι υποχρεωτικός');
+      return;
+    }
+    if (!values.slug?.trim()) {
+      toast.error('Το slug είναι υποχρεωτικό');
+      return;
+    }
+
+    // Validate sections
     const validSections = sections.filter((s) => s.title.trim());
     if (validSections.length === 0) {
       toast.error('Προσθέστε τουλάχιστον ένα section με τίτλο');
@@ -169,9 +186,9 @@ export function ArticleForm({ article, categories }: ArticleFormProps) {
     setIsSubmitting(true);
 
     const cleanedData = {
-      ...data,
+      ...values,
       content: serializeSections(validSections),
-      video_urls: (data.video_urls ?? []).filter((url) => url.trim() !== ''),
+      video_urls: (values.video_urls ?? []).filter((url: string) => url.trim() !== ''),
     };
 
     const result =
@@ -192,7 +209,7 @@ export function ArticleForm({ article, categories }: ArticleFormProps) {
 
   return (
     <Form {...form}>
-      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+      <form onSubmit={handleSubmit} className="space-y-6">
         <FormField
           control={form.control}
           name="category_id"
