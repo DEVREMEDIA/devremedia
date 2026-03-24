@@ -13,6 +13,10 @@ export const NOTIFICATION_TYPES = {
   BOOKING_SUBMITTED: 'booking_submitted',
   TASK_ASSIGNED: 'task_assigned',
   TASK_UPDATED: 'task_updated',
+  // Google Calendar Sync
+  GOOGLE_NEW_EVENT: 'google_new_event',
+  GOOGLE_EVENT_CHANGED: 'google_event_changed',
+  GOOGLE_EVENT_DELETED: 'google_event_deleted',
 } as const;
 
 // Map notification types to preference keys for checking user preferences
@@ -31,4 +35,7 @@ export const TYPE_TO_PREFERENCE: Record<string, string> = {
   [NOTIFICATION_TYPES.BOOKING_SUBMITTED]: 'project_updates',
   [NOTIFICATION_TYPES.TASK_ASSIGNED]: 'project_updates',
   [NOTIFICATION_TYPES.TASK_UPDATED]: 'project_updates',
+  [NOTIFICATION_TYPES.GOOGLE_NEW_EVENT]: 'project_updates',
+  [NOTIFICATION_TYPES.GOOGLE_EVENT_CHANGED]: 'project_updates',
+  [NOTIFICATION_TYPES.GOOGLE_EVENT_DELETED]: 'project_updates',
 };

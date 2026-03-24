@@ -50,6 +50,8 @@ interface CreateNotificationInput {
   title: string;
   body?: string;
   actionUrl?: string;
+  actionType?: string;
+  actionData?: unknown;
 }
 
 export async function createNotification({
@@ -58,6 +60,8 @@ export async function createNotification({
   title,
   body,
   actionUrl,
+  actionType,
+  actionData,
 }: CreateNotificationInput): Promise<void> {
   try {
     const supabase = createAdminClient();
@@ -85,6 +89,8 @@ export async function createNotification({
       title,
       body: body ?? null,
       action_url: actionUrl ?? null,
+      action_type: actionType ?? null,
+      action_data: actionData ?? null,
     });
   } catch (err) {
     console.error('Failed to create notification:', err);
@@ -108,7 +114,9 @@ export async function getMyNotifications(): Promise<ActionResult<Notification[]>
 
     const { data, error } = await supabase
       .from('notifications')
-      .select('id, user_id, type, title, body, read, action_url, created_at')
+      .select(
+        'id, user_id, type, title, body, read, action_url, action_type, action_data, created_at',
+      )
       .eq('user_id', user.id)
       .order('created_at', { ascending: false })
       .limit(50);

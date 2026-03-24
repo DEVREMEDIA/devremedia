@@ -280,6 +280,8 @@ export type Notification = {
   body: string | null;
   read: boolean;
   action_url: string | null;
+  action_type: string | null;
+  action_data: GoogleSyncActionData | null;
   created_at: string;
 };
 
@@ -409,3 +411,59 @@ export type CalendarEventRecord = {
   created_at: string;
   updated_at: string;
 };
+
+// --- Google Calendar Sync Types ---
+
+export interface GoogleCalendarSyncRecord {
+  id: string;
+  entity_type: 'project' | 'task' | 'invoice' | 'custom';
+  entity_id: string | null;
+  subtype: 'start' | 'deadline' | null;
+  google_event_id: string | null;
+  sync_status: 'synced' | 'pending' | 'conflict' | 'ignored';
+  sync_direction: 'to_google' | 'from_google';
+  retry_count: number;
+  last_synced_at: string | null;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface GoogleCalendarConfigRecord {
+  id: string;
+  sync_token: string | null;
+  webhook_channel_id: string | null;
+  webhook_channel_token: string | null;
+  webhook_resource_id: string | null;
+  webhook_expiration: string | null;
+  last_sync_at: string | null;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface GoogleNewEventData {
+  google_event_id: string;
+  title: string;
+  start: string;
+  end?: string;
+  description?: string;
+}
+
+export interface GoogleEventChangedData {
+  google_event_id: string;
+  entity_type: 'project' | 'task' | 'invoice' | 'custom';
+  entity_id: string;
+  subtype?: 'start' | 'deadline';
+  changes: Record<string, { from: string; to: string }>;
+}
+
+export interface GoogleEventDeletedData {
+  google_event_id: string;
+  entity_type: 'project' | 'task' | 'invoice' | 'custom';
+  entity_id: string;
+  title: string;
+}
+
+export type GoogleSyncActionData =
+  | { action_type: 'google_new_event'; data: GoogleNewEventData }
+  | { action_type: 'google_event_changed'; data: GoogleEventChangedData }
+  | { action_type: 'google_event_deleted'; data: GoogleEventDeletedData };
