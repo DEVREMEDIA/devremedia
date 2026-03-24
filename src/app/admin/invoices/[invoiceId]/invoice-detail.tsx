@@ -67,28 +67,28 @@ export function InvoiceDetail({ invoice: initialInvoice }: InvoiceDetailProps) {
   const [previewUrl, setPreviewUrl] = React.useState<string | null>(null);
   const [isDeleting, setIsDeleting] = React.useState(false);
   const [isUpdatingStatus, setIsUpdatingStatus] = React.useState(false);
-  const [pdfUrl, setPdfUrl] = React.useState<string | null>(null);
+  // If uploaded file exists → signed URL; otherwise → API-generated PDF
+  const [pdfUrl, setPdfUrl] = React.useState<string | null>(
+    invoice.file_path ? null : `/api/invoices/${initialInvoice.id}/pdf`,
+  );
+  const [pdfError, setPdfError] = React.useState(false);
 
-  // Pre-compute PDF URL once on mount — avoids repeated createSignedUrl calls that hang
   React.useEffect(() => {
-    if (invoice.file_path) {
-      const supabase = createClient();
-      supabase.storage
-        .from('invoices')
-        .createSignedUrl(invoice.file_path, 3600)
-        .then(({ data, error }) => {
-          if (!error && data?.signedUrl) {
-            setPdfUrl(data.signedUrl);
-          } else {
-            console.error('[Invoice PDF] Failed to create signed URL:', error);
-            // Fallback to API-generated PDF
-            setPdfUrl(`/api/invoices/${invoice.id}/pdf`);
-          }
-        });
-    } else {
-      setPdfUrl(`/api/invoices/${invoice.id}/pdf`);
-    }
-  }, [invoice.file_path, invoice.id]);
+    if (!invoice.file_path) return;
+    const supabase = createClient();
+    supabase.storage
+      .from('invoices')
+      .createSignedUrl(invoice.file_path, 3600)
+      .then(({ data, error }) => {
+        if (data?.signedUrl) {
+          setPdfUrl(data.signedUrl);
+        } else {
+          console.error('[Invoice PDF] Signed URL failed:', error);
+          setPdfError(true);
+          toast.error('Failed to load uploaded PDF');
+        }
+      });
+  }, [invoice.file_path]);
 
   const handleDelete = async () => {
     setIsDeleting(true);
@@ -120,19 +120,13 @@ export function InvoiceDetail({ invoice: initialInvoice }: InvoiceDetailProps) {
   };
 
   const handlePreview = () => {
-    if (!pdfUrl) {
-      toast.error(t('pdfDownloadFailed'));
-      return;
-    }
+    if (!pdfUrl) return;
     setPreviewUrl(pdfUrl);
     setPreviewOpen(true);
   };
 
   const handleDownload = () => {
-    if (!pdfUrl) {
-      toast.error(t('pdfDownloadFailed'));
-      return;
-    }
+    if (!pdfUrl) return;
     const a = document.createElement('a');
     a.href = pdfUrl;
     a.target = '_blank';
@@ -162,11 +156,11 @@ export function InvoiceDetail({ invoice: initialInvoice }: InvoiceDetailProps) {
           <div className="flex items-center gap-2">
             <Button variant="outline" onClick={handlePreview} disabled={!pdfUrl}>
               <Eye className="mr-2 h-4 w-4" />
-              Preview
+              {!pdfUrl && !pdfError ? 'Loading...' : 'Preview'}
             </Button>
             <Button variant="outline" onClick={handleDownload} disabled={!pdfUrl}>
               <Download className="mr-2 h-4 w-4" />
-              Download
+              {!pdfUrl && !pdfError ? 'Loading...' : 'Download'}
             </Button>
             <Button variant="destructive" onClick={() => setDeleteDialogOpen(true)}>
               <Trash2 className="mr-2 h-4 w-4" />
