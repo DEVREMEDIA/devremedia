@@ -256,17 +256,10 @@ function InvoiceActions({ invoice, onMarkAsPaid, onMarkAsUnpaid }: InvoiceAction
             View
           </Link>
         </DropdownMenuItem>
-        {invoice.file_path ? (
+        {invoice.file_path && (
           <DropdownMenuItem onClick={handleDownloadOriginal}>
             <FileDown className="mr-2 h-4 w-4" />
             Download PDF
-          </DropdownMenuItem>
-        ) : (
-          <DropdownMenuItem asChild>
-            <a href={`/api/invoices/${invoice.id}/pdf`} target="_blank" rel="noopener noreferrer">
-              <FileDown className="mr-2 h-4 w-4" />
-              Download PDF
-            </a>
           </DropdownMenuItem>
         )}
         <DropdownMenuSeparator />

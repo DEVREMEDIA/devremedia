@@ -43,9 +43,7 @@ export function InvoiceDetail({ invoice }: InvoiceDetailProps) {
     }, 2000);
   };
 
-  const [pdfUrl, setPdfUrl] = React.useState<string | null>(
-    invoice.file_path ? null : `/api/invoices/${invoice.id}/pdf`,
-  );
+  const [pdfUrl, setPdfUrl] = React.useState<string | null>(null);
 
   React.useEffect(() => {
     if (!invoice.file_path) return;
