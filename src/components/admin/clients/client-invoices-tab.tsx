@@ -263,11 +263,7 @@ function InvoiceActions({ invoice, onMarkAsPaid, onMarkAsUnpaid }: InvoiceAction
           </DropdownMenuItem>
         ) : (
           <DropdownMenuItem asChild>
-            <a
-              href={`/api/invoices/pdf?id=${invoice.id}`}
-              target="_blank"
-              rel="noopener noreferrer"
-            >
+            <a href={`/api/invoices/${invoice.id}/pdf`} target="_blank" rel="noopener noreferrer">
               <FileDown className="mr-2 h-4 w-4" />
               Download PDF
             </a>

@@ -1,5 +1,6 @@
 'use client';
 
+import * as React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { StatusBadge } from '@/components/shared/status-badge';
@@ -42,26 +43,36 @@ export function InvoiceDetail({ invoice }: InvoiceDetailProps) {
     }, 2000);
   };
 
-  const getInvoiceUrl = async (): Promise<string> => {
-    if (invoice.file_path) {
-      const supabase = createClient();
-      const { data } = await supabase.storage
-        .from('invoices')
-        .createSignedUrl(invoice.file_path, 3600);
-      if (data?.signedUrl) return data.signedUrl;
-    }
-    return `/api/invoices/${invoice.id}/pdf`;
-  };
+  const [pdfUrl, setPdfUrl] = React.useState<string | null>(
+    invoice.file_path ? null : `/api/invoices/${invoice.id}/pdf`,
+  );
 
-  const handlePreview = async () => {
-    const url = await getInvoiceUrl();
-    setPreviewUrl(url);
+  React.useEffect(() => {
+    if (!invoice.file_path) return;
+    const supabase = createClient();
+    supabase.storage
+      .from('invoices')
+      .createSignedUrl(invoice.file_path, 3600)
+      .then(({ data }) => {
+        if (data?.signedUrl) setPdfUrl(data.signedUrl);
+      });
+  }, [invoice.file_path]);
+
+  const handlePreview = () => {
+    if (!pdfUrl) return;
+    setPreviewUrl(pdfUrl);
     setPreviewOpen(true);
   };
 
-  const handleDownload = async () => {
-    const url = await getInvoiceUrl();
-    window.open(url, '_blank');
+  const handleDownload = () => {
+    if (!pdfUrl) return;
+    const a = document.createElement('a');
+    a.href = pdfUrl;
+    a.target = '_blank';
+    a.rel = 'noopener noreferrer';
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
   };
 
   return (
