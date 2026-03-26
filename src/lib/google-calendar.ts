@@ -80,14 +80,12 @@ function buildEventResource(payload: GoogleEventPayload): calendar_v3.Schema$Eve
     event.start = { date: payload.startDate.split('T')[0] };
     event.end = { date: (payload.endDate ?? payload.startDate).split('T')[0] };
   } else {
-    // The platform's datetime-local input sends times without timezone.
-    // Supabase stores them with +00:00 suffix but they represent Athens local time.
-    // Strip the +00:00 and tell Google it's Europe/Athens.
-    const stripUtcSuffix = (dt: string) => dt.replace('+00:00', '').replace('Z', '');
-    event.start = { dateTime: stripUtcSuffix(payload.startDate), timeZone: 'Europe/Athens' };
+    // Supabase stores proper UTC times. Pass them directly with UTC timezone.
+    // Google converts to the calendar's display timezone automatically.
+    event.start = { dateTime: payload.startDate, timeZone: 'UTC' };
     event.end = {
-      dateTime: stripUtcSuffix(payload.endDate ?? payload.startDate),
-      timeZone: 'Europe/Athens',
+      dateTime: payload.endDate ?? payload.startDate,
+      timeZone: 'UTC',
     };
   }
 

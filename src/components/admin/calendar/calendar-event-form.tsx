@@ -77,6 +77,17 @@ export function CalendarEventForm({
 
   const isAllDay = form.watch('all_day');
 
+  // Convert UTC ISO string to local datetime-local format (YYYY-MM-DDTHH:mm)
+  const utcToLocal = (utcStr: string) => {
+    const d = new Date(utcStr);
+    const year = d.getFullYear();
+    const month = String(d.getMonth() + 1).padStart(2, '0');
+    const day = String(d.getDate()).padStart(2, '0');
+    const hours = String(d.getHours()).padStart(2, '0');
+    const minutes = String(d.getMinutes()).padStart(2, '0');
+    return `${year}-${month}-${day}T${hours}:${minutes}`;
+  };
+
   useEffect(() => {
     if (editEvent) {
       form.reset({
@@ -84,11 +95,11 @@ export function CalendarEventForm({
         description: editEvent.description ?? '',
         start_date: editEvent.all_day
           ? editEvent.start_date.split('T')[0]
-          : editEvent.start_date.slice(0, 16),
+          : utcToLocal(editEvent.start_date),
         end_date: editEvent.end_date
           ? editEvent.all_day
             ? editEvent.end_date.split('T')[0]
-            : editEvent.end_date.slice(0, 16)
+            : utcToLocal(editEvent.end_date)
           : '',
         all_day: editEvent.all_day,
         color: editEvent.color ?? '',
@@ -110,9 +121,18 @@ export function CalendarEventForm({
   const onSubmit = async (data: CreateCalendarEventInput) => {
     setIsSubmitting(true);
 
+    // datetime-local gives local time without timezone (e.g. "2026-03-26T18:00")
+    // Supabase timestamptz needs proper UTC conversion
+    // Convert local time to ISO UTC string so Supabase stores correctly
+    const toUtc = (dateStr: string) => {
+      if (!dateStr || !dateStr.includes('T')) return dateStr;
+      return new Date(dateStr).toISOString();
+    };
+
     const payload = {
       ...data,
-      end_date: data.end_date || null,
+      start_date: data.all_day ? data.start_date : toUtc(data.start_date),
+      end_date: data.end_date ? (data.all_day ? data.end_date : toUtc(data.end_date)) : null,
       color: data.color || null,
       description: data.description || null,
     };
