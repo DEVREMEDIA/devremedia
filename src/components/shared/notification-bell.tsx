@@ -14,6 +14,8 @@ import { useTranslations } from 'next-intl';
 import { useAuth } from '@/hooks/use-auth';
 import { useNotifications } from '@/hooks/use-notifications';
 import { formatDistanceToNow } from 'date-fns';
+import { GoogleSyncNotification } from '@/components/shared/google-sync-notification';
+import type { GoogleSyncActionData } from '@/types';
 
 export function NotificationBell() {
   const t = useTranslations('common');
@@ -92,6 +94,13 @@ export function NotificationBell() {
                       <p className="text-xs text-muted-foreground mt-0.5 line-clamp-2">
                         {notification.body}
                       </p>
+                    )}
+                    {notification.action_data && (
+                      <GoogleSyncNotification
+                        notificationId={notification.id}
+                        actionData={notification.action_data as GoogleSyncActionData}
+                        onAction={() => markAsRead(notification.id)}
+                      />
                     )}
                     <p className="text-[11px] text-muted-foreground mt-1">
                       {formatDistanceToNow(new Date(notification.created_at), {
