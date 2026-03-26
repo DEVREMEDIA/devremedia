@@ -63,62 +63,86 @@ async function processGoogleEvent(
     .eq('google_event_id', event.id)
     .single();
 
-  // Ignored event — skip
+  // Already synced or ignored — skip
   if (mapping?.sync_status === 'ignored') return;
 
   const isCancelled = event.status === 'cancelled';
 
   if (!mapping) {
-    // New event from Google
-    if (isCancelled) return; // Deleted event we never tracked — ignore
+    // New event from Google — AUTO-CREATE in platform + notify
+    if (isCancelled) return;
 
-    // Atomic insert — action_type and action_data are set in one query (no race condition)
+    const startDate = event.start?.dateTime ?? event.start?.date ?? '';
+    const endDate = event.end?.dateTime ?? event.end?.date ?? null;
+    const isAllDay = !event.start?.dateTime;
+
+    // Get a system admin user ID for created_by
+    const createdBy = adminIds[0];
+    if (!createdBy) return;
+
+    // Create calendar event in Supabase automatically
+    const { data: newEvent, error } = await supabase
+      .from('calendar_events')
+      .insert({
+        title: event.summary ?? 'Google Calendar Event',
+        description: event.description ?? null,
+        start_date: startDate,
+        end_date: endDate,
+        all_day: isAllDay,
+        event_type: 'meeting',
+        created_by: createdBy,
+      })
+      .select('id')
+      .single();
+
+    if (error || !newEvent) {
+      console.error('[Google Webhook] Failed to create event:', error?.message);
+      return;
+    }
+
+    // Create sync mapping
+    await supabase.from('google_calendar_sync').insert({
+      entity_type: 'custom',
+      entity_id: newEvent.id,
+      google_event_id: event.id,
+      sync_status: 'synced',
+      sync_direction: 'from_google',
+      last_synced_at: new Date().toISOString(),
+    });
+
+    // Notify admins (info only, no action needed)
     await createNotificationForMany(adminIds, {
       type: NOTIFICATION_TYPES.GOOGLE_NEW_EVENT,
-      title: 'New event from Google Calendar',
-      body: `"${event.summary ?? 'Untitled'}" — ${formatEventDate(event)}`,
+      title: 'Νέο event από Google Calendar',
+      body: `"${event.summary ?? 'Untitled'}" προστέθηκε αυτόματα στο calendar`,
       actionUrl: '/admin/calendar',
-      actionType: 'google_new_event',
-      actionData: {
-        action_type: 'google_new_event',
-        data: {
-          google_event_id: event.id,
-          title: event.summary ?? 'Untitled',
-          start: event.start?.dateTime ?? event.start?.date ?? '',
-          end: event.end?.dateTime ?? event.end?.date ?? undefined,
-          description: event.description ?? undefined,
-        },
-      },
     });
     return;
   }
 
   // Existing mapping
   if (isCancelled) {
-    // Event deleted from Google
-    const title = event.summary ?? 'Event';
+    // Event deleted from Google — auto-delete from platform + notify
+    if (mapping.entity_id) {
+      if (mapping.entity_type === 'custom') {
+        await supabase.from('calendar_events').delete().eq('id', mapping.entity_id);
+      }
+    }
+
+    // Remove mapping
+    await supabase.from('google_calendar_sync').delete().eq('id', mapping.id);
+
     await createNotificationForMany(adminIds, {
       type: NOTIFICATION_TYPES.GOOGLE_EVENT_DELETED,
-      title: 'Synced event deleted from Google',
-      body: `"${title}" was removed`,
+      title: 'Event διαγράφηκε από Google Calendar',
+      body: `"${event.summary ?? 'Event'}" αφαιρέθηκε αυτόματα`,
       actionUrl: '/admin/calendar',
-      actionType: 'google_event_deleted',
-      actionData: {
-        action_type: 'google_event_deleted',
-        data: {
-          google_event_id: event.id,
-          entity_type: mapping.entity_type,
-          entity_id: mapping.entity_id ?? '',
-          title,
-        },
-      },
     });
     return;
   }
 
-  // Event modified
-  if (mapping.entity_type === 'custom' && mapping.entity_id) {
-    // Auto-sync custom events back to Supabase
+  // Event modified — auto-update in platform
+  if (mapping.entity_id) {
     const updateData: Record<string, unknown> = {
       title: event.summary ?? undefined,
       description: event.description ?? null,
@@ -128,31 +152,36 @@ async function processGoogleEvent(
       updated_at: new Date().toISOString(),
     };
 
-    await supabase.from('calendar_events').update(updateData).eq('id', mapping.entity_id);
+    if (mapping.entity_type === 'custom') {
+      await supabase.from('calendar_events').update(updateData).eq('id', mapping.entity_id);
+    } else if (mapping.entity_type === 'project') {
+      const field = mapping.subtype === 'start' ? 'start_date' : 'deadline';
+      await supabase
+        .from('projects')
+        .update({ [field]: event.start?.dateTime ?? event.start?.date })
+        .eq('id', mapping.entity_id);
+    } else if (mapping.entity_type === 'task') {
+      await supabase
+        .from('tasks')
+        .update({ due_date: event.start?.dateTime ?? event.start?.date })
+        .eq('id', mapping.entity_id);
+    } else if (mapping.entity_type === 'invoice') {
+      await supabase
+        .from('invoices')
+        .update({ due_date: event.start?.dateTime ?? event.start?.date })
+        .eq('id', mapping.entity_id);
+    }
 
     await supabase
       .from('google_calendar_sync')
       .update({ last_synced_at: new Date().toISOString(), sync_status: 'synced' })
       .eq('id', mapping.id);
-  } else if (mapping.entity_id) {
-    // Project/Task/Invoice — notify admin
-    const newDate = event.start?.dateTime ?? event.start?.date ?? '';
+
     await createNotificationForMany(adminIds, {
       type: NOTIFICATION_TYPES.GOOGLE_EVENT_CHANGED,
-      title: 'Synced event changed in Google',
-      body: `"${event.summary ?? 'Event'}" was modified`,
+      title: 'Event ενημερώθηκε από Google Calendar',
+      body: `"${event.summary ?? 'Event'}" ενημερώθηκε αυτόματα`,
       actionUrl: '/admin/calendar',
-      actionType: 'google_event_changed',
-      actionData: {
-        action_type: 'google_event_changed',
-        data: {
-          google_event_id: event.id,
-          entity_type: mapping.entity_type,
-          entity_id: mapping.entity_id,
-          subtype: mapping.subtype ?? undefined,
-          changes: { date: { from: 'previous', to: newDate } },
-        },
-      },
     });
   }
 }
