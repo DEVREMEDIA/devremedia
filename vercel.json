@@ -3,23 +3,5 @@
   "framework": "nextjs",
   "buildCommand": "next build",
   "installCommand": "pnpm install --frozen-lockfile",
-  "regions": ["iad1"],
-  "crons": [
-    {
-      "path": "/api/cron/google-sync-retry",
-      "schedule": "*/5 * * * *"
-    },
-    {
-      "path": "/api/cron/google-webhook-renew",
-      "schedule": "0 3 */6 * *"
-    },
-    {
-      "path": "/api/cron/email-filming-reminder",
-      "schedule": "0 9 * * *"
-    },
-    {
-      "path": "/api/cron/email-holiday-greeting",
-      "schedule": "0 7 * * *"
-    }
-  ]
+  "regions": ["iad1"]
 }
