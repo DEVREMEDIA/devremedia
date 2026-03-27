@@ -56,6 +56,17 @@ async function processGoogleEvent(
 ) {
   if (!event.id) return;
 
+  // Skip events too far in the future (>3 months) to avoid recurring event flood
+  const eventDate = event.start?.dateTime ?? event.start?.date;
+  if (eventDate) {
+    const threeMonthsFromNow = new Date();
+    threeMonthsFromNow.setMonth(threeMonthsFromNow.getMonth() + 3);
+    if (new Date(eventDate) > threeMonthsFromNow) return;
+  }
+
+  // Skip recurring event instances (only sync the master event, not each occurrence)
+  if (event.recurringEventId) return;
+
   // Check existing mapping
   const { data: mapping } = await supabase
     .from('google_calendar_sync')

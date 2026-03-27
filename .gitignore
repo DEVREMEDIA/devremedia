@@ -50,3 +50,16 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# service account keys
+*.json
+!package.json
+!tsconfig.json
+!tsconfig.*.json
+!components.json
+!messages/*.json
+!supabase/**/*.json
+
+# media files (not needed in repo)
+*.png
+*.pdf
