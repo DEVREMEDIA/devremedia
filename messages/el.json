@@ -705,6 +705,8 @@
     "selectPaymentMethod": "Επιλέξτε μέθοδο πληρωμής",
     "itemDescriptionPlaceholder": "Περιγραφή αντικειμένου",
     "stripeComingSoon": "Η ενσωμάτωση Stripe έρχεται σύντομα",
+    "paymentError": "Σφάλμα κατά την πληρωμή. Δοκιμάστε ξανά.",
+    "paymentLinkSent": "Ο σύνδεσμος πληρωμής στάλθηκε στον πελάτη",
     "invoiceDetailsDescription": "Στοιχεία τιμολογίου και πληροφορίες πληρωμής",
     "clientInfo": "Στοιχεία Πελάτη",
     "clientName": "Όνομα Πελάτη",

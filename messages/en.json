@@ -705,6 +705,8 @@
     "selectPaymentMethod": "Select payment method",
     "itemDescriptionPlaceholder": "Item description",
     "stripeComingSoon": "Stripe integration coming soon",
+    "paymentError": "Payment failed. Please try again.",
+    "paymentLinkSent": "Payment link sent to client",
     "invoiceDetailsDescription": "Invoice details and payment information",
     "clientInfo": "Client Information",
     "clientName": "Client Name",

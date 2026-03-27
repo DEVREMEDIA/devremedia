@@ -60,6 +60,13 @@ const nextConfig: NextConfig = {
         ],
       },
       {
+        source: '/api/invoices/:invoiceId/file',
+        headers: [
+          ...securityHeaders.filter((h) => h.key !== 'X-Frame-Options'),
+          { key: 'X-Frame-Options', value: 'SAMEORIGIN' },
+        ],
+      },
+      {
         source: '/(.*)',
         headers: securityHeaders,
       },

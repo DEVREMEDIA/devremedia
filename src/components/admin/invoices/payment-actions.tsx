@@ -2,8 +2,20 @@
 
 import * as React from 'react';
 import { Button } from '@/components/ui/button';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogFooter,
+} from '@/components/ui/dialog';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { updateInvoiceStatus } from '@/lib/actions/invoices';
@@ -28,10 +40,21 @@ export function PaymentActions({ invoice, onStatusChange }: PaymentActionsProps)
   const [paymentDialogOpen, setPaymentDialogOpen] = React.useState(false);
   const [isUpdating, setIsUpdating] = React.useState(false);
   const [paymentMethod, setPaymentMethod] = React.useState<string>('bank_transfer');
-  const [paymentDate, setPaymentDate] = React.useState<string>(new Date().toISOString().split('T')[0]);
+  const [paymentDate, setPaymentDate] = React.useState<string>(
+    new Date().toISOString().split('T')[0],
+  );
 
-  const handleSendPaymentLink = () => {
-    toast.info(t('stripeComingSoon'));
+  const handleSendPaymentLink = async () => {
+    setIsUpdating(true);
+    const result = await updateInvoiceStatus(invoice.id, 'sent');
+    setIsUpdating(false);
+
+    if (result.error) {
+      toast.error(result.error);
+    } else {
+      toast.success(t('paymentLinkSent'));
+      onStatusChange();
+    }
   };
 
   const handleRecordPayment = async () => {
@@ -103,7 +126,11 @@ export function PaymentActions({ invoice, onStatusChange }: PaymentActionsProps)
             </div>
           </div>
           <DialogFooter>
-            <Button variant="outline" onClick={() => setPaymentDialogOpen(false)} disabled={isUpdating}>
+            <Button
+              variant="outline"
+              onClick={() => setPaymentDialogOpen(false)}
+              disabled={isUpdating}
+            >
               {tc('cancel')}
             </Button>
             <Button onClick={handleRecordPayment} disabled={isUpdating}>

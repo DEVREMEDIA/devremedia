@@ -34,11 +34,21 @@ export function InvoiceDetail({ invoice }: InvoiceDetailProps) {
 
   const handlePayment = async () => {
     setLoading(true);
-    toast.info(t('paymentComingSoon'));
-    setTimeout(() => {
+    try {
+      const res = await fetch(`/api/invoices/${invoice.id}/pay`, { method: 'POST' });
+      const data = await res.json();
+
+      if (!res.ok || !data.url) {
+        toast.error(data.error || t('paymentError'));
+        setLoading(false);
+        return;
+      }
+
+      window.location.href = data.url;
+    } catch {
+      toast.error(t('paymentError'));
       setLoading(false);
-      router.push(`/client/invoices/${invoice.id}/success`);
-    }, 2000);
+    }
   };
 
   const pdfUrl = invoice.file_path ? `/api/invoices/${invoice.id}/file` : null;
