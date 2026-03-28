@@ -1,10 +1,10 @@
 'use client';
 
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { format } from 'date-fns';
 import { Calendar, MapPin } from 'lucide-react';
 import { EmptyState } from '@/components/shared/empty-state';
 import { useTranslations } from 'next-intl';
+import { cn } from '@/lib/utils';
 import type { ProjectWithClient } from '@/types';
 
 type ProjectWithExtras = ProjectWithClient & {
@@ -19,39 +19,32 @@ interface UpcomingFilmingsProps {
 
 export function UpcomingFilmings({ projects }: UpcomingFilmingsProps) {
   const t = useTranslations('client.dashboard');
-  // Filter projects with filming dates in the future
   const upcomingFilmings = projects
     .filter((p) => p.filming_date && new Date(p.filming_date) >= new Date())
     .sort((a, b) => new Date(a.filming_date!).getTime() - new Date(b.filming_date!).getTime())
     .slice(0, 5);
 
   if (upcomingFilmings.length === 0) {
-    return (
-      <Card>
-        <CardHeader>
-          <CardTitle>{t('upcomingFilmings')}</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <EmptyState
-            icon={Calendar}
-            title={t('noUpcomingFilmings')}
-            description={t('noUpcomingFilmingsDescription')}
-          />
-        </CardContent>
-      </Card>
-    );
+    return null;
   }
 
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle>{t('upcomingFilmings')}</CardTitle>
-      </CardHeader>
-      <CardContent>
-        <div className="space-y-3">
+    <div className="rounded-xl border bg-card">
+      <div className="flex items-center gap-2 px-5 py-4 border-b border-border/50">
+        <Calendar className="h-5 w-5 text-blue-500" />
+        <h2 className="text-lg font-semibold">{t('upcomingFilmings')}</h2>
+      </div>
+      <div className="p-5">
+        <div className="grid gap-3 md:grid-cols-2 lg:grid-cols-3">
           {upcomingFilmings.map((project) => (
-            <div key={project.id} className="flex items-start gap-3 p-3 border rounded-lg">
-              <div className="p-2 rounded-lg bg-primary/10 text-primary">
+            <div
+              key={project.id}
+              className={cn(
+                'flex items-start gap-3 p-4 rounded-lg transition-all duration-200',
+                'border border-border/50 hover:border-blue-500/30 hover:bg-blue-500/5',
+              )}
+            >
+              <div className="p-2 rounded-lg bg-blue-500/10 text-blue-500">
                 <Calendar className="h-4 w-4" />
               </div>
               <div className="flex-1 min-w-0">
@@ -72,7 +65,7 @@ export function UpcomingFilmings({ projects }: UpcomingFilmingsProps) {
             </div>
           ))}
         </div>
-      </CardContent>
-    </Card>
+      </div>
+    </div>
   );
 }

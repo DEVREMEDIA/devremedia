@@ -7,8 +7,8 @@ import { redirect } from 'next/navigation';
 import { ActiveProjects } from '@/components/client/dashboard/active-projects';
 import { PendingActions } from '@/components/client/dashboard/pending-actions';
 import { RecentDeliverables } from '@/components/client/dashboard/recent-deliverables';
-import { RecentContracts } from '@/components/client/dashboard/recent-contracts';
 import { UpcomingFilmings } from '@/components/client/dashboard/upcoming-filmings';
+import { DashboardStats } from '@/components/client/dashboard/dashboard-stats';
 import { getTranslations } from 'next-intl/server';
 import type { DeliverableWithProject } from '@/types';
 
@@ -59,7 +59,6 @@ export default async function ClientDashboardPage() {
   );
   const allDeliverables: DeliverableWithProject[] = deliverableResults.flat();
 
-  // Sort by created_at and take most recent
   const recentDeliverables = allDeliverables
     .sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())
     .slice(0, 5);
@@ -84,26 +83,36 @@ export default async function ClientDashboardPage() {
       {/* Welcome Header */}
       <div>
         <h1 className="text-3xl font-bold tracking-tight">{t('title')}</h1>
-        <p className="text-muted-foreground mt-2">{t('description')}</p>
+        <p className="text-muted-foreground mt-1">{t('description')}</p>
       </div>
 
-      {/* Active Projects */}
+      {/* Stat Cards */}
+      <DashboardStats
+        activeProjectsCount={activeProjects.length}
+        pendingActionsCount={pendingInvoices.length + unsignedContracts.length}
+        upcomingFilmingsCount={
+          activeProjects.filter(
+            (p) =>
+              (p as { filming_date?: string }).filming_date &&
+              new Date((p as { filming_date?: string }).filming_date!) >= new Date(),
+          ).length
+        }
+      />
+
+      {/* Active Projects with timeline */}
       <ActiveProjects projects={activeProjects} />
 
-      {/* Pending Actions */}
-      <PendingActions invoices={pendingInvoices} unsignedContracts={unsignedContracts} />
-
-      {/* Contracts */}
-      <RecentContracts contracts={contracts} />
-
       {/* Two Column Grid */}
-      <div className="grid gap-6 md:grid-cols-2">
+      <div className="grid gap-6 lg:grid-cols-2">
+        {/* Pending Actions */}
+        <PendingActions invoices={pendingInvoices} unsignedContracts={unsignedContracts} />
+
         {/* Recent Deliverables */}
         <RecentDeliverables deliverables={recentDeliverables} />
-
-        {/* Upcoming Filmings */}
-        <UpcomingFilmings projects={activeProjects} />
       </div>
+
+      {/* Upcoming Filmings */}
+      <UpcomingFilmings projects={activeProjects} />
     </div>
   );
 }
