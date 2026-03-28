@@ -4,7 +4,6 @@ import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
-import { createClient } from '@/lib/supabase/client';
 import { createSalesResource } from '@/lib/actions/sales-resources';
 import { Button } from '@/components/ui/button';
 import {
@@ -96,46 +95,51 @@ export function ResourceUploadForm({
 
     setIsSubmitting(true);
 
-    const supabase = createClient();
+    try {
+      // Upload file via API route (server-side, bypasses storage RLS)
+      const formData = new FormData();
+      formData.append('file', selectedFile);
+      formData.append('category_id', data.category_id);
 
-    // Upload file to Supabase storage
-    const timestamp = Date.now();
-    const filePath = `${data.category_id}/${timestamp}_${selectedFile.name}`;
-    const { data: uploadData, error: uploadError } = await supabase.storage
-      .from('sales-resources')
-      .upload(filePath, selectedFile);
+      const uploadRes = await fetch('/api/sales-resources/upload', {
+        method: 'POST',
+        body: formData,
+      });
 
-    if (uploadError) {
-      toast.error(`Upload failed: ${uploadError.message}`);
+      const uploadJson = await uploadRes.json();
+
+      if (!uploadRes.ok) {
+        toast.error(`Upload failed: ${uploadJson.error ?? 'Unknown error'}`);
+        return;
+      }
+
+      // Create resource record in DB
+      const result = await createSalesResource({
+        category_id: data.category_id,
+        title: data.title,
+        description: data.description,
+        file_path: uploadJson.path,
+        file_name: uploadJson.fileName,
+        file_size: uploadJson.fileSize,
+        file_type: uploadJson.fileType,
+      });
+
+      if (result.error) {
+        toast.error(result.error);
+        return;
+      }
+
+      toast.success(tToast('uploadSuccess'));
+      onOpenChange(false);
+      form.reset();
+      setSelectedFile(null);
+      onSuccess();
+    } catch (err) {
+      console.error('Upload error:', err);
+      toast.error('Upload failed unexpectedly');
+    } finally {
       setIsSubmitting(false);
-      return;
     }
-
-    // Create resource record
-    const result = await createSalesResource({
-      category_id: data.category_id,
-      title: data.title,
-      description: data.description,
-      file_path: uploadData.path,
-      file_name: selectedFile.name,
-      file_size: selectedFile.size,
-      file_type: selectedFile.type,
-    });
-
-    setIsSubmitting(false);
-
-    if (result.error) {
-      // Clean up uploaded file if DB insert failed
-      await supabase.storage.from('sales-resources').remove([uploadData.path]);
-      toast.error(result.error);
-      return;
-    }
-
-    toast.success(tToast('uploadSuccess'));
-    onOpenChange(false);
-    form.reset();
-    setSelectedFile(null);
-    onSuccess();
   };
 
   return (
@@ -143,9 +147,7 @@ export function ResourceUploadForm({
       <DialogContent className="max-w-2xl">
         <DialogHeader>
           <DialogTitle>Upload Resource</DialogTitle>
-          <DialogDescription>
-            Upload a new sales resource file
-          </DialogDescription>
+          <DialogDescription>Upload a new sales resource file</DialogDescription>
         </DialogHeader>
 
         <Form {...form}>
@@ -213,11 +215,15 @@ export function ResourceUploadForm({
                 accept={{
                   'application/pdf': ['.pdf'],
                   'application/msword': ['.doc'],
-                  'application/vnd.openxmlformats-officedocument.wordprocessingml.document': ['.docx'],
+                  'application/vnd.openxmlformats-officedocument.wordprocessingml.document': [
+                    '.docx',
+                  ],
                   'application/vnd.ms-excel': ['.xls'],
                   'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet': ['.xlsx'],
                   'application/vnd.ms-powerpoint': ['.ppt'],
-                  'application/vnd.openxmlformats-officedocument.presentationml.presentation': ['.pptx'],
+                  'application/vnd.openxmlformats-officedocument.presentationml.presentation': [
+                    '.pptx',
+                  ],
                   'image/*': ['.png', '.jpg', '.jpeg', '.gif'],
                 }}
                 maxSize={50 * 1024 * 1024} // 50MB
@@ -226,8 +232,7 @@ export function ResourceUploadForm({
               />
               {selectedFile && (
                 <p className="text-sm text-muted-foreground mt-2">
-                  Selected: {selectedFile.name} (
-                  {(selectedFile.size / 1024 / 1024).toFixed(2)} MB)
+                  Selected: {selectedFile.name} ({(selectedFile.size / 1024 / 1024).toFixed(2)} MB)
                 </p>
               )}
             </div>

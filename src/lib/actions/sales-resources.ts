@@ -232,20 +232,26 @@ export async function deleteSalesResource(id: string): Promise<ActionResult<void
   }
 }
 
-export async function getSalesResourceDownloadUrl(filePath: string): Promise<ActionResult<string>> {
+export async function getSalesResourceDownloadUrl(
+  filePath: string,
+  options?: { download?: boolean },
+): Promise<ActionResult<string>> {
   try {
     const supabase = await createClient();
     const {
       data: { user },
     } = await supabase.auth.getUser();
     if (!user) return { data: null, error: 'Unauthorized' };
+
     const { data, error } = await supabase.storage
       .from('sales-resources')
-      .createSignedUrl(filePath, 3600); // 1 hour expiry
+      .createSignedUrl(filePath, 3600, {
+        download: options?.download ?? false,
+      });
 
     if (error) return { data: null, error: error.message };
     return { data: data.signedUrl, error: null };
   } catch {
-    return { data: null, error: 'Failed to generate download URL' };
+    return { data: null, error: 'Failed to generate URL' };
   }
 }
