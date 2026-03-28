@@ -43,7 +43,7 @@ export default async function ArticlePage({ params }: ArticlePageProps) {
   }
 
   return (
-    <div className="flex flex-col gap-6 p-6">
+    <div className="flex flex-col gap-6">
       {/* Breadcrumb */}
       <div className="flex items-center gap-2 text-sm text-muted-foreground">
         <Link href="/employee/university" className="hover:text-foreground">
@@ -59,9 +59,7 @@ export default async function ArticlePage({ params }: ArticlePageProps) {
 
       <PageHeader title={article.title} description={article.summary ?? undefined} />
 
-      <div className="max-w-4xl">
-        <ArticleContent content={article.content} videoUrls={article.video_urls} />
-      </div>
+      <ArticleContent content={article.content} videoUrls={article.video_urls} />
     </div>
   );
 }

@@ -28,7 +28,7 @@ async function UniversityContent() {
 export default async function UniversityPage() {
   const t = await getTranslations('university');
   return (
-    <div className="flex flex-col gap-6 p-6">
+    <div className="flex flex-col gap-6">
       <PageHeader title={t('title')} description={t('manageDescription')} />
 
       <Suspense

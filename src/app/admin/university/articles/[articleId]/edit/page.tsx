@@ -33,12 +33,10 @@ export default async function EditArticlePage({ params }: EditArticlePageProps) 
   const article = articleResult.data as ArticleFormProps['article'];
 
   return (
-    <div className="flex flex-col gap-6 p-6">
+    <div className="flex flex-col gap-6">
       <PageHeader title="Edit Article" description="Update knowledge base article" />
 
-      <div className="max-w-4xl">
-        <ArticleForm article={article} categories={categories as ArticleFormProps['categories']} />
-      </div>
+      <ArticleForm article={article} categories={categories as ArticleFormProps['categories']} />
     </div>
   );
 }

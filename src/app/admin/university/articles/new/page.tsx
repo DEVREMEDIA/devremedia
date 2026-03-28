@@ -17,15 +17,10 @@ export default async function NewArticlePage() {
   }
 
   return (
-    <div className="flex flex-col gap-6 p-6">
-      <PageHeader
-        title="New Article"
-        description="Create a new knowledge base article"
-      />
+    <div className="flex flex-col gap-6">
+      <PageHeader title="New Article" description="Create a new knowledge base article" />
 
-      <div className="max-w-4xl">
-        <ArticleForm categories={categories} />
-      </div>
+      <ArticleForm categories={categories} />
     </div>
   );
 }

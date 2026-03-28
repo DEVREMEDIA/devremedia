@@ -142,6 +142,29 @@
   section {
     scroll-margin-top: 80px;
   }
+
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   PROSE — Gold list markers & bullets
+   ═══════════════════════════════════════════════════════════════ */
+
+.gold-markers li::marker {
+  color: #c9a033 !important;
+}
+
+.gold-markers ul,
+.gold-markers ol {
+  list-style-position: outside !important;
+  padding-left: 1.5em !important;
+}
+
+.gold-markers ul {
+  list-style-type: disc !important;
+}
+
+.gold-markers ol {
+  list-style-type: decimal !important;
 }
 
 /* ═══════════════════════════════════════════════════════════════

@@ -210,209 +210,244 @@ export function ArticleForm({ article, categories }: ArticleFormProps) {
   return (
     <Form {...form}>
       <form onSubmit={handleSubmit} className="space-y-6">
-        <FormField
-          control={form.control}
-          name="category_id"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Category</FormLabel>
-              <Select onValueChange={field.onChange} value={field.value}>
-                <FormControl>
-                  <SelectTrigger>
-                    <SelectValue placeholder={t('selectCategory')} />
-                  </SelectTrigger>
-                </FormControl>
-                <SelectContent>
-                  {categories.map((category) => (
-                    <SelectItem key={category.id} value={category.id}>
-                      {category.title}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
+        {/* Basic Info - 2 column grid */}
+        <Card>
+          <CardContent className="p-6 space-y-4">
+            <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wide">
+              Βασικά Στοιχεία
+            </h3>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <FormField
+                control={form.control}
+                name="category_id"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Category</FormLabel>
+                    <Select onValueChange={field.onChange} value={field.value}>
+                      <FormControl>
+                        <SelectTrigger>
+                          <SelectValue placeholder={t('selectCategory')} />
+                        </SelectTrigger>
+                      </FormControl>
+                      <SelectContent>
+                        {categories.map((category) => (
+                          <SelectItem key={category.id} value={category.id}>
+                            {category.title}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
 
-        <FormField
-          control={form.control}
-          name="title"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Title</FormLabel>
-              <FormControl>
-                <Input placeholder="e.g., How to create a project" {...field} />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
+              <FormField
+                control={form.control}
+                name="sort_order"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Sort Order</FormLabel>
+                    <FormControl>
+                      <Input
+                        type="number"
+                        placeholder="0"
+                        name={field.name}
+                        onBlur={field.onBlur}
+                        ref={field.ref}
+                        value={field.value as number}
+                        onChange={(e) => field.onChange(parseInt(e.target.value) || 0)}
+                      />
+                    </FormControl>
+                    <FormDescription>Lower numbers appear first</FormDescription>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            </div>
 
-        <FormField
-          control={form.control}
-          name="slug"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Slug</FormLabel>
-              <FormControl>
-                <Input placeholder="how-to-create-a-project" {...field} />
-              </FormControl>
-              <FormDescription>URL-friendly identifier (lowercase, hyphens only)</FormDescription>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
+            <FormField
+              control={form.control}
+              name="title"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Title</FormLabel>
+                  <FormControl>
+                    <Input placeholder="e.g., How to create a project" {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
 
-        <FormField
-          control={form.control}
-          name="summary"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Summary</FormLabel>
-              <FormControl>
-                <Textarea
-                  placeholder={t('articleSummaryPlaceholder')}
-                  {...field}
-                  value={field.value ?? ''}
-                />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
+            <FormField
+              control={form.control}
+              name="slug"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Slug</FormLabel>
+                  <FormControl>
+                    <Input placeholder="how-to-create-a-project" {...field} />
+                  </FormControl>
+                  <FormDescription>
+                    URL-friendly identifier (lowercase, hyphens only)
+                  </FormDescription>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            <FormField
+              control={form.control}
+              name="summary"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Summary</FormLabel>
+                  <FormControl>
+                    <Textarea
+                      placeholder={t('articleSummaryPlaceholder')}
+                      {...field}
+                      value={field.value ?? ''}
+                      rows={3}
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+          </CardContent>
+        </Card>
 
         {/* Sections Editor */}
-        <div className="space-y-3">
-          <div className="flex items-center justify-between">
-            <FormLabel className="text-base font-semibold">Sections</FormLabel>
-            <Button type="button" variant="outline" size="sm" onClick={addSection}>
-              <Plus className="h-4 w-4 mr-1" />
-              Προσθήκη Section
-            </Button>
-          </div>
-
-          {sections.map((section, index) => (
-            <Card key={section.id} className="border-l-4 border-l-primary/30">
-              <CardContent className="p-4 space-y-3">
-                <div className="flex items-center gap-2">
-                  <div className="flex flex-col gap-0.5">
-                    <button
-                      type="button"
-                      onClick={() => moveSection(index, 'up')}
-                      disabled={index === 0}
-                      className="text-muted-foreground hover:text-foreground disabled:opacity-30 p-0.5"
-                    >
-                      <GripVertical className="h-3 w-3 rotate-180" />
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => moveSection(index, 'down')}
-                      disabled={index === sections.length - 1}
-                      className="text-muted-foreground hover:text-foreground disabled:opacity-30 p-0.5"
-                    >
-                      <GripVertical className="h-3 w-3" />
-                    </button>
-                  </div>
-                  <span className="text-xs font-bold text-muted-foreground shrink-0 w-6 text-center">
-                    {index + 1}
-                  </span>
-                  <Input
-                    value={section.title}
-                    onChange={(e) => updateSection(section.id, { title: e.target.value })}
-                    placeholder="Τίτλος section..."
-                    className="font-semibold"
-                  />
-                  {sections.length > 1 && (
-                    <Button
-                      type="button"
-                      variant="ghost"
-                      size="sm"
-                      onClick={() => removeSection(section.id)}
-                      className="text-destructive hover:text-destructive shrink-0"
-                    >
-                      <Trash2 className="h-4 w-4" />
-                    </Button>
-                  )}
-                </div>
-                <TiptapEditor
-                  content={section.content}
-                  onChange={(val) => updateSection(section.id, { content: val })}
-                  placeholder="Περιεχόμενο section..."
-                />
-              </CardContent>
-            </Card>
-          ))}
-        </div>
-
-        <div className="space-y-2">
-          <FormLabel>Video URLs (Optional)</FormLabel>
-          <FormDescription>
-            Add YouTube or Vimeo URLs to embed videos in the article
-          </FormDescription>
-          {videoUrls.map((url, index) => (
-            <div key={index} className="flex gap-2">
-              <Input
-                placeholder="https://www.youtube.com/watch?v=..."
-                value={url}
-                onChange={(e) => handleVideoUrlChange(index, e.target.value)}
-              />
-              <Button
-                type="button"
-                variant="outline"
-                size="icon"
-                onClick={() => handleRemoveVideoUrl(index)}
-              >
-                <Trash2 className="h-4 w-4" />
+        <Card>
+          <CardContent className="p-6 space-y-4">
+            <div className="flex items-center justify-between">
+              <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wide">
+                Sections
+              </h3>
+              <Button type="button" variant="outline" size="sm" onClick={addSection}>
+                <Plus className="h-4 w-4 mr-1" />
+                Προσθήκη Section
               </Button>
             </div>
-          ))}
-          <Button type="button" variant="outline" size="sm" onClick={handleAddVideoUrl}>
-            <Plus className="h-4 w-4 mr-2" />
-            Add Video URL
-          </Button>
+
+            <div className="space-y-3">
+              {sections.map((section, index) => (
+                <div
+                  key={section.id}
+                  className="rounded-lg border border-border bg-muted/30 p-4 space-y-3"
+                >
+                  <div className="flex items-center gap-2">
+                    <div className="flex flex-col gap-0.5">
+                      <button
+                        type="button"
+                        onClick={() => moveSection(index, 'up')}
+                        disabled={index === 0}
+                        className="text-muted-foreground hover:text-foreground disabled:opacity-30 p-0.5"
+                      >
+                        <GripVertical className="h-3 w-3 rotate-180" />
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => moveSection(index, 'down')}
+                        disabled={index === sections.length - 1}
+                        className="text-muted-foreground hover:text-foreground disabled:opacity-30 p-0.5"
+                      >
+                        <GripVertical className="h-3 w-3" />
+                      </button>
+                    </div>
+                    <span className="text-xs font-bold text-muted-foreground shrink-0 w-6 text-center">
+                      {index + 1}
+                    </span>
+                    <Input
+                      value={section.title}
+                      onChange={(e) => updateSection(section.id, { title: e.target.value })}
+                      placeholder="Τίτλος section..."
+                      className="font-semibold"
+                    />
+                    {sections.length > 1 && (
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => removeSection(section.id)}
+                        className="text-destructive hover:text-destructive shrink-0"
+                      >
+                        <Trash2 className="h-4 w-4" />
+                      </Button>
+                    )}
+                  </div>
+                  <TiptapEditor
+                    content={section.content}
+                    onChange={(val) => updateSection(section.id, { content: val })}
+                    placeholder="Περιεχόμενο section..."
+                  />
+                </div>
+              ))}
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Video URLs + Settings */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          <Card>
+            <CardContent className="p-6 space-y-3">
+              <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wide">
+                Video URLs (Optional)
+              </h3>
+              <p className="text-sm text-muted-foreground">
+                Add YouTube or Vimeo URLs to embed videos in the article
+              </p>
+              {videoUrls.map((url, index) => (
+                <div key={index} className="flex gap-2">
+                  <Input
+                    placeholder="https://www.youtube.com/watch?v=..."
+                    value={url}
+                    onChange={(e) => handleVideoUrlChange(index, e.target.value)}
+                  />
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="icon"
+                    onClick={() => handleRemoveVideoUrl(index)}
+                  >
+                    <Trash2 className="h-4 w-4" />
+                  </Button>
+                </div>
+              ))}
+              <Button type="button" variant="outline" size="sm" onClick={handleAddVideoUrl}>
+                <Plus className="h-4 w-4 mr-2" />
+                Add Video URL
+              </Button>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardContent className="p-6 space-y-4">
+              <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wide">
+                Ρυθμίσεις
+              </h3>
+              <FormField
+                control={form.control}
+                name="published"
+                render={({ field }) => (
+                  <FormItem className="flex flex-row items-center justify-between rounded-lg border p-4">
+                    <div className="space-y-0.5">
+                      <FormLabel className="text-base">Published</FormLabel>
+                      <FormDescription>Make this article visible to employees</FormDescription>
+                    </div>
+                    <FormControl>
+                      <Switch checked={field.value} onCheckedChange={field.onChange} />
+                    </FormControl>
+                  </FormItem>
+                )}
+              />
+            </CardContent>
+          </Card>
         </div>
 
-        <FormField
-          control={form.control}
-          name="sort_order"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Sort Order</FormLabel>
-              <FormControl>
-                <Input
-                  type="number"
-                  placeholder="0"
-                  name={field.name}
-                  onBlur={field.onBlur}
-                  ref={field.ref}
-                  value={field.value as number}
-                  onChange={(e) => field.onChange(parseInt(e.target.value) || 0)}
-                />
-              </FormControl>
-              <FormDescription>Lower numbers appear first</FormDescription>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
-
-        <FormField
-          control={form.control}
-          name="published"
-          render={({ field }) => (
-            <FormItem className="flex flex-row items-center justify-between rounded-lg border p-4">
-              <div className="space-y-0.5">
-                <FormLabel className="text-base">Published</FormLabel>
-                <FormDescription>Make this article visible to employees</FormDescription>
-              </div>
-              <FormControl>
-                <Switch checked={field.value} onCheckedChange={field.onChange} />
-              </FormControl>
-            </FormItem>
-          )}
-        />
-
-        <div className="flex gap-2">
+        {/* Actions */}
+        <div className="flex gap-2 pt-2">
           <Button
             type="button"
             variant="outline"

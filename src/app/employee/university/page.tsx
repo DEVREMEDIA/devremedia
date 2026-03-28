@@ -25,7 +25,7 @@ async function UniversityContent() {
 
 export default function EmployeeUniversityPage() {
   return (
-    <div className="flex flex-col gap-6 p-6">
+    <div className="flex flex-col gap-6">
       <PageHeader
         title="DMS University"
         description="Browse knowledge base articles and learn about DMS"

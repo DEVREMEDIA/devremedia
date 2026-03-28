@@ -52,7 +52,7 @@ export function ArticleContent({ content, videoUrls }: ArticleContentProps) {
     return (
       <>
         <div
-          className="prose prose-sm max-w-none dark:prose-invert"
+          className="prose prose-sm max-w-none dark:prose-invert gold-markers prose-headings:text-foreground prose-p:text-foreground/90 prose-strong:text-foreground prose-li:text-foreground/90"
           dangerouslySetInnerHTML={{ __html: sanitizeHtml(content) }}
         />
         <VideoGrid urls={videoUrls} />
@@ -76,16 +76,18 @@ function SectionCard({ section, index }: { section: ArticleSection; index: numbe
   const [isOpen, setIsOpen] = useState(index === 0);
 
   return (
-    <div className="rounded-xl border bg-card shadow-sm overflow-hidden transition-shadow hover:shadow-md">
+    <div className="rounded-xl border border-border/60 bg-card overflow-hidden transition-shadow hover:shadow-md dark:border-border">
       <button
         type="button"
         onClick={() => setIsOpen((prev) => !prev)}
-        className="w-full flex items-center gap-4 px-5 py-4 text-left transition-colors hover:bg-accent/40"
+        className="w-full flex items-center gap-4 px-5 py-4 text-left transition-colors hover:bg-accent/50"
       >
         <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-primary text-primary-foreground text-sm font-bold shadow-sm">
           {index + 1}
         </span>
-        <span className="flex-1 font-semibold text-[15px]">{section.title || 'Untitled'}</span>
+        <span className="flex-1 font-semibold text-[15px] text-foreground">
+          {section.title || 'Untitled'}
+        </span>
         <ChevronDown
           className={cn(
             'h-5 w-5 text-muted-foreground shrink-0 transition-transform duration-200',
@@ -95,11 +97,11 @@ function SectionCard({ section, index }: { section: ArticleSection; index: numbe
       </button>
 
       {isOpen && (
-        <div className="border-t px-5 py-4">
+        <div className="border-t border-border/60 dark:border-border px-5 py-4">
           <div className="ml-12">
             {section.content ? (
               <div
-                className="prose prose-sm max-w-none dark:prose-invert"
+                className="prose prose-sm max-w-none dark:prose-invert gold-markers prose-headings:text-foreground prose-p:text-foreground/90 prose-strong:text-foreground prose-li:text-foreground/90 prose-a:text-primary"
                 dangerouslySetInnerHTML={{ __html: sanitizeHtml(section.content) }}
               />
             ) : (
@@ -117,7 +119,7 @@ function VideoGrid({ urls }: { urls?: string[] }) {
 
   return (
     <div className="mt-8 space-y-4">
-      <h2 className="text-lg font-semibold flex items-center gap-2">
+      <h2 className="text-lg font-semibold flex items-center gap-2 text-foreground">
         <Play className="h-5 w-5" />
         Videos
       </h2>

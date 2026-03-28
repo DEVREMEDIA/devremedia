@@ -150,7 +150,7 @@ export async function createKbArticle(input: unknown): Promise<ActionResult<KbAr
     if (error) return { data: null, error: error.message };
 
     revalidatePath('/admin/university');
-    revalidatePath('/employee/university');
+    revalidatePath('/employee/university', 'layout');
     return { data, error: null };
   } catch (error) {
     if (error instanceof Error) return { data: null, error: error.message };
@@ -191,7 +191,7 @@ export async function updateKbArticle(
     if (error) return { data: null, error: error.message };
 
     revalidatePath('/admin/university');
-    revalidatePath('/employee/university');
+    revalidatePath('/employee/university', 'layout');
     revalidatePath(`/admin/university/articles/${id}`);
     revalidatePath(`/admin/university/articles/${id}/edit`);
     return { data, error: null };
@@ -223,7 +223,7 @@ export async function deleteKbArticle(id: string): Promise<ActionResult<void>> {
     if (error) return { data: null, error: error.message };
 
     revalidatePath('/admin/university');
-    revalidatePath('/employee/university');
+    revalidatePath('/employee/university', 'layout');
     revalidatePath(`/admin/university/articles/${id}`);
     return { data: undefined, error: null };
   } catch {
