@@ -30,7 +30,7 @@ const PROJECT_STAGES = [
   'delivered',
 ] as const;
 
-const BOOKING_STAGES = ['pending', 'reviewed', 'accepted', 'converted'] as const;
+const BOOKING_STAGES = ['pending', 'reviewed', 'accepted'] as const;
 
 interface ProjectsListProps {
   projects: Project[];
@@ -137,12 +137,7 @@ function BookingRequestCard({ request }: { request: FilmingRequest }) {
     ? -1
     : BOOKING_STAGES.indexOf(request.status as (typeof BOOKING_STAGES)[number]);
 
-  const stageLabels = [
-    t('stageSubmitted'),
-    t('stageUnderReview'),
-    t('stageAccepted'),
-    t('stageInProduction'),
-  ];
+  const stageLabels = [t('stageSubmitted'), t('stageUnderReview'), t('stageAccepted')];
 
   return (
     <Card
@@ -153,44 +148,60 @@ function BookingRequestCard({ request }: { request: FilmingRequest }) {
       )}
     >
       {/* Header */}
-      <div className="p-5 pb-4">
+      <div className="p-5 pb-3">
         <div className="flex items-start justify-between gap-3">
-          <h3 className="font-semibold text-base line-clamp-2 flex-1">{request.title}</h3>
-          {declined ? (
-            <XCircle className="h-5 w-5 text-destructive shrink-0" />
-          ) : (
-            <Badge
-              variant="outline"
-              className="shrink-0 border-amber-500/40 text-amber-600 dark:text-amber-400 text-xs"
-            >
-              {stageLabels[stageIndex] ?? stageLabels[0]}
-            </Badge>
-          )}
+          <div className="flex-1 min-w-0">
+            <h3 className="font-semibold text-base line-clamp-2">{request.title}</h3>
+          </div>
+          {declined && <XCircle className="h-5 w-5 text-destructive shrink-0" />}
         </div>
       </div>
 
-      {/* Progress */}
-      {!declined && (
-        <div className="px-5 pb-4">
-          <div className="flex gap-1.5">
-            {BOOKING_STAGES.map((_, i) => (
-              <div
-                key={i}
-                className={cn(
-                  'h-1.5 flex-1 rounded-full transition-all',
-                  i <= stageIndex ? 'bg-amber-500' : 'bg-muted-foreground/15',
-                )}
-              />
-            ))}
-          </div>
-        </div>
-      )}
-
-      {declined && (
-        <div className="px-5 pb-4">
+      {/* Timeline — same style as project cards */}
+      <div className="px-5 pb-4">
+        {declined ? (
           <p className="text-xs text-muted-foreground">{t('requestDeclined')}</p>
-        </div>
-      )}
+        ) : (
+          <div className="space-y-2.5">
+            <div className="flex gap-1">
+              {BOOKING_STAGES.map((_, i) => (
+                <div
+                  key={i}
+                  className={cn(
+                    'h-2 flex-1 rounded-full transition-all relative',
+                    i < stageIndex
+                      ? 'bg-amber-500/70'
+                      : i === stageIndex
+                        ? 'bg-amber-500 shadow-[0_0_8px_rgba(234,179,8,0.4)]'
+                        : 'bg-muted-foreground/10',
+                  )}
+                >
+                  {i === stageIndex && (
+                    <div className="absolute inset-0 rounded-full bg-amber-500 animate-pulse opacity-40" />
+                  )}
+                </div>
+              ))}
+            </div>
+            <div className="flex gap-1">
+              {BOOKING_STAGES.map((_, i) => (
+                <span
+                  key={i}
+                  className={cn(
+                    'flex-1 text-center text-[10px] leading-tight',
+                    i === stageIndex
+                      ? 'text-amber-600 dark:text-amber-400 font-semibold'
+                      : i < stageIndex
+                        ? 'text-muted-foreground/60'
+                        : 'text-muted-foreground/30',
+                  )}
+                >
+                  {stageLabels[i]}
+                </span>
+              ))}
+            </div>
+          </div>
+        )}
+      </div>
 
       {/* Footer */}
       <div className="px-5 py-3 border-t border-border/50 text-xs text-muted-foreground">
