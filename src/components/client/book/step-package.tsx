@@ -44,7 +44,7 @@ export function StepPackage({ formData, updateFormData }: StepPackageProps) {
       {hasPackages && (
         <div
           className={cn(
-            'grid gap-4',
+            'grid gap-4 p-2',
             category.packages.length === 2 ? 'md:grid-cols-2' : 'md:grid-cols-3',
           )}
         >

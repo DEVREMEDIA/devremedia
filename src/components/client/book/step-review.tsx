@@ -240,8 +240,8 @@ function ReviewSection({
   children: React.ReactNode;
 }) {
   return (
-    <div className="rounded-xl border bg-card overflow-hidden">
-      <div className="flex items-center justify-between px-5 py-3 border-b bg-muted/20">
+    <div className="rounded-xl border bg-card">
+      <div className="flex items-center justify-between px-5 py-3 border-b bg-muted/20 rounded-t-xl">
         <div className="flex items-center gap-2 text-sm font-medium">
           {icon}
           {title}
