@@ -1608,7 +1608,14 @@
       "tasks": "εργασίες",
       "viewDeliverables": "Προβολή Παραδοτέων",
       "overview": "Επισκόπηση",
-      "taskCount": "{count} εργασίες"
+      "taskCount": "{count} εργασίες",
+      "stageBriefing": "Ενημέρωση",
+      "stagePreProduction": "Προ-Παραγωγή",
+      "stageFilming": "Γύρισμα",
+      "stageEditing": "Μοντάζ",
+      "stageReview": "Αξιολόγηση",
+      "stageRevisions": "Διορθώσεις",
+      "stageDelivered": "Παραδόθηκε"
     }
   },
 

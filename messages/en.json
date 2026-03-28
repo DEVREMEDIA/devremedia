@@ -1608,7 +1608,14 @@
       "tasks": "tasks",
       "viewDeliverables": "View Deliverables",
       "overview": "Overview",
-      "taskCount": "{count} tasks"
+      "taskCount": "{count} tasks",
+      "stageBriefing": "Briefing",
+      "stagePreProduction": "Pre-Production",
+      "stageFilming": "Filming",
+      "stageEditing": "Editing",
+      "stageReview": "Review",
+      "stageRevisions": "Revisions",
+      "stageDelivered": "Delivered"
     }
   },
 
