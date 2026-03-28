@@ -9,6 +9,8 @@ import { PendingActions } from '@/components/client/dashboard/pending-actions';
 import { RecentDeliverables } from '@/components/client/dashboard/recent-deliverables';
 import { UpcomingFilmings } from '@/components/client/dashboard/upcoming-filmings';
 import { DashboardStats } from '@/components/client/dashboard/dashboard-stats';
+import { InvoicesSummary } from '@/components/client/dashboard/invoices-summary';
+import { CompletedProjects } from '@/components/client/dashboard/completed-projects';
 import { getTranslations } from 'next-intl/server';
 import type { DeliverableWithProject } from '@/types';
 
@@ -75,6 +77,11 @@ export default async function ClientDashboardPage() {
     (p) => p.status !== 'archived' && p.status !== 'delivered',
   );
 
+  // Completed projects
+  const completedProjects = projects.filter(
+    (p) => p.status === 'delivered' || p.status === 'archived',
+  );
+
   // Pending invoices (not paid)
   const pendingInvoices = invoices.filter((i) => i.status !== 'paid' && i.status !== 'cancelled');
 
@@ -111,8 +118,14 @@ export default async function ClientDashboardPage() {
         <RecentDeliverables deliverables={recentDeliverables} />
       </div>
 
+      {/* Invoices Summary */}
+      <InvoicesSummary invoices={invoices} />
+
       {/* Upcoming Filmings */}
       <UpcomingFilmings projects={activeProjects} />
+
+      {/* Completed Projects */}
+      <CompletedProjects projects={completedProjects} />
     </div>
   );
 }

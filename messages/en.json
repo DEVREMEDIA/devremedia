@@ -1664,7 +1664,15 @@
       "noContracts": "No contracts",
       "noContractsDescription": "Your contracts will appear here once created.",
       "downloadPdf": "Download PDF",
-      "viewContract": "View"
+      "viewContract": "View",
+      "invoicesTitle": "Invoices",
+      "totalPaid": "Paid",
+      "totalPending": "Pending",
+      "paid": "Paid",
+      "overdue": "Overdue",
+      "pending": "Pending",
+      "viewAll": "View all",
+      "completedProjectsTitle": "Completed Productions"
     },
     "projects": {
       "title": "My Productions",

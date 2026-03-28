@@ -1664,7 +1664,15 @@
       "noContracts": "Δεν υπάρχουν συμβόλαια",
       "noContractsDescription": "Τα συμβόλαιά σας θα εμφανιστούν εδώ μόλις δημιουργηθούν.",
       "downloadPdf": "Λήψη PDF",
-      "viewContract": "Προβολή"
+      "viewContract": "Προβολή",
+      "invoicesTitle": "Τιμολόγια",
+      "totalPaid": "Πληρωμένα",
+      "totalPending": "Εκκρεμή",
+      "paid": "Πληρωμένο",
+      "overdue": "Εκπρόθεσμο",
+      "pending": "Εκκρεμεί",
+      "viewAll": "Προβολή όλων",
+      "completedProjectsTitle": "Ολοκληρωμένες Παραγωγές"
     },
     "projects": {
       "title": "Οι Παραγωγές Μου",
