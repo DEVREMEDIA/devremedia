@@ -656,6 +656,9 @@
     "invoiceNotes": "Σημειώσεις",
     "noInvoices": "Δεν υπάρχουν τιμολόγια",
     "noInvoicesDescription": "Δημιουργήστε το πρώτο σας τιμολόγιο.",
+    "paid": "Πληρωμένο",
+    "overdue": "Εκπρόθεσμο",
+    "pending": "Εκκρεμεί",
     "sendInvoice": "Αποστολή Τιμολογίου",
     "markAsPaid": "Σήμανση ως Πληρωμένο",
     "downloadPdf": "Λήψη PDF",
@@ -1725,7 +1728,9 @@
       "signatureRequired": "Αναμένεται η υπογραφή σας",
       "project": "Παραγωγή",
       "created": "Δημιουργήθηκε",
-      "expires": "Λήγει"
+      "expires": "Λήγει",
+      "signed": "Υπογεγραμμένο",
+      "awaitingSignature": "Αναμονή Υπογραφής"
     },
     "invoices": {
       "title": "Τα Τιμολόγιά Μου",

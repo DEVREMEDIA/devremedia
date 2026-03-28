@@ -656,6 +656,9 @@
     "invoiceNotes": "Notes",
     "noInvoices": "No invoices yet",
     "noInvoicesDescription": "Create your first invoice to get started.",
+    "paid": "Paid",
+    "overdue": "Overdue",
+    "pending": "Pending",
     "sendInvoice": "Send Invoice",
     "markAsPaid": "Mark as Paid",
     "downloadPdf": "Download PDF",
@@ -1725,7 +1728,9 @@
       "signatureRequired": "Awaiting your signature",
       "project": "Production",
       "created": "Created",
-      "expires": "Expires"
+      "expires": "Expires",
+      "signed": "Signed",
+      "awaitingSignature": "Awaiting Signature"
     },
     "invoices": {
       "title": "My Invoices",
