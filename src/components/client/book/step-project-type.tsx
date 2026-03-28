@@ -2,8 +2,20 @@
 
 import { PROJECT_TYPES, PROJECT_TYPE_LABELS, type ProjectType } from '@/lib/constants';
 import { Card } from '@/components/ui/card';
-import { Video, Camera, Share2, TrendingUp, Film, Music, Mic, MoreHorizontal, type LucideIcon } from 'lucide-react';
+import {
+  Video,
+  Camera,
+  Share2,
+  TrendingUp,
+  Film,
+  Music,
+  Mic,
+  MoreHorizontal,
+  Check,
+  type LucideIcon,
+} from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { useTranslations } from 'next-intl';
 import type { BookingFormData } from './booking-wizard';
 
 interface StepProjectTypeProps {
@@ -34,8 +46,10 @@ const PROJECT_TYPE_DESCRIPTIONS: Record<ProjectType, string> = {
 };
 
 export function StepProjectType({ formData, updateFormData }: StepProjectTypeProps) {
+  const t = useTranslations('booking');
+
   return (
-    <div className="grid gap-4 md:grid-cols-2">
+    <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3 p-2">
       {PROJECT_TYPES.map((type) => {
         const Icon = PROJECT_TYPE_ICONS[type];
         const isSelected = formData.project_type === type;
@@ -44,27 +58,38 @@ export function StepProjectType({ formData, updateFormData }: StepProjectTypePro
           <Card
             key={type}
             className={cn(
-              'p-4 cursor-pointer transition-all hover:shadow-md',
+              'group relative p-5 cursor-pointer border bg-card',
+              'transition-all duration-300 ease-out',
+              'hover:scale-[1.04] hover:-translate-y-1',
+              'hover:shadow-[0_8px_30px_-4px_rgba(234,179,8,0.3)]',
+              'dark:hover:shadow-[0_8px_30px_-4px_rgba(234,179,8,0.2)]',
               isSelected
-                ? 'border-primary bg-primary/5 ring-2 ring-primary'
-                : 'border-border hover:border-primary/50'
+                ? 'border-amber-500 ring-2 ring-amber-500/30 shadow-[0_8px_30px_-4px_rgba(234,179,8,0.35)]'
+                : 'border-border hover:border-amber-400/60',
             )}
             onClick={() => updateFormData({ project_type: type, selected_package: undefined })}
           >
-            <div className="flex items-start gap-3">
+            {/* Selected check badge */}
+            {isSelected && (
+              <div className="absolute top-3 right-3 w-6 h-6 rounded-full bg-amber-500 flex items-center justify-center">
+                <Check className="h-3.5 w-3.5 text-white" />
+              </div>
+            )}
+
+            <div className="flex flex-col items-center text-center gap-3">
               <div
                 className={cn(
-                  'p-2 rounded-lg',
-                  isSelected ? 'bg-primary text-primary-foreground' : 'bg-muted'
+                  'p-3 rounded-xl transition-colors duration-300',
+                  isSelected
+                    ? 'bg-amber-500 text-white'
+                    : 'bg-muted text-muted-foreground group-hover:bg-amber-500/10 group-hover:text-amber-600 dark:group-hover:text-amber-400',
                 )}
               >
-                <Icon className="h-5 w-5" />
+                <Icon className="h-7 w-7" />
               </div>
-              <div className="flex-1">
-                <h3 className="font-medium">
-                  {PROJECT_TYPE_LABELS[type]}
-                </h3>
-                <p className="text-sm text-muted-foreground mt-1">
+              <div>
+                <h3 className="font-semibold text-sm">{PROJECT_TYPE_LABELS[type]}</h3>
+                <p className="text-xs text-muted-foreground mt-1.5 leading-relaxed">
                   {PROJECT_TYPE_DESCRIPTIONS[type]}
                 </p>
               </div>
