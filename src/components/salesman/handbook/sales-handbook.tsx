@@ -48,8 +48,13 @@ function CopyButton({ text, label }: { text: string; label?: string }) {
   };
 
   return (
-    <Button variant="outline" size="sm" onClick={handleCopy} className="gap-2">
-      {copied ? <Check className="h-4 w-4" /> : <Copy className="h-4 w-4" />}
+    <Button
+      variant="outline"
+      size="sm"
+      onClick={handleCopy}
+      className="gap-2 hover:border-amber-500/50 hover:text-amber-600 dark:hover:text-amber-400"
+    >
+      {copied ? <Check className="h-4 w-4 text-emerald-500" /> : <Copy className="h-4 w-4" />}
       {label || 'Copy'}
     </Button>
   );
@@ -66,8 +71,8 @@ function SectionHeader({
 }) {
   return (
     <div className="flex items-start gap-3 mb-6">
-      <div className="rounded-lg bg-primary/10 p-2.5">
-        <Icon className="h-5 w-5 text-primary" />
+      <div className="rounded-xl bg-amber-500/10 p-2.5">
+        <Icon className="h-5 w-5 text-amber-500" />
       </div>
       <div>
         <h2 className="text-xl font-semibold">{title}</h2>
@@ -1403,41 +1408,68 @@ export function SalesHandbook() {
       <PageHeader title="Εγχειρίδιο Πωλήσεων" description="Sales Manual & Tools — Devre Media v1" />
 
       <Tabs defaultValue="pitch" className="w-full">
-        <div className="overflow-x-auto pb-2">
-          <TabsList className="inline-flex w-auto min-w-full sm:min-w-0">
-            <TabsTrigger value="pitch" className="gap-1.5">
+        <div className="overflow-x-auto pb-2 rounded-xl border bg-card p-1.5">
+          <TabsList className="inline-flex w-auto min-w-full sm:min-w-0 bg-transparent">
+            <TabsTrigger
+              value="pitch"
+              className="gap-1.5 data-[state=active]:bg-amber-500/10 data-[state=active]:text-amber-600 dark:data-[state=active]:text-amber-400"
+            >
               <Megaphone className="h-4 w-4 hidden sm:inline" />
               Ταυτότητα
             </TabsTrigger>
-            <TabsTrigger value="packages" className="gap-1.5">
+            <TabsTrigger
+              value="packages"
+              className="gap-1.5 data-[state=active]:bg-amber-500/10 data-[state=active]:text-amber-600 dark:data-[state=active]:text-amber-400"
+            >
               <Package className="h-4 w-4 hidden sm:inline" />
               Πακέτα
             </TabsTrigger>
-            <TabsTrigger value="process" className="gap-1.5">
+            <TabsTrigger
+              value="process"
+              className="gap-1.5 data-[state=active]:bg-amber-500/10 data-[state=active]:text-amber-600 dark:data-[state=active]:text-amber-400"
+            >
               <ListChecks className="h-4 w-4 hidden sm:inline" />
               Διαδικασία
             </TabsTrigger>
-            <TabsTrigger value="objections" className="gap-1.5">
+            <TabsTrigger
+              value="objections"
+              className="gap-1.5 data-[state=active]:bg-amber-500/10 data-[state=active]:text-amber-600 dark:data-[state=active]:text-amber-400"
+            >
               <MessageSquareWarning className="h-4 w-4 hidden sm:inline" />
               Αντιρρήσεις
             </TabsTrigger>
-            <TabsTrigger value="policies" className="gap-1.5">
+            <TabsTrigger
+              value="policies"
+              className="gap-1.5 data-[state=active]:bg-amber-500/10 data-[state=active]:text-amber-600 dark:data-[state=active]:text-amber-400"
+            >
               <FileText className="h-4 w-4 hidden sm:inline" />
               Πολιτικές
             </TabsTrigger>
-            <TabsTrigger value="cases" className="gap-1.5">
+            <TabsTrigger
+              value="cases"
+              className="gap-1.5 data-[state=active]:bg-amber-500/10 data-[state=active]:text-amber-600 dark:data-[state=active]:text-amber-400"
+            >
               <Trophy className="h-4 w-4 hidden sm:inline" />
               Cases
             </TabsTrigger>
-            <TabsTrigger value="templates" className="gap-1.5">
+            <TabsTrigger
+              value="templates"
+              className="gap-1.5 data-[state=active]:bg-amber-500/10 data-[state=active]:text-amber-600 dark:data-[state=active]:text-amber-400"
+            >
               <Mail className="h-4 w-4 hidden sm:inline" />
               Templates
             </TabsTrigger>
-            <TabsTrigger value="checklist" className="gap-1.5">
+            <TabsTrigger
+              value="checklist"
+              className="gap-1.5 data-[state=active]:bg-amber-500/10 data-[state=active]:text-amber-600 dark:data-[state=active]:text-amber-400"
+            >
               <CheckCircle2 className="h-4 w-4 hidden sm:inline" />
               Checklist
             </TabsTrigger>
-            <TabsTrigger value="commission" className="gap-1.5">
+            <TabsTrigger
+              value="commission"
+              className="gap-1.5 data-[state=active]:bg-amber-500/10 data-[state=active]:text-amber-600 dark:data-[state=active]:text-amber-400"
+            >
               <Euro className="h-4 w-4 hidden sm:inline" />
               Αμοιβή
             </TabsTrigger>
