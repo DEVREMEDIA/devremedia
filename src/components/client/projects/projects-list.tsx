@@ -1,10 +1,19 @@
 'use client';
 
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { StatusBadge } from '@/components/shared/status-badge';
+import { Card } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
 import { PROJECT_TYPE_LABELS } from '@/lib/constants';
 import { format } from 'date-fns';
-import { FolderKanban, Calendar, ArrowRight, Clock, CheckCircle2, XCircle, Clapperboard } from 'lucide-react';
+import {
+  FolderKanban,
+  Calendar,
+  ArrowRight,
+  Clock,
+  CheckCircle2,
+  XCircle,
+  Clapperboard,
+  Check,
+} from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { EmptyState } from '@/components/shared/empty-state';
 import { useTranslations } from 'next-intl';
@@ -33,15 +42,13 @@ export function ProjectsList({ projects, filmingRequests }: ProjectsListProps) {
   const t = useTranslations('client.projects');
 
   const activeProjects = projects.filter(
-    (p) => p.status !== 'archived' && p.status !== 'delivered'
+    (p) => p.status !== 'archived' && p.status !== 'delivered',
   );
   const completedProjects = projects.filter(
-    (p) => p.status === 'delivered' || p.status === 'archived'
+    (p) => p.status === 'delivered' || p.status === 'archived',
   );
 
-  // Show only non-converted requests (converted ones appear as projects)
   const pendingRequests = filmingRequests.filter((r) => r.status !== 'converted');
-  // Converted requests to cross-link with projects
   const convertedRequests = filmingRequests.filter((r) => r.status === 'converted');
 
   const isEmpty = projects.length === 0 && filmingRequests.length === 0;
@@ -66,10 +73,13 @@ export function ProjectsList({ projects, filmingRequests }: ProjectsListProps) {
       {pendingRequests.length > 0 && (
         <section className="space-y-4">
           <div className="flex items-center gap-2">
-            <Clock className="h-5 w-5 text-muted-foreground" />
+            <Clock className="h-5 w-5 text-amber-500" />
             <h2 className="text-lg font-semibold">{t('bookingRequests')}</h2>
+            <Badge variant="secondary" className="text-xs">
+              {pendingRequests.length}
+            </Badge>
           </div>
-          <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+          <div className="grid gap-4 md:grid-cols-2">
             {pendingRequests.map((request) => (
               <BookingRequestCard key={request.id} request={request} />
             ))}
@@ -81,17 +91,16 @@ export function ProjectsList({ projects, filmingRequests }: ProjectsListProps) {
       {activeProjects.length > 0 && (
         <section className="space-y-4">
           <div className="flex items-center gap-2">
-            <Clapperboard className="h-5 w-5 text-muted-foreground" />
+            <Clapperboard className="h-5 w-5 text-amber-500" />
             <h2 className="text-lg font-semibold">{t('activeProjects')}</h2>
+            <Badge variant="secondary" className="text-xs">
+              {activeProjects.length}
+            </Badge>
           </div>
-          <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+          <div className="grid gap-4 md:grid-cols-2">
             {activeProjects.map((project) => {
-              const source = convertedRequests.find(
-                (r) => r.converted_project_id === project.id
-              );
-              return (
-                <ProjectCard key={project.id} project={project} fromRequest={!!source} />
-              );
+              const source = convertedRequests.find((r) => r.converted_project_id === project.id);
+              return <ProjectCard key={project.id} project={project} fromRequest={!!source} />;
             })}
           </div>
         </section>
@@ -101,10 +110,13 @@ export function ProjectsList({ projects, filmingRequests }: ProjectsListProps) {
       {completedProjects.length > 0 && (
         <section className="space-y-4">
           <div className="flex items-center gap-2">
-            <CheckCircle2 className="h-5 w-5 text-muted-foreground" />
+            <CheckCircle2 className="h-5 w-5 text-emerald-500" />
             <h2 className="text-lg font-semibold">{t('completedProjects')}</h2>
+            <Badge variant="secondary" className="text-xs">
+              {completedProjects.length}
+            </Badge>
           </div>
-          <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+          <div className="grid gap-4 md:grid-cols-2">
             {completedProjects.map((project) => (
               <ProjectCard key={project.id} project={project} fromRequest={false} />
             ))}
@@ -123,7 +135,7 @@ function BookingRequestCard({ request }: { request: FilmingRequest }) {
   const declined = request.status === 'declined';
   const stageIndex = declined
     ? -1
-    : BOOKING_STAGES.indexOf(request.status as typeof BOOKING_STAGES[number]);
+    : BOOKING_STAGES.indexOf(request.status as (typeof BOOKING_STAGES)[number]);
 
   const stageLabels = [
     t('stageSubmitted'),
@@ -133,166 +145,182 @@ function BookingRequestCard({ request }: { request: FilmingRequest }) {
   ];
 
   return (
-    <Card className={cn('border', declined && 'opacity-70')}>
-      <CardHeader className="pb-2">
-        <div className="flex items-start justify-between gap-2">
-          <CardTitle className="text-sm font-semibold line-clamp-2 flex-1">
-            {request.title}
-          </CardTitle>
+    <Card
+      className={cn(
+        'group border bg-card transition-all duration-300',
+        'hover:shadow-[0_8px_30px_-4px_rgba(234,179,8,0.2)] hover:-translate-y-0.5',
+        declined && 'opacity-60',
+      )}
+    >
+      {/* Header */}
+      <div className="p-5 pb-4">
+        <div className="flex items-start justify-between gap-3">
+          <h3 className="font-semibold text-base line-clamp-2 flex-1">{request.title}</h3>
           {declined ? (
-            <XCircle className="h-4 w-4 text-destructive flex-shrink-0 mt-0.5" />
+            <XCircle className="h-5 w-5 text-destructive shrink-0" />
           ) : (
-            <StatusBadge status={request.status} />
+            <Badge
+              variant="outline"
+              className="shrink-0 border-amber-500/40 text-amber-600 dark:text-amber-400 text-xs"
+            >
+              {stageLabels[stageIndex] ?? stageLabels[0]}
+            </Badge>
           )}
         </div>
-      </CardHeader>
-      <CardContent className="space-y-4">
-        {declined ? (
-          <p className="text-xs text-muted-foreground">{t('requestDeclined')}</p>
-        ) : (
-          /* Progress dots */
-          <div className="space-y-2">
-            <div className="flex items-center gap-1">
-              {BOOKING_STAGES.map((_, i) => (
-                <div key={i} className="flex items-center flex-1 last:flex-none">
-                  <div
-                    className={cn(
-                      'h-2.5 w-2.5 rounded-full flex-shrink-0 transition-colors',
-                      i <= stageIndex
-                        ? 'bg-primary'
-                        : 'bg-muted-foreground/20'
-                    )}
-                  />
-                  {i < BOOKING_STAGES.length - 1 && (
-                    <div
-                      className={cn(
-                        'h-0.5 flex-1 mx-0.5 transition-colors',
-                        i < stageIndex ? 'bg-primary' : 'bg-muted-foreground/20'
-                      )}
-                    />
-                  )}
-                </div>
-              ))}
-            </div>
-            <p className="text-xs text-primary font-medium">
-              {stageLabels[stageIndex] ?? stageLabels[0]}
-            </p>
-          </div>
-        )}
+      </div>
 
-        <div className="text-xs text-muted-foreground border-t pt-2">
-          {t('submitted')} {format(new Date(request.created_at), 'MMM d, yyyy')}
+      {/* Progress */}
+      {!declined && (
+        <div className="px-5 pb-4">
+          <div className="flex gap-1.5">
+            {BOOKING_STAGES.map((_, i) => (
+              <div
+                key={i}
+                className={cn(
+                  'h-1.5 flex-1 rounded-full transition-all',
+                  i <= stageIndex ? 'bg-amber-500' : 'bg-muted-foreground/15',
+                )}
+              />
+            ))}
+          </div>
         </div>
-      </CardContent>
+      )}
+
+      {declined && (
+        <div className="px-5 pb-4">
+          <p className="text-xs text-muted-foreground">{t('requestDeclined')}</p>
+        </div>
+      )}
+
+      {/* Footer */}
+      <div className="px-5 py-3 border-t border-border/50 text-xs text-muted-foreground">
+        {t('submitted')} {format(new Date(request.created_at), 'MMM d, yyyy')}
+      </div>
     </Card>
   );
 }
 
-/* ── Project Card with status progress ───────────────── */
+/* ── Project Card with production timeline ───────────── */
 
-function ProjectCard({
-  project,
-  fromRequest,
-}: {
-  project: Project;
-  fromRequest: boolean;
-}) {
+function ProjectCard({ project, fromRequest }: { project: Project; fromRequest: boolean }) {
   const router = useRouter();
   const t = useTranslations('client.projects');
 
-  const stageIndex = PROJECT_STAGES.indexOf(
-    project.status as typeof PROJECT_STAGES[number]
-  );
+  const stageIndex = PROJECT_STAGES.indexOf(project.status as (typeof PROJECT_STAGES)[number]);
   const isDelivered = project.status === 'delivered' || project.status === 'archived';
 
-  const stageLabelKeys = [
-    'stageBriefing',
-    'stagePreProduction',
-    'stageFilming',
-    'stageEditing',
-    'stageReview',
-    'stageRevisions',
-    'stageDelivered',
-  ] as const;
+  const stageLabels = [
+    t('stageBriefing'),
+    t('stagePreProduction'),
+    t('stageFilming'),
+    t('stageEditing'),
+    t('stageReview'),
+    t('stageRevisions'),
+    t('stageDelivered'),
+  ];
 
   return (
     <Card
-      className="cursor-pointer hover:shadow-md transition-shadow group"
+      className={cn(
+        'group cursor-pointer border bg-card transition-all duration-300',
+        'hover:shadow-[0_8px_30px_-4px_rgba(234,179,8,0.2)] hover:-translate-y-0.5',
+      )}
       onClick={() => router.push(`/client/projects/${project.id}`)}
     >
-      <CardHeader className="pb-2">
-        <div className="flex items-start justify-between gap-2">
+      {/* Header */}
+      <div className="p-5 pb-3">
+        <div className="flex items-start justify-between gap-3">
           <div className="flex-1 min-w-0">
-            <CardTitle className="text-sm font-semibold line-clamp-2">
-              {project.title}
-            </CardTitle>
+            <h3 className="font-semibold text-base line-clamp-2">{project.title}</h3>
             {fromRequest && (
               <span className="text-xs text-muted-foreground">{t('fromBooking')}</span>
             )}
           </div>
-          <ArrowRight className="h-4 w-4 text-muted-foreground group-hover:text-primary transition-colors flex-shrink-0 mt-0.5" />
+          <ArrowRight className="h-5 w-5 text-muted-foreground/40 group-hover:text-amber-500 transition-colors shrink-0 mt-0.5" />
         </div>
-      </CardHeader>
+      </div>
 
-      <CardContent className="space-y-4">
-        {/* Status progress bar */}
+      {/* Production Timeline */}
+      <div className="px-5 pb-4">
         {!isDelivered ? (
-          <div className="space-y-2">
-            <div className="flex items-center gap-0.5">
+          <div className="space-y-2.5">
+            {/* Stage bars */}
+            <div className="flex gap-1">
               {PROJECT_STAGES.map((_, i) => (
-                <div key={i} className="flex items-center flex-1 last:flex-none">
-                  <div
-                    className={cn(
-                      'h-2 w-2 rounded-full flex-shrink-0 transition-colors',
-                      i < stageIndex
-                        ? 'bg-primary/60'
-                        : i === stageIndex
-                        ? 'bg-primary ring-2 ring-primary/20'
-                        : 'bg-muted-foreground/20'
-                    )}
-                  />
-                  {i < PROJECT_STAGES.length - 1 && (
-                    <div
-                      className={cn(
-                        'h-0.5 flex-1 transition-colors',
-                        i < stageIndex ? 'bg-primary/60' : 'bg-muted-foreground/20'
-                      )}
-                    />
+                <div
+                  key={i}
+                  className={cn(
+                    'h-2 flex-1 rounded-full transition-all relative',
+                    i < stageIndex
+                      ? 'bg-amber-500/70'
+                      : i === stageIndex
+                        ? 'bg-amber-500 shadow-[0_0_8px_rgba(234,179,8,0.4)]'
+                        : 'bg-muted-foreground/10',
+                  )}
+                >
+                  {i === stageIndex && (
+                    <div className="absolute inset-0 rounded-full bg-amber-500 animate-pulse opacity-40" />
                   )}
                 </div>
               ))}
             </div>
-            <p className="text-xs text-primary font-medium">
-              {t(stageLabelKeys[stageIndex] ?? 'stageBriefing')}
-            </p>
+            {/* Stage labels */}
+            <div className="flex gap-1">
+              {PROJECT_STAGES.map((_, i) => (
+                <span
+                  key={i}
+                  className={cn(
+                    'flex-1 text-center text-[10px] leading-tight',
+                    i === stageIndex
+                      ? 'text-amber-600 dark:text-amber-400 font-semibold'
+                      : i < stageIndex
+                        ? 'text-muted-foreground/60'
+                        : 'text-muted-foreground/30',
+                  )}
+                >
+                  {stageLabels[i]}
+                </span>
+              ))}
+            </div>
           </div>
         ) : (
-          <div className="flex items-center gap-1.5">
-            <CheckCircle2 className="h-4 w-4 text-green-500" />
-            <span className="text-sm font-medium text-green-600 dark:text-green-400">
-              {t('stageDelivered')}
-            </span>
+          /* Completed: full gold bar */
+          <div className="space-y-2">
+            <div className="flex gap-1">
+              {PROJECT_STAGES.map((_, i) => (
+                <div key={i} className="h-2 flex-1 rounded-full bg-emerald-500/70" />
+              ))}
+            </div>
+            <div className="flex items-center justify-center gap-1.5">
+              <CheckCircle2 className="h-4 w-4 text-emerald-500" />
+              <span className="text-sm font-medium text-emerald-600 dark:text-emerald-400">
+                {t('stageDelivered')}
+              </span>
+            </div>
           </div>
         )}
+      </div>
 
+      {/* Footer meta */}
+      <div className="px-5 py-3 border-t border-border/50 flex items-center gap-4 text-xs text-muted-foreground">
         {project.project_type && (
-          <div className="text-xs text-muted-foreground">
+          <span>
             {PROJECT_TYPE_LABELS[project.project_type as keyof typeof PROJECT_TYPE_LABELS] ||
               project.project_type}
-          </div>
+          </span>
         )}
-
         {project.deadline && (
-          <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
+          <span className="flex items-center gap-1">
             <Calendar className="h-3 w-3" />
-            {t('deadline')}: {format(new Date(project.deadline), 'MMM d, yyyy')}
-          </div>
+            {format(new Date(project.deadline), 'MMM d, yyyy')}
+          </span>
         )}
-
-        <div className="text-xs text-muted-foreground border-t pt-2">
-          {t('created')} {format(new Date(project.created_at), 'MMM d, yyyy')}
-        </div>
-      </CardContent>
+        {!project.project_type && !project.deadline && (
+          <span>
+            {t('created')} {format(new Date(project.created_at), 'MMM d, yyyy')}
+          </span>
+        )}
+      </div>
     </Card>
   );
 }
