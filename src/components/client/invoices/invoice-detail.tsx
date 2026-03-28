@@ -218,14 +218,14 @@ export function InvoiceDetail({ invoice }: InvoiceDetailProps) {
 
       {/* PDF Preview Dialog */}
       <Dialog open={previewOpen} onOpenChange={setPreviewOpen}>
-        <DialogContent className="max-w-4xl h-[85vh]">
-          <DialogHeader>
+        <DialogContent className="max-w-6xl w-[95vw] h-[90vh] flex flex-col">
+          <DialogHeader className="shrink-0">
             <DialogTitle>{invoice.invoice_number} — Preview</DialogTitle>
           </DialogHeader>
           {previewUrl && (
             <iframe
               src={previewUrl}
-              className="w-full h-full rounded-md border"
+              className="w-full flex-1 min-h-0 rounded-md border"
               title="Invoice Preview"
             />
           )}
