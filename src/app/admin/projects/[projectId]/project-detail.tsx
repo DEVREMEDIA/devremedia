@@ -11,6 +11,7 @@ import { MessageThread } from '@/components/shared/message-thread';
 import { ContractsTab } from './contracts-tab';
 import { TasksTab } from './tasks-tab';
 import { DeliverablesTab } from './deliverables-tab';
+import { InvoicesTab } from './invoices-tab';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -31,6 +32,7 @@ import {
   CheckSquare,
   Package,
   MessageSquare,
+  Receipt,
   Mail,
   Phone,
   MapPin,
@@ -159,6 +161,7 @@ export function ProjectDetail({ project, contracts }: ProjectDetailProps) {
             <TabsTrigger value="tasks">{t('tasks')}</TabsTrigger>
             <TabsTrigger value="deliverables">{t('deliverables')}</TabsTrigger>
             <TabsTrigger value="messages">{tc('messages')}</TabsTrigger>
+            <TabsTrigger value="invoices">{t('invoices')}</TabsTrigger>
             <TabsTrigger value="contracts">{t('contracts')}</TabsTrigger>
           </TabsList>
         </div>
@@ -355,6 +358,14 @@ export function ProjectDetail({ project, contracts }: ProjectDetailProps) {
           ) : (
             <EmptyState icon={MessageSquare} title={tc('loading')} description={tc('pleaseWait')} />
           )}
+        </TabsContent>
+
+        <TabsContent value="invoices">
+          <InvoicesTab
+            projectId={project.id}
+            clientId={project.client_id}
+            projectTitle={project.title}
+          />
         </TabsContent>
 
         <TabsContent value="contracts">

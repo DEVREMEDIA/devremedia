@@ -582,6 +582,7 @@
     "tasks": "Tasks",
     "deliverables": "Deliverables",
     "contracts": "Contracts",
+    "invoices": "Invoices",
     "overview": "Overview",
     "projectCreated": "Production created successfully",
     "projectUpdated": "Production updated successfully",
@@ -593,7 +594,9 @@
     "assignSuccess": "Production assigned successfully",
     "removeAssignment": "Remove assignment",
     "createdAt": "Created",
-    "updatedAt": "Updated"
+    "updatedAt": "Updated",
+    "createInvoice": "Create Invoice",
+    "noClientForInvoice": "This production has no associated client"
   },
 
   "tasks": {
@@ -635,6 +638,7 @@
   "invoices": {
     "title": "Invoices",
     "description": "Manage invoices and payments",
+    "createInvoice": "Create Invoice",
     "addInvoice": "New Invoice",
     "editInvoice": "Edit Invoice",
     "deleteInvoice": "Delete Invoice",
@@ -750,7 +754,14 @@
     "overdueCount": "{count} overdue",
     "noClientsFound": "No clients found",
     "noClientsWithInvoices": "No clients with invoices",
-    "pdfDownloadFailed": "Failed to load PDF"
+    "pdfDownloadFailed": "Failed to load PDF",
+    "viewInvoice": "View Invoice",
+    "markedAsPaid": "Marked as paid",
+    "markedAsUnpaid": "Marked as unpaid",
+    "markAsUnpaid": "Mark as Unpaid",
+    "total": "Total",
+    "paid": "Paid",
+    "outstanding": "Outstanding"
   },
 
   "contracts": {
@@ -812,6 +823,12 @@
     "templatePlaceholder": "Write your contract template here. Use {placeholder_name} for dynamic values...",
     "failedToSendContract": "Failed to send contract",
     "contractSignedSuccess": "Contract signed successfully",
+    "signDigitally": "Sign Digitally",
+    "reviewAndSign": "Review and Sign Contract",
+    "reviewBeforeSigning": "Please review the contract carefully before signing",
+    "signatureBindingNotice": "By signing this contract, you agree to all terms and conditions outlined below. Your signature is legally binding.",
+    "processingSignature": "Processing signature...",
+    "redirecting": "Redirecting...",
     "backToProject": "Back to Production",
     "sending": "Sending...",
     "sendToClient": "Send to Client",
@@ -1677,7 +1694,11 @@
     "invoices": {
       "title": "My Invoices",
       "description": "Your invoices and payment history",
-      "paymentSuccess": "Payment successful! Thank you.",
+      "paymentSuccess": "Payment successful!",
+      "confirmingPayment": "Confirming payment...",
+      "confirmingPaymentMessage": "Please wait while we confirm your payment.",
+      "paymentConfirmError": "Confirmation error",
+      "paymentConfirmErrorMessage": "We could not confirm your payment. Please contact us if you were charged.",
       "paymentCancelled": "Payment was cancelled.",
       "backToInvoices": "Back to invoices",
       "paymentSuccessMessage": "Your payment has been processed successfully. You will receive a confirmation email shortly.",

@@ -15,12 +15,14 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import { MoreHorizontal, Eye, Edit, Trash } from 'lucide-react';
+import { MoreHorizontal, Eye, Edit, Trash, FileText } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { deleteProject } from '@/lib/actions/projects';
+import { getNextInvoiceNumber } from '@/lib/actions/invoices';
 import { toast } from 'sonner';
 import { useState } from 'react';
 import { ConfirmDialog } from '@/components/shared/confirm-dialog';
+import { CreateInvoiceDrawer } from '@/components/admin/invoices/create-invoice-drawer';
 import { useTranslations } from 'next-intl';
 
 interface ProjectListProps {
@@ -34,6 +36,9 @@ export function ProjectList({ projects }: ProjectListProps) {
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [projectToDelete, setProjectToDelete] = useState<string | null>(null);
   const [isDeleting, setIsDeleting] = useState(false);
+  const [invoiceDrawerOpen, setInvoiceDrawerOpen] = useState(false);
+  const [invoiceProject, setInvoiceProject] = useState<ProjectWithClient | null>(null);
+  const [nextInvoiceNum, setNextInvoiceNum] = useState('');
 
   const handleDelete = async () => {
     if (!projectToDelete) return;
@@ -50,6 +55,17 @@ export function ProjectList({ projects }: ProjectListProps) {
       toast.error(result.error);
     }
     setIsDeleting(false);
+  };
+
+  const handleOpenInvoiceDrawer = async (project: ProjectWithClient) => {
+    if (!project.client_id) {
+      toast.error(t('noClientForInvoice'));
+      return;
+    }
+    const num = await getNextInvoiceNumber();
+    setNextInvoiceNum(num);
+    setInvoiceProject(project);
+    setInvoiceDrawerOpen(true);
   };
 
   const columns: ColumnDef<ProjectWithClient>[] = [
@@ -135,6 +151,10 @@ export function ProjectList({ projects }: ProjectListProps) {
                   {tc('edit')}
                 </Link>
               </DropdownMenuItem>
+              <DropdownMenuItem onClick={() => handleOpenInvoiceDrawer(row.original)}>
+                <FileText className="h-4 w-4 mr-2" />
+                {t('createInvoice')}
+              </DropdownMenuItem>
               <DropdownMenuItem
                 onClick={() => {
                   setProjectToDelete(row.original.id);
@@ -172,6 +192,27 @@ export function ProjectList({ projects }: ProjectListProps) {
         destructive
         loading={isDeleting}
       />
+
+      {invoiceProject && (
+        <CreateInvoiceDrawer
+          open={invoiceDrawerOpen}
+          onOpenChange={setInvoiceDrawerOpen}
+          clientId={invoiceProject.client_id}
+          projects={[
+            {
+              id: invoiceProject.id,
+              title: invoiceProject.title,
+              client_id: invoiceProject.client_id,
+            },
+          ]}
+          nextInvoiceNumber={nextInvoiceNum}
+          onSuccess={() => {
+            setInvoiceDrawerOpen(false);
+            setInvoiceProject(null);
+            router.refresh();
+          }}
+        />
+      )}
     </>
   );
 }

@@ -55,6 +55,15 @@ export const contractResponseSchema = z.object({
 export type ContractResponse = z.infer<typeof contractResponseSchema>;
 
 /**
+ * Sign contract schema — digital signature
+ */
+export const signContractSchema = z.object({
+  signature_image: z.string().min(1, 'Signature is required'),
+});
+
+export type SignContractInput = z.infer<typeof signContractSchema>;
+
+/**
  * Upload signed PDF schema validation
  */
 export const uploadSignedSchema = z.object({

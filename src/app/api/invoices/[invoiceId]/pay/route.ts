@@ -45,20 +45,37 @@ export async function POST(
       return NextResponse.json({ error: 'Invoice already paid' }, { status: 400 });
     }
 
-    // 4. Build line items for Stripe checkout
+    // 4. Build line items for Stripe checkout (line items at net price)
+    const currency = invoice.currency?.toLowerCase() || 'eur';
     const lineItems = (
       invoice.line_items as Array<{ description: string; quantity: number; unit_price: number }>
     ).map((item) => ({
       price_data: {
-        currency: invoice.currency?.toLowerCase() || 'eur',
+        currency,
         product_data: { name: item.description },
         unit_amount: Math.round(item.unit_price * 100), // cents
       },
       quantity: item.quantity,
     }));
 
-    // 5. Get app URL for redirect
-    const appUrl = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000';
+    // 4b. Add VAT as a separate line item if tax exists
+    const taxAmount = invoice.tax_amount as number | null;
+    if (taxAmount && taxAmount > 0) {
+      const taxRate = invoice.tax_rate as number | null;
+      lineItems.push({
+        price_data: {
+          currency,
+          product_data: { name: `VAT${taxRate ? ` (${taxRate}%)` : ''}` },
+          unit_amount: Math.round(taxAmount * 100),
+        },
+        quantity: 1,
+      });
+    }
+
+    // 5. Get app URL from request origin (matches the browser's actual URL)
+    const origin =
+      request.headers.get('origin') || process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000';
+    const appUrl = origin;
 
     // 6. Create Stripe Checkout session
     const session = await getStripe().checkout.sessions.create({

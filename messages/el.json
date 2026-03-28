@@ -582,6 +582,7 @@
     "tasks": "Εργασίες",
     "deliverables": "Παραδοτέα",
     "contracts": "Συμβόλαια",
+    "invoices": "Τιμολόγια",
     "overview": "Επισκόπηση",
     "projectCreated": "Το παραγωγή δημιουργήθηκε",
     "projectUpdated": "Το παραγωγή ενημερώθηκε",
@@ -593,7 +594,9 @@
     "assignSuccess": "Η παραγωγή ανατέθηκε επιτυχώς",
     "removeAssignment": "Αφαίρεση ανάθεσης",
     "createdAt": "Δημιουργήθηκε",
-    "updatedAt": "Ενημερώθηκε"
+    "updatedAt": "Ενημερώθηκε",
+    "createInvoice": "Δημιουργία Τιμολογίου",
+    "noClientForInvoice": "Αυτή η παραγωγή δεν έχει συνδεδεμένο πελάτη"
   },
 
   "tasks": {
@@ -635,6 +638,7 @@
   "invoices": {
     "title": "Τιμολόγια",
     "description": "Διαχείριση τιμολογίων και πληρωμών",
+    "createInvoice": "Δημιουργία Τιμολογίου",
     "addInvoice": "Νέο Τιμολόγιο",
     "editInvoice": "Επεξεργασία Τιμολογίου",
     "deleteInvoice": "Διαγραφή Τιμολογίου",
@@ -750,7 +754,14 @@
     "overdueCount": "{count} ληξιπρόθεσμα",
     "noClientsFound": "Δεν βρέθηκαν πελάτες",
     "noClientsWithInvoices": "Δεν υπάρχουν πελάτες με τιμολόγια",
-    "pdfDownloadFailed": "Αποτυχία φόρτωσης PDF"
+    "pdfDownloadFailed": "Αποτυχία φόρτωσης PDF",
+    "viewInvoice": "Προβολή Τιμολογίου",
+    "markedAsPaid": "Σημειώθηκε ως πληρωμένο",
+    "markedAsUnpaid": "Σημειώθηκε ως μη πληρωμένο",
+    "markAsUnpaid": "Σήμανση ως Μη Πληρωμένο",
+    "total": "Σύνολο",
+    "paid": "Πληρωμένα",
+    "outstanding": "Εκκρεμή"
   },
 
   "contracts": {
@@ -812,6 +823,12 @@
     "templatePlaceholder": "Γράψτε το πρότυπο συμβολαίου εδώ. Χρησιμοποιήστε {placeholder_name} για δυναμικές τιμές...",
     "failedToSendContract": "Αποτυχία αποστολής συμβολαίου",
     "contractSignedSuccess": "Το συμβόλαιο υπογράφηκε επιτυχώς",
+    "signDigitally": "Ψηφιακή Υπογραφή",
+    "reviewAndSign": "Ανασκόπηση και Υπογραφή Συμβολαίου",
+    "reviewBeforeSigning": "Παρακαλώ διαβάστε προσεκτικά το συμβόλαιο πριν υπογράψετε",
+    "signatureBindingNotice": "Υπογράφοντας αυτό το συμβόλαιο, αποδέχεστε όλους τους όρους και τις προϋποθέσεις που αναφέρονται παρακάτω. Η υπογραφή σας είναι νομικά δεσμευτική.",
+    "processingSignature": "Επεξεργασία υπογραφής...",
+    "redirecting": "Ανακατεύθυνση...",
     "backToProject": "Πίσω στο Παραγωγή",
     "sending": "Αποστολή...",
     "sendToClient": "Αποστολή σε Πελάτη",
@@ -1677,7 +1694,11 @@
     "invoices": {
       "title": "Τα Τιμολόγιά Μου",
       "description": "Τα τιμολόγια και το ιστορικό πληρωμών σας",
-      "paymentSuccess": "Η πληρωμή ολοκληρώθηκε! Ευχαριστούμε.",
+      "paymentSuccess": "Η πληρωμή ολοκληρώθηκε!",
+      "confirmingPayment": "Επιβεβαίωση πληρωμής...",
+      "confirmingPaymentMessage": "Παρακαλώ περιμένετε ενώ επιβεβαιώνουμε την πληρωμή σας.",
+      "paymentConfirmError": "Σφάλμα επιβεβαίωσης",
+      "paymentConfirmErrorMessage": "Δεν ήταν δυνατή η επιβεβαίωση της πληρωμής. Επικοινωνήστε μαζί μας αν χρεωθήκατε.",
       "paymentCancelled": "Η πληρωμή ακυρώθηκε.",
       "backToInvoices": "Πίσω στα τιμολόγια",
       "paymentSuccessMessage": "Η πληρωμή σας ολοκληρώθηκε επιτυχώς. Θα λάβετε email επιβεβαίωσης σύντομα.",

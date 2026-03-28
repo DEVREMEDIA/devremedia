@@ -13,6 +13,27 @@ const VideoPlayer = dynamic(
   { ssr: false },
 );
 
+/** Convert video URLs to embeddable format for YouTube, Vimeo, Google Drive, Loom */
+function getEmbedUrl(url: string): string | null {
+  const trimmed = url.trim();
+
+  const ytMatch = trimmed.match(
+    /(?:youtu\.be\/|youtube\.com\/(?:watch\?v=|embed\/|v\/|shorts\/))([a-zA-Z0-9_-]{11})/,
+  );
+  if (ytMatch) return `https://www.youtube.com/embed/${ytMatch[1]}`;
+
+  const vimeoMatch = trimmed.match(/vimeo\.com\/(\d+)/);
+  if (vimeoMatch) return `https://player.vimeo.com/video/${vimeoMatch[1]}`;
+
+  const driveMatch = trimmed.match(/drive\.google\.com\/file\/d\/([a-zA-Z0-9_-]+)/);
+  if (driveMatch) return `https://drive.google.com/file/d/${driveMatch[1]}/preview`;
+
+  const loomMatch = trimmed.match(/loom\.com\/share\/([a-zA-Z0-9]+)/);
+  if (loomMatch) return `https://www.loom.com/embed/${loomMatch[1]}`;
+
+  return null;
+}
+
 type DeliverableWithExtras = Deliverable & {
   file_url?: string;
   version_number?: number;
@@ -80,9 +101,24 @@ export function DeliverableDetailView({
           </Button>
         </div>
 
-        {/* Video Player with Annotations */}
+        {/* Video Player — iframe embed for YouTube/Vimeo/Drive/Loom, native player for direct files */}
         {resolvedVideoSrc ? (
-          <VideoPlayer src={resolvedVideoSrc} annotations={annotations} onTimeClick={onTimeClick} />
+          getEmbedUrl(resolvedVideoSrc) ? (
+            <div className="aspect-video rounded-lg overflow-hidden bg-black">
+              <iframe
+                src={getEmbedUrl(resolvedVideoSrc)!}
+                className="w-full h-full border-0"
+                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                allowFullScreen
+              />
+            </div>
+          ) : (
+            <VideoPlayer
+              src={resolvedVideoSrc}
+              annotations={annotations}
+              onTimeClick={onTimeClick}
+            />
+          )
         ) : (
           <div className="aspect-video bg-muted rounded-lg flex items-center justify-center">
             <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />

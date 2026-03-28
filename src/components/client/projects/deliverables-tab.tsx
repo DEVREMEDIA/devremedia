@@ -71,11 +71,18 @@ export function DeliverablesTab({ deliverables }: DeliverablesTabProps) {
       setVideoUrl(selectedDeliverable?.file_url ?? null);
       return;
     }
+
+    const filePath = selectedDeliverable.file_path;
+    const isExternal = filePath.startsWith('http://') || filePath.startsWith('https://');
+
+    if (isExternal) {
+      setVideoUrl(filePath);
+      return;
+    }
+
     try {
       const supabase = createClient();
-      const { data } = supabase.storage
-        .from('deliverables')
-        .getPublicUrl(selectedDeliverable.file_path);
+      const { data } = supabase.storage.from('deliverables').getPublicUrl(filePath);
       setVideoUrl(data.publicUrl);
     } catch {
       setVideoUrl(selectedDeliverable?.file_url ?? null);

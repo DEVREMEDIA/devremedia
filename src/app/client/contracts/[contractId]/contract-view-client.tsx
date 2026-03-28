@@ -2,7 +2,7 @@
 
 import { useRef, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { Download, Upload } from 'lucide-react';
+import { Download, Upload, PenLine } from 'lucide-react';
 import { toast } from 'sonner';
 import { useTranslations } from 'next-intl';
 import { Button } from '@/components/ui/button';
@@ -84,10 +84,20 @@ export function ContractViewClient({ contract }: ContractViewClientProps) {
             onChange={handleUpload}
           />
           {['sent', 'viewed'].includes(contract.status) && (
-            <Button onClick={() => fileRef.current?.click()} disabled={isUploading}>
-              <Upload className="h-4 w-4 mr-2" />
-              {isUploading ? t('uploading') : t('uploadSigned')}
-            </Button>
+            <>
+              <Button onClick={() => router.push(`/client/contracts/${contract.id}/sign`)}>
+                <PenLine className="h-4 w-4 mr-2" />
+                {t('signDigitally')}
+              </Button>
+              <Button
+                variant="outline"
+                onClick={() => fileRef.current?.click()}
+                disabled={isUploading}
+              >
+                <Upload className="h-4 w-4 mr-2" />
+                {isUploading ? t('uploading') : t('uploadSigned')}
+              </Button>
+            </>
           )}
         </div>
       </PageHeader>

@@ -69,7 +69,7 @@ export function InvoiceUploadForm({
       vat_percent: 24,
       vat_amount: 0,
       total_amount: 0,
-      project_id: '',
+      project_id: projects.length === 1 ? projects[0].id : '',
       notes: '',
     },
   });
@@ -94,7 +94,7 @@ export function InvoiceUploadForm({
         vat_percent: parsed.vatPercent ?? 24,
         vat_amount: parsed.vatAmount ?? 0,
         total_amount: parsed.totalAmount ?? 0,
-        project_id: '',
+        project_id: projects.length === 1 ? projects[0].id : '',
         notes: '',
         invoice_number: parsed.invoiceNumber ?? '',
         invoice_type: parsed.invoiceType ?? '',

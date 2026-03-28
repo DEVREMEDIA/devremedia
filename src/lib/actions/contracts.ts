@@ -1,7 +1,11 @@
 'use server';
 
 import { createClient } from '@/lib/supabase/server';
-import { createContractSchema, updateContractSchema } from '@/lib/schemas/contract';
+import {
+  createContractSchema,
+  updateContractSchema,
+  signContractSchema,
+} from '@/lib/schemas/contract';
 import type {
   ActionResult,
   Contract,
@@ -11,7 +15,12 @@ import type {
 } from '@/types/index';
 import { revalidatePath } from 'next/cache';
 import { cookies } from 'next/headers';
-import { createNotification, getClientUserIdFromClientId } from '@/lib/actions/notifications';
+import {
+  createNotification,
+  createNotificationForMany,
+  getClientUserIdFromClientId,
+  getAdminUserIds,
+} from '@/lib/actions/notifications';
 import { NOTIFICATION_TYPES } from '@/lib/notification-types';
 
 export async function getContractsByProject(projectId: string): Promise<ActionResult<Contract[]>> {
@@ -280,6 +289,79 @@ export async function updateContract(id: string, input: unknown): Promise<Action
       return { data: null, error: error.message };
     }
     return { data: null, error: 'Failed to update contract' };
+  }
+}
+
+export async function signContract(
+  id: string,
+  signatureData: unknown,
+): Promise<ActionResult<Contract>> {
+  try {
+    const validated = signContractSchema.parse(signatureData);
+    const supabase = await createClient();
+
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
+    if (!user) return { data: null, error: 'User not authenticated' };
+
+    // Verify the signer is associated with this contract's client
+    const { data: existing, error: fetchError } = await supabase
+      .from('contracts')
+      .select('id, client:clients(user_id)')
+      .eq('id', id)
+      .single();
+
+    if (fetchError || !existing) return { data: null, error: 'Contract not found' };
+
+    const clientData = Array.isArray(existing.client) ? existing.client[0] : existing.client;
+    const clientUserId = (clientData as { user_id: string | null } | null)?.user_id;
+    if (!clientUserId || clientUserId !== user.id) {
+      return { data: null, error: 'You are not authorized to sign this contract' };
+    }
+
+    const { data, error } = await supabase
+      .from('contracts')
+      .update({
+        status: 'signed',
+        signature_data: {
+          signature_image: validated.signature_image,
+          signed_at: new Date().toISOString(),
+        },
+        signed_at: new Date().toISOString(),
+      })
+      .eq('id', id)
+      .select(
+        'id, project_id, client_id, template_id, title, content, status, pdf_path, signature_data, sent_at, viewed_at, signed_at, expires_at, service_type, agreed_amount, payment_method, scope_description, special_terms, signed_pdf_path, locale, created_by, created_at',
+      )
+      .single();
+
+    if (error) return { data: null, error: error.message };
+
+    if (data?.project_id) {
+      revalidatePath(`/admin/projects/${data.project_id}`);
+    }
+    revalidatePath(`/admin/contracts/${id}`);
+    revalidatePath('/client/contracts');
+    revalidatePath('/client/dashboard');
+    revalidatePath('/admin/contracts');
+    revalidatePath('/admin/dashboard');
+
+    // Notify all admins about signed contract
+    const adminIds = await getAdminUserIds();
+    createNotificationForMany(adminIds, {
+      type: NOTIFICATION_TYPES.CONTRACT_SIGNED,
+      title: 'Contract signed by client',
+      body: data.title ?? undefined,
+      actionUrl: `/admin/contracts/${id}`,
+    });
+
+    return { data, error: null };
+  } catch (error) {
+    if (error instanceof Error) {
+      return { data: null, error: error.message };
+    }
+    return { data: null, error: 'Failed to sign contract' };
   }
 }
 
