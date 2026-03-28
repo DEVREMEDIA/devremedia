@@ -7,6 +7,12 @@ import type { calendar_v3 } from '@googleapis/calendar';
 
 export async function POST(request: NextRequest) {
   try {
+    // 0. Skip "sync" notifications — Google sends these as pings, not real changes
+    const resourceState = request.headers.get('x-goog-resource-state');
+    if (resourceState === 'sync') {
+      return NextResponse.json({ ok: true, skipped: 'sync notification' });
+    }
+
     const supabase = createAdminClient();
 
     // 1. Validate channel token
