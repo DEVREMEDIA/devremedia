@@ -2,10 +2,10 @@
 
 import { useState } from 'react';
 import Link from 'next/link';
-import { BookOpen, ChevronRight, Search } from 'lucide-react';
+import { BookOpen, ChevronRight, Search, GraduationCap } from 'lucide-react';
 import { useTranslations } from 'next-intl';
-import { Card, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
+import { cn } from '@/lib/utils';
 
 interface Category {
   id: string;
@@ -37,34 +37,40 @@ export function UniversityBrowse({ categories }: UniversityBrowseProps) {
           placeholder={t('searchCategories')}
           value={searchQuery}
           onChange={(e) => setSearchQuery(e.target.value)}
-          className="pl-9"
+          className="pl-9 h-11"
         />
       </div>
 
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
         {filteredCategories.map((category) => (
           <Link key={category.id} href={`/employee/university/${category.slug}`}>
-            <Card className="h-full transition-colors hover:bg-accent/50 cursor-pointer">
-              <CardHeader>
-                <div className="flex items-start justify-between">
-                  <div className="flex items-center gap-2">
-                    <BookOpen className="h-5 w-5 text-primary" />
-                    <CardTitle className="text-lg">{category.title}</CardTitle>
-                  </div>
-                  <ChevronRight className="h-5 w-5 text-muted-foreground" />
+            <div
+              className={cn(
+                'group rounded-xl border bg-card p-5 h-full cursor-pointer transition-all duration-300',
+                'hover:shadow-[0_8px_30px_-4px_rgba(234,179,8,0.15)] hover:-translate-y-0.5',
+              )}
+            >
+              <div className="flex items-start justify-between mb-3">
+                <div className="p-2.5 rounded-xl bg-amber-500/10">
+                  <BookOpen className="h-5 w-5 text-amber-500" />
                 </div>
-                {category.description && (
-                  <CardDescription className="line-clamp-3">{category.description}</CardDescription>
-                )}
-              </CardHeader>
-            </Card>
+                <ChevronRight className="h-5 w-5 text-muted-foreground/40 group-hover:text-amber-500 transition-colors" />
+              </div>
+              <h3 className="font-semibold text-base mb-1.5">{category.title}</h3>
+              {category.description && (
+                <p className="text-sm text-muted-foreground line-clamp-3 leading-relaxed">
+                  {category.description}
+                </p>
+              )}
+            </div>
           </Link>
         ))}
       </div>
 
       {filteredCategories.length === 0 && (
-        <div className="text-center py-12">
-          <p className="text-muted-foreground">
+        <div className="flex flex-col items-center justify-center py-12 text-center">
+          <GraduationCap className="h-10 w-10 text-muted-foreground/30 mb-3" />
+          <p className="text-sm text-muted-foreground">
             {t('noCategoriesMatching', { query: searchQuery })}
           </p>
         </div>
