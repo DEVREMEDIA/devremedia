@@ -22,6 +22,9 @@ import {
   FolderOpen,
   Bot,
   ShieldCheck,
+  Calculator,
+  Activity,
+  FileSignature,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
@@ -103,6 +106,21 @@ export function Sidebar() {
       href: '/admin/chatbot',
       icon: Bot,
       label: t('chatbot'),
+    },
+    {
+      href: '/admin/cost-model',
+      icon: Calculator,
+      label: t('costModel'),
+    },
+    {
+      href: '/admin/pricing-health',
+      icon: Activity,
+      label: t('pricingHealth'),
+    },
+    {
+      href: '/admin/proposals',
+      icon: FileSignature,
+      label: t('proposals'),
     },
     {
       href: '/admin/settings',
