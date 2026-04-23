@@ -314,6 +314,14 @@ export async function convertToProject(id: string): Promise<ActionResult<Project
       await adminSupabase.from('filming_requests').update({ client_id: clientId }).eq('id', id);
     }
 
+    // Extract filming date/time from preferred_dates
+    const preferredDates = request.preferred_dates as Array<{
+      date?: string;
+      time_slot?: string;
+    }> | null;
+    const filmingDate = preferredDates?.[0]?.date ?? null;
+    const filmingTime = preferredDates?.[0]?.time_slot ?? null;
+
     const { data: project, error: projectError } = await supabase
       .from('projects')
       .insert({
@@ -324,13 +332,29 @@ export async function convertToProject(id: string): Promise<ActionResult<Project
         status: 'briefing',
         priority: 'medium',
         created_by: user.id,
+        filming_date: filmingDate,
+        filming_time: filmingTime,
+        location: request.location,
       })
       .select(
-        'id, client_id, title, description, project_type, status, priority, budget, deadline, start_date, assigned_to, created_at, updated_at',
+        'id, client_id, title, description, project_type, status, priority, budget, deadline, start_date, assigned_to, filming_date, filming_time, location, created_at, updated_at',
       )
       .single();
 
     if (projectError) return { data: null, error: projectError.message };
+
+    // Auto-create calendar event for the filming date
+    if (filmingDate) {
+      await supabase.from('calendar_events').insert({
+        title: `🎬 ${request.title}`,
+        description: request.location ? `📍 ${request.location}` : null,
+        start_date: filmingTime ? `${filmingDate}T${filmingTime}` : filmingDate,
+        end_date: filmingTime ? `${filmingDate}T${filmingTime}` : filmingDate,
+        all_day: !filmingTime,
+        event_type: 'filming',
+        created_by: user.id,
+      });
+    }
 
     const { error: updateError } = await supabase
       .from('filming_requests')
@@ -345,6 +369,7 @@ export async function convertToProject(id: string): Promise<ActionResult<Project
     revalidatePath('/admin/filming-requests');
     revalidatePath('/admin/projects');
     revalidatePath('/admin/clients');
+    revalidatePath('/admin/calendar');
     revalidatePath('/client/projects');
     revalidatePath('/client/dashboard');
     return { data: project, error: null };
