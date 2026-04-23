@@ -362,3 +362,68 @@ export async function deleteInvoice(id: string): Promise<ActionResult<void>> {
     return { data: null, error: err instanceof Error ? err.message : 'Failed to delete invoice' };
   }
 }
+
+export async function bulkUpdateInvoiceStatus(
+  ids: string[],
+  status: InvoiceStatus,
+): Promise<ActionResult<{ succeeded: number; failed: number }>> {
+  try {
+    const supabase = await createClient();
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
+    if (!user) return { data: null, error: 'Unauthorized' };
+
+    let succeeded = 0;
+    let failed = 0;
+
+    for (const id of ids) {
+      const result = await updateInvoiceStatus(id, status);
+      if (result.error) {
+        failed++;
+      } else {
+        succeeded++;
+      }
+    }
+
+    revalidatePath('/admin/invoices');
+    return { data: { succeeded, failed }, error: null };
+  } catch (err: unknown) {
+    return {
+      data: null,
+      error: err instanceof Error ? err.message : 'Failed to bulk update invoices',
+    };
+  }
+}
+
+export async function bulkDeleteInvoices(
+  ids: string[],
+): Promise<ActionResult<{ succeeded: number; failed: number }>> {
+  try {
+    const supabase = await createClient();
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
+    if (!user) return { data: null, error: 'Unauthorized' };
+
+    let succeeded = 0;
+    let failed = 0;
+
+    for (const id of ids) {
+      const result = await deleteInvoice(id);
+      if (result.error) {
+        failed++;
+      } else {
+        succeeded++;
+      }
+    }
+
+    revalidatePath('/admin/invoices');
+    return { data: { succeeded, failed }, error: null };
+  } catch (err: unknown) {
+    return {
+      data: null,
+      error: err instanceof Error ? err.message : 'Failed to bulk delete invoices',
+    };
+  }
+}

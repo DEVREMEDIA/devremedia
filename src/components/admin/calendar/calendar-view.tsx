@@ -87,7 +87,12 @@ export function CalendarView({ events }: CalendarViewProps) {
 
   const formattedEvents = filteredEvents.map((event) => ({
     id: event.id,
-    title: event.title,
+    // Append assignee name after a middle dot for filming events so who's on it
+    // is visible directly on the calendar grid (not only after opening the dialog).
+    title:
+      event.eventType === 'filming' && event.assigneeName
+        ? `${event.title} · ${event.assigneeName}`
+        : event.title,
     start: event.start,
     end: event.end,
     allDay: event.allDay,

@@ -3,6 +3,7 @@
 import { createClient } from '@/lib/supabase/server';
 import { createAdminClient } from '@/lib/supabase/admin';
 import { onboardingSchema } from '@/lib/schemas/auth';
+import { sendInviteEmail } from '@/lib/email/send-invite-email';
 import type { ActionResult } from '@/types';
 import { cookies } from 'next/headers';
 import { z } from 'zod';
@@ -67,21 +68,67 @@ export async function inviteClient(
     });
 
     if (error) {
-      // User already exists — re-invite via recovery email
+      // Rate limit hit — return friendly message
+      if (error.message.toLowerCase().includes('rate limit')) {
+        return {
+          data: null,
+          error:
+            locale === 'el'
+              ? 'Πολλές προσκλήσεις σε σύντομο χρόνο. Δοκιμάστε ξανά σε λίγο.'
+              : 'Too many invitations sent. Please try again later.',
+        };
+      }
+
+      // User already exists — re-invite via a fresh invite link + custom email.
+      // Previously we called resetPasswordForEmail, which made Supabase send the
+      // RECOVERY template to brand-new invitees. We now generate an invite link
+      // and deliver it through our Resend invite template instead.
       const { data: existingUsers } = await adminClient.auth.admin.listUsers();
       const existingUser = existingUsers?.users.find((u) => u.email === email);
 
       if (existingUser) {
-        const { error: resetError } = await adminClient.auth.resetPasswordForEmail(email, {
-          redirectTo: `${process.env.NEXT_PUBLIC_APP_URL}/auth/confirm?type=recovery`,
+        // Force onboarding state so middleware catches them AND so they go
+        // through /onboarding after following the link.
+        await forceOnboardingState(adminClient, existingUser.id, user.id, locale);
+
+        const { data: linkData, error: linkError } = await adminClient.auth.admin.generateLink({
+          type: 'invite',
+          email,
+          options: {
+            redirectTo: `${process.env.NEXT_PUBLIC_APP_URL}/auth/confirm?type=invite&next=/onboarding`,
+            data: {
+              display_name: displayName || email,
+              invited_by: user.id,
+              locale,
+            },
+          },
         });
 
-        if (resetError) {
-          return { data: null, error: resetError.message };
+        if (linkError || !linkData?.properties?.action_link) {
+          if (linkError?.message.toLowerCase().includes('rate limit')) {
+            return {
+              data: null,
+              error:
+                locale === 'el'
+                  ? 'Πολλές προσκλήσεις σε σύντομο χρόνο. Δοκιμάστε ξανά σε λίγο.'
+                  : 'Too many invitations sent. Please try again later.',
+            };
+          }
+          return { data: null, error: linkError?.message ?? 'Failed to generate invite link' };
         }
 
-        // Force onboarding state so middleware catches them
-        await forceOnboardingState(adminClient, existingUser.id, user.id, locale);
+        const emailResult = await sendInviteEmail({
+          to: email,
+          inviteLink: linkData.properties.action_link,
+          locale,
+        });
+
+        if (!emailResult.success) {
+          return {
+            data: null,
+            error: emailResult.error ?? 'Failed to send invite email',
+          };
+        }
 
         // Auto-link client record
         await adminClient

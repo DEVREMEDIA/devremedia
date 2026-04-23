@@ -573,6 +573,8 @@
     "startDate": "Start Date",
     "endDate": "End Date",
     "filmingDate": "Filming Date",
+    "filmingTime": "Filming Time",
+    "filmingLocation": "Filming Location",
     "location": "Location",
     "budget": "Budget",
     "noProjects": "No productions yet",
@@ -764,7 +766,18 @@
     "markAsUnpaid": "Mark as Unpaid",
     "total": "Total",
     "paid": "Paid",
-    "outstanding": "Outstanding"
+    "outstanding": "Outstanding",
+    "searchInvoice": "Search invoice...",
+    "selectedCount": "{count} selected",
+    "deleteSelected": "Delete Selected",
+    "bulkStatusUpdated": "{count} invoices updated",
+    "bulkDeleted": "{count} invoices deleted",
+    "bulkDeleteTitle": "Delete Invoices",
+    "bulkDeleteConfirm": "Are you sure you want to delete {count} invoices? This action cannot be undone.",
+    "delete": "Delete",
+    "status": "Status",
+    "client": "Client",
+    "showing": "Showing {from}-{to} of {total}"
   },
 
   "contracts": {
@@ -876,6 +889,8 @@
     "deliverableAdded": "Deliverable added successfully",
     "failedToAdd": "Failed to add deliverable",
     "deliverableDeleted": "Deliverable deleted",
+    "deliverableUpdated": "Deliverable updated",
+    "videoUrl": "Video URL",
     "deleteDeliverableConfirm": "This action cannot be undone.",
     "watchVideo": "Watch Video",
     "delete": "Delete",
@@ -1037,7 +1052,11 @@
     "noteContentPlaceholder": "Start writing your concept notes...",
     "newNote": "New Note",
     "filmingPreparation": "Filming Preparation",
-    "manageFor": "Manage equipment, shot lists, and concept notes for {production}"
+    "manageFor": "Manage equipment, shot lists, and concept notes for {production}",
+    "assignTo": "Assign to",
+    "selectTeamMember": "Select team member",
+    "unassigned": "Unassigned",
+    "assignedSuccessfully": "Assignment updated"
   },
 
   "filmingRequests": {
@@ -1064,6 +1083,8 @@
     "notSpecified": "Not specified",
     "referenceLinks": "Reference Links",
     "dateNotSpecified": "Date not specified",
+    "available": "Available",
+    "busy": "Busy",
     "location": "Location",
     "budgetRange": "Budget Range",
     "adminNotes": "Admin Notes",
@@ -1179,6 +1200,9 @@
     "eventTypeFilming": "Filming",
     "eventTypeDeadline": "Deadline",
     "eventTypeCustom": "Custom",
+    "eventAssignedTo": "Assigned to",
+    "selectAssignee": "Select team member...",
+    "unassigned": "Unassigned",
     "createEventSuccess": "Event created successfully",
     "updateEventSuccess": "Event updated successfully",
     "deleteEventSuccess": "Event deleted successfully",

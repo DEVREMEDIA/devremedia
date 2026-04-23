@@ -4,10 +4,19 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { DELIVERABLE_STATUS_LABELS } from '@/lib/constants';
 import type { DeliverableStatus } from '@/lib/constants';
-import { ExternalLink, FileVideo, Calendar, Trash2 } from 'lucide-react';
+import { Input } from '@/components/ui/input';
+import { Textarea } from '@/components/ui/textarea';
+import {
+  Dialog,
+  DialogContent,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog';
+import { ExternalLink, FileVideo, Calendar, Trash2, Pencil } from 'lucide-react';
 import { format } from 'date-fns';
 import { useTranslations } from 'next-intl';
-import { deleteDeliverable } from '@/lib/actions/deliverables';
+import { deleteDeliverable, updateDeliverable } from '@/lib/actions/deliverables';
 import { toast } from 'sonner';
 import { useState } from 'react';
 import { ConfirmDialog } from '@/components/shared/confirm-dialog';
@@ -45,6 +54,37 @@ export function DeliverableList({ deliverables, onRefresh }: DeliverableListProp
   const t = useTranslations('deliverables');
   const [deleteId, setDeleteId] = useState<string | null>(null);
   const [isDeleting, setIsDeleting] = useState(false);
+  const [editDeliverable, setEditDeliverable] = useState<Deliverable | null>(null);
+  const [editTitle, setEditTitle] = useState('');
+  const [editDescription, setEditDescription] = useState('');
+  const [editFilePath, setEditFilePath] = useState('');
+  const [isSaving, setIsSaving] = useState(false);
+
+  const openEditDialog = (d: Deliverable) => {
+    setEditDeliverable(d);
+    setEditTitle(d.title);
+    setEditDescription(d.description ?? '');
+    setEditFilePath(d.file_path);
+  };
+
+  const handleEdit = async () => {
+    if (!editDeliverable) return;
+    setIsSaving(true);
+
+    const updates: Record<string, string> = { title: editTitle };
+    if (editDescription) updates.description = editDescription;
+    if (editFilePath !== editDeliverable.file_path) updates.file_path = editFilePath;
+
+    const result = await updateDeliverable(editDeliverable.id, updates);
+    if (result.error) {
+      toast.error(result.error);
+    } else {
+      toast.success(t('deliverableUpdated'));
+      onRefresh?.();
+    }
+    setIsSaving(false);
+    setEditDeliverable(null);
+  };
 
   const handleDelete = async () => {
     if (!deleteId) return;
@@ -107,14 +147,24 @@ export function DeliverableList({ deliverables, onRefresh }: DeliverableListProp
                   <p className="text-sm text-muted-foreground mt-1">{deliverable.description}</p>
                 )}
               </div>
-              <Button
-                variant="ghost"
-                size="icon"
-                className="text-muted-foreground hover:text-destructive shrink-0"
-                onClick={() => setDeleteId(deliverable.id)}
-              >
-                <Trash2 className="h-4 w-4" />
-              </Button>
+              <div className="flex items-center gap-1 shrink-0">
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="text-muted-foreground hover:text-primary"
+                  onClick={() => openEditDialog(deliverable)}
+                >
+                  <Pencil className="h-4 w-4" />
+                </Button>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="text-muted-foreground hover:text-destructive"
+                  onClick={() => setDeleteId(deliverable.id)}
+                >
+                  <Trash2 className="h-4 w-4" />
+                </Button>
+              </div>
             </div>
 
             <div className="flex items-center justify-between gap-2">
@@ -163,6 +213,44 @@ export function DeliverableList({ deliverables, onRefresh }: DeliverableListProp
         loading={isDeleting}
         destructive
       />
+
+      <Dialog open={!!editDeliverable} onOpenChange={(open) => !open && setEditDeliverable(null)}>
+        <DialogContent className="max-w-lg">
+          <DialogHeader>
+            <DialogTitle>{t('editDeliverable')}</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4">
+            <div className="space-y-2">
+              <label className="text-sm font-medium">{t('title')}</label>
+              <Input value={editTitle} onChange={(e) => setEditTitle(e.target.value)} />
+            </div>
+            <div className="space-y-2">
+              <label className="text-sm font-medium">{t('description')}</label>
+              <Textarea
+                value={editDescription}
+                onChange={(e) => setEditDescription(e.target.value)}
+                rows={3}
+              />
+            </div>
+            <div className="space-y-2">
+              <label className="text-sm font-medium">{t('videoUrl')}</label>
+              <Input
+                value={editFilePath}
+                onChange={(e) => setEditFilePath(e.target.value)}
+                placeholder="https://drive.google.com/..."
+              />
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setEditDeliverable(null)} disabled={isSaving}>
+              {t('cancel')}
+            </Button>
+            <Button onClick={handleEdit} disabled={isSaving || !editTitle.trim()}>
+              {isSaving ? t('saving') : t('save')}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </>
   );
 }

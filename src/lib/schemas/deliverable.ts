@@ -8,7 +8,10 @@ export const createDeliverableSchema = z.object({
   title: z.string().min(1, 'Title is required').max(255, 'Title must be at most 255 characters'),
   description: z.string().max(2000, 'Description must be at most 2000 characters').optional(),
   project_id: z.string().uuid('Invalid project ID'),
-  file_path: z.string().min(1, 'File path is required').max(2048, 'File path must be at most 2048 characters'),
+  file_path: z
+    .string()
+    .min(1, 'File path is required')
+    .max(2048, 'File path must be at most 2048 characters'),
   file_size: z.number().optional(),
   file_type: z.string().max(255, 'File type must be at most 255 characters').optional(),
 });
@@ -19,9 +22,15 @@ export type CreateDeliverableInput = z.infer<typeof createDeliverableSchema>;
  * Update deliverable schema validation (limited fields)
  */
 export const updateDeliverableSchema = z.object({
-  title: z.string().min(1, 'Title is required').max(255, 'Title must be at most 255 characters').optional(),
+  title: z
+    .string()
+    .min(1, 'Title is required')
+    .max(255, 'Title must be at most 255 characters')
+    .optional(),
   description: z.string().max(2000, 'Description must be at most 2000 characters').optional(),
   status: z.enum(DELIVERABLE_STATUSES).optional(),
+  file_path: z.string().min(1).max(2048, 'File path must be at most 2048 characters').optional(),
+  file_type: z.string().max(255, 'File type must be at most 255 characters').optional(),
 });
 
 export type UpdateDeliverableInput = z.infer<typeof updateDeliverableSchema>;
@@ -46,7 +55,10 @@ export type DeliverableResponse = z.infer<typeof deliverableResponseSchema>;
 export const createAnnotationSchema = z.object({
   deliverable_id: z.string().uuid('Invalid deliverable ID'),
   timestamp_seconds: z.number().min(0, 'Timestamp must be positive'),
-  content: z.string().min(1, 'Content is required').max(2000, 'Content must be at most 2000 characters'),
+  content: z
+    .string()
+    .min(1, 'Content is required')
+    .max(2000, 'Content must be at most 2000 characters'),
 });
 
 export type CreateAnnotationInput = z.infer<typeof createAnnotationSchema>;

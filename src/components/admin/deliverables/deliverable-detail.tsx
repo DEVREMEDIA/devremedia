@@ -128,24 +128,27 @@ export function DeliverableDetail({ deliverable, projectId, onBack }: Deliverabl
   };
 
   const handleDownload = async () => {
+    const path = deliverable.file_path;
+
+    // External URL — open directly
+    if (path.startsWith('http://') || path.startsWith('https://')) {
+      window.open(path, '_blank');
+      return;
+    }
+
+    // Supabase Storage file — use signed URL for private bucket
     try {
       const supabase = createClient();
       const { data, error } = await supabase.storage
         .from('deliverables')
-        .download(deliverable.file_path);
+        .createSignedUrl(path, 3600, { download: deliverable.title });
 
       if (error) throw error;
 
-      const url = URL.createObjectURL(data);
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = deliverable.title;
-      document.body.appendChild(a);
-      a.click();
-      document.body.removeChild(a);
-      URL.revokeObjectURL(url);
-
-      toast.success(t('downloadStarted'));
+      if (data?.signedUrl) {
+        window.open(data.signedUrl, '_blank');
+        toast.success(t('downloadStarted'));
+      }
     } catch (error: unknown) {
       console.error('Download error:', error);
       toast.error(t('failedToDownload'));

@@ -98,11 +98,8 @@ export default async function ClientDashboardPage() {
         activeProjectsCount={activeProjects.length}
         pendingActionsCount={pendingInvoices.length + unsignedContracts.length}
         upcomingFilmingsCount={
-          activeProjects.filter(
-            (p) =>
-              (p as { filming_date?: string }).filming_date &&
-              new Date((p as { filming_date?: string }).filming_date!) >= new Date(),
-          ).length
+          activeProjects.filter((p) => p.filming_date && new Date(p.filming_date) >= new Date())
+            .length
         }
       />
 

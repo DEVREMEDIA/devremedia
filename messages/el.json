@@ -573,6 +573,8 @@
     "startDate": "Ημ/νία Έναρξης",
     "endDate": "Ημ/νία Λήξης",
     "filmingDate": "Ημ/νία Γυρίσματος",
+    "filmingTime": "Ώρα Γυρίσματος",
+    "filmingLocation": "Τοποθεσία Γυρίσματος",
     "location": "Τοποθεσία",
     "budget": "Προϋπολογισμός",
     "noProjects": "Δεν υπάρχουν παραγωγές",
@@ -764,7 +766,18 @@
     "markAsUnpaid": "Σήμανση ως Μη Πληρωμένο",
     "total": "Σύνολο",
     "paid": "Πληρωμένα",
-    "outstanding": "Εκκρεμή"
+    "outstanding": "Εκκρεμή",
+    "searchInvoice": "Αναζήτηση τιμολογίου...",
+    "selectedCount": "{count} επιλεγμένα",
+    "deleteSelected": "Διαγραφή Επιλεγμένων",
+    "bulkStatusUpdated": "{count} τιμολόγια ενημερώθηκαν",
+    "bulkDeleted": "{count} τιμολόγια διαγράφηκαν",
+    "bulkDeleteTitle": "Διαγραφή Τιμολογίων",
+    "bulkDeleteConfirm": "Θέλετε να διαγράψετε {count} τιμολόγια; Η ενέργεια δεν μπορεί να αναιρεθεί.",
+    "delete": "Διαγραφή",
+    "status": "Κατάσταση",
+    "client": "Πελάτης",
+    "showing": "Εμφάνιση {from}-{to} από {total}"
   },
 
   "contracts": {
@@ -876,6 +889,8 @@
     "deliverableAdded": "Το παραδοτέο προστέθηκε επιτυχώς",
     "failedToAdd": "Αποτυχία προσθήκης παραδοτέου",
     "deliverableDeleted": "Το παραδοτέο διαγράφηκε",
+    "deliverableUpdated": "Το παραδοτέο ενημερώθηκε",
+    "videoUrl": "Link Βίντεο",
     "deleteDeliverableConfirm": "Αυτή η ενέργεια δεν μπορεί να αναιρεθεί.",
     "watchVideo": "Δείτε το Βίντεο",
     "delete": "Διαγραφή",
@@ -1037,7 +1052,11 @@
     "noteContentPlaceholder": "Ξεκινήστε να γράφετε τις σημειώσεις σας...",
     "newNote": "Νέα Σημείωση",
     "filmingPreparation": "Προετοιμασία Γυρισμάτων",
-    "manageFor": "Διαχείριση εξοπλισμού, shot list και concept notes για {project}"
+    "manageFor": "Διαχείριση εξοπλισμού, shot list και concept notes για {project}",
+    "assignTo": "Ανάθεση σε",
+    "selectTeamMember": "Επιλέξτε μέλος ομάδας",
+    "unassigned": "Χωρίς ανάθεση",
+    "assignedSuccessfully": "Η ανάθεση ενημερώθηκε"
   },
 
   "filmingRequests": {
@@ -1064,6 +1083,8 @@
     "notSpecified": "Δεν προσδιορίστηκε",
     "referenceLinks": "Σύνδεσμοι Αναφοράς",
     "dateNotSpecified": "Η ημ/νία δεν προσδιορίστηκε",
+    "available": "Διαθέσιμη",
+    "busy": "Κατειλημμένη",
     "location": "Τοποθεσία",
     "budgetRange": "Εύρος Προϋπολογισμού",
     "adminNotes": "Σημειώσεις Διαχειριστή",
@@ -1179,6 +1200,9 @@
     "eventTypeFilming": "Γύρισμα",
     "eventTypeDeadline": "Προθεσμία",
     "eventTypeCustom": "Προσαρμοσμένο",
+    "eventAssignedTo": "Αναθέτεται σε",
+    "selectAssignee": "Επιλέξτε άτομο...",
+    "unassigned": "Χωρίς ανάθεση",
     "createEventSuccess": "Το γεγονός δημιουργήθηκε",
     "updateEventSuccess": "Το γεγονός ενημερώθηκε",
     "deleteEventSuccess": "Το γεγονός διαγράφηκε",

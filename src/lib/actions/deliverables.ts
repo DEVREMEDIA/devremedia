@@ -1,7 +1,11 @@
 'use server';
 
 import { createClient } from '@/lib/supabase/server';
-import { createDeliverableSchema, createAnnotationSchema } from '@/lib/schemas/deliverable';
+import {
+  createDeliverableSchema,
+  createAnnotationSchema,
+  updateDeliverableSchema,
+} from '@/lib/schemas/deliverable';
 import type { ActionResult, Deliverable, VideoAnnotation } from '@/types/index';
 import type { DeliverableStatus } from '@/lib/constants';
 import { revalidatePath } from 'next/cache';
@@ -126,6 +130,73 @@ export async function createDeliverable(input: unknown): Promise<ActionResult<De
       return { data: null, error: error.message };
     }
     return { data: null, error: 'Failed to create deliverable' };
+  }
+}
+
+export async function updateDeliverable(
+  id: string,
+  input: unknown,
+): Promise<ActionResult<Deliverable>> {
+  try {
+    const validated = updateDeliverableSchema.parse(input);
+    const supabase = await createClient();
+
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
+    if (!user) return { data: null, error: 'Unauthorized' };
+
+    // If file_path changed, bump version
+    const updateData: Record<string, unknown> = { ...validated };
+    if (validated.file_path) {
+      const { data: current } = await supabase
+        .from('deliverables')
+        .select('version, project_id')
+        .eq('id', id)
+        .single();
+
+      if (current) {
+        updateData.version = current.version + 1;
+      }
+    }
+
+    const { data, error } = await supabase
+      .from('deliverables')
+      .update(updateData)
+      .eq('id', id)
+      .select(
+        'id, project_id, title, description, file_path, file_size, file_type, version, status, uploaded_by, download_count, expires_at, created_at',
+      )
+      .single();
+
+    if (error) return { data: null, error: error.message };
+
+    if (data?.project_id) {
+      revalidatePath(`/admin/projects/${data.project_id}`);
+      revalidatePath(`/client/projects/${data.project_id}`);
+      revalidatePath('/client/dashboard');
+
+      // Notify client about updated deliverable
+      if (validated.file_path) {
+        const clientUserId = await getClientUserIdFromProject(data.project_id);
+        if (clientUserId) {
+          createNotification({
+            userId: clientUserId,
+            type: NOTIFICATION_TYPES.DELIVERABLE_UPLOADED,
+            title: 'Deliverable updated with new version',
+            body: data.title,
+            actionUrl: `/client/projects/${data.project_id}`,
+          });
+        }
+      }
+    }
+
+    return { data, error: null };
+  } catch (error) {
+    if (error instanceof Error) {
+      return { data: null, error: error.message };
+    }
+    return { data: null, error: 'Failed to update deliverable' };
   }
 }
 

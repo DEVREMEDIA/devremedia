@@ -15,6 +15,7 @@ import {
   ExternalLink,
   FolderOpen,
   User,
+  UserCircle,
   Tag,
   Pencil,
   Trash2,
@@ -120,6 +121,8 @@ export function EventDialog({ event, open, onOpenChange, onEventMutated }: Event
     all_day: event.allDay ?? true,
     color: null,
     event_type: event.eventType ?? 'custom',
+    assigned_to: event.assignedTo ?? null,
+    project_id: event.projectId ?? null,
     created_by: '',
     created_at: '',
     updated_at: '',
@@ -172,6 +175,16 @@ export function EventDialog({ event, open, onOpenChange, onEventMutated }: Event
               <div className="flex items-center gap-3 text-sm">
                 <User className="h-4 w-4 shrink-0 text-muted-foreground" />
                 <span>{event.clientName}</span>
+              </div>
+            )}
+
+            {isCustom && event.eventType === 'filming' && event.assigneeName && (
+              <div className="flex items-center gap-3 text-sm">
+                <UserCircle className="h-4 w-4 shrink-0 text-muted-foreground" />
+                <span>
+                  <span className="text-muted-foreground">{t('eventAssignedTo')}: </span>
+                  <span className="font-medium">{event.assigneeName}</span>
+                </span>
               </div>
             )}
 

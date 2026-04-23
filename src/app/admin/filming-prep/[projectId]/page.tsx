@@ -1,4 +1,5 @@
 import { getProject } from '@/lib/actions/projects';
+import { getTeamMembers } from '@/lib/actions/team';
 import { notFound } from 'next/navigation';
 import { FilmingPrepContent } from './filming-prep-content';
 import type { Metadata } from 'next';
@@ -25,7 +26,7 @@ export async function generateMetadata({ params }: FilmingPrepPageProps): Promis
 
 export default async function FilmingPrepPage({ params }: FilmingPrepPageProps) {
   const { projectId } = await params;
-  const result = await getProject(projectId);
+  const [result, teamResult] = await Promise.all([getProject(projectId), getTeamMembers()]);
 
   if (result.error || !result.data) {
     notFound();
@@ -35,6 +36,8 @@ export default async function FilmingPrepPage({ params }: FilmingPrepPageProps) 
     <FilmingPrepContent
       projectId={projectId}
       projectTitle={result.data.title}
+      assignedTo={result.data.assigned_to}
+      teamMembers={teamResult.data ?? []}
     />
   );
 }

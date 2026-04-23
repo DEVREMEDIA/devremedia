@@ -9,7 +9,9 @@ import {
   type CreateCalendarEventInput,
 } from '@/lib/schemas/calendar-event';
 import { createCalendarEvent, updateCalendarEvent } from '@/lib/actions/calendar-events';
+import { getTeamMembers } from '@/lib/actions/team';
 import { CALENDAR_EVENT_TYPES } from '@/lib/constants';
+import type { UserProfile } from '@/types';
 import { Button } from '@/components/ui/button';
 import {
   Dialog,
@@ -30,6 +32,7 @@ import {
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Switch } from '@/components/ui/switch';
+import { DateTimePicker } from '@/components/ui/date-time-picker';
 import {
   Select,
   SelectContent,
@@ -60,6 +63,8 @@ export function CalendarEventForm({
   const t = useTranslations('calendar');
   const tc = useTranslations('common');
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [teamMembers, setTeamMembers] = useState<UserProfile[]>([]);
+  const [isLoadingTeam, setIsLoadingTeam] = useState(false);
   const isEditing = !!editEvent;
 
   const form = useForm<CreateCalendarEventInput>({
@@ -72,10 +77,41 @@ export function CalendarEventForm({
       all_day: true,
       color: '',
       event_type: 'custom',
+      assigned_to: null,
     },
   });
 
   const isAllDay = form.watch('all_day');
+  const watchedStartDate = form.watch('start_date');
+  const watchedEventType = form.watch('event_type');
+  const isFilming = watchedEventType === 'filming';
+
+  // Lazy-load team members the first time a filming event is selected.
+  useEffect(() => {
+    if (!isFilming || teamMembers.length > 0 || isLoadingTeam) return;
+    setIsLoadingTeam(true);
+    getTeamMembers()
+      .then((result) => {
+        if (!result.error && result.data) {
+          setTeamMembers(
+            result.data.filter(
+              (m) => m.role === 'employee' || m.role === 'admin' || m.role === 'super_admin',
+            ),
+          );
+        }
+      })
+      .finally(() => setIsLoadingTeam(false));
+  }, [isFilming, teamMembers.length, isLoadingTeam]);
+
+  // Auto-copy start_date to end_date when start changes and end is empty or matches previous start
+  useEffect(() => {
+    if (!watchedStartDate) return;
+    const currentEnd = form.getValues('end_date');
+    if (!currentEnd) {
+      form.setValue('end_date', watchedStartDate);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [watchedStartDate]);
 
   // Convert UTC ISO string to local datetime-local format (YYYY-MM-DDTHH:mm)
   const utcToLocal = (utcStr: string) => {
@@ -104,6 +140,7 @@ export function CalendarEventForm({
         all_day: editEvent.all_day,
         color: editEvent.color ?? '',
         event_type: editEvent.event_type,
+        assigned_to: editEvent.assigned_to ?? null,
       });
     } else {
       form.reset({
@@ -114,6 +151,7 @@ export function CalendarEventForm({
         all_day: true,
         color: '',
         event_type: 'custom',
+        assigned_to: null,
       });
     }
   }, [editEvent, defaultDate, form]);
@@ -135,6 +173,8 @@ export function CalendarEventForm({
       end_date: data.end_date ? (data.all_day ? data.end_date : toUtc(data.end_date)) : null,
       color: data.color || null,
       description: data.description || null,
+      // Only persist assignment for filming-type events; clear it otherwise.
+      assigned_to: data.event_type === 'filming' ? data.assigned_to || null : null,
     };
 
     const result = isEditing
@@ -218,7 +258,42 @@ export function CalendarEventForm({
               )}
             />
 
-            <div className="grid grid-cols-2 gap-4">
+            {isFilming && (
+              <FormField
+                control={form.control}
+                name="assigned_to"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>{t('eventAssignedTo')}</FormLabel>
+                    <Select
+                      onValueChange={(v) => field.onChange(v === '__none__' ? null : v)}
+                      value={field.value ?? '__none__'}
+                      disabled={isLoadingTeam}
+                    >
+                      <FormControl>
+                        <SelectTrigger>
+                          <SelectValue
+                            placeholder={isLoadingTeam ? tc('loading') : t('selectAssignee')}
+                          />
+                        </SelectTrigger>
+                      </FormControl>
+                      <SelectContent>
+                        <SelectItem value="__none__">{t('unassigned')}</SelectItem>
+                        {teamMembers.map((m) => (
+                          <SelectItem key={m.id} value={m.id}>
+                            {m.display_name ?? m.id.slice(0, 8)}
+                            {m.role !== 'employee' ? ` (${m.role})` : ''}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            )}
+
+            <div className="space-y-4">
               <FormField
                 control={form.control}
                 name="start_date"
@@ -226,7 +301,11 @@ export function CalendarEventForm({
                   <FormItem>
                     <FormLabel>{t('eventStartDate')}</FormLabel>
                     <FormControl>
-                      <Input type={isAllDay ? 'date' : 'datetime-local'} {...field} />
+                      <DateTimePicker
+                        mode={isAllDay ? 'date' : 'datetime'}
+                        value={field.value}
+                        onChange={field.onChange}
+                      />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -240,10 +319,10 @@ export function CalendarEventForm({
                   <FormItem>
                     <FormLabel>{t('eventEndDate')}</FormLabel>
                     <FormControl>
-                      <Input
-                        type={isAllDay ? 'date' : 'datetime-local'}
-                        {...field}
-                        value={field.value ?? ''}
+                      <DateTimePicker
+                        mode={isAllDay ? 'date' : 'datetime'}
+                        value={field.value}
+                        onChange={field.onChange}
                       />
                     </FormControl>
                     <FormMessage />

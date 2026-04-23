@@ -61,6 +61,9 @@ export type Project = {
   deadline: string | null;
   start_date: string | null;
   assigned_to: string | null;
+  filming_date: string | null;
+  filming_time: string | null;
+  location: string | null;
   created_at: string;
   updated_at: string;
 };
@@ -408,6 +411,8 @@ export type CalendarEventRecord = {
   all_day: boolean;
   color: string | null;
   event_type: CalendarEventType;
+  assigned_to: string | null;
+  project_id: string | null;
   created_by: string;
   created_at: string;
   updated_at: string;

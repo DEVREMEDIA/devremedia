@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
@@ -50,6 +50,23 @@ export function FilmingRequestDetail({ request }: FilmingRequestDetailProps) {
   const [reviewDialogOpen, setReviewDialogOpen] = useState(false);
   const [reviewStatus, setReviewStatus] = useState<'accepted' | 'declined'>('accepted');
   const [convertDialogOpen, setConvertDialogOpen] = useState(false);
+  const [availability, setAvailability] = useState<Record<string, boolean>>({});
+
+  useEffect(() => {
+    const dates = request.preferred_dates?.map((d) => d.date).filter((d): d is string => !!d) ?? [];
+
+    dates.forEach(async (date) => {
+      try {
+        const res = await fetch(`/api/calendar/availability?date=${date}`);
+        if (res.ok) {
+          const data = await res.json();
+          setAvailability((prev) => ({ ...prev, [date]: data.available }));
+        }
+      } catch {
+        // Silently skip — indicator just won't show
+      }
+    });
+  }, [request.preferred_dates]);
 
   const handleReview = async (status: 'accepted' | 'declined') => {
     setLoading(true);
@@ -267,12 +284,28 @@ export function FilmingRequestDetail({ request }: FilmingRequestDetailProps) {
                 {request.preferred_dates.map((dateInfo, index) => (
                   <div key={index} className="flex items-center gap-2 text-sm p-2 border rounded">
                     <Check className="h-4 w-4 text-muted-foreground" />
-                    <span>
+                    <span className="flex-1">
                       {dateInfo.date
                         ? format(new Date(dateInfo.date), 'MMMM d, yyyy')
                         : t('dateNotSpecified')}
                       {dateInfo.time_slot && ` - ${dateInfo.time_slot}`}
                     </span>
+                    {dateInfo.date && availability[dateInfo.date] !== undefined && (
+                      <span
+                        className={`inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-xs font-medium ${
+                          availability[dateInfo.date]
+                            ? 'bg-green-500/10 text-green-700 dark:text-green-400'
+                            : 'bg-red-500/10 text-red-700 dark:text-red-400'
+                        }`}
+                      >
+                        <span
+                          className={`h-1.5 w-1.5 rounded-full ${
+                            availability[dateInfo.date] ? 'bg-green-500' : 'bg-red-500'
+                          }`}
+                        />
+                        {availability[dateInfo.date] ? t('available') : t('busy')}
+                      </span>
+                    )}
                   </div>
                 ))}
               </div>

@@ -7,14 +7,8 @@ import { useTranslations } from 'next-intl';
 import { cn } from '@/lib/utils';
 import type { ProjectWithClient } from '@/types';
 
-type ProjectWithExtras = ProjectWithClient & {
-  filming_date?: string;
-  filming_time?: string;
-  location?: string;
-};
-
 interface UpcomingFilmingsProps {
-  projects: ProjectWithExtras[];
+  projects: ProjectWithClient[];
 }
 
 export function UpcomingFilmings({ projects }: UpcomingFilmingsProps) {
