@@ -173,7 +173,10 @@
     "collapseSidebar": "Σύμπτυξη πλευρικής μπάρας",
     "chatbot": "AI Chatbot",
     "toggleMenu": "Εναλλαγή μενού",
-    "users": "Χρήστες"
+    "users": "Χρήστες",
+    "costModel": "Μοντέλο Κόστους",
+    "pricingHealth": "Υγεία Τιμολόγησης",
+    "proposals": "Προσφορές"
   },
 
   "users": {
@@ -2133,5 +2136,190 @@
       "legalNav": "Νομικές πληροφορίες"
     },
     "skipToContent": "Μετάβαση στο κύριο περιεχόμενο"
+  },
+
+  "costModel": {
+    "title": "Μοντέλο Κόστους",
+    "description": "Ορίστε εργαζόμενους, πάγια κόστη και συντελεστές. Όλα δυναμικά.",
+    "tabs": {
+      "items": "Γραμμές Κόστους",
+      "categories": "Κατηγορίες",
+      "settings": "Ρυθμίσεις",
+      "summary": "Σύνοψη"
+    },
+    "summary": {
+      "totalMonthlyCost": "Συνολικό Μηνιαίο Κόστος",
+      "expectedHours": "Αναμενόμενες Ώρες/Μήνα",
+      "costPerHour": "Κόστος ανά Ώρα",
+      "byCategory": "Ανά Κατηγορία",
+      "noData": "Δεν υπάρχουν δεδομένα — προσθέστε γραμμές κόστους."
+    },
+    "item": {
+      "category": "Κατηγορία",
+      "subcategory": "Υποκατηγορία",
+      "descriptionField": "Περιγραφή",
+      "monthlyCost": "Μηνιαίο Κόστος (€)",
+      "comments": "Σχόλια",
+      "active": "Ενεργό",
+      "sortOrder": "Σειρά",
+      "addItem": "Προσθήκη Γραμμής",
+      "editItem": "Επεξεργασία Γραμμής",
+      "deleteItem": "Διαγραφή Γραμμής",
+      "deleteConfirm": "Σίγουρα θέλετε να διαγράψετε αυτή τη γραμμή;",
+      "noItems": "Καμία γραμμή",
+      "subcategoryPlaceholder": "π.χ. Μισθός, Bonus, Freelancers",
+      "descriptionPlaceholder": "π.χ. Χριστίνα Τσατσά, Internet"
+    },
+    "category": {
+      "name": "Όνομα Κατηγορίας",
+      "addCategory": "Προσθήκη Κατηγορίας",
+      "editCategory": "Επεξεργασία Κατηγορίας",
+      "deleteCategory": "Διαγραφή Κατηγορίας",
+      "deleteConfirm": "Σίγουρα θέλετε να διαγράψετε αυτή την κατηγορία;",
+      "noCategories": "Καμία κατηγορία — προσθέστε μία.",
+      "itemsCount": "Γραμμές"
+    },
+    "settings": {
+      "expectedMonthlyHours": "Αναμενόμενες Παραγωγικές Ώρες/Μήνα",
+      "expectedMonthlyHoursHelp": "Πόσες ώρες εργασίας υπολογίζετε ανά μήνα (π.χ. 352).",
+      "defaultMargin": "Default Περιθώριο Κέρδους",
+      "defaultMarginHelp": "Χρησιμοποιείται στην προτεινόμενη τιμή των projects.",
+      "priceMin": "Πολλαπλασιαστής Min",
+      "priceTarget": "Πολλαπλασιαστής Target",
+      "priceMax": "Πολλαπλασιαστής Max",
+      "priceMultipliersHelp": "Χρησιμοποιούνται για το εύρος τιμών στο pricing health dashboard.",
+      "discountFirstMonths": "Μήνες Έκπτωσης Γνωριμίας",
+      "discountFirstPercent": "% Έκπτωσης Γνωριμίας",
+      "vatPercent": "% ΦΠΑ",
+      "depositPercent": "% Προκαταβολής",
+      "saveSuccess": "Οι ρυθμίσεις αποθηκεύτηκαν",
+      "saveError": "Αποτυχία αποθήκευσης"
+    }
+  },
+
+  "proposals": {
+    "title": "Προσφορές",
+    "description": "Δημιουργήστε και διαχειριστείτε προσφορές για leads και πελάτες.",
+    "list": {
+      "addProposal": "Νέα Προσφορά",
+      "empty": "Δεν υπάρχουν προσφορές ακόμα."
+    },
+    "status": {
+      "draft": "Πρόχειρο",
+      "sent": "Απεσταλμένη",
+      "accepted": "Αποδεκτή",
+      "rejected": "Απορρίφθηκε",
+      "expired": "Έληξε"
+    },
+    "form": {
+      "basics": "Βασικά Στοιχεία",
+      "content": "Περιεχόμενο Προσφοράς",
+      "packages": "Πακέτα",
+      "pricing": "Τιμολόγηση & Όροι",
+      "clientName": "Όνομα Πελάτη (για το PDF)",
+      "clientNameHelp": "Εμφανίζεται στο εξώφυλλο και στο σώμα της προσφοράς.",
+      "competitiveAdvantage": "Ανταγωνιστικό Πλεονέκτημα",
+      "competitiveAdvantageHelp": "π.χ. «ποιότητα», «ταχύτητα εξυπηρέτησης»",
+      "clientNeed": "Ανάγκη Πελάτη",
+      "clientNeedHelp": "Προαιρετική, εμφανίζεται στη στρατηγική σελίδα.",
+      "linkLead": "Σύνδεση με Lead",
+      "linkClient": "Σύνδεση με Πελάτη",
+      "selectPackages": "Επιλέξτε πακέτα",
+      "noPackagesYet": "Δεν υπάρχουν πακέτα. Δημιουργήστε πρώτα πακέτα.",
+      "priceOverride": "Override τιμής (€)",
+      "priceOverrideHelp": "Άφησε κενό για χρήση της υπολογιζόμενης τιμής.",
+      "includeDiscount": "Περιλαμβάνει σελίδα έκπτωσης γνωριμίας (-10%)",
+      "validUntil": "Ισχύει έως",
+      "locale": "Γλώσσα PDF",
+      "notes": "Εσωτερικές Σημειώσεις",
+      "saveDraft": "Αποθήκευση Πρόχειρου",
+      "saveSuccess": "Αποθηκεύτηκε",
+      "saveError": "Αποτυχία αποθήκευσης"
+    },
+    "actions": {
+      "downloadPdf": "Λήψη PDF",
+      "previewPdf": "Προεπισκόπηση PDF",
+      "markSent": "Σημείωση ως Απεσταλμένη",
+      "markAccepted": "Αποδεκτή",
+      "markRejected": "Απορρίφθηκε",
+      "delete": "Διαγραφή",
+      "deleteConfirm": "Σίγουρα θέλετε να διαγράψετε αυτή την προσφορά;"
+    }
+  },
+
+  "proposalPackages": {
+    "title": "Πακέτα Προσφορών",
+    "description": "Διαχείριση των πακέτων (Pack A/B/C...) που χρησιμοποιούνται στις προσφορές.",
+    "addPackage": "Νέο Πακέτο",
+    "editPackage": "Επεξεργασία Πακέτου",
+    "deleteConfirm": "Σίγουρα θέλετε να διαγράψετε αυτό το πακέτο;",
+    "empty": "Δεν υπάρχουν πακέτα ακόμα.",
+    "form": {
+      "name": "Όνομα",
+      "videoCount": "Αριθμός Videos",
+      "shootingDays": "Ημέρες Γυρίσματος",
+      "shootingHours": "Ώρες Γυρίσματος",
+      "editingHours": "Ώρες Μοντάζ",
+      "priceMode": "Τρόπος Τιμής",
+      "priceModeManual": "Manual (σταθερή)",
+      "priceModeAuto": "Auto (cost × margin)",
+      "manualPrice": "Τιμή (€)",
+      "description": "Περιγραφή",
+      "inclusions": "Τι περιλαμβάνει (μία γραμμή ανά σημείο)",
+      "inclusionsPlaceholder": "2 ημέρες γυρίσματα\n8 ready to use videos",
+      "sortOrder": "Σειρά",
+      "active": "Ενεργό",
+      "computedCost": "Υπολογιζόμενο Κόστος",
+      "computedPrice": "Υπολογιζόμενη Τιμή"
+    }
+  },
+
+  "pricingHealth": {
+    "title": "Υγεία Τιμολόγησης",
+    "description": "Αναλυτική εικόνα τιμών ανά project. Σύγκριση πραγματικής τιμής με το εύρος min / target / max.",
+    "kpis": {
+      "totalProjects": "Σύνολο Projects",
+      "analysed": "Με Ανάλυση",
+      "totalQuoted": "Σύνολο Χρεώσεων",
+      "totalCost": "Σύνολο Κόστους",
+      "totalProfit": "Σύνολο Κέρδους",
+      "leftOnTable": "Χαμένα Έσοδα"
+    },
+    "status": {
+      "loss": "Ζημιά",
+      "underpriced": "Underpriced",
+      "healthy": "Υγιές",
+      "premium": "Premium",
+      "unpriced": "Χωρίς ανάλυση"
+    },
+    "table": {
+      "project": "Project",
+      "client": "Πελάτης",
+      "hours": "Ώρες",
+      "cost": "Κόστος",
+      "range": "Εύρος (min / target / max)",
+      "quoted": "Χρέωση",
+      "deltaVsTarget": "Δ vs Target",
+      "profit": "Κέρδος",
+      "status": "Κατάσταση",
+      "noData": "Δεν υπάρχουν projects ακόμα."
+    },
+    "edit": {
+      "title": "Ανάλυση Τιμολόγησης",
+      "shootingHours": "Ώρες Γυρισμάτων",
+      "editingHours": "Ώρες Μοντάζ",
+      "totalHours": "Συνολικές Ώρες",
+      "costPerHour": "Κόστος/Ώρα",
+      "quotedPrice": "Τιμή Χρέωσης (€)",
+      "totalCost": "Συνολικό Κόστος",
+      "minPrice": "Min",
+      "targetPrice": "Target",
+      "maxPrice": "Max",
+      "snapshot": "Snapshot",
+      "snapshotNote": "Το κόστος/ώρα παγώνει την πρώτη φορά — δεν αλλάζει όταν αλλάζετε το cost model μετά.",
+      "resetSnapshot": "Επαναφορά snapshot",
+      "saveSuccess": "Αποθηκεύτηκε",
+      "saveError": "Αποτυχία αποθήκευσης"
+    }
   }
 }

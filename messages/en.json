@@ -173,7 +173,10 @@
     "collapseSidebar": "Collapse sidebar",
     "chatbot": "AI Chatbot",
     "toggleMenu": "Toggle menu",
-    "users": "Users"
+    "users": "Users",
+    "costModel": "Cost Model",
+    "pricingHealth": "Pricing Health",
+    "proposals": "Proposals"
   },
 
   "users": {
@@ -2133,5 +2136,190 @@
       "legalNav": "Legal information"
     },
     "skipToContent": "Skip to main content"
+  },
+
+  "costModel": {
+    "title": "Cost Model",
+    "description": "Set employees, fixed costs and coefficients. Fully dynamic.",
+    "tabs": {
+      "items": "Cost Items",
+      "categories": "Categories",
+      "settings": "Settings",
+      "summary": "Summary"
+    },
+    "summary": {
+      "totalMonthlyCost": "Total Monthly Cost",
+      "expectedHours": "Expected Hours / Month",
+      "costPerHour": "Cost per Hour",
+      "byCategory": "By Category",
+      "noData": "No data — add some cost items first."
+    },
+    "item": {
+      "category": "Category",
+      "subcategory": "Subcategory",
+      "descriptionField": "Description",
+      "monthlyCost": "Monthly Cost (€)",
+      "comments": "Comments",
+      "active": "Active",
+      "sortOrder": "Order",
+      "addItem": "Add Item",
+      "editItem": "Edit Item",
+      "deleteItem": "Delete Item",
+      "deleteConfirm": "Are you sure you want to delete this item?",
+      "noItems": "No items",
+      "subcategoryPlaceholder": "e.g. Salary, Bonus, Freelancers",
+      "descriptionPlaceholder": "e.g. Christina Tsatsa, Internet"
+    },
+    "category": {
+      "name": "Category Name",
+      "addCategory": "Add Category",
+      "editCategory": "Edit Category",
+      "deleteCategory": "Delete Category",
+      "deleteConfirm": "Are you sure you want to delete this category?",
+      "noCategories": "No categories — add one.",
+      "itemsCount": "Items"
+    },
+    "settings": {
+      "expectedMonthlyHours": "Expected Productive Hours / Month",
+      "expectedMonthlyHoursHelp": "How many work hours you plan per month (e.g. 352).",
+      "defaultMargin": "Default Profit Margin",
+      "defaultMarginHelp": "Used in project suggested price.",
+      "priceMin": "Min Multiplier",
+      "priceTarget": "Target Multiplier",
+      "priceMax": "Max Multiplier",
+      "priceMultipliersHelp": "Used for the price range in the pricing health dashboard.",
+      "discountFirstMonths": "Introductory Discount Months",
+      "discountFirstPercent": "Introductory Discount %",
+      "vatPercent": "VAT %",
+      "depositPercent": "Deposit %",
+      "saveSuccess": "Settings saved",
+      "saveError": "Failed to save"
+    }
+  },
+
+  "proposals": {
+    "title": "Proposals",
+    "description": "Create and manage proposals for leads and clients.",
+    "list": {
+      "addProposal": "New Proposal",
+      "empty": "No proposals yet."
+    },
+    "status": {
+      "draft": "Draft",
+      "sent": "Sent",
+      "accepted": "Accepted",
+      "rejected": "Rejected",
+      "expired": "Expired"
+    },
+    "form": {
+      "basics": "Basics",
+      "content": "Proposal Content",
+      "packages": "Packages",
+      "pricing": "Pricing & Terms",
+      "clientName": "Client Name (for PDF)",
+      "clientNameHelp": "Shown on the cover and body of the proposal.",
+      "competitiveAdvantage": "Competitive Advantage",
+      "competitiveAdvantageHelp": "e.g. 'quality', 'speed of service'",
+      "clientNeed": "Client Need",
+      "clientNeedHelp": "Optional — shown on the strategy page.",
+      "linkLead": "Link to Lead",
+      "linkClient": "Link to Client",
+      "selectPackages": "Select packages",
+      "noPackagesYet": "No packages yet. Create packages first.",
+      "priceOverride": "Price override (€)",
+      "priceOverrideHelp": "Leave empty to use the computed price.",
+      "includeDiscount": "Include intro-discount page (-10%)",
+      "validUntil": "Valid Until",
+      "locale": "PDF Language",
+      "notes": "Internal Notes",
+      "saveDraft": "Save Draft",
+      "saveSuccess": "Saved",
+      "saveError": "Failed to save"
+    },
+    "actions": {
+      "downloadPdf": "Download PDF",
+      "previewPdf": "Preview PDF",
+      "markSent": "Mark as Sent",
+      "markAccepted": "Accepted",
+      "markRejected": "Rejected",
+      "delete": "Delete",
+      "deleteConfirm": "Are you sure you want to delete this proposal?"
+    }
+  },
+
+  "proposalPackages": {
+    "title": "Proposal Packages",
+    "description": "Manage the packages (Pack A/B/C...) used in proposals.",
+    "addPackage": "New Package",
+    "editPackage": "Edit Package",
+    "deleteConfirm": "Are you sure you want to delete this package?",
+    "empty": "No packages yet.",
+    "form": {
+      "name": "Name",
+      "videoCount": "Video Count",
+      "shootingDays": "Shooting Days",
+      "shootingHours": "Shooting Hours",
+      "editingHours": "Editing Hours",
+      "priceMode": "Price Mode",
+      "priceModeManual": "Manual (fixed)",
+      "priceModeAuto": "Auto (cost × margin)",
+      "manualPrice": "Price (€)",
+      "description": "Description",
+      "inclusions": "Inclusions (one line per bullet)",
+      "inclusionsPlaceholder": "2 shooting days\n8 ready to use videos",
+      "sortOrder": "Order",
+      "active": "Active",
+      "computedCost": "Computed Cost",
+      "computedPrice": "Computed Price"
+    }
+  },
+
+  "pricingHealth": {
+    "title": "Pricing Health",
+    "description": "Per-project price analysis. Compare actual price against min / target / max range.",
+    "kpis": {
+      "totalProjects": "Total Projects",
+      "analysed": "Analysed",
+      "totalQuoted": "Total Quoted",
+      "totalCost": "Total Cost",
+      "totalProfit": "Total Profit",
+      "leftOnTable": "Left on Table"
+    },
+    "status": {
+      "loss": "Loss",
+      "underpriced": "Underpriced",
+      "healthy": "Healthy",
+      "premium": "Premium",
+      "unpriced": "Unpriced"
+    },
+    "table": {
+      "project": "Project",
+      "client": "Client",
+      "hours": "Hours",
+      "cost": "Cost",
+      "range": "Range (min / target / max)",
+      "quoted": "Quoted",
+      "deltaVsTarget": "Δ vs Target",
+      "profit": "Profit",
+      "status": "Status",
+      "noData": "No projects yet."
+    },
+    "edit": {
+      "title": "Pricing Analysis",
+      "shootingHours": "Shooting Hours",
+      "editingHours": "Editing Hours",
+      "totalHours": "Total Hours",
+      "costPerHour": "Cost/Hour",
+      "quotedPrice": "Quoted Price (€)",
+      "totalCost": "Total Cost",
+      "minPrice": "Min",
+      "targetPrice": "Target",
+      "maxPrice": "Max",
+      "snapshot": "Snapshot",
+      "snapshotNote": "Cost/hour is frozen on first save — it does not shift if you edit the cost model later.",
+      "resetSnapshot": "Reset snapshot",
+      "saveSuccess": "Saved",
+      "saveError": "Failed to save"
+    }
   }
 }

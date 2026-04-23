@@ -64,8 +64,113 @@ export type Project = {
   filming_date: string | null;
   filming_time: string | null;
   location: string | null;
+  shooting_hours: number | null;
+  editing_hours: number | null;
+  cost_per_hour_snapshot: number | null;
+  quoted_price: number | null;
   created_at: string;
   updated_at: string;
+};
+
+// Derived pricing analysis for a project (computed server-side)
+export type PricingHealthStatus =
+  | 'loss' // actual < cost  → losing money
+  | 'underpriced' // cost ≤ actual < min_price
+  | 'healthy' // min_price ≤ actual ≤ max_price
+  | 'premium' // actual > max_price
+  | 'unpriced'; // missing hours or price
+
+export type ProjectPricingAnalysis = {
+  project_id: string;
+  client_id: string | null;
+  client_name: string | null;
+  project_title: string;
+  project_status: ProjectStatus;
+  shooting_hours: number | null;
+  editing_hours: number | null;
+  total_hours: number;
+  cost_per_hour: number; // snapshot if set, else live
+  has_snapshot: boolean; // true if cost_per_hour_snapshot is frozen
+  total_cost: number;
+  min_price: number;
+  target_price: number;
+  max_price: number;
+  quoted_price: number | null;
+  delta_vs_target: number | null; // quoted - target (null if no quote)
+  profit_loss: number | null; // quoted - cost (null if no quote)
+  status: PricingHealthStatus;
+};
+
+// =====================================================================
+// Proposals — dynamic packages + per-lead/client offers
+// =====================================================================
+
+export type ProposalPackage = {
+  id: string;
+  name: string;
+  video_count: number | null;
+  shooting_days: number | null;
+  shooting_hours: number;
+  editing_hours: number;
+  price_mode: 'manual' | 'auto';
+  manual_price: number | null;
+  description: string | null;
+  inclusions: string[];
+  sort_order: number;
+  active: boolean;
+  created_at: string;
+  updated_at: string;
+};
+
+// Computed price (after considering manual vs auto, and any override)
+export type ProposalPackageWithPrice = ProposalPackage & {
+  computed_price: number;
+  computed_cost: number;
+};
+
+export type ProposalStatus = 'draft' | 'sent' | 'accepted' | 'rejected' | 'expired';
+
+export type ProposalSelectedPackage = {
+  package_id: string;
+  price_override?: number | null;
+  label_override?: string | null;
+};
+
+export type Proposal = {
+  id: string;
+  lead_id: string | null;
+  client_id: string | null;
+  status: ProposalStatus;
+  client_name: string;
+  competitive_advantage: string | null;
+  client_need: string | null;
+  selected_packages: ProposalSelectedPackage[];
+  include_discount: boolean;
+  valid_until: string | null;
+  pdf_path: string | null;
+  notes: string | null;
+  locale: 'el' | 'en';
+  sent_at: string | null;
+  responded_at: string | null;
+  created_by: string | null;
+  created_at: string;
+  updated_at: string;
+};
+
+export type ProposalWithRelations = Proposal & {
+  lead: { id: string; company_name: string | null; contact_name: string | null } | null;
+  client: { id: string; company_name: string | null; contact_name: string | null } | null;
+};
+
+export type PricingHealthSummary = {
+  total_projects: number;
+  analysed: number; // with hours+quote set
+  by_status: Record<PricingHealthStatus, number>;
+  total_quoted: number;
+  total_cost: number;
+  total_profit: number;
+  total_left_on_table: number; // Σ(target - quoted) for underpriced
+  projects: ProjectPricingAnalysis[];
 };
 
 export type Task = {
@@ -493,4 +598,64 @@ export type EmailLog = {
   error_message: string | null;
   metadata: Record<string, unknown>;
   created_at: string;
+};
+
+// =====================================================================
+// Cost Model — fully dynamic (admin can add/edit/delete anything)
+// =====================================================================
+
+export type CostCategory = {
+  id: string;
+  name: string;
+  sort_order: number;
+  active: boolean;
+  created_at: string;
+  updated_at: string;
+};
+
+export type CostItem = {
+  id: string;
+  category_id: string;
+  subcategory: string | null;
+  description: string | null;
+  monthly_cost: number;
+  comments: string | null;
+  sort_order: number;
+  active: boolean;
+  created_at: string;
+  updated_at: string;
+  created_by: string | null;
+  updated_by: string | null;
+};
+
+export type CostItemWithCategory = CostItem & {
+  category: Pick<CostCategory, 'id' | 'name' | 'sort_order'>;
+};
+
+export type CostSettings = {
+  id: 1;
+  expected_monthly_hours: number;
+  default_margin: number;
+  price_min_multiplier: number;
+  price_target_multiplier: number;
+  price_max_multiplier: number;
+  discount_first_months: number;
+  discount_first_percent: number;
+  vat_percent: number;
+  deposit_percent: number;
+  updated_at: string;
+  updated_by: string | null;
+};
+
+// Derived summary shown in the dashboard
+export type CostSummary = {
+  total_monthly_cost: number;
+  expected_monthly_hours: number;
+  cost_per_hour: number;
+  by_category: {
+    category_id: string;
+    category_name: string;
+    total: number;
+    percent: number;
+  }[];
 };

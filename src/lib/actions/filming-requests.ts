@@ -337,7 +337,7 @@ export async function convertToProject(id: string): Promise<ActionResult<Project
         location: request.location,
       })
       .select(
-        'id, client_id, title, description, project_type, status, priority, budget, deadline, start_date, assigned_to, filming_date, filming_time, location, created_at, updated_at',
+        'id, client_id, title, description, project_type, status, priority, budget, deadline, start_date, assigned_to, filming_date, filming_time, location, shooting_hours, editing_hours, cost_per_hour_snapshot, quoted_price, created_at, updated_at',
       )
       .single();
 

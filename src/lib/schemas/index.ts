@@ -34,3 +34,9 @@ export * from './filming-prep';
 
 // Expense schemas
 export * from './expense';
+
+// Cost model schemas
+export * from './cost-model';
+
+// Proposal schemas
+export * from './proposal';
