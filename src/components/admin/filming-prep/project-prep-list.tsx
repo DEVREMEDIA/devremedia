@@ -9,13 +9,12 @@ import { format } from 'date-fns';
 import { useTranslations } from 'next-intl';
 import type { Project } from '@/types';
 
-type ProjectWithFilmingDate = Project & {
-  filming_date?: string | null;
+type ProjectWithClient = Project & {
   client?: { contact_name?: string; company_name?: string | null } | null;
 };
 
 interface ProjectPrepListProps {
-  projects: ProjectWithFilmingDate[];
+  projects: ProjectWithClient[];
 }
 
 export function ProjectPrepList({ projects }: ProjectPrepListProps) {
