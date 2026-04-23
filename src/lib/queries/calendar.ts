@@ -19,6 +19,7 @@ export type CalendarEvent = {
   description?: string;
   eventType?: CalendarEventType;
   assignedTo?: string | null;
+  assigneeName?: string | null;
 };
 
 export async function getCalendarEvents(): Promise<CalendarEvent[]> {
@@ -118,6 +119,24 @@ export async function getCalendarEvents(): Promise<CalendarEvent[]> {
     }
 
     if (!customResult.error && customResult.data) {
+      // Collect unique assignee IDs to fetch display names in a single query.
+      const assigneeIds = Array.from(
+        new Set(
+          customResult.data.map((ce) => ce.assigned_to).filter((id): id is string => Boolean(id)),
+        ),
+      );
+
+      let assigneeMap = new Map<string, string | null>();
+      if (assigneeIds.length > 0) {
+        const { data: profiles } = await supabase
+          .from('user_profiles')
+          .select('id, display_name')
+          .in('id', assigneeIds);
+        if (profiles) {
+          assigneeMap = new Map(profiles.map((p) => [p.id, p.display_name]));
+        }
+      }
+
       customResult.data.forEach((ce) => {
         const evtType = ce.event_type as CalendarEventType;
         events.push({
@@ -132,6 +151,7 @@ export async function getCalendarEvents(): Promise<CalendarEvent[]> {
           description: ce.description ?? undefined,
           eventType: evtType,
           assignedTo: ce.assigned_to ?? null,
+          assigneeName: ce.assigned_to ? (assigneeMap.get(ce.assigned_to) ?? null) : null,
         });
       });
     }

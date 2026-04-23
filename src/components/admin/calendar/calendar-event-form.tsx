@@ -32,6 +32,7 @@ import {
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Switch } from '@/components/ui/switch';
+import { DateTimePicker } from '@/components/ui/date-time-picker';
 import {
   Select,
   SelectContent,
@@ -292,7 +293,7 @@ export function CalendarEventForm({
               />
             )}
 
-            <div className="grid grid-cols-2 gap-4">
+            <div className="space-y-4">
               <FormField
                 control={form.control}
                 name="start_date"
@@ -300,10 +301,10 @@ export function CalendarEventForm({
                   <FormItem>
                     <FormLabel>{t('eventStartDate')}</FormLabel>
                     <FormControl>
-                      <Input
-                        type={isAllDay ? 'date' : 'datetime-local'}
-                        step={isAllDay ? undefined : 900}
-                        {...field}
+                      <DateTimePicker
+                        mode={isAllDay ? 'date' : 'datetime'}
+                        value={field.value}
+                        onChange={field.onChange}
                       />
                     </FormControl>
                     <FormMessage />
@@ -318,11 +319,10 @@ export function CalendarEventForm({
                   <FormItem>
                     <FormLabel>{t('eventEndDate')}</FormLabel>
                     <FormControl>
-                      <Input
-                        type={isAllDay ? 'date' : 'datetime-local'}
-                        step={isAllDay ? undefined : 900}
-                        {...field}
-                        value={field.value ?? ''}
+                      <DateTimePicker
+                        mode={isAllDay ? 'date' : 'datetime'}
+                        value={field.value}
+                        onChange={field.onChange}
                       />
                     </FormControl>
                     <FormMessage />
