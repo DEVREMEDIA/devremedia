@@ -14,13 +14,8 @@ import { DeliverablesTab } from '@/components/client/projects/deliverables-tab';
 import { ContractsTab } from '@/components/client/projects/contracts-tab';
 import type { ProjectWithClient, Deliverable, ContractWithRelations } from '@/types';
 
-type ProjectWithExtras = ProjectWithClient & {
-  filming_date?: string;
-  location?: string;
-};
-
 interface ClientProjectDetailProps {
-  project: ProjectWithExtras;
+  project: ProjectWithClient;
   deliverables: Deliverable[];
   contracts: ContractWithRelations[];
   currentUserId: string;

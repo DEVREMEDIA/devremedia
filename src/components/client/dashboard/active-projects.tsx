@@ -20,12 +20,8 @@ const PROJECT_STAGES = [
   'delivered',
 ] as const;
 
-type ProjectWithExtras = ProjectWithClient & {
-  filming_date?: string;
-};
-
 interface ActiveProjectsProps {
-  projects: ProjectWithExtras[];
+  projects: ProjectWithClient[];
 }
 
 export function ActiveProjects({ projects }: ActiveProjectsProps) {
