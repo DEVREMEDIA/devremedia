@@ -105,27 +105,35 @@ export function DeliverablesTab({ deliverables }: DeliverablesTabProps) {
   };
 
   const handleDownload = async (deliverable: DeliverableWithExtras) => {
-    if (deliverable.file_path) {
+    const path = deliverable.file_path;
+    const externalUrl = deliverable.file_url;
+
+    // External URL (Google Drive, YouTube, etc.) — open directly
+    if (path?.startsWith('http://') || path?.startsWith('https://')) {
+      window.open(path, '_blank');
+      return;
+    }
+
+    if (externalUrl) {
+      window.open(externalUrl, '_blank');
+      return;
+    }
+
+    // Supabase Storage file — use signed URL for private bucket
+    if (path) {
       try {
         const supabase = createClient();
         const { data, error } = await supabase.storage
           .from('deliverables')
-          .download(deliverable.file_path);
+          .createSignedUrl(path, 3600, { download: deliverable.title });
         if (error) throw error;
-        const url = URL.createObjectURL(data);
-        const a = document.createElement('a');
-        a.href = url;
-        a.download = deliverable.title;
-        document.body.appendChild(a);
-        a.click();
-        document.body.removeChild(a);
-        URL.revokeObjectURL(url);
-        toast.success(t('downloadStarted'));
+        if (data?.signedUrl) {
+          window.open(data.signedUrl, '_blank');
+          toast.success(t('downloadStarted'));
+        }
       } catch {
         toast.error(t('failedToDownload'));
       }
-    } else if (deliverable.file_url) {
-      window.open(deliverable.file_url, '_blank');
     }
   };
 
