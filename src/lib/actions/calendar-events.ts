@@ -32,7 +32,7 @@ export async function createCalendarEvent(
       .from('calendar_events')
       .insert({ ...validated, created_by: user.id })
       .select(
-        'id, title, description, start_date, end_date, all_day, color, event_type, created_by, created_at, updated_at',
+        'id, title, description, start_date, end_date, all_day, color, event_type, assigned_to, created_by, created_at, updated_at',
       )
       .single();
 
@@ -86,7 +86,7 @@ export async function updateCalendarEvent(
       .update({ ...validated, updated_at: new Date().toISOString() })
       .eq('id', id)
       .select(
-        'id, title, description, start_date, end_date, all_day, color, event_type, created_by, created_at, updated_at',
+        'id, title, description, start_date, end_date, all_day, color, event_type, assigned_to, created_by, created_at, updated_at',
       )
       .single();
 

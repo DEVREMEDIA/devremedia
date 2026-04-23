@@ -17,6 +17,7 @@ export const createCalendarEventSchema = z
     all_day: z.boolean().default(true),
     color: z.string().optional().nullable(),
     event_type: z.enum(CALENDAR_EVENT_TYPES).default('custom'),
+    assigned_to: z.string().uuid('Invalid user ID').optional().nullable(),
   })
   .refine(
     (data) => {
@@ -47,6 +48,7 @@ export const updateCalendarEventSchema = z
     all_day: z.boolean().optional(),
     color: z.string().optional().nullable(),
     event_type: z.enum(CALENDAR_EVENT_TYPES).optional(),
+    assigned_to: z.string().uuid('Invalid user ID').optional().nullable(),
   })
   .refine(
     (data) => {

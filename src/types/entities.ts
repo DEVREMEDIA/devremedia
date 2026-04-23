@@ -61,6 +61,9 @@ export type Project = {
   deadline: string | null;
   start_date: string | null;
   assigned_to: string | null;
+  filming_date: string | null;
+  filming_time: string | null;
+  location: string | null;
   created_at: string;
   updated_at: string;
 };
