@@ -23,7 +23,7 @@ type DateTimePickerProps = {
   onChange: (value: string) => void;
   mode: 'date' | 'datetime';
   placeholder?: string;
-  /** Minute granularity for the time dropdown. Default 15. */
+  /** Minute granularity for the time dropdown. Default 1 (every minute). */
   minuteStep?: number;
   disabled?: boolean;
 };
@@ -67,7 +67,7 @@ export function DateTimePicker({
   onChange,
   mode,
   placeholder,
-  minuteStep = 15,
+  minuteStep = 1,
   disabled,
 }: DateTimePickerProps) {
   const locale = useLocale();
