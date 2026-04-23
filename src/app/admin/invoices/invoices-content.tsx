@@ -46,6 +46,8 @@ interface InvoicesContentProps {
 interface ClientGroup {
   clientId: string;
   clientName: string;
+  /** Secondary label shown under clientName when both company_name and contact_name exist. */
+  clientSubName: string | null;
   invoices: Invoice[];
   totalInvoiced: number;
   totalPaid: number;
@@ -62,12 +64,18 @@ function groupByClient(invoices: Invoice[]): ClientGroup[] {
 
   for (const invoice of invoices) {
     const clientId = invoice.client?.id ?? 'unknown';
-    const clientName = invoice.client?.company_name || invoice.client?.contact_name || '—';
+    const company = invoice.client?.company_name?.trim();
+    const contact = invoice.client?.contact_name?.trim();
+    // Prefer company as primary, contact as secondary. Fallback chain keeps '—' for
+    // missing client data. If only one exists, show it; if both, show both.
+    const clientName = company || contact || '—';
+    const clientSubName = company && contact && company !== contact ? contact : null;
 
     if (!groups.has(clientId)) {
       groups.set(clientId, {
         clientId,
         clientName,
+        clientSubName,
         invoices: [],
         totalInvoiced: 0,
         totalPaid: 0,
@@ -113,7 +121,11 @@ export function InvoicesContent({ invoices: initialInvoices }: InvoicesContentPr
 
     if (search) {
       const q = search.toLowerCase();
-      groups = groups.filter((g) => g.clientName.toLowerCase().includes(q));
+      groups = groups.filter(
+        (g) =>
+          g.clientName.toLowerCase().includes(q) ||
+          (g.clientSubName?.toLowerCase().includes(q) ?? false),
+      );
     }
 
     if (filter === 'withBalance') {
@@ -210,6 +222,9 @@ export function InvoicesContent({ invoices: initialInvoices }: InvoicesContentPr
                                 )}
                               </div>
                               <p className="text-sm text-muted-foreground">
+                                {group.clientSubName && (
+                                  <span className="mr-1">{group.clientSubName} ·</span>
+                                )}
                                 {invoiceCount === 1
                                   ? t('invoiceCountOne', { count: invoiceCount })
                                   : t('invoiceCount', { count: invoiceCount })}
