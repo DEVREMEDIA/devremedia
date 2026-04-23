@@ -76,6 +76,17 @@ export function CalendarEventForm({
   });
 
   const isAllDay = form.watch('all_day');
+  const watchedStartDate = form.watch('start_date');
+
+  // Auto-copy start_date to end_date when start changes and end is empty or matches previous start
+  useEffect(() => {
+    if (!watchedStartDate) return;
+    const currentEnd = form.getValues('end_date');
+    if (!currentEnd) {
+      form.setValue('end_date', watchedStartDate);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [watchedStartDate]);
 
   // Convert UTC ISO string to local datetime-local format (YYYY-MM-DDTHH:mm)
   const utcToLocal = (utcStr: string) => {
@@ -226,7 +237,11 @@ export function CalendarEventForm({
                   <FormItem>
                     <FormLabel>{t('eventStartDate')}</FormLabel>
                     <FormControl>
-                      <Input type={isAllDay ? 'date' : 'datetime-local'} {...field} />
+                      <Input
+                        type={isAllDay ? 'date' : 'datetime-local'}
+                        step={isAllDay ? undefined : 900}
+                        {...field}
+                      />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -242,6 +257,7 @@ export function CalendarEventForm({
                     <FormControl>
                       <Input
                         type={isAllDay ? 'date' : 'datetime-local'}
+                        step={isAllDay ? undefined : 900}
                         {...field}
                         value={field.value ?? ''}
                       />

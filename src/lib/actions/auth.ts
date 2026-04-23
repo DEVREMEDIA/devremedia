@@ -67,6 +67,17 @@ export async function inviteClient(
     });
 
     if (error) {
+      // Rate limit hit — return friendly message
+      if (error.message.toLowerCase().includes('rate limit')) {
+        return {
+          data: null,
+          error:
+            locale === 'el'
+              ? 'Πολλές προσκλήσεις σε σύντομο χρόνο. Δοκιμάστε ξανά σε λίγο.'
+              : 'Too many invitations sent. Please try again later.',
+        };
+      }
+
       // User already exists — re-invite via recovery email
       const { data: existingUsers } = await adminClient.auth.admin.listUsers();
       const existingUser = existingUsers?.users.find((u) => u.email === email);
@@ -77,6 +88,15 @@ export async function inviteClient(
         });
 
         if (resetError) {
+          if (resetError.message.toLowerCase().includes('rate limit')) {
+            return {
+              data: null,
+              error:
+                locale === 'el'
+                  ? 'Πολλές προσκλήσεις σε σύντομο χρόνο. Δοκιμάστε ξανά σε λίγο.'
+                  : 'Too many invitations sent. Please try again later.',
+            };
+          }
           return { data: null, error: resetError.message };
         }
 

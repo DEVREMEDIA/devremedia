@@ -141,6 +141,17 @@ export async function inviteTeamMember(
     });
 
     if (error) {
+      // Rate limit hit — return friendly message
+      if (error.message.toLowerCase().includes('rate limit')) {
+        return {
+          data: null,
+          error:
+            locale === 'el'
+              ? 'Πολλές προσκλήσεις σε σύντομο χρόνο. Δοκιμάστε ξανά σε λίγο.'
+              : 'Too many invitations sent. Please try again later.',
+        };
+      }
+
       // If user already exists (expired invite), resend via recovery link
       const isUserExists =
         error.message.toLowerCase().includes('already') ||

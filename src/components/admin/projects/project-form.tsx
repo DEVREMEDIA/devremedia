@@ -53,6 +53,9 @@ export function ProjectForm({ project, clients, onSuccess }: ProjectFormProps) {
       start_date: project?.start_date || '',
       deadline: project?.deadline || '',
       budget: project?.budget || undefined,
+      filming_date: project?.filming_date || '',
+      filming_time: project?.filming_time || '',
+      location: project?.location || '',
     },
   });
 
@@ -233,6 +236,50 @@ export function ProjectForm({ project, clients, onSuccess }: ProjectFormProps) {
             </FormItem>
           )}
         />
+
+        <div className="grid grid-cols-3 gap-6">
+          <FormField
+            control={form.control}
+            name="filming_date"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>{t('filmingDate')}</FormLabel>
+                <FormControl>
+                  <Input type="date" {...field} value={field.value ?? ''} />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+
+          <FormField
+            control={form.control}
+            name="filming_time"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>{t('filmingTime')}</FormLabel>
+                <FormControl>
+                  <Input type="time" step={900} {...field} value={field.value ?? ''} />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+
+          <FormField
+            control={form.control}
+            name="location"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>{t('filmingLocation')}</FormLabel>
+                <FormControl>
+                  <Input placeholder={t('filmingLocation')} {...field} value={field.value ?? ''} />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+        </div>
 
         <div className="flex gap-4">
           <Button type="submit" disabled={form.formState.isSubmitting}>

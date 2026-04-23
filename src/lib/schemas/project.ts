@@ -21,6 +21,13 @@ export const createProjectSchema = z.object({
     .optional(),
   budget: z.number().min(0, 'Budget must be positive').optional(),
   assigned_to: z.string().uuid('Invalid user ID').nullable().optional(),
+  filming_date: z
+    .string()
+    .regex(/^\d{4}-\d{2}-\d{2}$/, 'Invalid date format (YYYY-MM-DD)')
+    .nullable()
+    .optional(),
+  filming_time: z.string().max(255, 'Time must be at most 255 characters').nullable().optional(),
+  location: z.string().max(500, 'Location must be at most 500 characters').nullable().optional(),
 });
 
 export type CreateProjectInput = z.infer<typeof createProjectSchema>;
