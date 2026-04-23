@@ -11,6 +11,7 @@ import { NOTIFICATION_TYPES } from '@/lib/notification-types';
 import { syncEntityToGoogle } from '@/lib/google-sync-helper';
 import { triggerProjectDeliveredEmail } from '@/lib/email/triggers/project-delivered';
 import { getGoogleColorId } from '@/lib/google-calendar';
+import { syncProjectFilmingToCalendar } from '@/lib/actions/sync-project-filming';
 
 interface ProjectFilters {
   client_id?: string;
@@ -195,6 +196,12 @@ export async function updateProject(
         },
       });
     }
+
+    // Keep the synced filming calendar event in lock-step with filming fields.
+    // Sync is idempotent: if no filming_date/status='filming' flow exists yet,
+    // the helper does nothing destructive.
+    await syncProjectFilmingToCalendar(data.id);
+
     return { data, error: null };
   } catch (error) {
     if (error instanceof Error) {
@@ -248,6 +255,13 @@ export async function updateProjectStatus(
         projectTitle: data.title,
         clientId: data.client_id,
       });
+    }
+
+    // Auto-sync a filming calendar event when the project enters (or leaves)
+    // the 'filming' phase. syncProjectFilmingToCalendar is idempotent and
+    // self-healing so calling it on every status change is safe.
+    if (status === 'filming') {
+      await syncProjectFilmingToCalendar(id);
     }
 
     return { data, error: null };

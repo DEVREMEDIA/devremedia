@@ -412,6 +412,7 @@ export type CalendarEventRecord = {
   color: string | null;
   event_type: CalendarEventType;
   assigned_to: string | null;
+  project_id: string | null;
   created_by: string;
   created_at: string;
   updated_at: string;
