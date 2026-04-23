@@ -18,6 +18,7 @@ export type CalendarEvent = {
   clientName?: string;
   description?: string;
   eventType?: CalendarEventType;
+  assignedTo?: string | null;
 };
 
 export async function getCalendarEvents(): Promise<CalendarEvent[]> {
@@ -44,7 +45,9 @@ export async function getCalendarEvents(): Promise<CalendarEvent[]> {
         .not('due_date', 'is', null),
       supabase
         .from('calendar_events')
-        .select('id, title, description, start_date, end_date, all_day, color, event_type'),
+        .select(
+          'id, title, description, start_date, end_date, all_day, color, event_type, assigned_to',
+        ),
     ]);
 
     const events: CalendarEvent[] = [];
@@ -128,6 +131,7 @@ export async function getCalendarEvents(): Promise<CalendarEvent[]> {
           entityId: ce.id,
           description: ce.description ?? undefined,
           eventType: evtType,
+          assignedTo: ce.assigned_to ?? null,
         });
       });
     }

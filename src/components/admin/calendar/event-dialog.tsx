@@ -120,6 +120,7 @@ export function EventDialog({ event, open, onOpenChange, onEventMutated }: Event
     all_day: event.allDay ?? true,
     color: null,
     event_type: event.eventType ?? 'custom',
+    assigned_to: event.assignedTo ?? null,
     created_by: '',
     created_at: '',
     updated_at: '',
