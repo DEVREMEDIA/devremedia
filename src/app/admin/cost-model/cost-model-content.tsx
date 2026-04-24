@@ -3,7 +3,13 @@
 import { useTranslations } from 'next-intl';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { PageHeader } from '@/components/shared/page-header';
-import type { CostCategory, CostItemWithCategory, CostSettings, CostSummary } from '@/types/index';
+import type {
+  CostCategory,
+  CostItemBreakdown,
+  CostItemWithCategory,
+  CostSettings,
+  CostSummary,
+} from '@/types/index';
 import { CostSummaryTab } from './tabs/summary-tab';
 import { CostItemsTab } from './tabs/items-tab';
 import { CostCategoriesTab } from './tabs/categories-tab';
@@ -14,6 +20,7 @@ interface Props {
   initialItems: CostItemWithCategory[];
   initialSettings: CostSettings | null;
   initialSummary: CostSummary | null;
+  initialBreakdowns: CostItemBreakdown[];
 }
 
 export function CostModelContent({
@@ -21,6 +28,7 @@ export function CostModelContent({
   initialItems,
   initialSettings,
   initialSummary,
+  initialBreakdowns,
 }: Props) {
   const t = useTranslations('costModel');
 
@@ -41,7 +49,11 @@ export function CostModelContent({
         </TabsContent>
 
         <TabsContent value="items" className="mt-6">
-          <CostItemsTab initialItems={initialItems} categories={initialCategories} />
+          <CostItemsTab
+            initialItems={initialItems}
+            categories={initialCategories}
+            initialBreakdowns={initialBreakdowns}
+          />
         </TabsContent>
 
         <TabsContent value="categories" className="mt-6">

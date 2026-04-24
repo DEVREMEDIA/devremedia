@@ -47,6 +47,32 @@ export const updateCostItemSchema = costItemSchema.partial();
 export type UpdateCostItemInput = z.input<typeof updateCostItemSchema>;
 
 // ---------------------------------------------------------------------
+// Breakdown row — children of a cost_item
+// ---------------------------------------------------------------------
+
+export const costItemBreakdownSchema = z.object({
+  cost_item_id: z.string().uuid('Μη έγκυρο item'),
+  name: z
+    .string()
+    .trim()
+    .min(1, 'Το όνομα είναι υποχρεωτικό')
+    .max(100, 'Μέγιστο μήκος 100 χαρακτήρες'),
+  monthly_cost: z
+    .number()
+    .min(0, 'Το κόστος δεν μπορεί να είναι αρνητικό')
+    .max(1_000_000, 'Υπερβολικά μεγάλη τιμή'),
+  sort_order: z.number().int().min(0).max(10_000).default(0),
+  active: z.boolean().default(true),
+});
+export type CostItemBreakdownInput = z.input<typeof costItemBreakdownSchema>;
+export type CostItemBreakdownOutput = z.output<typeof costItemBreakdownSchema>;
+
+export const updateCostItemBreakdownSchema = costItemBreakdownSchema
+  .omit({ cost_item_id: true })
+  .partial();
+export type UpdateCostItemBreakdownInput = z.input<typeof updateCostItemBreakdownSchema>;
+
+// ---------------------------------------------------------------------
 // Settings (singleton)
 // ---------------------------------------------------------------------
 

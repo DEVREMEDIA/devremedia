@@ -6,6 +6,7 @@ import {
   getCostSettings,
   getCostSummary,
 } from '@/lib/actions/cost-model';
+import { getCostItemBreakdowns } from '@/lib/actions/cost-item-breakdown';
 import { CostModelContent } from './cost-model-content';
 
 export async function generateMetadata(): Promise<Metadata> {
@@ -14,11 +15,12 @@ export async function generateMetadata(): Promise<Metadata> {
 }
 
 export default async function CostModelPage() {
-  const [categories, items, settings, summary] = await Promise.all([
+  const [categories, items, settings, summary, breakdowns] = await Promise.all([
     getCostCategories(),
     getCostItems({ include_inactive: true }),
     getCostSettings(),
     getCostSummary(),
+    getCostItemBreakdowns({ include_inactive: true }),
   ]);
 
   return (
@@ -27,6 +29,7 @@ export default async function CostModelPage() {
       initialItems={items.data ?? []}
       initialSettings={settings.data}
       initialSummary={summary.data}
+      initialBreakdowns={breakdowns.data ?? []}
     />
   );
 }
