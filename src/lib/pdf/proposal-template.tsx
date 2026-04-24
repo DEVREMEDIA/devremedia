@@ -45,10 +45,24 @@ const C = {
 // Asset loading — inline PNGs as base64
 // =====================================================================
 
+// 1×1 transparent PNG — fallback used when the bundled photo file is
+// missing (e.g. added locally but never committed). Keeps the PDF
+// buildable instead of crashing the whole route at module load.
+const BLANK_PNG_1X1 =
+  'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNkYAAAAAYAAjCB0C8AAAAASUVORK5CYII=';
+
 function loadAsset(relPath: string): string {
-  const abs = path.join(process.cwd(), 'public', 'assets', 'proposal', relPath);
-  const buf = fs.readFileSync(abs);
-  return `data:image/png;base64,${buf.toString('base64')}`;
+  try {
+    const abs = path.join(process.cwd(), 'public', 'assets', 'proposal', relPath);
+    const buf = fs.readFileSync(abs);
+    return `data:image/png;base64,${buf.toString('base64')}`;
+  } catch (err) {
+    console.warn(
+      `[proposal-pdf] asset missing, using blank placeholder: ${relPath}`,
+      err instanceof Error ? err.message : err,
+    );
+    return BLANK_PNG_1X1;
+  }
 }
 
 const ASSET_FILM_SET = loadAsset('film-set.png');
