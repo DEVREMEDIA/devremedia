@@ -1,20 +1,5 @@
-import path from 'path';
-import { Font, StyleSheet } from '@react-pdf/renderer';
-
-// Register Noto Sans for Greek character support
-Font.register({
-  family: 'NotoSans',
-  fonts: [
-    {
-      src: path.join(process.cwd(), 'public', 'fonts', 'NotoSans-Regular.ttf'),
-      fontWeight: 'normal',
-    },
-    {
-      src: path.join(process.cwd(), 'public', 'fonts', 'NotoSans-Bold.ttf'),
-      fontWeight: 'bold',
-    },
-  ],
-});
+import { StyleSheet } from '@react-pdf/renderer';
+import './fonts';
 
 // Brand palette
 export const C = {
