@@ -12,6 +12,7 @@ import {
   Path,
   Rect,
 } from '@react-pdf/renderer';
+import './fonts';
 
 // =====================================================================
 // Design tokens
