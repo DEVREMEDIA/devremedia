@@ -2168,7 +2168,20 @@
       "deleteConfirm": "Are you sure you want to delete this item?",
       "noItems": "No items",
       "subcategoryPlaceholder": "e.g. Salary, Bonus, Freelancers",
-      "descriptionPlaceholder": "e.g. Christina Tsatsa, Internet"
+      "descriptionPlaceholder": "e.g. Christina Tsatsa, Internet",
+      "breakdown": {
+        "toggle": "Breakdown",
+        "autoLabel": "auto",
+        "autoHint": "Computed from breakdown rows",
+        "rowsBadge": "rows",
+        "totalLabel": "Total",
+        "empty": "No breakdown — add rows to split this cost.",
+        "addRow": "Add row",
+        "namePlaceholder": "e.g. Netflix, Adobe, Spotify",
+        "nameRequired": "Name required",
+        "parentLocked": "Cost is auto-computed from breakdown rows.",
+        "deltaWarning": "Delta: {delta}"
+      }
     },
     "category": {
       "name": "Category Name",

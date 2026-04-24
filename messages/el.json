@@ -2168,7 +2168,20 @@
       "deleteConfirm": "Σίγουρα θέλετε να διαγράψετε αυτή τη γραμμή;",
       "noItems": "Καμία γραμμή",
       "subcategoryPlaceholder": "π.χ. Μισθός, Bonus, Freelancers",
-      "descriptionPlaceholder": "π.χ. Χριστίνα Τσατσά, Internet"
+      "descriptionPlaceholder": "π.χ. Χριστίνα Τσατσά, Internet",
+      "breakdown": {
+        "toggle": "Ανάλυση",
+        "autoLabel": "αυτόματο",
+        "autoHint": "Υπολογίζεται από τις επιμέρους γραμμές",
+        "rowsBadge": "γραμμές",
+        "totalLabel": "Σύνολο",
+        "empty": "Καμία ανάλυση — προσθέστε επιμέρους γραμμές για να σπάσετε το κόστος.",
+        "addRow": "Προσθήκη γραμμής",
+        "namePlaceholder": "π.χ. Netflix, Adobe, Spotify",
+        "nameRequired": "Συμπληρώστε όνομα",
+        "parentLocked": "Το κόστος υπολογίζεται αυτόματα από τις γραμμές ανάλυσης.",
+        "deltaWarning": "Απόκλιση: {delta}"
+      }
     },
     "category": {
       "name": "Όνομα Κατηγορίας",

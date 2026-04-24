@@ -632,6 +632,19 @@ export type CostItemWithCategory = CostItem & {
   category: Pick<CostCategory, 'id' | 'name' | 'sort_order'>;
 };
 
+export type CostItemBreakdown = {
+  id: string;
+  cost_item_id: string;
+  name: string;
+  monthly_cost: number;
+  sort_order: number;
+  active: boolean;
+  created_at: string;
+  updated_at: string;
+  created_by: string | null;
+  updated_by: string | null;
+};
+
 export type CostSettings = {
   id: 1;
   expected_monthly_hours: number;
