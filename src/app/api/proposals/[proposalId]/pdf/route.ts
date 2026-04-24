@@ -7,6 +7,7 @@ import { createClient } from '@/lib/supabase/server';
 import { getProposal } from '@/lib/actions/proposals';
 import { getProposalPackages } from '@/lib/actions/proposal-packages';
 import { getCostSettings } from '@/lib/actions/cost-model';
+import { getCompanySettings } from '@/lib/actions/settings';
 import { ProposalPDFTemplate, type ProposalPDFPackage } from '@/lib/pdf/proposal-template';
 
 // Cache logos as base64 at module level (read once per server start)
@@ -61,10 +62,11 @@ export async function GET(
 
     const { proposalId } = await params;
 
-    const [proposalRes, packagesRes, settingsRes] = await Promise.all([
+    const [proposalRes, packagesRes, settingsRes, companyRes] = await Promise.all([
       getProposal(proposalId),
       getProposalPackages({ include_inactive: true }),
       getCostSettings(),
+      getCompanySettings(),
     ]);
 
     if (proposalRes.error || !proposalRes.data) {
@@ -83,6 +85,7 @@ export async function GET(
     const proposal = proposalRes.data;
     const allPackages = packagesRes.data;
     const settings = settingsRes.data;
+    const company = companyRes.data;
 
     // Resolve selected packages in order, with overrides applied
     const selected: ProposalPDFPackage[] = proposal.selected_packages
@@ -117,6 +120,8 @@ export async function GET(
         logoBase64,
         logoWhiteBase64,
         clientLogosBase64,
+        providerEmail: company?.email ?? undefined,
+        providerPhone: company?.phone ?? undefined,
         proposalRef: `DM-${proposal.id.slice(-6).toUpperCase()}`,
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
       }) as any,
