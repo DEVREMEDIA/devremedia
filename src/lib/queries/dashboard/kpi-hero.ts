@@ -50,7 +50,7 @@ async function getKpiHeroViaRpc(): Promise<KpiHero> {
   try {
     const supabase = await createClient();
     const today = todayIso();
-    const thresholds = await getDashboardThresholds();
+    const { thresholds, defaultMargin } = await getDashboardSettings();
 
     const { data: kpiData, error: kpiErr } = await supabase.rpc('get_dashboard_kpi', {
       p_today: today,
@@ -93,18 +93,11 @@ async function getKpiHeroViaRpc(): Promise<KpiHero> {
     const profitMarginValue = payload.profit_margin_current;
     const profitMarginPrevValue = payload.profit_margin_prev;
 
-    const { data: settingsRow } = await supabase
-      .from('cost_settings')
-      .select('default_margin')
-      .eq('id', 1)
-      .maybeSingle();
-    const target = Number(settingsRow?.default_margin ?? 0.6);
-
     const profitMargin: KpiMetric = {
       value: profitMarginValue ?? 0,
       previous: profitMarginPrevValue,
       deltaPct: calcDeltaPct(profitMarginValue ?? 0, profitMarginPrevValue),
-      exception: profitMarginValue != null && profitMarginValue < target,
+      exception: profitMarginValue != null && profitMarginValue < defaultMargin,
     };
 
     const cashValue = Number(payload.cash_overdue ?? 0);
