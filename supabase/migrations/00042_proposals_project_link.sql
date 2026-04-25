@@ -10,7 +10,8 @@ ALTER TABLE public.proposals
     REFERENCES public.projects(id) ON DELETE SET NULL;
 
 CREATE INDEX IF NOT EXISTS idx_proposals_project_id
-  ON public.proposals(project_id);
+  ON public.proposals(project_id)
+  WHERE project_id IS NOT NULL;
 
 COMMENT ON COLUMN public.proposals.project_id IS
   'Set when an accepted proposal is converted into a project; nullable for drafts/rejected/expired.';
