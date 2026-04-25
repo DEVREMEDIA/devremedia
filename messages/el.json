@@ -448,7 +448,97 @@
     "client": "πελάτη",
     "project": "Παραγωγή",
     "user": "Χρήστης",
-    "overdue": "Εκπρόθεσμο"
+    "overdue": "Εκπρόθεσμο",
+    "loadError": "Δεν φόρτωσε. Δοκίμασε ξανά.",
+    "hero": {
+      "revenueMtd": "Έσοδα μήνα",
+      "pipeline": "Pipeline (σταθμισμένο)",
+      "activeProjects": "Ενεργά projects",
+      "profitMargin": "Περιθώριο κέρδους (30η)",
+      "cashOverdue": "Ληξιπρόθεσμα",
+      "atRisk": "Σε κίνδυνο",
+      "vsPrevious": "vs προηγ. περίοδος"
+    },
+    "today": {
+      "title": "Σήμερα",
+      "empty": "Καμία δραστηριότητα σήμερα — απόλαυσε την ησυχία.",
+      "groups": {
+        "filming": "Γυρίσματα",
+        "meeting": "Ραντεβού",
+        "task": "Tasks",
+        "project_start": "Έναρξη projects",
+        "project_deadline": "Deadlines",
+        "invoice_due": "Τιμολόγια",
+        "deliverable_pending": "Παραδοτέα προς review"
+      },
+      "allDay": "Όλη μέρα"
+    },
+    "risk": {
+      "title": "Προσοχή",
+      "empty": "Όλα καλά. Καμία ειδοποίηση.",
+      "viewAll": "Όλες οι ειδοποιήσεις",
+      "types": {
+        "overdue_invoice": "Ληξιπρόθεσμο τιμολόγιο",
+        "stale_lead": "Ανενεργό lead",
+        "stale_deliverable": "Καθυστερημένο παραδοτέο",
+        "unsigned_contract": "Ανυπόγραφη σύμβαση",
+        "deadline_risk": "Project σε κίνδυνο deadline",
+        "filming_no_crew": "Γύρισμα χωρίς συνεργείο"
+      }
+    },
+    "sales": {
+      "title": "Πωλήσεις",
+      "funnel": "Funnel",
+      "forecast": "Πρόβλεψη εσόδων",
+      "stages": {
+        "filming_requests": "Αιτήσεις",
+        "leads_open": "Leads",
+        "proposals_sent": "Προσφορές",
+        "won": "Won",
+        "active_projects": "Active"
+      },
+      "confirmed": "Επιβεβαιωμένα (30η)",
+      "likely": "Πιθανά (30-90η)",
+      "pipeline": "Pipeline σύνολο",
+      "expected90d": "Αναμενόμενα 90 ημερών"
+    },
+    "finance": {
+      "title": "Οικονομικά",
+      "costHealth": "Υγεία κόστους",
+      "totalMonthlyCost": "Συνολικό μηνιαίο κόστος",
+      "costPerHour": "Κόστος ανά ώρα",
+      "marginStatus": "Status περιθωρίου",
+      "marginOnTarget": "Στον στόχο",
+      "marginBelow": "Κάτω από στόχο",
+      "profitability": "Κερδοφορία projects",
+      "topProfitable": "Πιο κερδοφόρα",
+      "topUnprofitable": "Λιγότερο κερδοφόρα"
+    },
+    "production": {
+      "title": "Παραγωγή",
+      "crewLoad": "Φόρτος συνεργείου (14η)",
+      "deadlines": "Deadlines",
+      "atRisk": "Σε κίνδυνο",
+      "onTrack": "Σύμφωνα με χρονοδιάγραμμα",
+      "recentlyDelivered": "Πρόσφατα παραδοτέα",
+      "unassigned": "Χωρίς ανάθεση"
+    },
+    "velocity": {
+      "title": "Ρυθμός εβδομάδας",
+      "projectsCreated": "Νέα projects",
+      "projectsDelivered": "Παραδοτέα",
+      "invoicesPaid": "Πληρωμένα τιμολόγια",
+      "contractsSigned": "Υπογεγραμμένες συμβάσεις",
+      "proposalsSent": "Προσφορές που στάλθηκαν"
+    },
+    "dashboardThresholds": {
+      "title": "Όρια ειδοποιήσεων dashboard",
+      "staleLead": "Ανενεργό lead (μέρες)",
+      "staleDeliverable": "Καθυστερημένο παραδοτέο (μέρες)",
+      "staleContract": "Ανυπόγραφη σύμβαση (μέρες)",
+      "deadlineRisk": "Risk window deadline (μέρες)",
+      "activeProjectsWarn": "Όριο ενεργών projects"
+    }
   },
 
   "clients": {
