@@ -51,3 +51,7 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: 'Failed to renew webhook' }, { status: 500 });
   }
 }
+
+// Cron schedulers vary in default HTTP method (cron-job.org sends GET by
+// default while Vercel native crons also send GET). Accept both.
+export const GET = POST;
