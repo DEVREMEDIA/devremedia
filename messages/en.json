@@ -448,7 +448,97 @@
     "client": "client",
     "project": "Production",
     "user": "User",
-    "overdue": "Overdue"
+    "overdue": "Overdue",
+    "loadError": "Failed to load. Try again.",
+    "hero": {
+      "revenueMtd": "Revenue MTD",
+      "pipeline": "Pipeline (weighted)",
+      "activeProjects": "Active projects",
+      "profitMargin": "Profit margin (30d)",
+      "cashOverdue": "Cash overdue",
+      "atRisk": "At risk",
+      "vsPrevious": "vs prev period"
+    },
+    "today": {
+      "title": "Today",
+      "empty": "Nothing scheduled — enjoy the quiet.",
+      "groups": {
+        "filming": "Filmings",
+        "meeting": "Meetings",
+        "task": "Tasks",
+        "project_start": "Project starts",
+        "project_deadline": "Deadlines",
+        "invoice_due": "Invoices due",
+        "deliverable_pending": "Deliverables pending review"
+      },
+      "allDay": "All day"
+    },
+    "risk": {
+      "title": "Attention",
+      "empty": "All clear. No alerts.",
+      "viewAll": "View all alerts",
+      "types": {
+        "overdue_invoice": "Overdue invoice",
+        "stale_lead": "Stale lead",
+        "stale_deliverable": "Stale deliverable",
+        "unsigned_contract": "Unsigned contract",
+        "deadline_risk": "Deadline risk",
+        "filming_no_crew": "Filming without crew"
+      }
+    },
+    "sales": {
+      "title": "Sales",
+      "funnel": "Funnel",
+      "forecast": "Revenue forecast",
+      "stages": {
+        "filming_requests": "Requests",
+        "leads_open": "Leads",
+        "proposals_sent": "Proposals",
+        "won": "Won",
+        "active_projects": "Active"
+      },
+      "confirmed": "Confirmed (30d)",
+      "likely": "Likely (30-90d)",
+      "pipeline": "Pipeline total",
+      "expected90d": "Expected 90d"
+    },
+    "finance": {
+      "title": "Finance",
+      "costHealth": "Cost health",
+      "totalMonthlyCost": "Total monthly cost",
+      "costPerHour": "Cost per hour",
+      "marginStatus": "Margin status",
+      "marginOnTarget": "On target",
+      "marginBelow": "Below target",
+      "profitability": "Project profitability",
+      "topProfitable": "Most profitable",
+      "topUnprofitable": "Least profitable"
+    },
+    "production": {
+      "title": "Production",
+      "crewLoad": "Crew load (14d)",
+      "deadlines": "Deadlines",
+      "atRisk": "At risk",
+      "onTrack": "On track",
+      "recentlyDelivered": "Recently delivered",
+      "unassigned": "Unassigned"
+    },
+    "velocity": {
+      "title": "This week",
+      "projectsCreated": "Projects created",
+      "projectsDelivered": "Delivered",
+      "invoicesPaid": "Invoices paid",
+      "contractsSigned": "Contracts signed",
+      "proposalsSent": "Proposals sent"
+    },
+    "dashboardThresholds": {
+      "title": "Dashboard alert thresholds",
+      "staleLead": "Stale lead (days)",
+      "staleDeliverable": "Stale deliverable (days)",
+      "staleContract": "Unsigned contract (days)",
+      "deadlineRisk": "Deadline risk window (days)",
+      "activeProjectsWarn": "Active projects warn above"
+    }
   },
 
   "clients": {
