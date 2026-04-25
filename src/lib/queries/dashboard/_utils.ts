@@ -1,5 +1,3 @@
-'use server';
-
 import { createClient } from '@/lib/supabase/server';
 import type { DashboardThresholdsOutput } from '@/lib/schemas/cost-model';
 
@@ -30,49 +28,46 @@ export async function getDashboardThresholds(): Promise<DashboardThresholdsOutpu
   }
 }
 
-export async function todayIso(): Promise<string> {
+export function todayIso(): string {
   return new Date().toISOString().split('T')[0];
 }
 
-export async function daysAgoIso(days: number): Promise<string> {
+export function daysAgoIso(days: number): string {
   const d = new Date();
   d.setUTCDate(d.getUTCDate() - days);
   return d.toISOString().split('T')[0];
 }
 
-export async function daysAheadIso(days: number): Promise<string> {
+export function daysAheadIso(days: number): string {
   const d = new Date();
   d.setUTCDate(d.getUTCDate() + days);
   return d.toISOString().split('T')[0];
 }
 
-export async function startOfMonthIso(): Promise<string> {
+export function startOfMonthIso(): string {
   const d = new Date();
   return new Date(Date.UTC(d.getUTCFullYear(), d.getUTCMonth(), 1)).toISOString().split('T')[0];
 }
 
-export async function startOfPreviousMonthIso(): Promise<string> {
+export function startOfPreviousMonthIso(): string {
   const d = new Date();
   return new Date(Date.UTC(d.getUTCFullYear(), d.getUTCMonth() - 1, 1)).toISOString().split('T')[0];
 }
 
-export async function calcDeltaPct(
-  current: number,
-  previous: number | null,
-): Promise<number | null> {
+export function calcDeltaPct(current: number, previous: number | null): number | null {
   if (previous == null || previous === 0) return null;
   return ((current - previous) / previous) * 100;
 }
 
-export async function ageDays(fromIso: string): Promise<number> {
+export function ageDays(fromIso: string): number {
   const ms = Date.now() - new Date(fromIso).getTime();
   return Math.max(0, Math.floor(ms / 86_400_000));
 }
 
-export async function buildDailySparkline(
+export function buildDailySparkline(
   rows: { date: string; value: number }[],
   days: number,
-): Promise<number[]> {
+): number[] {
   const map = new Map(rows.map((r) => [r.date, r.value]));
   const result: number[] = [];
   const today = new Date();
