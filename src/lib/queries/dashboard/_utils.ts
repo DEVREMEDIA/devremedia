@@ -1,3 +1,4 @@
+import { cache } from 'react';
 import { createClient } from '@/lib/supabase/server';
 import type { DashboardThresholdsOutput } from '@/lib/schemas/cost-model';
 
@@ -9,23 +10,40 @@ const DEFAULT_THRESHOLDS: DashboardThresholdsOutput = {
   active_projects_warn_above: 50,
 };
 
-export async function getDashboardThresholds(): Promise<DashboardThresholdsOutput> {
+const DEFAULT_MARGIN = 0.6;
+
+type DashboardSettings = {
+  thresholds: DashboardThresholdsOutput;
+  defaultMargin: number;
+};
+
+export const getDashboardSettings = cache(async (): Promise<DashboardSettings> => {
   try {
     const supabase = await createClient();
     const { data, error } = await supabase
       .from('cost_settings')
-      .select('dashboard_thresholds')
+      .select('dashboard_thresholds, default_margin')
       .eq('id', 1)
       .maybeSingle();
 
-    if (error || !data?.dashboard_thresholds) return DEFAULT_THRESHOLDS;
+    if (error || !data) {
+      return { thresholds: DEFAULT_THRESHOLDS, defaultMargin: DEFAULT_MARGIN };
+    }
     return {
-      ...DEFAULT_THRESHOLDS,
-      ...(data.dashboard_thresholds as Partial<DashboardThresholdsOutput>),
+      thresholds: {
+        ...DEFAULT_THRESHOLDS,
+        ...((data.dashboard_thresholds as Partial<DashboardThresholdsOutput>) ?? {}),
+      },
+      defaultMargin: Number(data.default_margin ?? DEFAULT_MARGIN),
     };
   } catch {
-    return DEFAULT_THRESHOLDS;
+    return { thresholds: DEFAULT_THRESHOLDS, defaultMargin: DEFAULT_MARGIN };
   }
+});
+
+export async function getDashboardThresholds(): Promise<DashboardThresholdsOutput> {
+  const { thresholds } = await getDashboardSettings();
+  return thresholds;
 }
 
 export function todayIso(): string {

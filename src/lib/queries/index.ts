@@ -113,12 +113,14 @@ export async function getRecentActivity(limit: number = 10): Promise<ActivityLog
     const supabase = await createClient();
     const { data, error } = await supabase
       .from('activity_log')
-      .select('*, user:user_profiles(*)')
+      .select(
+        'id, action, entity_type, entity_id, user_id, created_at, user:user_profiles(id, display_name, avatar_url)',
+      )
       .order('created_at', { ascending: false })
       .limit(limit);
 
     if (error || !data) return [];
-    return data as ActivityLog[];
+    return data as unknown as ActivityLog[];
   } catch {
     return [];
   }

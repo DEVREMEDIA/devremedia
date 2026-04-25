@@ -6,18 +6,131 @@ import {
   buildDailySparkline,
   calcDeltaPct,
   daysAgoIso,
-  getDashboardThresholds,
+  getDashboardSettings,
   startOfMonthIso,
   startOfPreviousMonthIso,
   todayIso,
 } from './_utils';
+import { dashboardRpcsEnabled } from './_feature-flag';
 
 const EMPTY_METRIC: KpiMetric = { value: 0, previous: null, deltaPct: null, exception: false };
 
+const EMPTY_HERO: KpiHero = {
+  revenueMtd: EMPTY_METRIC,
+  pipeline: EMPTY_METRIC,
+  activeProjects: EMPTY_METRIC,
+  profitMargin: EMPTY_METRIC,
+  cashOverdue: EMPTY_METRIC,
+  atRiskCount: EMPTY_METRIC,
+};
+
 export async function getKpiHero(): Promise<KpiHero> {
+  if (dashboardRpcsEnabled()) {
+    return getKpiHeroViaRpc();
+  }
+  return getKpiHeroLegacy();
+}
+
+// ---------------------------------------------------------------------
+// RPC path — single round-trip via get_dashboard_kpi (migration 00045)
+// ---------------------------------------------------------------------
+
+type DashboardKpiPayload = {
+  revenue_current: number;
+  revenue_prev: number;
+  revenue_daily: { date: string; value: number }[];
+  pipeline_value: number;
+  active_count: number;
+  profit_margin_current: number | null;
+  profit_margin_prev: number | null;
+  cash_overdue: number;
+};
+
+async function getKpiHeroViaRpc(): Promise<KpiHero> {
   try {
     const supabase = await createClient();
-    const thresholds = await getDashboardThresholds();
+    const today = todayIso();
+    const { thresholds, defaultMargin } = await getDashboardSettings();
+
+    const { data: kpiData, error: kpiErr } = await supabase.rpc('get_dashboard_kpi', {
+      p_today: today,
+    });
+
+    if (kpiErr || !kpiData) return getKpiHeroLegacy();
+
+    const payload = kpiData as DashboardKpiPayload;
+
+    const revenueValue = Number(payload.revenue_current ?? 0);
+    const revenuePrevValue = Number(payload.revenue_prev ?? 0);
+    const revenueSparkline = buildDailySparkline(
+      (payload.revenue_daily ?? []).map((r) => ({ date: r.date, value: Number(r.value) })),
+      30,
+    );
+
+    const revenueMtd: KpiMetric = {
+      value: revenueValue,
+      previous: revenuePrevValue,
+      deltaPct: calcDeltaPct(revenueValue, revenuePrevValue),
+      sparkline: revenueSparkline,
+      exception: false,
+    };
+
+    const pipeline: KpiMetric = {
+      value: Number(payload.pipeline_value ?? 0),
+      previous: null,
+      deltaPct: null,
+      exception: false,
+    };
+
+    const activeCount = Number(payload.active_count ?? 0);
+    const activeProjects: KpiMetric = {
+      value: activeCount,
+      previous: null,
+      deltaPct: null,
+      exception: activeCount > thresholds.active_projects_warn_above,
+    };
+
+    const profitMarginValue = payload.profit_margin_current;
+    const profitMarginPrevValue = payload.profit_margin_prev;
+
+    const profitMargin: KpiMetric = {
+      value: profitMarginValue ?? 0,
+      previous: profitMarginPrevValue,
+      deltaPct: calcDeltaPct(profitMarginValue ?? 0, profitMarginPrevValue),
+      exception: profitMarginValue != null && profitMarginValue < defaultMargin,
+    };
+
+    const cashValue = Number(payload.cash_overdue ?? 0);
+    const cashOverdue: KpiMetric = {
+      value: cashValue,
+      previous: null,
+      deltaPct: null,
+      exception: cashValue > 0,
+    };
+
+    const { getRiskItems } = await import('./risk');
+    const risks = await getRiskItems();
+    const atRiskCount: KpiMetric = {
+      value: risks.length,
+      previous: null,
+      deltaPct: null,
+      exception: risks.length > 0,
+    };
+
+    return { revenueMtd, pipeline, activeProjects, profitMargin, cashOverdue, atRiskCount };
+  } catch {
+    return EMPTY_HERO;
+  }
+}
+
+// ---------------------------------------------------------------------
+// Legacy path — 8 parallel supabase queries (kept as fallback)
+// ---------------------------------------------------------------------
+
+async function getKpiHeroLegacy(): Promise<KpiHero> {
+  try {
+    const supabase = await createClient();
+    const { thresholds, defaultMargin } = await getDashboardSettings();
     const today = todayIso();
     const monthStart = startOfMonthIso();
     const prevMonthStart = startOfPreviousMonthIso();
@@ -67,7 +180,6 @@ export async function getKpiHero(): Promise<KpiHero> {
         .or(`status.eq.overdue,and(status.in.(sent,viewed),due_date.lt.${today})`),
     ]);
 
-    // Revenue MTD
     const revenueValue = (revenueCurrent.data ?? []).reduce(
       (sum: number, r: { total: number | null }) => sum + (r.total ?? 0),
       0,
@@ -96,7 +208,6 @@ export async function getKpiHero(): Promise<KpiHero> {
       exception: false,
     };
 
-    // Pipeline (weighted)
     const pipelineValue = (pipelineLeads.data ?? []).reduce(
       (sum: number, l: { deal_value: number | null; probability: number | null }) =>
         sum + (l.deal_value ?? 0) * ((l.probability ?? 0) / 100),
@@ -109,7 +220,6 @@ export async function getKpiHero(): Promise<KpiHero> {
       exception: false,
     };
 
-    // Active projects
     const activeCount = activeProjectsRow.count ?? 0;
     const activeProjects: KpiMetric = {
       value: activeCount,
@@ -118,25 +228,16 @@ export async function getKpiHero(): Promise<KpiHero> {
       exception: activeCount > thresholds.active_projects_warn_above,
     };
 
-    // Profit margin (rolling 30d)
     const profitMarginValue = readRpcMargin(profitMarginCurrent.data);
     const profitMarginPrevValue = readRpcMargin(profitMarginPrev.data);
-
-    const { data: settingsRow } = await supabase
-      .from('cost_settings')
-      .select('default_margin')
-      .eq('id', 1)
-      .maybeSingle();
-    const target = Number(settingsRow?.default_margin ?? 0.6);
 
     const profitMargin: KpiMetric = {
       value: profitMarginValue ?? 0,
       previous: profitMarginPrevValue,
       deltaPct: calcDeltaPct(profitMarginValue ?? 0, profitMarginPrevValue),
-      exception: profitMarginValue != null && profitMarginValue < target,
+      exception: profitMarginValue != null && profitMarginValue < defaultMargin,
     };
 
-    // Cash overdue
     const cashValue = (cashOverdueRow.data ?? []).reduce(
       (sum: number, r: { total: number | null }) => sum + (r.total ?? 0),
       0,
@@ -148,7 +249,6 @@ export async function getKpiHero(): Promise<KpiHero> {
       exception: cashValue > 0,
     };
 
-    // At-risk count via getRiskItems (lazy import to avoid circular)
     const { getRiskItems } = await import('./risk');
     const risks = await getRiskItems();
     const atRiskCount: KpiMetric = {
@@ -160,14 +260,7 @@ export async function getKpiHero(): Promise<KpiHero> {
 
     return { revenueMtd, pipeline, activeProjects, profitMargin, cashOverdue, atRiskCount };
   } catch {
-    return {
-      revenueMtd: EMPTY_METRIC,
-      pipeline: EMPTY_METRIC,
-      activeProjects: EMPTY_METRIC,
-      profitMargin: EMPTY_METRIC,
-      cashOverdue: EMPTY_METRIC,
-      atRiskCount: EMPTY_METRIC,
-    };
+    return EMPTY_HERO;
   }
 }
 
