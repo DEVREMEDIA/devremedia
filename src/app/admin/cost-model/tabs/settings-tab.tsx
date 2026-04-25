@@ -25,6 +25,11 @@ type FormState = {
   discount_first_pct: string; // shown as %
   vat_pct: string; // shown as %
   deposit_pct: string; // shown as %
+  threshold_stale_lead: string;
+  threshold_stale_deliverable: string;
+  threshold_stale_contract: string;
+  threshold_deadline_risk: string;
+  threshold_active_projects: string;
 };
 
 function pctFromFraction(v: number) {
@@ -39,6 +44,7 @@ function numeric(v: string, fallback = 0) {
 export function CostSettingsTab({ initialSettings }: Props) {
   const t = useTranslations('costModel.settings');
   const tc = useTranslations('common');
+  const tt = useTranslations('dashboard.dashboardThresholds');
   const router = useRouter();
   const [isPending, startTransition] = useTransition();
 
@@ -54,6 +60,11 @@ export function CostSettingsTab({ initialSettings }: Props) {
       discount_first_pct: pctFromFraction(s?.discount_first_percent ?? 0.1),
       vat_pct: pctFromFraction(s?.vat_percent ?? 0.24),
       deposit_pct: pctFromFraction(s?.deposit_percent ?? 0.5),
+      threshold_stale_lead: String(s?.dashboard_thresholds?.stale_lead_days ?? 14),
+      threshold_stale_deliverable: String(s?.dashboard_thresholds?.stale_deliverable_days ?? 7),
+      threshold_stale_contract: String(s?.dashboard_thresholds?.stale_contract_days ?? 14),
+      threshold_deadline_risk: String(s?.dashboard_thresholds?.deadline_risk_days ?? 7),
+      threshold_active_projects: String(s?.dashboard_thresholds?.active_projects_warn_above ?? 50),
     };
   });
 
@@ -69,6 +80,13 @@ export function CostSettingsTab({ initialSettings }: Props) {
         discount_first_percent: numeric(form.discount_first_pct, 10) / 100,
         vat_percent: numeric(form.vat_pct, 24) / 100,
         deposit_percent: numeric(form.deposit_pct, 50) / 100,
+        dashboard_thresholds: {
+          stale_lead_days: Math.round(numeric(form.threshold_stale_lead, 14)),
+          stale_deliverable_days: Math.round(numeric(form.threshold_stale_deliverable, 7)),
+          stale_contract_days: Math.round(numeric(form.threshold_stale_contract, 14)),
+          deadline_risk_days: Math.round(numeric(form.threshold_deadline_risk, 7)),
+          active_projects_warn_above: Math.round(numeric(form.threshold_active_projects, 50)),
+        },
       };
       const res = await updateCostSettings(payload);
       if (res.error) {
@@ -171,6 +189,52 @@ export function CostSettingsTab({ initialSettings }: Props) {
                 inputMode="decimal"
                 value={form.deposit_pct}
                 onChange={(e) => setForm({ ...form, deposit_pct: e.target.value })}
+              />
+            </div>
+          </div>
+        </section>
+
+        <section className="space-y-3 border-t pt-4">
+          <h4 className="font-semibold">{tt('title')}</h4>
+          <div className="grid gap-3 md:grid-cols-3">
+            <div className="space-y-2">
+              <Label>{tt('staleLead')}</Label>
+              <Input
+                inputMode="numeric"
+                value={form.threshold_stale_lead}
+                onChange={(e) => setForm({ ...form, threshold_stale_lead: e.target.value })}
+              />
+            </div>
+            <div className="space-y-2">
+              <Label>{tt('staleDeliverable')}</Label>
+              <Input
+                inputMode="numeric"
+                value={form.threshold_stale_deliverable}
+                onChange={(e) => setForm({ ...form, threshold_stale_deliverable: e.target.value })}
+              />
+            </div>
+            <div className="space-y-2">
+              <Label>{tt('staleContract')}</Label>
+              <Input
+                inputMode="numeric"
+                value={form.threshold_stale_contract}
+                onChange={(e) => setForm({ ...form, threshold_stale_contract: e.target.value })}
+              />
+            </div>
+            <div className="space-y-2">
+              <Label>{tt('deadlineRisk')}</Label>
+              <Input
+                inputMode="numeric"
+                value={form.threshold_deadline_risk}
+                onChange={(e) => setForm({ ...form, threshold_deadline_risk: e.target.value })}
+              />
+            </div>
+            <div className="space-y-2">
+              <Label>{tt('activeProjectsWarn')}</Label>
+              <Input
+                inputMode="numeric"
+                value={form.threshold_active_projects}
+                onChange={(e) => setForm({ ...form, threshold_active_projects: e.target.value })}
               />
             </div>
           </div>
