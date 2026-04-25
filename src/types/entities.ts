@@ -656,6 +656,13 @@ export type CostSettings = {
   discount_first_percent: number;
   vat_percent: number;
   deposit_percent: number;
+  dashboard_thresholds?: {
+    stale_lead_days: number;
+    stale_deliverable_days: number;
+    stale_contract_days: number;
+    deadline_risk_days: number;
+    active_projects_warn_above: number;
+  } | null;
   updated_at: string;
   updated_by: string | null;
 };
