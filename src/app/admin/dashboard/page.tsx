@@ -1,3 +1,4 @@
+import { Suspense } from 'react';
 import { getTranslations } from 'next-intl/server';
 import { PageHeader } from '@/components/shared/page-header';
 import { ActivityFeed } from '@/components/admin/dashboard/activity-feed';
@@ -11,6 +12,7 @@ import { ProjectProfitabilityCard } from '@/components/admin/dashboard/finance/p
 import { CrewLoadHeatmap } from '@/components/admin/dashboard/production/crew-load-heatmap';
 import { UpcomingDeadlinesGrouped } from '@/components/admin/dashboard/production/upcoming-deadlines-grouped';
 import { BusinessVelocity } from '@/components/admin/dashboard/velocity/business-velocity';
+import { CardSkeleton, KpiStripSkeleton } from '@/components/admin/dashboard/shared/card-skeletons';
 import { createClient } from '@/lib/supabase/server';
 import { getRecentActivity } from '@/lib/queries';
 import type { ActivityLogWithUser } from '@/types';
@@ -31,10 +33,14 @@ async function getRole(): Promise<'super_admin' | 'admin' | null> {
   return null;
 }
 
+async function ActivityFeedSection() {
+  const recentActivity = await getRecentActivity(10);
+  return <ActivityFeed activities={recentActivity as ActivityLogWithUser[]} />;
+}
+
 export default async function DashboardPage() {
   const t = await getTranslations('dashboard');
   const role = await getRole();
-  const recentActivity = await getRecentActivity(10);
 
   const isSuper = role === 'super_admin';
 
@@ -42,35 +48,61 @@ export default async function DashboardPage() {
     <div className="space-y-6">
       <PageHeader title={t('title')} description={t('description')} />
 
-      {isSuper && <KpiStrip />}
+      {isSuper && (
+        <Suspense fallback={<KpiStripSkeleton />}>
+          <KpiStrip />
+        </Suspense>
+      )}
 
       <div className="grid gap-6 md:grid-cols-2">
-        <TodayAgenda />
-        <RiskPanel />
+        <Suspense fallback={<CardSkeleton rows={6} />}>
+          <TodayAgenda />
+        </Suspense>
+        <Suspense fallback={<CardSkeleton rows={6} />}>
+          <RiskPanel />
+        </Suspense>
       </div>
 
       {isSuper && (
         <>
           <div className="grid gap-6 md:grid-cols-2">
-            <SalesFunnelCard />
-            <RevenueForecastCard />
+            <Suspense fallback={<CardSkeleton rows={5} />}>
+              <SalesFunnelCard />
+            </Suspense>
+            <Suspense fallback={<CardSkeleton rows={5} />}>
+              <RevenueForecastCard />
+            </Suspense>
           </div>
 
           <div className="grid gap-6 md:grid-cols-2">
-            <CostHealthCard />
-            <ProjectProfitabilityCard />
+            <Suspense fallback={<CardSkeleton rows={5} />}>
+              <CostHealthCard />
+            </Suspense>
+            <Suspense fallback={<CardSkeleton rows={5} />}>
+              <ProjectProfitabilityCard />
+            </Suspense>
           </div>
         </>
       )}
 
       <div className="grid gap-6 md:grid-cols-2">
-        <CrewLoadHeatmap />
-        <UpcomingDeadlinesGrouped />
+        <Suspense fallback={<CardSkeleton rows={4} />}>
+          <CrewLoadHeatmap />
+        </Suspense>
+        <Suspense fallback={<CardSkeleton rows={5} />}>
+          <UpcomingDeadlinesGrouped />
+        </Suspense>
       </div>
 
       <div className="grid gap-6 md:grid-cols-2">
-        <ActivityFeed activities={recentActivity as ActivityLogWithUser[]} />
-        {isSuper && <BusinessVelocity />}
+        <Suspense fallback={<CardSkeleton rows={5} />}>
+          <ActivityFeedSection />
+        </Suspense>
+        {isSuper && (
+          <Suspense fallback={<CardSkeleton rows={4} />}>
+            <BusinessVelocity />
+          </Suspense>
+        )}
       </div>
     </div>
   );

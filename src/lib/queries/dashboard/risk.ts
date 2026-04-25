@@ -1,11 +1,10 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-'use server';
-
+import { cache } from 'react';
 import { createClient } from '@/lib/supabase/server';
 import type { RiskItem } from '@/types/dashboard';
 import { ageDays, daysAgoIso, daysAheadIso, getDashboardThresholds, todayIso } from './_utils';
 
-export async function getRiskItems(): Promise<RiskItem[]> {
+export const getRiskItems = cache(async (): Promise<RiskItem[]> => {
   try {
     const supabase = await createClient();
     const t = await getDashboardThresholds();
@@ -132,4 +131,4 @@ export async function getRiskItems(): Promise<RiskItem[]> {
   } catch {
     return [];
   }
-}
+});

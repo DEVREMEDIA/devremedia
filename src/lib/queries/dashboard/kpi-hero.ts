@@ -6,7 +6,7 @@ import {
   buildDailySparkline,
   calcDeltaPct,
   daysAgoIso,
-  getDashboardThresholds,
+  getDashboardSettings,
   startOfMonthIso,
   startOfPreviousMonthIso,
   todayIso,
@@ -17,7 +17,7 @@ const EMPTY_METRIC: KpiMetric = { value: 0, previous: null, deltaPct: null, exce
 export async function getKpiHero(): Promise<KpiHero> {
   try {
     const supabase = await createClient();
-    const thresholds = await getDashboardThresholds();
+    const { thresholds, defaultMargin } = await getDashboardSettings();
     const today = todayIso();
     const monthStart = startOfMonthIso();
     const prevMonthStart = startOfPreviousMonthIso();
@@ -122,18 +122,11 @@ export async function getKpiHero(): Promise<KpiHero> {
     const profitMarginValue = readRpcMargin(profitMarginCurrent.data);
     const profitMarginPrevValue = readRpcMargin(profitMarginPrev.data);
 
-    const { data: settingsRow } = await supabase
-      .from('cost_settings')
-      .select('default_margin')
-      .eq('id', 1)
-      .maybeSingle();
-    const target = Number(settingsRow?.default_margin ?? 0.6);
-
     const profitMargin: KpiMetric = {
       value: profitMarginValue ?? 0,
       previous: profitMarginPrevValue,
       deltaPct: calcDeltaPct(profitMarginValue ?? 0, profitMarginPrevValue),
-      exception: profitMarginValue != null && profitMarginValue < target,
+      exception: profitMarginValue != null && profitMarginValue < defaultMargin,
     };
 
     // Cash overdue
