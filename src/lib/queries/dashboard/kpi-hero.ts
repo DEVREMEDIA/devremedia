@@ -149,16 +149,14 @@ export async function getKpiHero(): Promise<KpiHero> {
     };
 
     // At-risk count via getRiskItems (lazy import to avoid circular)
-    // TODO: Uncomment after T8 (risk.ts) is created
-    // const { getRiskItems } = await import('./risk');
-    // const risks = await getRiskItems();
-    // const atRiskCount: KpiMetric = {
-    //   value: risks.length,
-    //   previous: null,
-    //   deltaPct: null,
-    //   exception: risks.length > 0,
-    // };
-    const atRiskCount: KpiMetric = EMPTY_METRIC;
+    const { getRiskItems } = await import('./risk');
+    const risks = await getRiskItems();
+    const atRiskCount: KpiMetric = {
+      value: risks.length,
+      previous: null,
+      deltaPct: null,
+      exception: risks.length > 0,
+    };
 
     return { revenueMtd, pipeline, activeProjects, profitMargin, cashOverdue, atRiskCount };
   } catch {
