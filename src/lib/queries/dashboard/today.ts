@@ -21,7 +21,7 @@ export async function getTodayAgenda(): Promise<TodayItem[]> {
           .from('calendar_events')
           .select(
             'id, title, description, start_date, all_day, assigned_to, project_id, ' +
-              'assignee:user_profiles!calendar_events_assigned_to_fkey(display_name, avatar_url)',
+              'assignee:user_profiles!calendar_events_assigned_to_user_profiles_fkey(display_name, avatar_url)',
           )
           .eq('event_type', 'filming')
           .gte('start_date', today)
@@ -30,7 +30,7 @@ export async function getTodayAgenda(): Promise<TodayItem[]> {
           .from('calendar_events')
           .select(
             'id, title, description, start_date, all_day, event_type, assigned_to, ' +
-              'assignee:user_profiles!calendar_events_assigned_to_fkey(display_name, avatar_url)',
+              'assignee:user_profiles!calendar_events_assigned_to_user_profiles_fkey(display_name, avatar_url)',
           )
           .in('event_type', ['meeting', 'reminder'])
           .gte('start_date', today)

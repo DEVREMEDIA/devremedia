@@ -15,7 +15,7 @@ export async function getCrewLoad(daysAhead = 14): Promise<CrewLoadRow[]> {
       .from('calendar_events')
       .select(
         'start_date, assigned_to, ' +
-          'assignee:user_profiles!calendar_events_assigned_to_fkey(display_name)',
+          'assignee:user_profiles!calendar_events_assigned_to_user_profiles_fkey(display_name)',
       )
       .eq('event_type', 'filming')
       .gte('start_date', today)
