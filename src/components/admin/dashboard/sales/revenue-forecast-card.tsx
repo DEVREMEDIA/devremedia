@@ -9,12 +9,8 @@ const fmtEur = (n: number) =>
     maximumFractionDigits: 0,
   }).format(n);
 
-export async function RevenueForecastCard() {
-  const t = await getTranslations('dashboard.sales');
-  const forecast = await getRevenueForecast();
-  const max = Math.max(1, forecast.confirmed, forecast.likely, forecast.pipeline);
-
-  const Bar = ({ label, value }: { label: string; value: number }) => (
+function ForecastBar({ label, value, max }: { label: string; value: number; max: number }) {
+  return (
     <div className="space-y-1">
       <div className="flex items-baseline justify-between">
         <span className="text-sm">{label}</span>
@@ -28,6 +24,12 @@ export async function RevenueForecastCard() {
       </div>
     </div>
   );
+}
+
+export async function RevenueForecastCard() {
+  const t = await getTranslations('dashboard.sales');
+  const forecast = await getRevenueForecast();
+  const max = Math.max(1, forecast.confirmed, forecast.likely, forecast.pipeline);
 
   return (
     <Card>
@@ -35,9 +37,9 @@ export async function RevenueForecastCard() {
         <CardTitle className="text-lg">{t('forecast')}</CardTitle>
       </CardHeader>
       <CardContent className="space-y-4">
-        <Bar label={t('confirmed')} value={forecast.confirmed} />
-        <Bar label={t('likely')} value={forecast.likely} />
-        <Bar label={t('pipeline')} value={forecast.pipeline} />
+        <ForecastBar max={max} label={t('confirmed')} value={forecast.confirmed} />
+        <ForecastBar max={max} label={t('likely')} value={forecast.likely} />
+        <ForecastBar max={max} label={t('pipeline')} value={forecast.pipeline} />
         <div className="border-t pt-2 text-sm text-muted-foreground">
           {t('expected90d')}:{' '}
           <span className="font-medium text-foreground">{fmtEur(forecast.expectedTotal90d)}</span>

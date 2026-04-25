@@ -25,11 +25,8 @@ function Row({ p }: { p: DeadlineProject }) {
   );
 }
 
-export async function UpcomingDeadlinesGrouped() {
-  const t = await getTranslations('dashboard.production');
-  const groups = await getUpcomingDeadlinesGrouped(30);
-
-  const Section = ({ title, rows }: { title: string; rows: DeadlineProject[] }) => (
+function DeadlineSection({ title, rows }: { title: string; rows: DeadlineProject[] }) {
+  return (
     <div className="space-y-2">
       <h4 className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
         {title} ({rows.length})
@@ -41,6 +38,11 @@ export async function UpcomingDeadlinesGrouped() {
       )}
     </div>
   );
+}
+
+export async function UpcomingDeadlinesGrouped() {
+  const t = await getTranslations('dashboard.production');
+  const groups = await getUpcomingDeadlinesGrouped(30);
 
   return (
     <Card>
@@ -48,9 +50,9 @@ export async function UpcomingDeadlinesGrouped() {
         <CardTitle className="text-lg">{t('deadlines')}</CardTitle>
       </CardHeader>
       <CardContent className="space-y-4">
-        <Section title={t('atRisk')} rows={groups.atRisk} />
-        <Section title={t('onTrack')} rows={groups.onTrack} />
-        <Section title={t('recentlyDelivered')} rows={groups.recentlyDelivered} />
+        <DeadlineSection title={t('atRisk')} rows={groups.atRisk} />
+        <DeadlineSection title={t('onTrack')} rows={groups.onTrack} />
+        <DeadlineSection title={t('recentlyDelivered')} rows={groups.recentlyDelivered} />
       </CardContent>
     </Card>
   );
