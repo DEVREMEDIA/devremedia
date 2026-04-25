@@ -73,6 +73,25 @@ export const updateCostItemBreakdownSchema = costItemBreakdownSchema
 export type UpdateCostItemBreakdownInput = z.input<typeof updateCostItemBreakdownSchema>;
 
 // ---------------------------------------------------------------------
+// Dashboard thresholds (sub-object inside cost_settings.dashboard_thresholds)
+// ---------------------------------------------------------------------
+
+export const dashboardThresholdsSchema = z.object({
+  stale_lead_days: z
+    .number()
+    .int()
+    .min(1, 'Πρέπει να είναι τουλάχιστον 1 μέρα')
+    .max(365, 'Μέγιστο 365 μέρες')
+    .default(14),
+  stale_deliverable_days: z.number().int().min(1).max(365).default(7),
+  stale_contract_days: z.number().int().min(1).max(365).default(14),
+  deadline_risk_days: z.number().int().min(1).max(365).default(7),
+  active_projects_warn_above: z.number().int().min(1).max(10_000).default(50),
+});
+export type DashboardThresholdsInput = z.input<typeof dashboardThresholdsSchema>;
+export type DashboardThresholdsOutput = z.output<typeof dashboardThresholdsSchema>;
+
+// ---------------------------------------------------------------------
 // Settings (singleton)
 // ---------------------------------------------------------------------
 
@@ -92,6 +111,7 @@ export const costSettingsSchema = z.object({
   discount_first_percent: z.number().min(0).max(1, 'Έκπτωση 0-100%'),
   vat_percent: z.number().min(0).max(1, 'ΦΠΑ 0-100%'),
   deposit_percent: z.number().min(0).max(1, 'Προκαταβολή 0-100%'),
+  dashboard_thresholds: dashboardThresholdsSchema.optional(),
 });
 export type CostSettingsInput = z.input<typeof costSettingsSchema>;
 export type CostSettingsOutput = z.output<typeof costSettingsSchema>;
