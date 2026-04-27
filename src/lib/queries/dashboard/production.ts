@@ -38,9 +38,7 @@ export async function getCrewLoad(daysAhead = 14): Promise<CrewLoadRow[]> {
 
     const days: string[] = [];
     for (let i = 0; i < daysAhead; i++) {
-      const d = new Date(today);
-      d.setUTCDate(d.getUTCDate() + i);
-      days.push(d.toISOString().split('T')[0]);
+      days.push(i === 0 ? today : daysAheadIso(i));
     }
 
     const rows: CrewLoadRow[] = [];
