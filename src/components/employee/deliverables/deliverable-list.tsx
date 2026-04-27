@@ -13,6 +13,7 @@ import { toast } from 'sonner';
 import { useRouter } from 'next/navigation';
 import { useTranslations } from 'next-intl';
 import type { Deliverable } from '@/types/index';
+import { formatFileSize } from '@/lib/format';
 
 interface EmployeeDeliverablesProps {
   projectId: string;
@@ -85,14 +86,6 @@ export function EmployeeDeliverables({ projectId, deliverables }: EmployeeDelive
     } finally {
       setIsUploading(false);
     }
-  };
-
-  const formatFileSize = (bytes: number): string => {
-    if (bytes === 0) return '0 Bytes';
-    const k = 1024;
-    const sizes = ['Bytes', 'KB', 'MB', 'GB'];
-    const i = Math.floor(Math.log(bytes) / Math.log(k));
-    return Math.round((bytes / Math.pow(k, i)) * 100) / 100 + ' ' + sizes[i];
   };
 
   return (

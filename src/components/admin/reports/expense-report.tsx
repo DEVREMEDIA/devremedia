@@ -6,6 +6,7 @@ import { PieChart, Pie, Cell, ResponsiveContainer, Legend, Tooltip } from 'recha
 import { TrendingUp, TrendingDown } from 'lucide-react';
 import type { ExpenseCategoryBreakdown } from '@/lib/queries/reports';
 import { EXPENSE_CATEGORY_LABELS } from '@/lib/constants';
+import { formatEur as formatCurrency } from '@/lib/format';
 
 type ExpenseReportProps = {
   expensesByCategory: ExpenseCategoryBreakdown[];
@@ -30,13 +31,6 @@ const EXPENSE_COLORS = [
 
 export function ExpenseReport({ expensesByCategory, profitData }: ExpenseReportProps) {
   const t = useTranslations('reports');
-
-  const formatCurrency = (value: number) => {
-    return new Intl.NumberFormat('el-GR', {
-      style: 'currency',
-      currency: 'EUR',
-    }).format(value);
-  };
 
   const chartData = expensesByCategory.map((item, index) => ({
     name: EXPENSE_CATEGORY_LABELS[item.category],

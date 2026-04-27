@@ -34,15 +34,13 @@ import { StatusBadge } from '@/components/shared/status-badge';
 import { EmptyState } from '@/components/shared/empty-state';
 import { CreateInvoiceDrawer } from '@/components/admin/invoices/create-invoice-drawer';
 import { cn } from '@/lib/utils';
+import { formatEur as formatCurrency } from '@/lib/format';
 
 interface InvoicesTabProps {
   projectId: string;
   clientId: string;
   projectTitle: string;
 }
-
-const formatCurrency = (amount: number) =>
-  new Intl.NumberFormat('el-GR', { style: 'currency', currency: 'EUR' }).format(amount);
 
 const isOverdue = (invoice: InvoiceWithRelations) =>
   invoice.status !== 'paid' && invoice.status !== 'cancelled' && isPast(new Date(invoice.due_date));

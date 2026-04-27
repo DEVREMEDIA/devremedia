@@ -4,10 +4,21 @@ import * as React from 'react';
 import { PageHeader } from '@/components/shared/page-header';
 import { DataTable } from '@/components/shared/data-table';
 import { Button } from '@/components/ui/button';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 import { Input } from '@/components/ui/input';
 import { ConfirmDialog } from '@/components/shared/confirm-dialog';
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
 import { ExpenseForm } from '@/components/admin/invoices/expense-form';
 import { QuarterlyExport } from '@/components/admin/invoices/quarterly-export';
 import { ColumnDef } from '@tanstack/react-table';
@@ -20,15 +31,12 @@ import { format } from 'date-fns';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import type { Expense, Project } from '@/types';
 import { useTranslations } from 'next-intl';
+import { formatEur as formatCurrency } from '@/lib/format';
 
 interface ExpensesContentProps {
   expenses: Expense[];
   projects: Project[];
 }
-
-const formatCurrency = (amount: number) => {
-  return new Intl.NumberFormat('el-GR', { style: 'currency', currency: 'EUR' }).format(amount);
-};
 
 export function ExpensesContent({ expenses: initialExpenses, projects }: ExpensesContentProps) {
   const router = useRouter();
@@ -47,15 +55,15 @@ export function ExpensesContent({ expenses: initialExpenses, projects }: Expense
     let filtered = initialExpenses;
 
     if (categoryFilter !== 'all') {
-      filtered = filtered.filter(expense => expense.category === categoryFilter);
+      filtered = filtered.filter((expense) => expense.category === categoryFilter);
     }
 
     if (dateFrom) {
-      filtered = filtered.filter(expense => new Date(expense.date) >= new Date(dateFrom));
+      filtered = filtered.filter((expense) => new Date(expense.date) >= new Date(dateFrom));
     }
 
     if (dateTo) {
-      filtered = filtered.filter(expense => new Date(expense.date) <= new Date(dateTo));
+      filtered = filtered.filter((expense) => new Date(expense.date) <= new Date(dateTo));
     }
 
     return filtered;
@@ -84,7 +92,7 @@ export function ExpensesContent({ expenses: initialExpenses, projects }: Expense
 
   const getProjectName = (projectId?: string | null) => {
     if (!projectId) return '-';
-    const project = projects.find(p => p.id === projectId);
+    const project = projects.find((p) => p.id === projectId);
     return project ? project.title : '-';
   };
 
@@ -92,7 +100,9 @@ export function ExpensesContent({ expenses: initialExpenses, projects }: Expense
     {
       accessorKey: 'category',
       header: t('expenseCategory'),
-      cell: ({ row }) => EXPENSE_CATEGORY_LABELS[row.original.category as keyof typeof EXPENSE_CATEGORY_LABELS] || row.original.category,
+      cell: ({ row }) =>
+        EXPENSE_CATEGORY_LABELS[row.original.category as keyof typeof EXPENSE_CATEGORY_LABELS] ||
+        row.original.category,
     },
     {
       accessorKey: 'description',
@@ -233,10 +243,7 @@ export function ExpensesContent({ expenses: initialExpenses, projects }: Expense
         }}
       />
 
-      <QuarterlyExport
-        open={exportDialogOpen}
-        onOpenChange={setExportDialogOpen}
-      />
+      <QuarterlyExport open={exportDialogOpen} onOpenChange={setExportDialogOpen} />
 
       <ConfirmDialog
         open={deleteDialogOpen}

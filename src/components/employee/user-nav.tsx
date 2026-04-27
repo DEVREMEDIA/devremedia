@@ -16,22 +16,12 @@ import { useAuth } from '@/hooks/use-auth';
 import { signOut } from '@/lib/actions/auth';
 import { useRouter } from 'next/navigation';
 import { useTranslations } from 'next-intl';
+import { getInitials } from '@/lib/format';
 
 export function UserNav() {
   const { user, profile } = useAuth();
   const router = useRouter();
   const t = useTranslations('common');
-
-  const getInitials = () => {
-    if (!profile?.display_name && !user?.email) return 'U';
-    const name = profile?.display_name || user?.email || '';
-    return name
-      .split(' ')
-      .map((n) => n[0])
-      .join('')
-      .toUpperCase()
-      .slice(0, 2);
-  };
 
   const handleSignOut = async () => {
     await signOut();
@@ -43,7 +33,9 @@ export function UserNav() {
       <DropdownMenuTrigger asChild>
         <Button variant="ghost" className="relative h-10 w-10 rounded-full">
           <Avatar className="h-10 w-10">
-            <AvatarFallback>{getInitials()}</AvatarFallback>
+            <AvatarFallback>
+              {getInitials(profile?.display_name || user?.email, 'U')}
+            </AvatarFallback>
           </Avatar>
         </Button>
       </DropdownMenuTrigger>

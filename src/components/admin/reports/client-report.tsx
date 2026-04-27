@@ -11,6 +11,7 @@ import {
   TableRow,
 } from '@/components/ui/table';
 import type { ClientRevenue } from '@/lib/queries/reports';
+import { formatEur as formatCurrency } from '@/lib/format';
 
 type ClientReportProps = {
   topClients: ClientRevenue[];
@@ -18,13 +19,6 @@ type ClientReportProps = {
 
 export function ClientReport({ topClients }: ClientReportProps) {
   const t = useTranslations('reports');
-
-  const formatCurrency = (value: number) => {
-    return new Intl.NumberFormat('el-GR', {
-      style: 'currency',
-      currency: 'EUR',
-    }).format(value);
-  };
 
   return (
     <Card>
@@ -34,9 +28,7 @@ export function ClientReport({ topClients }: ClientReportProps) {
       </CardHeader>
       <CardContent>
         {topClients.length === 0 ? (
-          <p className="text-sm text-muted-foreground text-center py-8">
-            No client data available
-          </p>
+          <p className="text-sm text-muted-foreground text-center py-8">No client data available</p>
         ) : (
           <Table>
             <TableHeader>

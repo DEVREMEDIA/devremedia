@@ -1,6 +1,6 @@
 'use server';
 
-import { createClient } from '@/lib/supabase/server';
+import { requireAdmin } from '@/lib/auth-helpers';
 import { createAdminClient } from '@/lib/supabase/admin';
 import { revalidatePath } from 'next/cache';
 import { updateGoogleEvent, deleteGoogleEvent } from '@/lib/google-calendar';
@@ -10,28 +10,6 @@ import type {
   GoogleEventChangedData,
   GoogleEventDeletedData,
 } from '@/types/entities';
-
-// --- Auth helper ---
-
-async function requireAdmin() {
-  const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-  if (!user) return { user: null, error: 'Unauthorized' as const };
-
-  const { data: profile } = await supabase
-    .from('user_profiles')
-    .select('role')
-    .eq('id', user.id)
-    .single();
-
-  if (!profile || !['super_admin', 'admin'].includes(profile.role)) {
-    return { user: null, error: 'Forbidden' as const };
-  }
-
-  return { user, error: null };
-}
 
 // --- Handle new Google event ---
 

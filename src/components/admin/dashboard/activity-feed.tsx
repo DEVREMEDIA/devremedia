@@ -6,6 +6,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { formatDistanceToNow } from 'date-fns';
 import type { ActivityLogWithUser } from '@/types';
+import { getInitials } from '@/lib/format';
 
 type ActivityFeedProps = {
   activities: ActivityLogWithUser[];
@@ -30,15 +31,6 @@ function getActivityLink(activity: ActivityLogWithUser): string | null {
 
 export function ActivityFeed({ activities }: ActivityFeedProps) {
   const t = useTranslations('dashboard');
-
-  const getInitials = (name: string) => {
-    return name
-      .split(' ')
-      .map((n) => n[0])
-      .join('')
-      .toUpperCase()
-      .slice(0, 2);
-  };
 
   const formatAction = (activity: ActivityLogWithUser) => {
     const entityTypeLabel = activity.entity_type.replace('_', ' ');

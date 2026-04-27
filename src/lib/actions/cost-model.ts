@@ -1,6 +1,6 @@
 'use server';
 
-import { createClient } from '@/lib/supabase/server';
+import { requireAdmin } from '@/lib/auth-helpers';
 import {
   costCategorySchema,
   updateCostCategorySchema,
@@ -17,29 +17,6 @@ import type {
   CostSummary,
 } from '@/types/index';
 import { revalidatePath } from 'next/cache';
-
-// ---------------------------------------------------------------------
-// Internal helpers
-// ---------------------------------------------------------------------
-
-async function requireAdmin() {
-  const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-  if (!user) return { supabase, error: 'Unauthorized' as const, user: null };
-
-  const { data: profile } = await supabase
-    .from('user_profiles')
-    .select('role')
-    .eq('id', user.id)
-    .single();
-
-  if (!profile || !['super_admin', 'admin'].includes(profile.role)) {
-    return { supabase, error: 'Forbidden: admin access required' as const, user: null };
-  }
-  return { supabase, error: null, user };
-}
 
 function revalidateCostModel() {
   revalidatePath('/admin/cost-model');

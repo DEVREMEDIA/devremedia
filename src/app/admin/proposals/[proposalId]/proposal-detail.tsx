@@ -23,6 +23,7 @@ import type {
   ProposalWithRelations,
 } from '@/types/index';
 import { deleteProposal, markProposalSent, setProposalResponse } from '@/lib/actions/proposals';
+import { formatEur as fmtEUR } from '@/lib/format';
 
 interface Props {
   proposal: ProposalWithRelations;
@@ -36,14 +37,6 @@ const statusStyles: Record<ProposalStatus, string> = {
   rejected: 'bg-red-500/15 text-red-400 border-red-500/30',
   expired: 'bg-amber-500/15 text-amber-400 border-amber-500/30',
 };
-
-function fmtEUR(n: number) {
-  return new Intl.NumberFormat('el-GR', {
-    style: 'currency',
-    currency: 'EUR',
-    minimumFractionDigits: 2,
-  }).format(n);
-}
 
 export function ProposalDetail({ proposal, packages }: Props) {
   const t = useTranslations('proposals');

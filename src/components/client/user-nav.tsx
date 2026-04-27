@@ -16,21 +16,12 @@ import {
 import { useAuth } from '@/hooks/use-auth';
 import { signOut } from '@/lib/actions/auth';
 import { useTranslations } from 'next-intl';
+import { getInitials } from '@/lib/format';
 
 export function UserNav() {
   const { profile, user } = useAuth();
   const router = useRouter();
   const t = useTranslations('common');
-
-  const getInitials = (name: string | null | undefined) => {
-    if (!name) return 'U';
-    return name
-      .split(' ')
-      .map((n) => n[0])
-      .join('')
-      .toUpperCase()
-      .slice(0, 2);
-  };
 
   const handleSignOut = async () => {
     await signOut();
@@ -45,7 +36,7 @@ export function UserNav() {
         <Button variant="ghost" className="relative h-9 w-9 rounded-full">
           <Avatar className="h-9 w-9">
             <AvatarImage src={profile?.avatar_url || undefined} alt={displayName} />
-            <AvatarFallback>{getInitials(profile?.display_name)}</AvatarFallback>
+            <AvatarFallback>{getInitials(profile?.display_name, 'U')}</AvatarFallback>
           </Avatar>
         </Button>
       </DropdownMenuTrigger>
@@ -53,9 +44,7 @@ export function UserNav() {
         <DropdownMenuLabel className="font-normal">
           <div className="flex flex-col space-y-1">
             <p className="text-sm font-medium leading-none">{displayName}</p>
-            <p className="text-xs leading-none text-muted-foreground">
-              {user?.email}
-            </p>
+            <p className="text-xs leading-none text-muted-foreground">{user?.email}</p>
           </div>
         </DropdownMenuLabel>
         <DropdownMenuSeparator />

@@ -32,6 +32,7 @@ import {
   updateProposalPackage,
   deleteProposalPackage,
 } from '@/lib/actions/proposal-packages';
+import { formatEur as fmtEUR } from '@/lib/format';
 
 interface Props {
   packages: ProposalPackageWithPrice[];
@@ -65,14 +66,6 @@ const EMPTY: FormState = {
   sort_order: 0,
   active: true,
 };
-
-function fmtEUR(n: number) {
-  return new Intl.NumberFormat('el-GR', {
-    style: 'currency',
-    currency: 'EUR',
-    minimumFractionDigits: 2,
-  }).format(n);
-}
 
 function numeric(v: string, fallback: number | null = null): number | null {
   if (v.trim() === '') return fallback;

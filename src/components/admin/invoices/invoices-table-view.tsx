@@ -31,6 +31,7 @@ import { toast } from 'sonner';
 import { bulkUpdateInvoiceStatus, bulkDeleteInvoices } from '@/lib/actions/invoices';
 import { Send, CheckCircle, Trash2, Search, ChevronLeft, ChevronRight } from 'lucide-react';
 import type { InvoiceStatus } from '@/lib/constants';
+import { formatEur as formatCurrency } from '@/lib/format';
 
 interface Invoice {
   id: string;
@@ -45,10 +46,6 @@ interface Invoice {
 interface InvoicesTableViewProps {
   invoices: Invoice[];
 }
-
-const formatCurrency = (amount: number) => {
-  return new Intl.NumberFormat('el-GR', { style: 'currency', currency: 'EUR' }).format(amount);
-};
 
 export function InvoicesTableView({ invoices }: InvoicesTableViewProps) {
   const t = useTranslations('invoices');

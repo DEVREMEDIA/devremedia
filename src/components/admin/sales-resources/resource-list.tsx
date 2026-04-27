@@ -9,6 +9,7 @@ import { ConfirmDialog } from '@/components/shared/confirm-dialog';
 import { deleteSalesResource, getSalesResourceDownloadUrl } from '@/lib/actions/sales-resources';
 import { toast } from 'sonner';
 import { useTranslations } from 'next-intl';
+import { formatFileSize } from '@/lib/format';
 
 interface Resource {
   id: string;
@@ -131,12 +132,6 @@ export function ResourceList({ resources, categories, onDelete }: ResourceListPr
     setViewerOpen(false);
     setViewerUrl(null);
     setViewerResource(null);
-  };
-
-  const formatFileSize = (bytes: number): string => {
-    if (bytes < 1024) return `${bytes} B`;
-    if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`;
-    return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
   };
 
   // Group resources by category

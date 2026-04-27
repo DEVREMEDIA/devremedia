@@ -32,6 +32,7 @@ import {
   deleteCostItemBreakdown,
   updateCostItemBreakdown,
 } from '@/lib/actions/cost-item-breakdown';
+import { formatEur as fmtEUR } from '@/lib/format';
 
 interface Props {
   initialItems: CostItemWithCategory[];
@@ -58,14 +59,6 @@ const EMPTY: FormState = {
   sort_order: 0,
   active: true,
 };
-
-function fmtEUR(n: number) {
-  return new Intl.NumberFormat('el-GR', {
-    style: 'currency',
-    currency: 'EUR',
-    minimumFractionDigits: 2,
-  }).format(n);
-}
 
 function parseCost(v: string): number | null {
   const n = Number(v.replace(',', '.'));
