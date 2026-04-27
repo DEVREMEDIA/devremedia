@@ -73,44 +73,6 @@ export async function getMonthlyRevenue(dateRange?: DateRange): Promise<MonthlyR
   }
 }
 
-export async function getPendingInvoiceTotal(): Promise<number> {
-  try {
-    const supabase = await createClient();
-    const { data, error } = await supabase
-      .from('invoices')
-      .select('total')
-      .in('status', ['sent', 'viewed', 'overdue']);
-
-    if (error || !data) return 0;
-    return data.reduce((sum, invoice) => sum + (invoice.total || 0), 0);
-  } catch {
-    return 0;
-  }
-}
-
-export async function getRevenueThisMonth(): Promise<number> {
-  try {
-    const supabase = await createClient();
-    const now = new Date();
-    const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1).toISOString().split('T')[0];
-    const endOfMonth = new Date(now.getFullYear(), now.getMonth() + 1, 0)
-      .toISOString()
-      .split('T')[0];
-
-    const { data, error } = await supabase
-      .from('invoices')
-      .select('total')
-      .eq('status', 'paid')
-      .gte('paid_at', startOfMonth)
-      .lte('paid_at', endOfMonth);
-
-    if (error || !data) return 0;
-    return data.reduce((sum, invoice) => sum + (invoice.total || 0), 0);
-  } catch {
-    return 0;
-  }
-}
-
 export async function getPaymentMethodBreakdown(
   dateRange?: DateRange,
 ): Promise<PaymentMethodBreakdown[]> {
