@@ -46,30 +46,45 @@ export async function getDashboardThresholds(): Promise<DashboardThresholdsOutpu
   return thresholds;
 }
 
+// All dashboard date helpers operate in Europe/Athens. The DMS users
+// experience the calendar in Athens local time, so "today", "this month",
+// and "30 days ago" must match what the user sees in /admin/calendar
+// rather than UTC. Without this, near midnight (Athens) the dashboard
+// reads the previous/next day, and around month boundaries the KPI
+// "revenue MTD" leaks into the wrong month.
+const ATHENS_TZ = 'Europe/Athens';
+
+function athensIso(date: Date): string {
+  // 'en-CA' produces YYYY-MM-DD when combined with timeZone formatting.
+  return date.toLocaleDateString('en-CA', { timeZone: ATHENS_TZ });
+}
+
 export function todayIso(): string {
-  return new Date().toISOString().split('T')[0];
+  return athensIso(new Date());
 }
 
 export function daysAgoIso(days: number): string {
-  const d = new Date();
-  d.setUTCDate(d.getUTCDate() - days);
-  return d.toISOString().split('T')[0];
+  return athensIso(new Date(Date.now() - days * 86_400_000));
 }
 
 export function daysAheadIso(days: number): string {
-  const d = new Date();
-  d.setUTCDate(d.getUTCDate() + days);
-  return d.toISOString().split('T')[0];
+  return athensIso(new Date(Date.now() + days * 86_400_000));
 }
 
 export function startOfMonthIso(): string {
-  const d = new Date();
-  return new Date(Date.UTC(d.getUTCFullYear(), d.getUTCMonth(), 1)).toISOString().split('T')[0];
+  // YYYY-MM-01 of the current Athens month.
+  return `${athensIso(new Date()).slice(0, 7)}-01`;
 }
 
 export function startOfPreviousMonthIso(): string {
-  const d = new Date();
-  return new Date(Date.UTC(d.getUTCFullYear(), d.getUTCMonth() - 1, 1)).toISOString().split('T')[0];
+  const [year, month] = athensIso(new Date()).split('-').map(Number);
+  let prevYear = year;
+  let prevMonth = month - 1;
+  if (prevMonth === 0) {
+    prevMonth = 12;
+    prevYear -= 1;
+  }
+  return `${prevYear}-${String(prevMonth).padStart(2, '0')}-01`;
 }
 
 export function calcDeltaPct(current: number, previous: number | null): number | null {
@@ -88,11 +103,8 @@ export function buildDailySparkline(
 ): number[] {
   const map = new Map(rows.map((r) => [r.date, r.value]));
   const result: number[] = [];
-  const today = new Date();
   for (let i = days - 1; i >= 0; i--) {
-    const d = new Date(today);
-    d.setUTCDate(d.getUTCDate() - i);
-    const key = d.toISOString().split('T')[0];
+    const key = i === 0 ? todayIso() : daysAgoIso(i);
     result.push(map.get(key) ?? 0);
   }
   return result;

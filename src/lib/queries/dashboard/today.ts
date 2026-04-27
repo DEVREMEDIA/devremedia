@@ -3,17 +3,27 @@
 
 import { createClient } from '@/lib/supabase/server';
 import type { TodayItem } from '@/types/dashboard';
-import { todayIso } from './_utils';
+import { daysAheadIso, todayIso } from './_utils';
+
+const ATHENS_TZ = 'Europe/Athens';
+
+// HH:MM in Athens local time. Calendar events store start_date as
+// timestamptz; without explicit timezone we'd render them in UTC and
+// the dashboard time would not match what /admin/calendar shows.
+function athensHHMM(iso: string): string {
+  return new Date(iso).toLocaleTimeString('en-GB', {
+    timeZone: ATHENS_TZ,
+    hour: '2-digit',
+    minute: '2-digit',
+    hour12: false,
+  });
+}
 
 export async function getTodayAgenda(): Promise<TodayItem[]> {
   try {
     const supabase = await createClient();
     const today = todayIso();
-    const tomorrow = (() => {
-      const d = new Date(today);
-      d.setUTCDate(d.getUTCDate() + 1);
-      return d.toISOString().split('T')[0];
-    })();
+    const tomorrow = daysAheadIso(1);
 
     const [filming, meetings, tasks, projectStarts, projectDeadlines, invoicesDue, deliverables] =
       await Promise.all([
@@ -78,7 +88,7 @@ export async function getTodayAgenda(): Promise<TodayItem[]> {
         kind: 'filming',
         title: row.title,
         subtitle: row.description ?? undefined,
-        time: row.all_day ? null : new Date(row.start_date).toISOString().substring(11, 16),
+        time: row.all_day ? null : athensHHMM(row.start_date),
         href: row.project_id ? `/admin/projects/${row.project_id}` : '/admin/calendar',
         assigneeName: assignee?.display_name ?? null,
         assigneeAvatarUrl: assignee?.avatar_url ?? null,
@@ -93,7 +103,7 @@ export async function getTodayAgenda(): Promise<TodayItem[]> {
         kind: 'meeting',
         title: row.title,
         subtitle: row.description ?? undefined,
-        time: row.all_day ? null : new Date(row.start_date).toISOString().substring(11, 16),
+        time: row.all_day ? null : athensHHMM(row.start_date),
         href: '/admin/calendar',
         assigneeName: assignee?.display_name ?? null,
         assigneeAvatarUrl: assignee?.avatar_url ?? null,
