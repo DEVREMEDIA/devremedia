@@ -12,6 +12,7 @@ import { STORAGE_BUCKETS, MAX_FILE_SIZES } from '@/lib/constants';
 import { cn } from '@/lib/utils';
 import type { Attachment } from '@/lib/schemas/message';
 import { useTranslations } from 'next-intl';
+import { formatFileSize } from '@/lib/format';
 
 interface MessageInputProps {
   projectId: string;
@@ -23,14 +24,6 @@ interface MessageInputProps {
 interface PendingFile {
   file: File;
   preview: string;
-}
-
-function formatFileSize(bytes: number): string {
-  if (bytes === 0) return '0 Bytes';
-  const k = 1024;
-  const sizes = ['Bytes', 'KB', 'MB', 'GB'];
-  const i = Math.floor(Math.log(bytes) / Math.log(k));
-  return Math.round((bytes / Math.pow(k, i)) * 100) / 100 + ' ' + sizes[i];
 }
 
 export function MessageInput({

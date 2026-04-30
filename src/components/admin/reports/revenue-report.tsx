@@ -16,6 +16,7 @@ import {
   Legend,
 } from 'recharts';
 import type { MonthlyRevenue, PaymentMethodBreakdown } from '@/lib/queries/reports';
+import { formatEurInt as formatCurrency } from '@/lib/format';
 
 type RevenueReportProps = {
   monthlyData: MonthlyRevenue[];
@@ -32,15 +33,6 @@ const PAYMENT_COLORS = [
 
 export function RevenueReport({ monthlyData, paymentMethodData }: RevenueReportProps) {
   const t = useTranslations('reports');
-
-  const formatCurrency = (value: number) => {
-    return new Intl.NumberFormat('el-GR', {
-      style: 'currency',
-      currency: 'EUR',
-      minimumFractionDigits: 0,
-      maximumFractionDigits: 0,
-    }).format(value);
-  };
 
   const formatMonth = (month: string) => {
     const date = new Date(month + '-01');

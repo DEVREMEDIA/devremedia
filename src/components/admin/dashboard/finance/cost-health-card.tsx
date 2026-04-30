@@ -2,13 +2,8 @@ import { getTranslations } from 'next-intl/server';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { getCostModelHealth } from '@/lib/queries/dashboard/finance';
+import { formatEurInt as fmtEur } from '@/lib/format';
 
-const fmtEur = (n: number) =>
-  new Intl.NumberFormat('el-GR', {
-    style: 'currency',
-    currency: 'EUR',
-    maximumFractionDigits: 0,
-  }).format(n);
 const fmtPct = (n: number | null) => (n == null ? '—' : `${(n * 100).toFixed(1)}%`);
 
 export async function CostHealthCard() {

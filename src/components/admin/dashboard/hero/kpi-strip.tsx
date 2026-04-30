@@ -2,13 +2,8 @@ import { getTranslations } from 'next-intl/server';
 import { Activity, AlertTriangle, Briefcase, Coins, TrendingUp, Wallet } from 'lucide-react';
 import { KpiCard } from './kpi-card';
 import { getKpiHero } from '@/lib/queries/dashboard/kpi-hero';
+import { formatEurInt as fmtEur } from '@/lib/format';
 
-const fmtEur = (n: number) =>
-  new Intl.NumberFormat('el-GR', {
-    style: 'currency',
-    currency: 'EUR',
-    maximumFractionDigits: 0,
-  }).format(n);
 const fmtPct = (n: number) => `${(n * 100).toFixed(1)}%`;
 const fmtInt = (n: number) => n.toLocaleString('el-GR');
 

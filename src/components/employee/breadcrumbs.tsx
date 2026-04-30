@@ -12,13 +12,7 @@ import {
 } from '@/components/ui/breadcrumb';
 import { Home } from 'lucide-react';
 import { useTranslations } from 'next-intl';
-
-function formatSegment(segment: string): string {
-  return segment
-    .split('-')
-    .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
-    .join(' ');
-}
+import { formatPathSegment as formatSegment } from '@/lib/format';
 
 export function Breadcrumbs() {
   const pathname = usePathname();
@@ -34,10 +28,10 @@ export function Breadcrumbs() {
 
   // Segment-to-translation-key mapping
   const segmentLabels: Record<string, string> = {
-    'dashboard': t('dashboard'),
-    'tasks': t('myTasks'),
-    'university': t('university'),
-    'settings': t('settings'),
+    dashboard: t('dashboard'),
+    tasks: t('myTasks'),
+    university: t('university'),
+    settings: t('settings'),
   };
 
   return (

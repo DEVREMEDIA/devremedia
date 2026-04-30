@@ -28,6 +28,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
+import { formatEur as formatCurrency } from '@/lib/format';
 
 interface Invoice {
   id: string;
@@ -54,10 +55,6 @@ interface ClientGroup {
   balance: number;
   overdueCount: number;
 }
-
-const formatCurrency = (amount: number) => {
-  return new Intl.NumberFormat('el-GR', { style: 'currency', currency: 'EUR' }).format(amount);
-};
 
 function groupByClient(invoices: Invoice[]): ClientGroup[] {
   const groups = new Map<string, ClientGroup>();

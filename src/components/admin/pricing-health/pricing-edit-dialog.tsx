@@ -19,6 +19,7 @@ import type { ProjectPricingAnalysis } from '@/types/index';
 import { PriceRangeBar } from './price-range-bar';
 import { HealthStatusBadge } from './health-status-badge';
 import { RotateCcw } from 'lucide-react';
+import { formatEur as fmtEUR } from '@/lib/format';
 
 interface Props {
   open: boolean;
@@ -28,14 +29,6 @@ interface Props {
   minMultiplier: number;
   targetMultiplier: number;
   maxMultiplier: number;
-}
-
-function fmtEUR(n: number) {
-  return new Intl.NumberFormat('el-GR', {
-    style: 'currency',
-    currency: 'EUR',
-    maximumFractionDigits: 2,
-  }).format(n);
 }
 
 function classifyLocal(args: {

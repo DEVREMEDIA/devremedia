@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { useTranslations } from 'next-intl';
+import { formatEur as formatCurrency } from '@/lib/format';
 import { Client } from '@/types/index';
 import type { ActivityLogWithUser } from '@/types/relations';
 import { getActivityByClient } from '@/lib/actions/activity';
@@ -10,8 +11,16 @@ import { Separator } from '@/components/ui/separator';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Button } from '@/components/ui/button';
 import {
-  Mail, Phone, MapPin, FileText, Shield, ShieldOff,
-  Briefcase, Receipt, CreditCard, AlertCircle,
+  Mail,
+  Phone,
+  MapPin,
+  FileText,
+  Shield,
+  ShieldOff,
+  Briefcase,
+  Receipt,
+  CreditCard,
+  AlertCircle,
 } from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
 
@@ -49,10 +58,27 @@ export function ClientOverviewTab({ client, stats, onViewAllActivity }: ClientOv
     <div className="space-y-6">
       {/* Stats Row */}
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-        <StatCard label={t('stats.totalProjects')} value={stats.totalProjects.toString()} icon={Briefcase} />
-        <StatCard label={t('stats.totalInvoiced')} value={formatCurrency(stats.totalInvoiced)} icon={Receipt} />
-        <StatCard label={t('stats.totalPaid')} value={formatCurrency(stats.totalPaid)} icon={CreditCard} />
-        <StatCard label={t('stats.unpaidBalance')} value={formatCurrency(unpaidBalance)} icon={AlertCircle} highlight={unpaidBalance > 0} />
+        <StatCard
+          label={t('stats.totalProjects')}
+          value={stats.totalProjects.toString()}
+          icon={Briefcase}
+        />
+        <StatCard
+          label={t('stats.totalInvoiced')}
+          value={formatCurrency(stats.totalInvoiced)}
+          icon={Receipt}
+        />
+        <StatCard
+          label={t('stats.totalPaid')}
+          value={formatCurrency(stats.totalPaid)}
+          icon={CreditCard}
+        />
+        <StatCard
+          label={t('stats.unpaidBalance')}
+          value={formatCurrency(unpaidBalance)}
+          icon={AlertCircle}
+          highlight={unpaidBalance > 0}
+        />
       </div>
 
       {/* Two-column layout */}
@@ -64,11 +90,21 @@ export function ClientOverviewTab({ client, stats, onViewAllActivity }: ClientOv
               <CardTitle>{t('contactInfo')}</CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
-              <InfoRow icon={Mail} label="Email" value={client.email} href={`mailto:${client.email}`} />
+              <InfoRow
+                icon={Mail}
+                label="Email"
+                value={client.email}
+                href={`mailto:${client.email}`}
+              />
               {client.phone && (
                 <>
                   <Separator />
-                  <InfoRow icon={Phone} label={t('phoneNumber')} value={client.phone} href={`tel:${client.phone}`} />
+                  <InfoRow
+                    icon={Phone}
+                    label={t('phoneNumber')}
+                    value={client.phone}
+                    href={`tel:${client.phone}`}
+                  />
                 </>
               )}
               {client.address && (
@@ -140,7 +176,12 @@ export function ClientOverviewTab({ client, stats, onViewAllActivity }: ClientOv
   );
 }
 
-function StatCard({ label, value, icon: Icon, highlight }: {
+function StatCard({
+  label,
+  value,
+  icon: Icon,
+  highlight,
+}: {
   label: string;
   value: string;
   icon: React.ComponentType<{ className?: string }>;
@@ -161,7 +202,12 @@ function StatCard({ label, value, icon: Icon, highlight }: {
   );
 }
 
-function InfoRow({ icon: Icon, label, value, href }: {
+function InfoRow({
+  icon: Icon,
+  label,
+  value,
+  href,
+}: {
   icon: React.ComponentType<{ className?: string }>;
   label: string;
   value: string;
@@ -173,7 +219,9 @@ function InfoRow({ icon: Icon, label, value, href }: {
       <div className="flex-1 space-y-1">
         <p className="text-sm font-medium">{label}</p>
         {href ? (
-          <a href={href} className="text-sm text-muted-foreground hover:underline">{value}</a>
+          <a href={href} className="text-sm text-muted-foreground hover:underline">
+            {value}
+          </a>
         ) : (
           <p className="text-sm text-muted-foreground">{value}</p>
         )}
@@ -196,8 +244,4 @@ function ActivityEntry({ entry }: { entry: ActivityLogWithUser }) {
       </span>
     </div>
   );
-}
-
-function formatCurrency(amount: number): string {
-  return amount.toLocaleString(undefined, { style: 'currency', currency: 'EUR' });
 }

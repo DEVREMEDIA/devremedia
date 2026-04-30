@@ -4,13 +4,7 @@ import { Activity } from 'lucide-react';
 import { DeltaBadge } from '../shared/delta-badge';
 import { getBusinessVelocity } from '@/lib/queries/dashboard/velocity';
 import type { VelocityCounter } from '@/types/dashboard';
-
-const fmtEur = (n: number) =>
-  new Intl.NumberFormat('el-GR', {
-    style: 'currency',
-    currency: 'EUR',
-    maximumFractionDigits: 0,
-  }).format(n);
+import { formatEurInt as fmtEur } from '@/lib/format';
 
 function VelocityRow({ label, c }: { label: string; c: VelocityCounter }) {
   const deltaPct =

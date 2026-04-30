@@ -5,6 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import type { CostSummary } from '@/types/index';
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip } from 'recharts';
 import { Calculator, Clock, Euro } from 'lucide-react';
+import { formatEur as fmtEUR } from '@/lib/format';
 
 interface Props {
   initialSummary: CostSummary | null;
@@ -21,14 +22,6 @@ const COLORS = [
   '#facc15', // amber
   '#f472b6', // pink
 ];
-
-function fmtEUR(n: number) {
-  return new Intl.NumberFormat('el-GR', {
-    style: 'currency',
-    currency: 'EUR',
-    minimumFractionDigits: 2,
-  }).format(n);
-}
 
 export function CostSummaryTab({ initialSummary }: Props) {
   const t = useTranslations('costModel.summary');

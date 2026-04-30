@@ -6,6 +6,7 @@ import type { DeliverableStatus } from '@/lib/constants';
 import { Calendar, FileVideo } from 'lucide-react';
 import { format } from 'date-fns';
 import { cn } from '@/lib/utils';
+import { formatFileSize } from '@/lib/format';
 
 type Deliverable = {
   id: string;
@@ -41,15 +42,6 @@ const getStatusColor = (status: DeliverableStatus) => {
     default:
       return '';
   }
-};
-
-const formatFileSize = (bytes: number | null) => {
-  if (!bytes) return 'Unknown';
-  if (bytes === 0) return '0 Bytes';
-  const k = 1024;
-  const sizes = ['Bytes', 'KB', 'MB', 'GB'];
-  const i = Math.floor(Math.log(bytes) / Math.log(k));
-  return Math.round((bytes / Math.pow(k, i)) * 100) / 100 + ' ' + sizes[i];
 };
 
 export function VersionHistory({ deliverables, currentId }: VersionHistoryProps) {
@@ -104,7 +96,9 @@ export function VersionHistory({ deliverables, currentId }: VersionHistoryProps)
                 <Calendar className="h-3 w-3" />
                 {format(new Date(deliverable.created_at), 'MMM d, yyyy h:mm a')}
               </div>
-              <div>Size: {formatFileSize(deliverable.file_size)}</div>
+              <div>
+                Size: {deliverable.file_size ? formatFileSize(deliverable.file_size) : 'Unknown'}
+              </div>
             </div>
           </div>
         ))}

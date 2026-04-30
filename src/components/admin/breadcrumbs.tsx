@@ -12,13 +12,7 @@ import {
 } from '@/components/ui/breadcrumb';
 import { Home } from 'lucide-react';
 import { useTranslations } from 'next-intl';
-
-function formatSegment(segment: string): string {
-  return segment
-    .split('-')
-    .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
-    .join(' ');
-}
+import { formatPathSegment as formatSegment } from '@/lib/format';
 
 export function Breadcrumbs() {
   const pathname = usePathname();
@@ -34,20 +28,20 @@ export function Breadcrumbs() {
 
   // Segment-to-translation-key mapping
   const segmentLabels: Record<string, string> = {
-    'dashboard': t('dashboard'),
-    'clients': t('clients'),
-    'projects': t('projects'),
-    'invoices': t('invoices'),
-    'calendar': t('calendar'),
+    dashboard: t('dashboard'),
+    clients: t('clients'),
+    projects: t('projects'),
+    invoices: t('invoices'),
+    calendar: t('calendar'),
     'filming-prep': t('filmingPrep'),
     'filming-requests': t('filmingRequests'),
-    'contracts': t('contracts'),
-    'reports': t('reports'),
-    'settings': t('settings'),
-    'leads': t('leads'),
-    'university': t('university'),
+    contracts: t('contracts'),
+    reports: t('reports'),
+    settings: t('settings'),
+    leads: t('leads'),
+    university: t('university'),
     'sales-resources': t('salesResources'),
-    'messages': t('messages'),
+    messages: t('messages'),
   };
 
   return (

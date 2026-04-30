@@ -9,6 +9,7 @@ import { LoadingSpinner } from '@/components/shared/loading-spinner';
 import { Card, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { getSalesResources } from '@/lib/actions/sales-resources';
 import { ResourceDownloadButton } from '@/components/salesman/resources/resource-download-button';
+import { formatFileSize } from '@/lib/format';
 
 interface CategoryResourcesPageProps {
   params: Promise<{
@@ -20,12 +21,6 @@ interface CategoryInfo {
   id: string;
   title: string;
   description: string | null;
-}
-
-function formatFileSize(bytes: number): string {
-  if (bytes < 1024) return `${bytes} B`;
-  if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`;
-  return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
 }
 
 async function CategoryResourcesContent({ categoryId }: { categoryId: string }) {

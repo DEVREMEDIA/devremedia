@@ -23,6 +23,7 @@ import { useTranslations } from 'next-intl';
 import Link from 'next/link';
 import { format } from 'date-fns';
 import { Trash2, Download, Eye } from 'lucide-react';
+import { formatCurrency } from '@/lib/format';
 
 interface LineItem {
   description: string;
@@ -51,10 +52,6 @@ interface Invoice {
 interface InvoiceDetailProps {
   invoice: Invoice;
 }
-
-const formatCurrency = (amount: number, currency: string = 'EUR') => {
-  return new Intl.NumberFormat('el-GR', { style: 'currency', currency }).format(amount);
-};
 
 export function InvoiceDetail({ invoice: initialInvoice }: InvoiceDetailProps) {
   const router = useRouter();

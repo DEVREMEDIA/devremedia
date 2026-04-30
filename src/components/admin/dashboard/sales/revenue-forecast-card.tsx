@@ -1,13 +1,7 @@
 import { getTranslations } from 'next-intl/server';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { getRevenueForecast } from '@/lib/queries/dashboard/sales';
-
-const fmtEur = (n: number) =>
-  new Intl.NumberFormat('el-GR', {
-    style: 'currency',
-    currency: 'EUR',
-    maximumFractionDigits: 0,
-  }).format(n);
+import { formatEurInt as fmtEur } from '@/lib/format';
 
 function ForecastBar({ label, value, max }: { label: string; value: number; max: number }) {
   return (

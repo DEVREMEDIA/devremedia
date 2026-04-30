@@ -4,13 +4,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { getCostModelHealth, getProjectProfitability } from '@/lib/queries/dashboard/finance';
 import type { ProjectProfitabilityRow } from '@/types/dashboard';
-
-const fmtEur = (n: number) =>
-  new Intl.NumberFormat('el-GR', {
-    style: 'currency',
-    currency: 'EUR',
-    maximumFractionDigits: 0,
-  }).format(n);
+import { formatEurInt as fmtEur } from '@/lib/format';
 
 function Row({ row, target }: { row: ProjectProfitabilityRow; target: number }) {
   const pct = row.marginPct;

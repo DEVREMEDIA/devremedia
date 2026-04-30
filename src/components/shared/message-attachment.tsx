@@ -7,18 +7,11 @@ import { Attachment } from '@/lib/schemas/message';
 import Image from 'next/image';
 import { useState } from 'react';
 import { createClient } from '@/lib/supabase/client';
+import { formatFileSize } from '@/lib/format';
 
 interface MessageAttachmentProps {
   attachment: Attachment;
   className?: string;
-}
-
-function formatFileSize(bytes: number): string {
-  if (bytes === 0) return '0 Bytes';
-  const k = 1024;
-  const sizes = ['Bytes', 'KB', 'MB', 'GB'];
-  const i = Math.floor(Math.log(bytes) / Math.log(k));
-  return Math.round((bytes / Math.pow(k, i)) * 100) / 100 + ' ' + sizes[i];
 }
 
 function isImageFile(fileType: string): boolean {

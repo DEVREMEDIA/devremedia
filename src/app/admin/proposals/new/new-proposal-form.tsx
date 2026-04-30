@@ -26,19 +26,12 @@ import type {
   ProposalSelectedPackage,
 } from '@/types/index';
 import { createProposal } from '@/lib/actions/proposals';
+import { formatEur as fmtEUR } from '@/lib/format';
 
 interface Props {
   packages: ProposalPackageWithPrice[];
   leads: Lead[];
   clients: Client[];
-}
-
-function fmtEUR(n: number) {
-  return new Intl.NumberFormat('el-GR', {
-    style: 'currency',
-    currency: 'EUR',
-    minimumFractionDigits: 2,
-  }).format(n);
 }
 
 export function NewProposalForm({ packages, leads, clients }: Props) {

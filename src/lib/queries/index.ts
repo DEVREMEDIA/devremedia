@@ -2,111 +2,7 @@
 
 import { createClient } from '@/lib/supabase/server';
 import type { ProjectStatus } from '@/lib/constants';
-import type { ActivityLog, ProjectWithClient } from '@/types';
-
-export async function getClientCount(): Promise<number> {
-  try {
-    const supabase = await createClient();
-    const { count, error } = await supabase
-      .from('clients')
-      .select('*', { count: 'exact', head: true })
-      .eq('status', 'active');
-
-    if (error) return 0;
-    return count || 0;
-  } catch {
-    return 0;
-  }
-}
-
-export async function getProjectCount(status?: ProjectStatus): Promise<number> {
-  try {
-    const supabase = await createClient();
-    let query = supabase.from('projects').select('*', { count: 'exact', head: true });
-
-    if (status) {
-      query = query.eq('status', status);
-    } else {
-      query = query.neq('status', 'archived');
-    }
-
-    const { count, error } = await query;
-
-    if (error) return 0;
-    return count || 0;
-  } catch {
-    return 0;
-  }
-}
-
-export async function getPendingInvoiceCount(): Promise<number> {
-  try {
-    const supabase = await createClient();
-    const { count, error } = await supabase
-      .from('invoices')
-      .select('*', { count: 'exact', head: true })
-      .in('status', ['sent', 'viewed', 'overdue']);
-
-    if (error) return 0;
-    return count || 0;
-  } catch {
-    return 0;
-  }
-}
-
-export async function getUnreadMessageCount(userId: string): Promise<number> {
-  try {
-    const supabase = await createClient();
-    const { count, error } = await supabase
-      .from('messages')
-      .select('*', { count: 'exact', head: true })
-      .not('read_by', 'cs', JSON.stringify([userId]))
-      .neq('sender_id', userId);
-
-    if (error) return 0;
-    return count || 0;
-  } catch {
-    return 0;
-  }
-}
-
-export async function getTotalRevenue(year?: number): Promise<number> {
-  try {
-    const supabase = await createClient();
-    let query = supabase.from('invoices').select('total').eq('status', 'paid');
-
-    if (year) {
-      const startDate = `${year}-01-01`;
-      const endDate = `${year}-12-31`;
-      query = query.gte('paid_at', startDate).lte('paid_at', endDate);
-    }
-
-    const { data, error } = await query;
-
-    if (error || !data) return 0;
-    return data.reduce((sum, invoice) => sum + (invoice.total || 0), 0);
-  } catch {
-    return 0;
-  }
-}
-
-export async function getTotalExpenses(projectId?: string): Promise<number> {
-  try {
-    const supabase = await createClient();
-    let query = supabase.from('expenses').select('amount');
-
-    if (projectId) {
-      query = query.eq('project_id', projectId);
-    }
-
-    const { data, error } = await query;
-
-    if (error || !data) return 0;
-    return data.reduce((sum, expense) => sum + (expense.amount || 0), 0);
-  } catch {
-    return 0;
-  }
-}
+import type { ActivityLog } from '@/types';
 
 export async function getRecentActivity(limit: number = 10): Promise<ActivityLog[]> {
   try {
@@ -121,30 +17,6 @@ export async function getRecentActivity(limit: number = 10): Promise<ActivityLog
 
     if (error || !data) return [];
     return data as unknown as ActivityLog[];
-  } catch {
-    return [];
-  }
-}
-
-export async function getUpcomingDeadlines(daysAhead: number = 30): Promise<ProjectWithClient[]> {
-  try {
-    const supabase = await createClient();
-    const today = new Date().toISOString().split('T')[0];
-    const futureDate = new Date();
-    futureDate.setDate(futureDate.getDate() + daysAhead);
-    const futureDateStr = futureDate.toISOString().split('T')[0];
-
-    const { data, error } = await supabase
-      .from('projects')
-      .select('*, client:clients(*)')
-      .gte('deadline', today)
-      .lte('deadline', futureDateStr)
-      .neq('status', 'archived')
-      .neq('status', 'delivered')
-      .order('deadline', { ascending: true });
-
-    if (error || !data) return [];
-    return data as ProjectWithClient[];
   } catch {
     return [];
   }

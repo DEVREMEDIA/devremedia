@@ -23,6 +23,7 @@ import { PriceRangeBar } from '@/components/admin/pricing-health/price-range-bar
 import { HealthStatusBadge } from '@/components/admin/pricing-health/health-status-badge';
 import { PricingEditDialog } from '@/components/admin/pricing-health/pricing-edit-dialog';
 import { Pencil, TrendingDown, TrendingUp, Euro, AlertCircle } from 'lucide-react';
+import { formatEurInt as fmtEUR } from '@/lib/format';
 
 interface Props {
   summary: PricingHealthSummary | null;
@@ -30,15 +31,6 @@ interface Props {
   minMultiplier: number;
   targetMultiplier: number;
   maxMultiplier: number;
-}
-
-function fmtEUR(n: number, fraction = 0) {
-  return new Intl.NumberFormat('el-GR', {
-    style: 'currency',
-    currency: 'EUR',
-    minimumFractionDigits: fraction,
-    maximumFractionDigits: fraction,
-  }).format(n);
 }
 
 const STATUS_ORDER: PricingHealthStatus[] = [
