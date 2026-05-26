@@ -10,9 +10,11 @@ import type { Deliverable } from '@/types';
 
 interface DeliverablesTabProps {
   projectId: string;
+  clientName?: string;
+  projectName?: string;
 }
 
-export function DeliverablesTab({ projectId }: DeliverablesTabProps) {
+export function DeliverablesTab({ projectId, clientName, projectName }: DeliverablesTabProps) {
   const t = useTranslations('deliverables');
   const [deliverables, setDeliverables] = useState<Deliverable[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -65,7 +67,12 @@ export function DeliverablesTab({ projectId }: DeliverablesTabProps) {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <h3 className="text-lg font-semibold">{t('title')}</h3>
-        <VideoUpload projectId={projectId} onUploadComplete={handleRefresh} />
+        <VideoUpload
+          projectId={projectId}
+          onUploadComplete={handleRefresh}
+          clientName={clientName}
+          projectName={projectName}
+        />
       </div>
       <DeliverableList deliverables={deliverables} onSelect={() => {}} onRefresh={handleRefresh} />
     </div>

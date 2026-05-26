@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -22,15 +22,28 @@ import {
 interface VideoUploadProps {
   projectId: string;
   onUploadComplete: () => void;
+  clientName?: string;
+  projectName?: string;
 }
 
-export function VideoUpload({ projectId, onUploadComplete }: VideoUploadProps) {
+export function VideoUpload({
+  projectId,
+  onUploadComplete,
+  clientName,
+  projectName,
+}: VideoUploadProps) {
   const t = useTranslations('deliverables');
   const [open, setOpen] = useState(false);
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
   const [url, setUrl] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
+
+  const suggestedTitle = clientName && projectName ? `${clientName} — ${projectName}` : '';
+
+  useEffect(() => {
+    if (open && !title) setTitle(suggestedTitle);
+  }, [open, suggestedTitle, title]);
 
   const handleSubmit = async () => {
     if (!title.trim() || !url.trim()) {
