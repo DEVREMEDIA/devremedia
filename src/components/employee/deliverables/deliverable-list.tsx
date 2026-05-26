@@ -1,15 +1,10 @@
 'use client';
 
-import * as React from 'react';
-import { Upload, FileVideo, Calendar } from 'lucide-react';
-import { Button } from '@/components/ui/button';
+import { FileVideo, Calendar } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
 import { StatusBadge } from '@/components/shared/status-badge';
-import { FileUploadDropzone } from '@/components/shared/file-upload-dropzone';
 import { EmptyState } from '@/components/shared/empty-state';
-import { createDeliverable } from '@/lib/actions/deliverables';
-import { createClient } from '@/lib/supabase/client';
-import { toast } from 'sonner';
+import { VideoUpload } from '@/components/admin/deliverables/video-upload';
 import { useRouter } from 'next/navigation';
 import { useTranslations } from 'next-intl';
 import type { Deliverable } from '@/types/index';
@@ -22,110 +17,19 @@ interface EmployeeDeliverablesProps {
 
 export function EmployeeDeliverables({ projectId, deliverables }: EmployeeDeliverablesProps) {
   const t = useTranslations('deliverables');
-  const tToast = useTranslations('toast');
-  const [isUploading, setIsUploading] = React.useState(false);
-  const [showUpload, setShowUpload] = React.useState(false);
   const router = useRouter();
-
-  const handleFilesSelected = async (files: File[]) => {
-    if (files.length === 0) return;
-
-    const file = files[0];
-    setIsUploading(true);
-
-    try {
-      const supabase = createClient();
-      const {
-        data: { user },
-      } = await supabase.auth.getUser();
-
-      if (!user) {
-        toast.error(tToast('unauthorized'));
-        return;
-      }
-
-      // Upload to Supabase Storage
-      const fileName = `${Date.now()}_${file.name}`;
-      const filePath = `${projectId}/${fileName}`;
-
-      const { error: uploadError } = await supabase.storage
-        .from('deliverables')
-        .upload(filePath, file);
-
-      if (uploadError) {
-        toast.error(tToast('uploadError'));
-        console.error(uploadError);
-        return;
-      }
-
-      // Create deliverable record
-      const result = await createDeliverable({
-        project_id: projectId,
-        title: file.name,
-        description: null,
-        file_path: filePath,
-        file_size: file.size,
-        file_type: file.type,
-        status: 'pending_review',
-        expires_at: null,
-      });
-
-      if (result.error) {
-        toast.error(tToast('createError'));
-        // Clean up uploaded file
-        await supabase.storage.from('deliverables').remove([filePath]);
-        return;
-      }
-
-      toast.success(tToast('uploadSuccess'));
-      setShowUpload(false);
-      router.refresh();
-    } catch (error) {
-      console.error(error);
-      toast.error(tToast('uploadError'));
-    } finally {
-      setIsUploading(false);
-    }
-  };
 
   return (
     <div className="space-y-6">
-      {/* Upload button */}
       <div className="flex justify-end">
-        <Button onClick={() => setShowUpload(!showUpload)}>
-          <Upload />
-          {t('uploadDeliverable')}
-        </Button>
+        <VideoUpload projectId={projectId} onUploadComplete={() => router.refresh()} />
       </div>
 
-      {/* Upload dropzone */}
-      {showUpload && (
-        <Card>
-          <CardContent className="pt-6">
-            <FileUploadDropzone
-              accept={{
-                'video/mp4': ['.mp4'],
-                'video/quicktime': ['.mov'],
-                'video/x-msvideo': ['.avi'],
-              }}
-              maxSize={5 * 1024 * 1024 * 1024} // 5GB
-              onFilesSelected={handleFilesSelected}
-              disabled={isUploading}
-            />
-          </CardContent>
-        </Card>
-      )}
-
-      {/* Deliverables list */}
       {deliverables.length === 0 ? (
         <EmptyState
           icon={FileVideo}
           title={t('noDeliverablesYet')}
           description={t('uploadVideoFiles')}
-          action={{
-            label: t('uploadNow'),
-            onClick: () => setShowUpload(true),
-          }}
         />
       ) : (
         <div className="space-y-4">
