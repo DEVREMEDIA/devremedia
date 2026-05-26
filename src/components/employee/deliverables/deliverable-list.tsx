@@ -13,16 +13,28 @@ import { formatFileSize } from '@/lib/format';
 interface EmployeeDeliverablesProps {
   projectId: string;
   deliverables: Deliverable[];
+  clientName?: string;
+  projectName?: string;
 }
 
-export function EmployeeDeliverables({ projectId, deliverables }: EmployeeDeliverablesProps) {
+export function EmployeeDeliverables({
+  projectId,
+  deliverables,
+  clientName,
+  projectName,
+}: EmployeeDeliverablesProps) {
   const t = useTranslations('deliverables');
   const router = useRouter();
 
   return (
     <div className="space-y-6">
       <div className="flex justify-end">
-        <VideoUpload projectId={projectId} onUploadComplete={() => router.refresh()} />
+        <VideoUpload
+          projectId={projectId}
+          onUploadComplete={() => router.refresh()}
+          clientName={clientName}
+          projectName={projectName}
+        />
       </div>
 
       {deliverables.length === 0 ? (

@@ -11,7 +11,9 @@ export default async function EmployeeDeliverablesPage({
 }) {
   const { projectId } = await params;
   const supabase = await createClient();
-  const { data: { user } } = await supabase.auth.getUser();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
 
   if (!user) redirect('/login');
 
@@ -27,6 +29,18 @@ export default async function EmployeeDeliverablesPage({
 
   if (!tasks || tasks.length === 0) notFound();
 
+  const { data: project } = await supabase
+    .from('projects')
+    .select('id, title, client:clients(id, company_name, contact_name)')
+    .eq('id', projectId)
+    .single();
+
+  if (!project) notFound();
+
+  const client = Array.isArray(project.client) ? project.client[0] : project.client;
+  const clientName = client?.company_name ?? client?.contact_name ?? undefined;
+  const projectName = project.title;
+
   const { data: deliverables } = await supabase
     .from('deliverables')
     .select('*')
@@ -35,13 +49,12 @@ export default async function EmployeeDeliverablesPage({
 
   return (
     <div className="space-y-6">
-      <PageHeader
-        title={t('title')}
-        description={t('description')}
-      />
+      <PageHeader title={projectName ?? t('title')} description={clientName ?? t('description')} />
       <EmployeeDeliverables
         projectId={projectId}
         deliverables={deliverables ?? []}
+        clientName={clientName}
+        projectName={projectName}
       />
     </div>
   );

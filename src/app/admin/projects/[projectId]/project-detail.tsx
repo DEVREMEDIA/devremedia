@@ -349,7 +349,11 @@ export function ProjectDetail({ project, contracts }: ProjectDetailProps) {
         </TabsContent>
 
         <TabsContent value="deliverables">
-          <DeliverablesTab projectId={project.id} />
+          <DeliverablesTab
+            projectId={project.id}
+            projectName={project.title}
+            clientName={project.client?.company_name ?? project.client?.contact_name ?? undefined}
+          />
         </TabsContent>
 
         <TabsContent value="messages">
