@@ -3,6 +3,9 @@
 # claude code
 .claude/
 
+# gitnexus (local code-graph index cache)
+.gitnexus/
+
 # dependencies
 /node_modules
 /.pnp
