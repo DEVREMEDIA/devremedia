@@ -84,6 +84,24 @@ export async function getProject(id: string): Promise<ActionResult<ProjectWithCl
   }
 }
 
+// Prepend "{Client} — " to a Production title unless it is already there, so
+// the client is always part of the name (see docs/adr/0001). Module-private.
+async function ensureClientPrefixedTitle(
+  supabase: Awaited<ReturnType<typeof createClient>>,
+  clientId: string,
+  title: string,
+): Promise<string> {
+  const { data: client } = await supabase
+    .from('clients')
+    .select('company_name, contact_name')
+    .eq('id', clientId)
+    .single();
+  const clientName = client?.company_name || client?.contact_name;
+  if (!clientName) return title;
+  const prefix = `${clientName} — `;
+  return title.startsWith(prefix) ? title : `${prefix}${title}`;
+}
+
 export async function createProject(input: unknown): Promise<ActionResult<ProjectWithClient>> {
   try {
     const validated = createProjectSchema.parse(input);
@@ -94,9 +112,14 @@ export async function createProject(input: unknown): Promise<ActionResult<Projec
     } = await supabase.auth.getUser();
     if (!user) return { data: null, error: 'User not authenticated' };
 
+    // Guarantee the client's name is part of the title regardless of how it was
+    // entered in the form (see docs/adr/0001). Idempotent: skipped if the title
+    // already starts with the prefix (e.g. the form prefill already added it).
+    const title = await ensureClientPrefixedTitle(supabase, validated.client_id, validated.title);
+
     const { data, error } = await supabase
       .from('projects')
-      .insert({ ...validated, created_by: user.id })
+      .insert({ ...validated, title, created_by: user.id })
       .select('*, client:clients(*)')
       .single();
 

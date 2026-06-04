@@ -22,4 +22,4 @@ We chose baking for simplicity and because it needed **no data migration** — e
 - The `title` field is intentionally **not** the canonical Production name on its own — it carries Client identity. This deviates from our usual "derive, don't duplicate" rule; the deviation is deliberate.
 - If a Client is later renamed (`company_name` changes), previously-baked Production titles keep the **old** name and will not auto-update. Accepted as a known cost.
 - In admin list/board views, where the Client is already shown in a separate column, the name appears twice. Accepted — consistency was preferred over de-duplication.
-- New Productions get the prefix via a creation-form prefill (only when the title is empty), so the user can still override it.
+- New Productions get the prefix two ways: a creation-form prefill (nice UX, shows it live in the input) **and** a server-side guarantee in `createProject` that prepends `"{client} — "` if the saved title doesn't already start with it. The server check is the real guarantee — the prefix lands no matter how the form was filled; the prefill is just convenience. Both are idempotent (skip if the prefix is already present).
