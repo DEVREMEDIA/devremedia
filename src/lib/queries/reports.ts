@@ -2,7 +2,8 @@
 
 import { createClient } from '@/lib/supabase/server';
 import type { ProjectType, ExpenseCategory } from '@/lib/constants';
-import { REVENUE_STATUSES, bucketMonthlyFinance } from '@/lib/finance';
+import { REVENUE_STATUSES, bucketMonthlyFinance, sumFinance } from '@/lib/finance';
+import type { FinanceInvoice } from '@/lib/finance';
 
 export type DateRange = {
   from: string;
@@ -29,7 +30,8 @@ export type ProjectTypeBreakdown = {
 export type ClientRevenue = {
   client_id: string;
   client_name: string;
-  total_revenue: number;
+  total_revenue: number; // Τζίρος — issued invoices by issue_date
+  total_collections: number; // Εισπράξεις — paid invoices by paid_at
   project_count: number;
 };
 
@@ -149,37 +151,45 @@ export async function getTopClientsByRevenue(
     const supabase = await createClient();
     let query = supabase
       .from('invoices')
-      .select('client_id, total, client:clients(company_name, contact_name)')
-      .eq('status', 'paid');
+      .select(
+        'client_id, total, status, issue_date, paid_at, client:clients(company_name, contact_name)',
+      )
+      .in('status', [...REVENUE_STATUSES]);
 
     if (dateRange) {
-      query = query.gte('paid_at', dateRange.from).lte('paid_at', dateRange.to);
+      query = query.or(
+        `and(issue_date.gte.${dateRange.from},issue_date.lte.${dateRange.to}),` +
+          `and(paid_at.gte.${dateRange.from},paid_at.lte.${dateRange.to})`,
+      );
     }
 
     const { data, error } = await query;
 
     if (error || !data) return [];
 
-    // Group by client
-    const clientData: Record<string, { name: string; revenue: number; count: number }> = {};
+    // Group invoices by client, then total each group via the shared helper.
+    const grouped: Record<string, { name: string; invoices: FinanceInvoice[] }> = {};
     data.forEach((invoice) => {
       const clientId = invoice.client_id;
       const client = invoice.client as { company_name?: string; contact_name?: string } | undefined;
-      if (!clientData[clientId]) {
+      if (!grouped[clientId]) {
         const clientName = client?.company_name || client?.contact_name || 'Unknown';
-        clientData[clientId] = { name: clientName, revenue: 0, count: 0 };
+        grouped[clientId] = { name: clientName, invoices: [] };
       }
-      clientData[clientId].revenue += invoice.total || 0;
-      clientData[clientId].count += 1;
+      grouped[clientId].invoices.push(invoice);
     });
 
-    return Object.entries(clientData)
-      .map(([client_id, data]) => ({
-        client_id,
-        client_name: data.name,
-        total_revenue: data.revenue,
-        project_count: data.count,
-      }))
+    return Object.entries(grouped)
+      .map(([client_id, { name, invoices }]) => {
+        const { revenue, collections } = sumFinance(invoices);
+        return {
+          client_id,
+          client_name: name,
+          total_revenue: revenue,
+          total_collections: collections,
+          project_count: invoices.length,
+        };
+      })
       .sort((a, b) => b.total_revenue - a.total_revenue)
       .slice(0, limit);
   } catch {
@@ -229,10 +239,15 @@ export async function getProfitMargin(
   try {
     const supabase = await createClient();
 
-    let revenueQuery = supabase.from('invoices').select('total').eq('status', 'paid');
+    // Profit margin pairs accrual with accrual: Revenue (Τζίρος, issued by issue_date)
+    // against expenses of the same period.
+    let revenueQuery = supabase
+      .from('invoices')
+      .select('total, status, issue_date, paid_at')
+      .in('status', [...REVENUE_STATUSES]);
 
     if (dateRange) {
-      revenueQuery = revenueQuery.gte('paid_at', dateRange.from).lte('paid_at', dateRange.to);
+      revenueQuery = revenueQuery.gte('issue_date', dateRange.from).lte('issue_date', dateRange.to);
     }
 
     let expenseQuery = supabase.from('expenses').select('amount');
@@ -246,7 +261,7 @@ export async function getProfitMargin(
       expenseQuery,
     ]);
 
-    const revenue = revenueData?.reduce((sum, inv) => sum + (inv.total || 0), 0) || 0;
+    const { revenue } = sumFinance(revenueData ?? []);
     const expenses = expenseData?.reduce((sum, exp) => sum + (exp.amount || 0), 0) || 0;
 
     const profit = revenue - expenses;

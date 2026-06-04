@@ -36,7 +36,8 @@ export function ClientReport({ topClients }: ClientReportProps) {
                 <TableHead>Rank</TableHead>
                 <TableHead>Client</TableHead>
                 <TableHead className="text-right">Projects</TableHead>
-                <TableHead className="text-right">{t('totalRevenue')}</TableHead>
+                <TableHead className="text-right">{t('revenueTurnover')}</TableHead>
+                <TableHead className="text-right">{t('collections')}</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -47,6 +48,9 @@ export function ClientReport({ topClients }: ClientReportProps) {
                   <TableCell className="text-right">{client.project_count}</TableCell>
                   <TableCell className="text-right font-medium">
                     {formatCurrency(client.total_revenue)}
+                  </TableCell>
+                  <TableCell className="text-right text-muted-foreground">
+                    {formatCurrency(client.total_collections)}
                   </TableCell>
                 </TableRow>
               ))}
