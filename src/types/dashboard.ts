@@ -13,7 +13,8 @@ export type KpiMetric = {
 };
 
 export type KpiHero = {
-  revenueMtd: KpiMetric;
+  revenueMtd: KpiMetric; // Τζίρος — issued invoices by issue_date
+  collectionsMtd: KpiMetric; // Εισπράξεις — paid invoices by paid_at
   pipeline: KpiMetric;
   activeProjects: KpiMetric;
   profitMargin: KpiMetric;
@@ -155,10 +156,17 @@ export type VelocityCounter = {
   deltaVsPrevious: number;
 };
 
+// Money-only counter (no item count) — e.g. Revenue (Τζίρος) issued in the period.
+export type MoneyDelta = {
+  sum: number;
+  deltaVsPrevious: number;
+};
+
 export type BusinessVelocity = {
   projectsCreated: VelocityCounter;
   projectsDelivered: VelocityCounter;
-  invoicesPaid: VelocityCounter;
+  revenueIssued: MoneyDelta; // Τζίρος — issued invoices by issue_date
+  invoicesPaid: VelocityCounter; // Εισπράξεις — paid invoices by paid_at
   contractsSigned: VelocityCounter;
   proposalsSent: VelocityCounter;
 };

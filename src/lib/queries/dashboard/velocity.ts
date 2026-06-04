@@ -7,6 +7,7 @@ const EMPTY: VelocityCounter = { count: 0, deltaVsPrevious: 0 };
 const EMPTY_VELOCITY: BusinessVelocity = {
   projectsCreated: EMPTY,
   projectsDelivered: EMPTY,
+  revenueIssued: { sum: 0, deltaVsPrevious: 0 },
   invoicesPaid: EMPTY,
   contractsSigned: EMPTY,
   proposalsSent: EMPTY,
@@ -26,6 +27,8 @@ type VelocityPayload = {
   invoices_paid_now_count: number;
   invoices_paid_prev_count: number;
   invoices_paid_now_sum: number;
+  invoices_issued_now_sum: number;
+  invoices_issued_prev_sum: number;
   contracts_signed_now: number;
   contracts_signed_prev: number;
   proposals_sent_now: number;
@@ -46,6 +49,10 @@ export async function getBusinessVelocity(periodDays = 7): Promise<BusinessVeloc
         Number(p.projects_delivered_now),
         Number(p.projects_delivered_prev),
       ),
+      revenueIssued: {
+        sum: Number(p.invoices_issued_now_sum),
+        deltaVsPrevious: Number(p.invoices_issued_now_sum) - Number(p.invoices_issued_prev_sum),
+      },
       invoicesPaid: counter(
         Number(p.invoices_paid_now_count),
         Number(p.invoices_paid_prev_count),

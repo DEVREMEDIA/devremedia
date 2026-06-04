@@ -1,5 +1,13 @@
 import { getTranslations } from 'next-intl/server';
-import { Activity, AlertTriangle, Briefcase, Coins, TrendingUp, Wallet } from 'lucide-react';
+import {
+  Activity,
+  AlertTriangle,
+  Banknote,
+  Briefcase,
+  Coins,
+  TrendingUp,
+  Wallet,
+} from 'lucide-react';
 import { KpiCard } from './kpi-card';
 import { getKpiHero } from '@/lib/queries/dashboard/kpi-hero';
 import { formatEurInt as fmtEur } from '@/lib/format';
@@ -12,12 +20,19 @@ export async function KpiStrip() {
   const hero = await getKpiHero();
 
   return (
-    <div className="grid grid-cols-2 gap-3 sm:gap-4 md:grid-cols-3 lg:grid-cols-6">
+    <div className="grid grid-cols-2 gap-3 sm:gap-4 md:grid-cols-3 lg:grid-cols-7">
       <KpiCard
         label={t('revenueMtd')}
         metric={hero.revenueMtd}
         href="/admin/reports"
         icon={Wallet}
+        formatValue={fmtEur}
+      />
+      <KpiCard
+        label={t('collectionsMtd')}
+        metric={hero.collectionsMtd}
+        href="/admin/reports"
+        icon={Banknote}
         formatValue={fmtEur}
       />
       <KpiCard
