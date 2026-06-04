@@ -1,6 +1,7 @@
 'use client';
 
-import { useForm } from 'react-hook-form';
+import { useEffect, useRef } from 'react';
+import { useForm, useWatch } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { createProjectSchema } from '@/lib/schemas/project';
 import { ProjectWithClient, Client } from '@/types';
@@ -58,6 +59,26 @@ export function ProjectForm({ project, clients, onSuccess }: ProjectFormProps) {
       location: project?.location || '',
     },
   });
+
+  const selectedClientId = useWatch({ control: form.control, name: 'client_id' });
+  const autoPrefixRef = useRef<string | null>(null);
+
+  // On NEW productions, prefill the title with "{Client} — " so the client is
+  // always part of the name (see docs/adr/0001). Runs only while creating and
+  // only when the title is empty or still an untouched auto-prefix, so it never
+  // clobbers text the user typed but does follow a client switch made first.
+  useEffect(() => {
+    if (project || !selectedClientId) return;
+    const client = clients.find((c) => c.id === selectedClientId);
+    const clientName = client?.company_name || client?.contact_name;
+    if (!clientName) return;
+    const prefix = `${clientName} — `;
+    const current = form.getValues('title');
+    if (!current || current === autoPrefixRef.current) {
+      form.setValue('title', prefix);
+      autoPrefixRef.current = prefix;
+    }
+  }, [selectedClientId, project, clients, form]);
 
   const onSubmit = async (data: FormData) => {
     const result = project ? await updateProject(project.id, data) : await createProject(data);
