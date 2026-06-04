@@ -41,7 +41,8 @@ export function RevenueReport({ monthlyData, paymentMethodData }: RevenueReportP
 
   const monthlyChartData = monthlyData.map((item) => ({
     name: formatMonth(item.month),
-    value: item.revenue,
+    revenue: item.revenue,
+    collections: item.collections,
   }));
 
   const paymentChartData = paymentMethodData.map((item) => ({
@@ -54,7 +55,7 @@ export function RevenueReport({ monthlyData, paymentMethodData }: RevenueReportP
       <Card>
         <CardHeader>
           <CardTitle>{t('revenueByMonth')}</CardTitle>
-          <CardDescription>Revenue breakdown by month</CardDescription>
+          <CardDescription>{t('revenueVsCollections')}</CardDescription>
         </CardHeader>
         <CardContent>
           {monthlyChartData.length === 0 ? (
@@ -88,7 +89,19 @@ export function RevenueReport({ monthlyData, paymentMethodData }: RevenueReportP
                   labelStyle={{ color: 'hsl(var(--muted-foreground))' }}
                   itemStyle={{ color: 'hsl(var(--foreground))' }}
                 />
-                <Bar dataKey="value" fill="hsl(var(--primary))" radius={[4, 4, 0, 0]} />
+                <Legend />
+                <Bar
+                  dataKey="revenue"
+                  name={t('revenueTurnover')}
+                  fill="hsl(var(--primary))"
+                  radius={[4, 4, 0, 0]}
+                />
+                <Bar
+                  dataKey="collections"
+                  name={t('collections')}
+                  fill="hsl(142 76% 36%)"
+                  radius={[4, 4, 0, 0]}
+                />
               </BarChart>
             </ResponsiveContainer>
           )}

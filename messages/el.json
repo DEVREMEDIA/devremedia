@@ -1322,6 +1322,9 @@
     "topClients": "Κορυφαίοι Πελάτες",
     "projectsByStatus": "Παραγωγές ανά Κατάσταση",
     "revenueByMonth": "Έσοδα ανά Μήνα",
+    "revenueTurnover": "Τζίρος",
+    "collections": "Εισπράξεις",
+    "revenueVsCollections": "Τζίρος (έκδοσης) vs Εισπράξεις (πληρωμής) ανά μήνα",
     "expensesByCategory": "Έξοδα ανά Κατηγορία",
     "selectPeriod": "Επιλέξτε περίοδο"
   },

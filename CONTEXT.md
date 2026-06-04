@@ -22,3 +22,13 @@ A finished video/asset handed to the Client, belonging to a Production. Backed b
 **Filming Request**:
 A public booking-form submission that an admin converts into a Production. Backed by `filming_requests`.
 _Avoid_: Booking (as the canonical term)
+
+## Finance
+
+**Revenue (Τζίρος)**:
+The accrual turnover of a period — the sum of issued invoices attributed to the month they were _issued_ (`issue_date`). Counts every invoice that has been cut, regardless of payment; excludes only `draft` and `cancelled`.
+_Avoid_: Paid revenue, income, "money in" (as the canonical term)
+
+**Collections (Εισπράξεις)**:
+The cash actually received in a period — the sum of `paid` invoices attributed to the month they were _paid_ (`paid_at`).
+_Avoid_: Revenue, τζίρος (these mean the accrual figure, not cash received)

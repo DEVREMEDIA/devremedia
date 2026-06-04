@@ -2,6 +2,7 @@
 
 import { createClient } from '@/lib/supabase/server';
 import type { ProjectType, ExpenseCategory } from '@/lib/constants';
+import { REVENUE_STATUSES, bucketMonthlyFinance } from '@/lib/finance';
 
 export type DateRange = {
   from: string;
@@ -10,7 +11,8 @@ export type DateRange = {
 
 export type MonthlyRevenue = {
   month: string;
-  revenue: number;
+  revenue: number; // Τζίρος — issued invoices by issue_date
+  collections: number; // Εισπράξεις — paid invoices by paid_at
 };
 
 export type PaymentMethodBreakdown = {
@@ -42,32 +44,31 @@ export async function getMonthlyRevenue(dateRange?: DateRange): Promise<MonthlyR
     const supabase = await createClient();
     let query = supabase
       .from('invoices')
-      .select('paid_at, total')
-      .eq('status', 'paid')
-      .not('paid_at', 'is', null)
-      .order('paid_at', { ascending: true });
+      .select('total, status, issue_date, paid_at')
+      .in('status', [...REVENUE_STATUSES]);
 
     if (dateRange) {
-      query = query.gte('paid_at', dateRange.from).lte('paid_at', dateRange.to);
+      // An invoice contributes to Revenue (issue_date) and/or Collections (paid_at),
+      // so include any invoice issued OR paid within the range.
+      query = query.or(
+        `and(issue_date.gte.${dateRange.from},issue_date.lte.${dateRange.to}),` +
+          `and(paid_at.gte.${dateRange.from},paid_at.lte.${dateRange.to})`,
+      );
     }
 
     const { data, error } = await query;
 
     if (error || !data) return [];
 
-    // Group by month
-    const monthlyData: Record<string, number> = {};
-    data.forEach((invoice) => {
-      if (invoice.paid_at) {
-        const month = invoice.paid_at.substring(0, 7); // YYYY-MM
-        monthlyData[month] = (monthlyData[month] || 0) + (invoice.total || 0);
-      }
-    });
+    const monthly = bucketMonthlyFinance(data);
 
-    return Object.entries(monthlyData).map(([month, revenue]) => ({
-      month,
-      revenue,
-    }));
+    if (!dateRange) return monthly;
+
+    // Drop months that fall outside the range (an invoice paid in-range but issued
+    // out-of-range, or vice versa, can produce a stray bucket).
+    const fromMonth = dateRange.from.substring(0, 7);
+    const toMonth = dateRange.to.substring(0, 7);
+    return monthly.filter((m) => m.month >= fromMonth && m.month <= toMonth);
   } catch {
     return [];
   }
