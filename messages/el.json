@@ -451,7 +451,8 @@
     "overdue": "Εκπρόθεσμο",
     "loadError": "Δεν φόρτωσε. Δοκίμασε ξανά.",
     "hero": {
-      "revenueMtd": "Έσοδα μήνα",
+      "revenueMtd": "Τζίρος μήνα",
+      "collectionsMtd": "Εισπράξεις μήνα",
       "pipeline": "Pipeline (σταθμισμένο)",
       "activeProjects": "Ενεργά projects",
       "profitMargin": "Περιθώριο κέρδους (30η)",
@@ -527,6 +528,8 @@
       "title": "Ρυθμός εβδομάδας",
       "projectsCreated": "Νέα projects",
       "projectsDelivered": "Παραδοτέα",
+      "revenueIssued": "Τζίρος",
+      "collections": "Εισπράξεις",
       "invoicesPaid": "Πληρωμένα τιμολόγια",
       "contractsSigned": "Υπογεγραμμένες συμβάσεις",
       "proposalsSent": "Προσφορές που στάλθηκαν"

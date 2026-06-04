@@ -452,6 +452,7 @@
     "loadError": "Failed to load. Try again.",
     "hero": {
       "revenueMtd": "Revenue MTD",
+      "collectionsMtd": "Collections MTD",
       "pipeline": "Pipeline (weighted)",
       "activeProjects": "Active projects",
       "profitMargin": "Profit margin (30d)",
@@ -527,6 +528,8 @@
       "title": "This week",
       "projectsCreated": "Projects created",
       "projectsDelivered": "Delivered",
+      "revenueIssued": "Revenue",
+      "collections": "Collections",
       "invoicesPaid": "Invoices paid",
       "contractsSigned": "Contracts signed",
       "proposalsSent": "Proposals sent"

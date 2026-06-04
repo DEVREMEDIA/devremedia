@@ -8,6 +8,7 @@ const EMPTY_METRIC: KpiMetric = { value: 0, previous: null, deltaPct: null, exce
 
 const EMPTY_HERO: KpiHero = {
   revenueMtd: EMPTY_METRIC,
+  collectionsMtd: EMPTY_METRIC,
   pipeline: EMPTY_METRIC,
   activeProjects: EMPTY_METRIC,
   profitMargin: EMPTY_METRIC,
@@ -16,9 +17,12 @@ const EMPTY_HERO: KpiHero = {
 };
 
 type DashboardKpiPayload = {
-  revenue_current: number;
+  revenue_current: number; // Collections (paid by paid_at)
   revenue_prev: number;
   revenue_daily: { date: string; value: number }[];
+  revenue_issued_current: number; // Revenue (issued by issue_date)
+  revenue_issued_prev: number;
+  revenue_issued_daily: { date: string; value: number }[];
   pipeline_value: number;
   active_count: number;
   profit_margin_current: number | null;
@@ -40,10 +44,11 @@ export async function getKpiHero(): Promise<KpiHero> {
 
     const payload = kpiData as DashboardKpiPayload;
 
-    const revenueValue = Number(payload.revenue_current ?? 0);
-    const revenuePrevValue = Number(payload.revenue_prev ?? 0);
+    // Revenue (Τζίρος) — issued invoices by issue_date
+    const revenueValue = Number(payload.revenue_issued_current ?? 0);
+    const revenuePrevValue = Number(payload.revenue_issued_prev ?? 0);
     const revenueSparkline = buildDailySparkline(
-      (payload.revenue_daily ?? []).map((r) => ({ date: r.date, value: Number(r.value) })),
+      (payload.revenue_issued_daily ?? []).map((r) => ({ date: r.date, value: Number(r.value) })),
       30,
     );
 
@@ -52,6 +57,22 @@ export async function getKpiHero(): Promise<KpiHero> {
       previous: revenuePrevValue,
       deltaPct: calcDeltaPct(revenueValue, revenuePrevValue),
       sparkline: revenueSparkline,
+      exception: false,
+    };
+
+    // Collections (Εισπράξεις) — paid invoices by paid_at
+    const collectionsValue = Number(payload.revenue_current ?? 0);
+    const collectionsPrevValue = Number(payload.revenue_prev ?? 0);
+    const collectionsSparkline = buildDailySparkline(
+      (payload.revenue_daily ?? []).map((r) => ({ date: r.date, value: Number(r.value) })),
+      30,
+    );
+
+    const collectionsMtd: KpiMetric = {
+      value: collectionsValue,
+      previous: collectionsPrevValue,
+      deltaPct: calcDeltaPct(collectionsValue, collectionsPrevValue),
+      sparkline: collectionsSparkline,
       exception: false,
     };
 
@@ -97,7 +118,15 @@ export async function getKpiHero(): Promise<KpiHero> {
       exception: risks.length > 0,
     };
 
-    return { revenueMtd, pipeline, activeProjects, profitMargin, cashOverdue, atRiskCount };
+    return {
+      revenueMtd,
+      collectionsMtd,
+      pipeline,
+      activeProjects,
+      profitMargin,
+      cashOverdue,
+      atRiskCount,
+    };
   } catch {
     return EMPTY_HERO;
   }
