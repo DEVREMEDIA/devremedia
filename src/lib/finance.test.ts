@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { bucketMonthlyFinance, type FinanceInvoice } from './finance';
+import { bucketMonthlyFinance, sumFinance, type FinanceInvoice } from './finance';
 
 const invoice = (overrides: Partial<FinanceInvoice>): FinanceInvoice => ({
   total: 100,
@@ -64,5 +64,38 @@ describe('bucketMonthlyFinance', () => {
     ]);
 
     expect(result).toEqual([{ month: '2026-01', revenue: 0, collections: 0 }]);
+  });
+});
+
+describe('sumFinance', () => {
+  it('returns zeroed totals for empty input', () => {
+    expect(sumFinance([])).toEqual({ revenue: 0, collections: 0 });
+  });
+
+  it('sums Revenue from issued invoices and Collections from paid invoices', () => {
+    const result = sumFinance([
+      invoice({ status: 'paid', paid_at: '2026-02-01', total: 100 }), // revenue + collections
+      invoice({ status: 'sent', paid_at: null, total: 50 }), // revenue only
+      invoice({ status: 'overdue', paid_at: null, total: 25 }), // revenue only
+    ]);
+
+    expect(result).toEqual({ revenue: 175, collections: 100 });
+  });
+
+  it('excludes draft and cancelled from Revenue', () => {
+    const result = sumFinance([
+      invoice({ status: 'draft', total: 999 }),
+      invoice({ status: 'cancelled', total: 999 }),
+      invoice({ status: 'sent', paid_at: null, total: 10 }),
+    ]);
+
+    expect(result).toEqual({ revenue: 10, collections: 0 });
+  });
+
+  it('treats null totals as zero', () => {
+    expect(sumFinance([invoice({ status: 'paid', total: null })])).toEqual({
+      revenue: 0,
+      collections: 0,
+    });
   });
 });

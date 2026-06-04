@@ -97,7 +97,7 @@ export function ExpenseReport({ expensesByCategory, profitData }: ExpenseReportP
         <CardContent>
           <div className="space-y-6">
             <div>
-              <p className="text-sm text-muted-foreground">{t('totalRevenue')}</p>
+              <p className="text-sm text-muted-foreground">{t('revenueTurnover')}</p>
               <p className="text-2xl font-bold">{formatCurrency(profitData.revenue)}</p>
             </div>
             <div>

@@ -23,6 +23,11 @@ export type MonthlyFinance = {
   collections: number; // Εισπράξεις
 };
 
+export type FinanceTotals = {
+  revenue: number; // Τζίρος
+  collections: number; // Εισπράξεις
+};
+
 const isRevenueInvoice = (status: string): boolean =>
   (REVENUE_STATUSES as readonly string[]).includes(status);
 
@@ -60,4 +65,27 @@ export function bucketMonthlyFinance(invoices: FinanceInvoice[]): MonthlyFinance
   return [...buckets.entries()]
     .map(([month, { revenue, collections }]) => ({ month, revenue, collections }))
     .sort((a, b) => a.month.localeCompare(b.month));
+}
+
+/**
+ * Sums Revenue and Collections over a flat list of invoices (no bucketing).
+ * Building block for per-client totals and profit margin.
+ */
+export function sumFinance(invoices: FinanceInvoice[]): FinanceTotals {
+  let revenue = 0;
+  let collections = 0;
+
+  for (const invoice of invoices) {
+    const total = invoice.total ?? 0;
+
+    if (invoice.issue_date && isRevenueInvoice(invoice.status)) {
+      revenue += total;
+    }
+
+    if (invoice.status === 'paid' && invoice.paid_at) {
+      collections += total;
+    }
+  }
+
+  return { revenue, collections };
 }
