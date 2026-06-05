@@ -186,8 +186,9 @@
     "allRoles": "Όλοι οι Ρόλοι",
     "inviteUser": "Πρόσκληση Χρήστη",
     "inviteNewUser": "Πρόσκληση Νέου Χρήστη",
-    "inviteDescription": "Στείλτε ένα email πρόσκλησης σε νέο χρήστη. Θα ορίσει κωδικό κατά την εγγραφή.",
+    "inviteDescription": "Στείλτε ένα email πρόσκλησης σε νέο χρήστη. Θα ορίσει κωδικό για να επιβεβαιώσει τον λογαριασμό του.",
     "emailAddress": "Διεύθυνση Email",
+    "fullName": "Ονοματεπώνυμο",
     "displayNameOptional": "Ονοματεπώνυμο (προαιρετικό)",
     "displayNamePlaceholder": "Πλήρες όνομα",
     "role": "Ρόλος",
@@ -277,7 +278,19 @@
     "setPassword": "Ορισμός Κωδικού",
     "newPassword": "Νέος Κωδικός",
     "updatePasswordDescription": "Εισάγετε τον νέο σας κωδικό παρακάτω",
-    "updatingPassword": "Ενημέρωση..."
+    "updatingPassword": "Ενημέρωση...",
+    "email": "Email",
+    "confirmTitle": "Επιβεβαιώστε τον λογαριασμό σας",
+    "confirmDescription": "Ελέγξτε τα στοιχεία σας παρακάτω και ορίστε κωδικό για να ολοκληρώσετε.",
+    "yourName": "Όνομα",
+    "yourCompany": "Εταιρεία",
+    "confirming": "Επιβεβαίωση...",
+    "confirmAccount": "Επιβεβαίωση λογαριασμού",
+    "confirmationComplete": "Ο λογαριασμός επιβεβαιώθηκε! Ανακατεύθυνση...",
+    "linkExpiredTitle": "Ο σύνδεσμος έληξε",
+    "linkExpiredDescription": "Ο σύνδεσμος πρόσκλησης δεν ισχύει πλέον. Εισάγετε το email σας και θα σας στείλουμε νέο.",
+    "resendGenericSuccess": "Αν αυτό το email έχει εκκρεμή πρόσκληση, ένας νέος σύνδεσμος είναι καθ' οδόν.",
+    "resendError": "Κάτι πήγε στραβά. Δοκιμάστε ξανά."
   },
 
   "statuses": {

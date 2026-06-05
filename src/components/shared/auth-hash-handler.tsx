@@ -19,7 +19,7 @@ const ROLE_DASHBOARDS: Record<string, string> = {
  * 1. Error fragments (e.g. /#error=access_denied&error_code=otp_expired)
  *    → redirects to /login with the error.
  * 2. Implicit-flow tokens (e.g. /#access_token=...&refresh_token=...&type=invite)
- *    → sets the session client-side, then redirects to /onboarding (for invites)
+ *    → sets the session client-side, then redirects to /confirm (for invites)
  *    or the user's role-based dashboard.
  *
  * Must be included in the root layout so it runs on every page.
@@ -66,28 +66,22 @@ export function AuthHashHandler() {
           return;
         }
 
-        // Invite links or users with invited_by metadata → onboarding
+        // Invite links or users still carrying invited_by → Confirmation
         const isInvited = type === 'invite' || !!data.user.user_metadata?.invited_by;
 
         if (isInvited) {
-          router.replace('/onboarding');
+          router.replace('/confirm');
           return;
         }
 
-        // Otherwise, figure out their dashboard from profile
+        // Otherwise route to their role-based dashboard
         const { data: profile } = await supabase
           .from('user_profiles')
-          .select('role, display_name')
+          .select('role')
           .eq('id', data.user.id)
           .single();
 
-        // User without display_name still needs onboarding
-        if (!profile?.display_name) {
-          router.replace('/onboarding');
-          return;
-        }
-
-        const dashboard = ROLE_DASHBOARDS[profile.role] ?? '/client/dashboard';
+        const dashboard = ROLE_DASHBOARDS[profile?.role ?? 'client'] ?? '/client/dashboard';
         router.replace(dashboard);
       })
       .catch(() => {

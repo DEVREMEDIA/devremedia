@@ -186,8 +186,9 @@
     "allRoles": "All Roles",
     "inviteUser": "Invite User",
     "inviteNewUser": "Invite New User",
-    "inviteDescription": "Send an invitation email to a new user. They will set their password during onboarding.",
+    "inviteDescription": "Send an invitation email to a new user. They'll set a password to confirm their account.",
     "emailAddress": "Email Address",
+    "fullName": "Full Name",
     "displayNameOptional": "Display Name (optional)",
     "displayNamePlaceholder": "Full name",
     "role": "Role",
@@ -277,7 +278,19 @@
     "setPassword": "Set Password",
     "newPassword": "New Password",
     "updatePasswordDescription": "Enter your new password below",
-    "updatingPassword": "Updating..."
+    "updatingPassword": "Updating...",
+    "email": "Email",
+    "confirmTitle": "Confirm your account",
+    "confirmDescription": "Review your details below and set a password to finish.",
+    "yourName": "Name",
+    "yourCompany": "Company",
+    "confirming": "Confirming...",
+    "confirmAccount": "Confirm account",
+    "confirmationComplete": "Account confirmed! Redirecting...",
+    "linkExpiredTitle": "This link has expired",
+    "linkExpiredDescription": "Your invitation link is no longer valid. Enter your email and we'll send you a fresh one.",
+    "resendGenericSuccess": "If that email has a pending invitation, a new link is on its way.",
+    "resendError": "Something went wrong. Please try again."
   },
 
   "statuses": {

@@ -23,6 +23,16 @@ A finished video/asset handed to the Client, belonging to a Production. Backed b
 A public booking-form submission that an admin converts into a Production. Backed by `filming_requests`.
 _Avoid_: Booking (as the canonical term)
 
+## Access
+
+**Invitation**:
+An admin-initiated action that grants a person access to the DMS. The admin enters that person's details (for a Client, these already live on the `clients` record); the system emails them a link. The invitee never types their own profile data.
+_Avoid_: Signup, registration (those imply the user enters their own details)
+
+**Confirmation**:
+What an invitee does after following the invitation link: they review their admin-entered details (shown read-only) and set a password. That single step is the whole of their first sign-in — there is no profile form to fill.
+_Avoid_: Onboarding (the old name, when the invitee filled out their own name/company/phone — that data-entry step no longer exists), Sign-up
+
 ## Finance
 
 **Revenue (Τζίρος)**:

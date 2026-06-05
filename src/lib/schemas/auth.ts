@@ -31,14 +31,13 @@ export const signupSchema = z.object({
 export type SignupInput = z.infer<typeof signupSchema>;
 
 /**
- * Onboarding schema validation
+ * Confirmation schema validation.
+ *
+ * The invitee only sets a password on first sign-in — their name / company / email
+ * were entered by the admin and are shown read-only. No profile fields are collected.
  */
-export const onboardingSchema = z
+export const confirmationSchema = z
   .object({
-    display_name: z
-      .string()
-      .min(1, 'Display name is required')
-      .max(255, 'Display name must be at most 255 characters'),
     password: z
       .string()
       .min(6, 'Password must be at least 6 characters')
@@ -47,15 +46,13 @@ export const onboardingSchema = z
       .string()
       .min(6, 'Password must be at least 6 characters')
       .max(128, 'Password must be at most 128 characters'),
-    company_name: z.string().max(255, 'Company name must be at most 255 characters').optional(),
-    phone: z.string().max(50, 'Phone must be at most 50 characters').optional(),
   })
   .refine((data) => data.password === data.confirmPassword, {
     message: 'Passwords do not match',
     path: ['confirmPassword'],
   });
 
-export type OnboardingInput = z.input<typeof onboardingSchema>;
+export type ConfirmationInput = z.input<typeof confirmationSchema>;
 
 /**
  * Forgot password schema validation

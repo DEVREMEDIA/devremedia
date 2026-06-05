@@ -9,14 +9,12 @@ import { useTranslations } from 'next-intl';
 
 import { Eye, EyeOff } from 'lucide-react';
 
-import { onboardingSchema } from '@/lib/schemas/auth';
+import { confirmationSchema, type ConfirmationInput } from '@/lib/schemas/auth';
 import { completeOnboarding } from '@/lib/actions/auth';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-
-import type { OnboardingInput } from '@/lib/schemas/auth';
 
 const ROLE_DASHBOARDS: Record<string, string> = {
   super_admin: '/admin/dashboard',
@@ -26,7 +24,26 @@ const ROLE_DASHBOARDS: Record<string, string> = {
   client: '/client/dashboard',
 };
 
-export default function OnboardingPage() {
+interface ConfirmationDetails {
+  name: string;
+  email: string;
+  company: string | null;
+}
+
+interface ConfirmationFormProps {
+  details: ConfirmationDetails;
+}
+
+function DetailRow({ label, value }: { label: string; value: string }) {
+  return (
+    <div className="flex items-baseline justify-between gap-4">
+      <span className="text-sm text-muted-foreground">{label}</span>
+      <span className="text-sm font-medium text-right">{value}</span>
+    </div>
+  );
+}
+
+export function ConfirmationForm({ details }: ConfirmationFormProps) {
   const router = useRouter();
   const t = useTranslations('auth');
   const [isLoading, setIsLoading] = useState(false);
@@ -37,11 +54,11 @@ export default function OnboardingPage() {
     register,
     handleSubmit,
     formState: { errors },
-  } = useForm<OnboardingInput>({
-    resolver: zodResolver(onboardingSchema),
+  } = useForm<ConfirmationInput>({
+    resolver: zodResolver(confirmationSchema),
   });
 
-  const onSubmit = async (data: OnboardingInput) => {
+  const onSubmit = async (data: ConfirmationInput) => {
     setIsLoading(true);
     try {
       const result = await completeOnboarding(data);
@@ -51,10 +68,9 @@ export default function OnboardingPage() {
         return;
       }
 
-      toast.success(t('profileCompleted'));
+      toast.success(t('confirmationComplete'));
       const role = result.data?.role ?? 'client';
-      const redirectPath = ROLE_DASHBOARDS[role] ?? '/client/dashboard';
-      router.push(redirectPath);
+      router.push(ROLE_DASHBOARDS[role] ?? '/client/dashboard');
     } catch {
       toast.error(t('unexpectedError'));
     } finally {
@@ -65,25 +81,18 @@ export default function OnboardingPage() {
   return (
     <Card>
       <CardHeader>
-        <CardTitle>{t('onboarding')}</CardTitle>
-        <CardDescription>{t('onboardingDescription')}</CardDescription>
+        <CardTitle>{t('confirmTitle')}</CardTitle>
+        <CardDescription>{t('confirmDescription')}</CardDescription>
       </CardHeader>
       <CardContent>
-        <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
-          <div className="space-y-2">
-            <Label htmlFor="display_name">{t('displayName')}</Label>
-            <Input
-              id="display_name"
-              type="text"
-              placeholder={t('displayNamePlaceholder')}
-              autoComplete="name"
-              {...register('display_name')}
-            />
-            {errors.display_name && (
-              <p className="text-sm text-destructive">{errors.display_name.message}</p>
-            )}
-          </div>
+        {/* Admin-entered details — read-only. The invitee confirms rather than re-enters. */}
+        <div className="mb-6 space-y-3 rounded-lg border bg-muted/40 p-4">
+          <DetailRow label={t('yourName')} value={details.name} />
+          <DetailRow label={t('email')} value={details.email} />
+          {details.company && <DetailRow label={t('yourCompany')} value={details.company} />}
+        </div>
 
+        <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
           <div className="space-y-2">
             <Label htmlFor="password">{t('setPassword')}</Label>
             <div className="relative">
@@ -138,34 +147,8 @@ export default function OnboardingPage() {
             {t('passwordMinLength')}
           </div>
 
-          <div className="space-y-2">
-            <Label htmlFor="company_name">{t('companyNameOptional')}</Label>
-            <Input
-              id="company_name"
-              type="text"
-              placeholder={t('companyNamePlaceholder')}
-              autoComplete="organization"
-              {...register('company_name')}
-            />
-            {errors.company_name && (
-              <p className="text-sm text-destructive">{errors.company_name.message}</p>
-            )}
-          </div>
-
-          <div className="space-y-2">
-            <Label htmlFor="phone">{t('phoneOptional')}</Label>
-            <Input
-              id="phone"
-              type="tel"
-              placeholder="+30 xxx xxx xxxx"
-              autoComplete="tel"
-              {...register('phone')}
-            />
-            {errors.phone && <p className="text-sm text-destructive">{errors.phone.message}</p>}
-          </div>
-
           <Button type="submit" className="w-full" disabled={isLoading}>
-            {isLoading ? t('completingSetup') : t('completeSetup')}
+            {isLoading ? t('confirming') : t('confirmAccount')}
           </Button>
         </form>
       </CardContent>

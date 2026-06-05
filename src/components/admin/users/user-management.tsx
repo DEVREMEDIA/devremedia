@@ -99,13 +99,13 @@ export function UserManagement({ users }: UserManagementProps) {
   }, [users, searchQuery, roleFilter]);
 
   const handleInvite = async () => {
-    if (!inviteEmail) {
+    if (!inviteEmail || !inviteDisplayName.trim()) {
       toast.error(tToast('validationError'));
       return;
     }
 
     setIsSubmitting(true);
-    const result = await inviteTeamMember(inviteEmail, inviteRole);
+    const result = await inviteTeamMember(inviteEmail, inviteRole, inviteDisplayName.trim());
 
     if (result.error) {
       toast.error(result.error);
@@ -222,7 +222,9 @@ export function UserManagement({ users }: UserManagementProps) {
                 />
               </div>
               <div className="space-y-2">
-                <Label htmlFor="invite-name">{t('displayNameOptional')}</Label>
+                <Label htmlFor="invite-name">
+                  {t('fullName')} <span className="text-destructive">*</span>
+                </Label>
                 <Input
                   id="invite-name"
                   type="text"

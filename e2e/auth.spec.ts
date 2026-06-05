@@ -58,9 +58,9 @@ test.describe('Authentication', () => {
     await page.locator('button[type="submit"]').click();
 
     // Should show error message (adjust selector based on your error display)
-    await expect(
-      page.locator('text=/invalid|error|incorrect|failed/i').first()
-    ).toBeVisible({ timeout: 5000 });
+    await expect(page.locator('text=/invalid|error|incorrect|failed/i').first()).toBeVisible({
+      timeout: 5000,
+    });
 
     // Should still be on login page
     await expect(page).toHaveURL(/\/login/);
@@ -91,7 +91,7 @@ test.describe('Authentication', () => {
       // SKIP: Requires database with test users and proper middleware
       test.skip(
         !process.env.E2E_TEST_USERS_READY,
-        'Test users not configured or middleware not enforcing RBAC'
+        'Test users not configured or middleware not enforcing RBAC',
       );
 
       await loginAsAdmin(page);
@@ -107,7 +107,7 @@ test.describe('Authentication', () => {
       // SKIP: Requires database with test users and proper middleware
       test.skip(
         !process.env.E2E_TEST_USERS_READY,
-        'Test users not configured or middleware not enforcing RBAC'
+        'Test users not configured or middleware not enforcing RBAC',
       );
 
       await loginAsClient(page);
@@ -161,5 +161,28 @@ test.describe('Authentication', () => {
 
     // Check for email input
     await expect(page.locator('input[type="email"], input[name="email"]')).toBeVisible();
+  });
+
+  test('link-expired page renders the request-a-new-link control', async ({ page }) => {
+    // Public screen shown when an invitation/confirmation link is expired or invalid.
+    await page.goto('/link-expired');
+
+    // Self-service resend form: email input + submit button.
+    await expect(page.locator('form')).toBeVisible();
+    await expect(page.locator('input[type="email"], input[name="email"]')).toBeVisible();
+    await expect(page.locator('button[type="submit"]')).toBeVisible();
+  });
+
+  test('invitation → confirmation round-trip', async ({ page }) => {
+    // SKIP: needs a real invited user + mailbox to follow a token_hash invite link.
+    // Manual/seeded check: follow the invite link → /confirm shows read-only name/email/
+    // company + a password field → set password → land on the role dashboard.
+    test.skip(
+      !process.env.E2E_TEST_USERS_READY,
+      'Invite round-trip requires a seeded invited user and a real mailbox',
+    );
+
+    await page.goto('/confirm');
+    await expect(page.locator('input[name="password"], input[type="password"]')).toBeVisible();
   });
 });

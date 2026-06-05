@@ -56,6 +56,7 @@ export function TeamManagement({ members }: TeamManagementProps) {
   const t = useTranslations('settings');
   const tc = useTranslations('common');
   const [isInviteDialogOpen, setIsInviteDialogOpen] = useState(false);
+  const [inviteName, setInviteName] = useState('');
   const [inviteEmail, setInviteEmail] = useState('');
   const [inviteRole, setInviteRole] = useState<UserRole>('admin');
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -63,18 +64,19 @@ export function TeamManagement({ members }: TeamManagementProps) {
   const [isDeactivating, setIsDeactivating] = useState(false);
 
   const handleInvite = async () => {
-    if (!inviteEmail) {
+    if (!inviteEmail || !inviteName.trim()) {
       toast.error(tToast('validationError'));
       return;
     }
 
     setIsSubmitting(true);
-    const result = await inviteTeamMember(inviteEmail, inviteRole);
+    const result = await inviteTeamMember(inviteEmail, inviteRole, inviteName.trim());
 
     if (result.error) {
       toast.error(result.error);
     } else {
       toast.success(tToast('sendSuccess'));
+      setInviteName('');
       setInviteEmail('');
       setInviteRole('admin');
       setIsInviteDialogOpen(false);
@@ -134,6 +136,18 @@ export function TeamManagement({ members }: TeamManagementProps) {
                   <DialogDescription>{t('inviteDescription')}</DialogDescription>
                 </DialogHeader>
                 <div className="space-y-4 py-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="name">
+                      {t('fullName')} <span className="text-destructive">*</span>
+                    </Label>
+                    <Input
+                      id="name"
+                      type="text"
+                      placeholder="Maria Papadopoulou"
+                      value={inviteName}
+                      onChange={(e) => setInviteName(e.target.value)}
+                    />
+                  </div>
                   <div className="space-y-2">
                     <Label htmlFor="email">{t('emailAddress')}</Label>
                     <Input
