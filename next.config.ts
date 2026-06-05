@@ -50,6 +50,13 @@ const nextConfig: NextConfig = {
       '@fullcalendar/interaction',
     ],
   },
+  async redirects() {
+    return [
+      // The first-sign-in screen was renamed /onboarding → /confirm (Confirmation).
+      // Keep stale in-flight invite links working.
+      { source: '/onboarding', destination: '/confirm', permanent: false },
+    ];
+  },
   async headers() {
     return [
       {

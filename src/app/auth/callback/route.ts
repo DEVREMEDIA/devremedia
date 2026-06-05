@@ -1,14 +1,14 @@
 import { type NextRequest, NextResponse } from 'next/server';
 import { createServerClient } from '@supabase/ssr';
 import { createAdminClient } from '@/lib/supabase/admin';
+import { resolveAuthRedirect } from '@/lib/auth/resolve-redirect';
 
 /**
- * Auth callback handler for Supabase authentication flows
- * Handles: email confirmation, magic link, OAuth redirects, invite links
+ * Auth callback handler for Supabase PKCE flows (OAuth, magic link, stray `?code=`).
+ * Invitations no longer target this route — they go through `/auth/confirm` (ADR-0003).
  *
- * After code exchange, checks the user profile to determine redirect:
- * - No display_name → /onboarding (user hasn't completed setup)
- * - Otherwise → uses `next` param or role-based dashboard
+ * The post-exchange redirect is decided by `resolveAuthRedirect`. On failure the user is
+ * sent to the friendly `/link-expired` screen.
  */
 export async function GET(request: NextRequest) {
   const { searchParams, origin } = new URL(request.url);
@@ -47,27 +47,18 @@ export async function GET(request: NextRequest) {
     if (!error) {
       let redirectPath = next;
 
-      // Check if user needs onboarding or is in recovery flow
       if (data.user) {
         const adminClient = createAdminClient();
-
-        const [{ data: profile }, { data: adminUserData }] = await Promise.all([
-          adminClient.from('user_profiles').select('display_name').eq('id', data.user.id).single(),
-          adminClient.auth.admin.getUserById(data.user.id),
-        ]);
-
+        const { data: adminUserData } = await adminClient.auth.admin.getUserById(data.user.id);
         const fullUser = adminUserData?.user;
-        const isInvitedAndNotOnboarded = !!data.user.user_metadata?.invited_by;
 
-        const isRecovery =
+        const isInvited = !!data.user.user_metadata?.invited_by;
+        const isRecovery = !!(
           fullUser?.recovery_sent_at &&
-          Date.now() - new Date(fullUser.recovery_sent_at).getTime() < 10 * 60 * 1000;
+          Date.now() - new Date(fullUser.recovery_sent_at).getTime() < 10 * 60 * 1000
+        );
 
-        if (!profile?.display_name || isInvitedAndNotOnboarded) {
-          redirectPath = '/onboarding';
-        } else if (isRecovery) {
-          redirectPath = '/update-password';
-        }
+        redirectPath = resolveAuthRedirect({ isInvited, isRecovery, next });
       }
 
       const response = NextResponse.redirect(`${origin}${redirectPath}`);
@@ -78,6 +69,6 @@ export async function GET(request: NextRequest) {
     }
   }
 
-  // Return to login with error if authentication failed
-  return NextResponse.redirect(`${origin}/login?error=auth_callback_error`);
+  // Exchange failed → friendly screen with self-service resend.
+  return NextResponse.redirect(new URL('/link-expired', request.url));
 }

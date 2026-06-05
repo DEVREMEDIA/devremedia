@@ -2,7 +2,8 @@
 
 import { createClient } from '@/lib/supabase/server';
 import { createAdminClient } from '@/lib/supabase/admin';
-import { sendInviteEmail } from '@/lib/email/send-invite-email';
+import { requireAdmin } from '@/lib/auth-helpers';
+import { deliverInvitation } from '@/lib/invitations';
 import type { ActionResult, UserProfile } from '@/types';
 import type { UserWithEmail } from '@/types/entities';
 import type { UserRole } from '@/lib/constants';
@@ -108,114 +109,34 @@ export async function getAllUsers(): Promise<ActionResult<UserWithEmail[]>> {
 export async function inviteTeamMember(
   email: string,
   role: UserRole,
+  name: string,
 ): Promise<ActionResult<{ email: string }>> {
   try {
-    const supabase = await createClient();
+    const { user, error: authError } = await requireAdmin();
+    if (authError) return { data: null, error: authError };
 
-    // Verify caller is admin
-    const {
-      data: { user },
-    } = await supabase.auth.getUser();
-    if (!user) return { data: null, error: 'Unauthorized' };
-
-    const { data: profile } = await supabase
-      .from('user_profiles')
-      .select('role')
-      .eq('id', user.id)
-      .single();
-
-    if (!profile || (profile.role !== 'super_admin' && profile.role !== 'admin')) {
-      return { data: null, error: 'Forbidden: admin access required' };
-    }
-
-    // Use admin client to invite user via Supabase Auth
-    const adminClient = createAdminClient();
     const cookieStore = await cookies();
     const locale = cookieStore.get('NEXT_LOCALE')?.value ?? 'el';
 
-    const { data: inviteData, error } = await adminClient.auth.admin.inviteUserByEmail(email, {
-      data: {
-        role,
-        invited_by: user.id,
-        locale,
-      },
+    // One reliable delivery path for every invite (generateLink + Resend → /auth/confirm).
+    // There is no `clients` record to source the name from, so the dialog requires one;
+    // fall back to the email if somehow absent.
+    const result = await deliverInvitation({
+      email,
+      invitedBy: user.id,
+      locale,
+      role,
+      displayName: name || email,
     });
 
-    if (error) {
-      // Rate limit hit — return friendly message
-      if (error.message.toLowerCase().includes('rate limit')) {
-        return {
-          data: null,
-          error:
-            locale === 'el'
-              ? 'Πολλές προσκλήσεις σε σύντομο χρόνο. Δοκιμάστε ξανά σε λίγο.'
-              : 'Too many invitations sent. Please try again later.',
-        };
-      }
+    if (!result.ok) return { data: null, error: result.error };
 
-      // If user already exists (expired invite), resend via recovery link
-      const isUserExists =
-        error.message.toLowerCase().includes('already') ||
-        error.message.toLowerCase().includes('exists');
-
-      if (isUserExists) {
-        // Re-invite flow: we previously sent the RECOVERY template here, which
-        // surfaced a "reset your password" email to brand-new invitees whose
-        // initial invite had expired. Now we generate a fresh invite link and
-        // send it through the branded invite template via Resend.
-        const { data: authData } = await adminClient.auth.admin.listUsers();
-        const existingUser = authData?.users.find((u) => u.email === email);
-        if (!existingUser) {
-          return { data: null, error: error.message };
-        }
-
-        // Reset profile state + role so middleware pushes them through /onboarding.
-        await Promise.all([
-          supabase
-            .from('user_profiles')
-            .update({ role, display_name: null })
-            .eq('id', existingUser.id),
-          adminClient.auth.admin.updateUserById(existingUser.id, {
-            user_metadata: { invited_by: user.id, locale, role },
-          }),
-        ]);
-
-        const { data: linkData, error: linkError } = await adminClient.auth.admin.generateLink({
-          type: 'invite',
-          email,
-          options: {
-            redirectTo: `${process.env.NEXT_PUBLIC_APP_URL}/auth/confirm?type=invite&next=/onboarding`,
-            data: { invited_by: user.id, locale, role },
-          },
-        });
-
-        if (linkError || !linkData?.properties?.action_link) {
-          return { data: null, error: linkError?.message ?? 'Failed to generate invite link' };
-        }
-
-        const emailResult = await sendInviteEmail({
-          to: email,
-          inviteLink: linkData.properties.action_link,
-          locale,
-        });
-
-        if (!emailResult.success) {
-          return { data: null, error: emailResult.error ?? 'Failed to send invite email' };
-        }
-
-        revalidatePath('/admin/settings');
-        revalidatePath('/admin/users');
-        return { data: { email }, error: null };
-      }
-
-      return { data: null, error: error.message };
-    }
-
-    // If inviting as client, auto-link client record by email
-    if (role === 'client' && inviteData?.user) {
+    // If inviting as a client, link the client record by email.
+    if (role === 'client') {
+      const adminClient = createAdminClient();
       await adminClient
         .from('clients')
-        .update({ user_id: inviteData.user.id })
+        .update({ user_id: result.userId })
         .eq('email', email)
         .is('user_id', null);
     }

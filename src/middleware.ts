@@ -1,7 +1,8 @@
 import { createServerClient } from '@supabase/ssr';
 import { NextResponse, type NextRequest } from 'next/server';
+import { CONFIRMATION_ROUTE } from '@/lib/auth/resolve-redirect';
 
-const PUBLIC_ROUTES = ['/login', '/forgot-password', '/update-password', '/book'];
+const PUBLIC_ROUTES = ['/login', '/forgot-password', '/update-password', '/book', '/link-expired'];
 const AUTH_ROUTES = ['/login'];
 const ADMIN_ROUTES_PREFIX = '/admin';
 const CLIENT_ROUTES_PREFIX = '/client';
@@ -115,7 +116,7 @@ export async function middleware(request: NextRequest) {
   // User IS authenticated — get their role
   const { data: profile } = await supabase
     .from('user_profiles')
-    .select('role, display_name')
+    .select('role')
     .eq('id', user.id)
     .single();
 
@@ -123,14 +124,13 @@ export async function middleware(request: NextRequest) {
   const isAdmin = role === 'super_admin' || role === 'admin';
   const dashboard = getDashboardForRole(role);
 
-  // Redirect users who haven't completed onboarding (invited but no password/name set)
-  const isInvitedAndNotOnboarded = !!user.user_metadata?.invited_by;
-  if (
-    ((profile && !profile.display_name) || isInvitedAndNotOnboarded) &&
-    pathname !== '/onboarding'
-  ) {
+  // Invited users (not yet confirmed) are funnelled to the Confirmation screen.
+  // The gate keys off the `invited_by` flag — the admin pre-fills the name, so a null
+  // display_name no longer implies "incomplete".
+  const isInvited = !!user.user_metadata?.invited_by;
+  if (isInvited && pathname !== CONFIRMATION_ROUTE) {
     const url = request.nextUrl.clone();
-    url.pathname = '/onboarding';
+    url.pathname = CONFIRMATION_ROUTE;
     return NextResponse.redirect(url);
   }
 

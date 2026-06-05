@@ -2,8 +2,9 @@
 
 import { createClient } from '@/lib/supabase/server';
 import { createAdminClient } from '@/lib/supabase/admin';
-import { onboardingSchema } from '@/lib/schemas/auth';
-import { sendInviteEmail } from '@/lib/email/send-invite-email';
+import { requireAdmin } from '@/lib/auth-helpers';
+import { confirmationSchema } from '@/lib/schemas/auth';
+import { deliverInvitation } from '@/lib/invitations';
 import type { ActionResult } from '@/types';
 import { cookies } from 'next/headers';
 import { z } from 'zod';
@@ -14,153 +15,47 @@ async function getLocale(): Promise<string> {
 }
 
 /**
- * Forces a user into onboarding state:
- * 1. Clears display_name in profile (middleware checks this)
- * 2. Sets invited_by + locale in user metadata (middleware also checks this)
+ * Invite a Client to the DMS. The admin-entered name (contact_name) flows into the
+ * invitation; the invitee never types it. Delivery goes through the one reliable path
+ * (generateLink + Resend → /auth/confirm) — see ADR-0003.
  */
-async function forceOnboardingState(
-  adminClient: ReturnType<typeof createAdminClient>,
-  targetUserId: string,
-  invitedByUserId: string,
-  locale: string,
-) {
-  await Promise.all([
-    adminClient.from('user_profiles').update({ display_name: null }).eq('id', targetUserId),
-    adminClient.auth.admin.updateUserById(targetUserId, {
-      user_metadata: { invited_by: invitedByUserId, locale },
-    }),
-  ]);
-}
-
 export async function inviteClient(
   email: string,
   displayName?: string,
 ): Promise<ActionResult<{ userId: string }>> {
   try {
-    const supabase = await createClient();
-    const {
-      data: { user },
-    } = await supabase.auth.getUser();
+    const { user, error: authError } = await requireAdmin();
+    if (authError) return { data: null, error: authError };
 
-    if (!user) {
-      return { data: null, error: 'Unauthorized' };
-    }
-
-    const { data: profile } = await supabase
-      .from('user_profiles')
-      .select('role')
-      .eq('id', user.id)
-      .single();
-
-    if (!profile || (profile.role !== 'super_admin' && profile.role !== 'admin')) {
-      return { data: null, error: 'Forbidden: admin access required' };
-    }
-
-    const adminClient = createAdminClient();
     const locale = await getLocale();
+    const result = await deliverInvitation({ email, invitedBy: user.id, locale, displayName });
 
-    const { data, error } = await adminClient.auth.admin.inviteUserByEmail(email, {
-      data: {
-        display_name: displayName || email,
-        invited_by: user.id,
-        locale,
-      },
-    });
+    if (!result.ok) return { data: null, error: result.error };
 
-    if (error) {
-      // Rate limit hit — return friendly message
-      if (error.message.toLowerCase().includes('rate limit')) {
-        return {
-          data: null,
-          error:
-            locale === 'el'
-              ? 'Πολλές προσκλήσεις σε σύντομο χρόνο. Δοκιμάστε ξανά σε λίγο.'
-              : 'Too many invitations sent. Please try again later.',
-        };
-      }
-
-      // User already exists — re-invite via a fresh invite link + custom email.
-      // Previously we called resetPasswordForEmail, which made Supabase send the
-      // RECOVERY template to brand-new invitees. We now generate an invite link
-      // and deliver it through our Resend invite template instead.
-      const { data: existingUsers } = await adminClient.auth.admin.listUsers();
-      const existingUser = existingUsers?.users.find((u) => u.email === email);
-
-      if (existingUser) {
-        // Force onboarding state so middleware catches them AND so they go
-        // through /onboarding after following the link.
-        await forceOnboardingState(adminClient, existingUser.id, user.id, locale);
-
-        const { data: linkData, error: linkError } = await adminClient.auth.admin.generateLink({
-          type: 'invite',
-          email,
-          options: {
-            redirectTo: `${process.env.NEXT_PUBLIC_APP_URL}/auth/confirm?type=invite&next=/onboarding`,
-            data: {
-              display_name: displayName || email,
-              invited_by: user.id,
-              locale,
-            },
-          },
-        });
-
-        if (linkError || !linkData?.properties?.action_link) {
-          if (linkError?.message.toLowerCase().includes('rate limit')) {
-            return {
-              data: null,
-              error:
-                locale === 'el'
-                  ? 'Πολλές προσκλήσεις σε σύντομο χρόνο. Δοκιμάστε ξανά σε λίγο.'
-                  : 'Too many invitations sent. Please try again later.',
-            };
-          }
-          return { data: null, error: linkError?.message ?? 'Failed to generate invite link' };
-        }
-
-        const emailResult = await sendInviteEmail({
-          to: email,
-          inviteLink: linkData.properties.action_link,
-          locale,
-        });
-
-        if (!emailResult.success) {
-          return {
-            data: null,
-            error: emailResult.error ?? 'Failed to send invite email',
-          };
-        }
-
-        // Auto-link client record
-        await adminClient
-          .from('clients')
-          .update({ user_id: existingUser.id })
-          .eq('email', email)
-          .is('user_id', null);
-
-        return { data: { userId: existingUser.id }, error: null };
-      }
-
-      return { data: null, error: error.message };
-    }
-
-    // New user — DB trigger sets display_name = NULL, but ensure invited_by is set
+    // Link the client record by email (the admin may have just created it).
+    const adminClient = createAdminClient();
     await adminClient
       .from('clients')
-      .update({ user_id: data.user.id })
+      .update({ user_id: result.userId })
       .eq('email', email)
       .is('user_id', null);
 
-    return { data: { userId: data.user.id }, error: null };
+    return { data: { userId: result.userId }, error: null };
   } catch {
     return { data: null, error: 'Failed to send invitation' };
   }
 }
 
+/**
+ * Confirmation: the invitee sets a password and the invite flag is cleared, closing the
+ * gate. The admin-entered display_name is left untouched (story 18) — the invitee has no
+ * profile form to fill.
+ */
 export async function completeOnboarding(
-  input: z.infer<typeof onboardingSchema>,
+  input: z.infer<typeof confirmationSchema>,
 ): Promise<ActionResult<{ role: string }>> {
   try {
-    const validated = onboardingSchema.parse(input);
+    const validated = confirmationSchema.parse(input);
     const supabase = await createClient();
 
     const {
@@ -171,7 +66,6 @@ export async function completeOnboarding(
       return { data: null, error: 'Unauthorized' };
     }
 
-    // Set the user's password and clear invite flag so they won't be redirected to onboarding again
     const { error: passwordError } = await supabase.auth.updateUser({
       password: validated.password,
       data: { invited_by: null },
@@ -181,19 +75,7 @@ export async function completeOnboarding(
       return { data: null, error: passwordError.message };
     }
 
-    // Update display name in user_profiles
-    const { error } = await supabase
-      .from('user_profiles')
-      .update({
-        display_name: validated.display_name,
-      })
-      .eq('id', user.id);
-
-    if (error) {
-      return { data: null, error: error.message };
-    }
-
-    // Auto-link client record by email (fallback if invite didn't link)
+    // Auto-link client record by email (fallback if the invite didn't link it).
     const adminClient = createAdminClient();
     await adminClient
       .from('clients')
@@ -201,7 +83,6 @@ export async function completeOnboarding(
       .eq('email', user.email ?? '')
       .is('user_id', null);
 
-    // Fetch user role for redirect
     const { data: profileData } = await supabase
       .from('user_profiles')
       .select('role')
@@ -209,14 +90,13 @@ export async function completeOnboarding(
       .single();
 
     const role = profileData?.role ?? 'client';
-
     return { data: { role }, error: null };
   } catch (err: unknown) {
     if (err instanceof z.ZodError) {
       const zodError = err as z.ZodError;
       return { data: null, error: zodError.issues[0].message };
     }
-    return { data: null, error: 'Failed to complete onboarding' };
+    return { data: null, error: 'Failed to complete confirmation' };
   }
 }
 
