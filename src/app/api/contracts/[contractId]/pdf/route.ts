@@ -61,7 +61,7 @@ export async function GET(
 
     // Extract signature_image from signature_data for backwards compat with old signed contracts
     const signatureImage =
-      (contract as any).signature_image ??
+      (contract as { signature_image?: string | null }).signature_image ??
       ((contract.signature_data as Record<string, unknown> | null)?.['signature_image'] as
         | string
         | undefined);
@@ -77,6 +77,7 @@ export async function GET(
         locale,
         logoBase64,
         provider,
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
       }) as any,
     );
 
