@@ -4,7 +4,7 @@ import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useTranslations } from 'next-intl';
 import { Client } from '@/types/index';
-import type { ClientDrawerMode } from '@/types/relations';
+import type { ClientDrawerMode, ProjectWithClient, InvoiceWithRelations } from '@/types/relations';
 import { PageHeader } from '@/components/shared/page-header';
 import { StatusBadge } from '@/components/shared/status-badge';
 import { UserAvatar } from '@/components/shared/user-avatar';
@@ -32,9 +32,16 @@ interface ClientDetailProps {
     totalInvoiced: number;
     totalPaid: number;
   };
+  initialProjects: ProjectWithClient[];
+  initialInvoices: InvoiceWithRelations[];
 }
 
-export function ClientDetail({ client, stats }: ClientDetailProps) {
+export function ClientDetail({
+  client,
+  stats,
+  initialProjects,
+  initialInvoices,
+}: ClientDetailProps) {
   const t = useTranslations('clients');
   const tc = useTranslations('common');
   const router = useRouter();
@@ -177,6 +184,7 @@ export function ClientDetail({ client, stats }: ClientDetailProps) {
             clientId={client.id}
             refreshKey={refreshKey}
             onOpenDrawer={handleOpenDrawer}
+            initialProjects={initialProjects}
           />
         </TabsContent>
 
@@ -185,6 +193,7 @@ export function ClientDetail({ client, stats }: ClientDetailProps) {
             clientId={client.id}
             refreshKey={refreshKey}
             onOpenDrawer={handleOpenDrawer}
+            initialInvoices={initialInvoices}
           />
         </TabsContent>
 

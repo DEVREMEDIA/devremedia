@@ -41,6 +41,7 @@ export default async function ClientDetailPage({ params }: ClientDetailPageProps
 
   const client = clientResult.data as Client;
   const invoices = invoicesResult.data ?? [];
+  const projects = projectsResult.data ?? [];
   const totalInvoiced = invoices.reduce((sum, inv) => sum + (inv.total ?? 0), 0);
   const totalPaid = invoices
     .filter((inv) => inv.status === 'paid')
@@ -50,10 +51,12 @@ export default async function ClientDetailPage({ params }: ClientDetailPageProps
     <ClientDetail
       client={client}
       stats={{
-        totalProjects: (projectsResult.data ?? []).length,
+        totalProjects: projects.length,
         totalInvoiced,
         totalPaid,
       }}
+      initialProjects={projects}
+      initialInvoices={invoices}
     />
   );
 }

@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import { useTranslations } from 'next-intl';
 import { getProjects } from '@/lib/actions/projects';
+import { shouldFetchTabData } from '@/lib/tab-data';
 import type { ProjectWithClient, ClientDrawerMode } from '@/types/relations';
 import { EmptyState } from '@/components/shared/empty-state';
 import { StatusBadge } from '@/components/shared/status-badge';
@@ -17,14 +18,27 @@ interface ClientProjectsTabProps {
   clientId: string;
   refreshKey: number;
   onOpenDrawer: (mode: ClientDrawerMode) => void;
+  initialProjects?: ProjectWithClient[];
 }
 
-export function ClientProjectsTab({ clientId, refreshKey, onOpenDrawer }: ClientProjectsTabProps) {
+export function ClientProjectsTab({
+  clientId,
+  refreshKey,
+  onOpenDrawer,
+  initialProjects,
+}: ClientProjectsTabProps) {
   const t = useTranslations('clients');
-  const [projects, setProjects] = useState<ProjectWithClient[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
+  const [projects, setProjects] = useState<ProjectWithClient[]>(initialProjects ?? []);
+  // Data arrives on the first byte from the server — only show a spinner when
+  // there was nothing to render and we must fetch (Phase 1).
+  const [isLoading, setIsLoading] = useState(
+    shouldFetchTabData({ hasInitialData: !!initialProjects, refreshKey }),
+  );
 
   useEffect(() => {
+    if (!shouldFetchTabData({ hasInitialData: !!initialProjects, refreshKey })) {
+      return;
+    }
     async function fetchProjects() {
       setIsLoading(true);
       const result = await getProjects({ client_id: clientId });
@@ -34,6 +48,7 @@ export function ClientProjectsTab({ clientId, refreshKey, onOpenDrawer }: Client
       setIsLoading(false);
     }
     fetchProjects();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [clientId, refreshKey]);
 
   const handleCreate = () => {
