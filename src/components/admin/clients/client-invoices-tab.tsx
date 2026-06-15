@@ -10,6 +10,7 @@ import { Receipt, Plus, MoreHorizontal, Eye, FileDown, CheckCircle } from 'lucid
 import { createClient } from '@/lib/supabase/client';
 import { getInvoices, getNextInvoiceNumber, updateInvoiceStatus } from '@/lib/actions/invoices';
 import { getProjects } from '@/lib/actions/projects';
+import { shouldFetchTabData } from '@/lib/tab-data';
 import type { InvoiceWithRelations, ClientDrawerMode } from '@/types/relations';
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -39,25 +40,39 @@ interface ClientInvoicesTabProps {
   clientId: string;
   refreshKey: number;
   onOpenDrawer: (mode: ClientDrawerMode) => void;
+  initialInvoices?: InvoiceWithRelations[];
 }
 
 const isOverdue = (invoice: InvoiceWithRelations) =>
   invoice.status !== 'paid' && invoice.status !== 'cancelled' && isPast(new Date(invoice.due_date));
 
-export function ClientInvoicesTab({ clientId, refreshKey, onOpenDrawer }: ClientInvoicesTabProps) {
+export function ClientInvoicesTab({
+  clientId,
+  refreshKey,
+  onOpenDrawer,
+  initialInvoices,
+}: ClientInvoicesTabProps) {
   const t = useTranslations('clients');
-  const [invoices, setInvoices] = useState<InvoiceWithRelations[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
+  const [invoices, setInvoices] = useState<InvoiceWithRelations[]>(initialInvoices ?? []);
+  // Invoices arrive on the first byte from the server; only block on a spinner
+  // when there is nothing to render yet (Phase 1).
+  const [isLoading, setIsLoading] = useState(
+    shouldFetchTabData({ hasInitialData: !!initialInvoices, refreshKey }),
+  );
   const [projects, setProjects] = useState<{ id: string; title: string; client_id: string }[]>([]);
 
   useEffect(() => {
+    const fetchInvoices = shouldFetchTabData({ hasInitialData: !!initialInvoices, refreshKey });
     async function fetchData() {
-      setIsLoading(true);
+      if (fetchInvoices) setIsLoading(true);
+      // Projects power the create-invoice drawer dropdown — not provided by the
+      // server page, so always loaded. Invoices are only re-fetched when the
+      // server did not seed them or after a refresh.
       const [invoicesResult, projectsResult] = await Promise.all([
-        getInvoices({ client_id: clientId }),
+        fetchInvoices ? getInvoices({ client_id: clientId }) : Promise.resolve(null),
         getProjects({ client_id: clientId }),
       ]);
-      if (!invoicesResult.error && invoicesResult.data) {
+      if (invoicesResult && !invoicesResult.error && invoicesResult.data) {
         setInvoices(invoicesResult.data);
       }
       if (!projectsResult.error && projectsResult.data) {
@@ -69,9 +84,10 @@ export function ClientInvoicesTab({ clientId, refreshKey, onOpenDrawer }: Client
           })),
         );
       }
-      setIsLoading(false);
+      if (fetchInvoices) setIsLoading(false);
     }
     fetchData();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [clientId, refreshKey]);
 
   const totalInvoiced = invoices.reduce((sum, inv) => sum + inv.total, 0);

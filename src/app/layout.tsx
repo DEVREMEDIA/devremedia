@@ -5,6 +5,8 @@ import { getLocale, getMessages } from 'next-intl/server';
 import { Providers } from '@/components/providers';
 import { Toaster } from '@/components/ui/sonner';
 import { AuthHashHandler } from '@/components/shared/auth-hash-handler';
+import { createClient } from '@/lib/supabase/server';
+import type { AuthProfile } from '@/lib/auth-profile';
 import './globals.css';
 
 // Namespaces only used server-side (via getTranslations) — excluded from client bundle
@@ -45,6 +47,24 @@ export const metadata: Metadata = {
   description: 'Videography client management, project tracking, financials, and video delivery.',
 };
 
+// Resolve the signed-in user's profile on the server so the client AuthProvider
+// is seeded on the first byte and skips a redundant user_profiles query.
+async function getInitialProfile(): Promise<AuthProfile | null> {
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user) return null;
+
+  const { data } = await supabase
+    .from('user_profiles')
+    .select('id, role, display_name, avatar_url')
+    .eq('id', user.id)
+    .single();
+
+  return (data as AuthProfile | null) ?? null;
+}
+
 export default async function RootLayout({
   children,
 }: Readonly<{
@@ -52,6 +72,7 @@ export default async function RootLayout({
 }>) {
   const locale = await getLocale();
   const messages = await getMessages();
+  const initialProfile = await getInitialProfile();
 
   return (
     <html lang={locale} suppressHydrationWarning>
@@ -64,7 +85,7 @@ export default async function RootLayout({
         style={{ margin: 0, backgroundColor: 'var(--background, #09090b)' }}
       >
         <NextIntlClientProvider messages={pickClientMessages(messages as Record<string, unknown>)}>
-          <Providers>
+          <Providers initialProfile={initialProfile}>
             <AuthHashHandler />
             {children}
             <Toaster richColors position="top-right" />

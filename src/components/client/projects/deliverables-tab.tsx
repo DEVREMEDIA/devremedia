@@ -11,6 +11,7 @@ import {
   resolveAnnotation,
 } from '@/lib/actions/deliverables';
 import { createClient } from '@/lib/supabase/client';
+import { resolveDeliverableVideoUrl } from '@/lib/deliverable-video';
 import { toast } from 'sonner';
 import { useRouter } from 'next/navigation';
 import { DeliverableCard } from './deliverable-card';
@@ -49,7 +50,6 @@ export function DeliverablesTab({ deliverables }: DeliverablesTabProps) {
   useEffect(() => {
     if (selectedDeliverable) {
       fetchAnnotations();
-      fetchVideoUrl();
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [selectedDeliverable?.id]);
@@ -66,27 +66,17 @@ export function DeliverablesTab({ deliverables }: DeliverablesTabProps) {
     setIsLoadingAnnotations(false);
   };
 
-  const fetchVideoUrl = async () => {
-    if (!selectedDeliverable?.file_path) {
-      setVideoUrl(selectedDeliverable?.file_url ?? null);
-      return;
-    }
-
-    const filePath = selectedDeliverable.file_path;
-    const isExternal = filePath.startsWith('http://') || filePath.startsWith('https://');
-
-    if (isExternal) {
-      setVideoUrl(filePath);
-      return;
-    }
-
-    try {
-      const supabase = createClient();
-      const { data } = supabase.storage.from('deliverables').getPublicUrl(filePath);
-      setVideoUrl(data.publicUrl);
-    } catch {
-      setVideoUrl(selectedDeliverable?.file_url ?? null);
-    }
+  // Video URL is derived synchronously from the already-loaded deliverable —
+  // no second round-trip when a deliverable is selected (Phase 1).
+  const handleSelect = (deliverable: DeliverableWithExtras) => {
+    const supabase = createClient();
+    setVideoUrl(
+      resolveDeliverableVideoUrl(
+        deliverable,
+        (path) => supabase.storage.from('deliverables').getPublicUrl(path).data.publicUrl,
+      ),
+    );
+    setSelectedDeliverable(deliverable);
   };
 
   const handleResolve = async (annotationId: string) => {
@@ -232,7 +222,7 @@ export function DeliverablesTab({ deliverables }: DeliverablesTabProps) {
           <DeliverableCard
             key={deliverable.id}
             deliverable={deliverable}
-            onSelect={setSelectedDeliverable}
+            onSelect={handleSelect}
             onApprove={(d) => openReviewDialog(d, 'approved')}
             onRequestRevision={(d) => openReviewDialog(d, 'revision_requested')}
             onDownload={handleDownload}
