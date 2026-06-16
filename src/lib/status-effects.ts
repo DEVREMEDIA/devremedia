@@ -165,7 +165,7 @@ function decideDeliverableEffects(status: string, ctx: StatusChangeContext): Sta
   const projectId = ctx.projectId;
   if (!projectId) return NO_EFFECTS();
 
-  const title = `Deliverable "${ctx.title}" marked as ${status}`;
+  const title = `Deliverable "${ctx.title ?? ''}" marked as ${status}`;
   const isAdmin = ctx.actorRole === 'super_admin' || ctx.actorRole === 'admin';
   const notifications: NotificationEffect[] = [];
 

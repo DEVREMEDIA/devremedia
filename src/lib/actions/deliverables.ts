@@ -218,12 +218,17 @@ export async function updateDeliverableStatus(
 
     if (error) return { data: null, error: error.message };
 
-    // The decision function branches on the actor's role; resolve it once here.
-    const { data: profile } = await supabase
-      .from('user_profiles')
-      .select('role')
-      .eq('id', user.id)
-      .single();
+    // The decision function branches on the actor's role; resolve it only when the
+    // deliverable has a project (mirrors the original guard — avoids a wasted query).
+    let actorRole: string | undefined;
+    if (data.project_id) {
+      const { data: profile } = await supabase
+        .from('user_profiles')
+        .select('role')
+        .eq('id', user.id)
+        .single();
+      actorRole = profile?.role;
+    }
 
     await applyStatusChange({
       entity: 'deliverable',
@@ -233,7 +238,7 @@ export async function updateDeliverableStatus(
         title: data.title,
         projectId: data.project_id,
         actorId: user.id,
-        actorRole: profile?.role,
+        actorRole,
         uploadedBy: data.uploaded_by,
       },
     });
