@@ -79,7 +79,7 @@ function decideProjectEffects(status: string, ctx: StatusChangeContext): StatusE
     {
       recipient: { kind: 'clientByProject', projectId: id },
       type: NOTIFICATION_TYPES.PROJECT_STATUS,
-      title: `Project "${ctx.title}" status updated to ${status}`,
+      title: `Project "${ctx.title ?? ''}" status updated to ${status}`,
       actionUrl: `/client/projects/${id}`,
     },
   ];

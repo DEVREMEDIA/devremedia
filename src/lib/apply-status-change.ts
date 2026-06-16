@@ -48,10 +48,13 @@ export async function applyStatusChange(change: StatusChange): Promise<void> {
   }
 
   if (effects.email) {
-    if (effects.email.trigger === 'invoice_sent') {
-      triggerInvoiceSentEmail(effects.email.payload);
-    } else {
-      triggerProjectDeliveredEmail(effects.email.payload);
+    switch (effects.email.trigger) {
+      case 'invoice_sent':
+        triggerInvoiceSentEmail(effects.email.payload);
+        break;
+      case 'project_delivered':
+        triggerProjectDeliveredEmail(effects.email.payload);
+        break;
     }
   }
 
