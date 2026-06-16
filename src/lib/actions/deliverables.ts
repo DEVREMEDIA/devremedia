@@ -9,12 +9,8 @@ import {
 import type { ActionResult, Deliverable, VideoAnnotation } from '@/types/index';
 import type { DeliverableStatus } from '@/lib/constants';
 import { revalidatePath } from 'next/cache';
-import {
-  createNotification,
-  createNotificationForMany,
-  getClientUserIdFromProject,
-  getAdminUserIds,
-} from '@/lib/actions/notifications';
+import { createNotification, getClientUserIdFromProject } from '@/lib/actions/notifications';
+import { applyStatusChange } from '@/lib/apply-status-change';
 import { NOTIFICATION_TYPES } from '@/lib/notification-types';
 
 export async function getDeliverablesByProject(
@@ -222,52 +218,26 @@ export async function updateDeliverableStatus(
 
     if (error) return { data: null, error: error.message };
 
-    if (data?.project_id) {
-      revalidatePath(`/admin/projects/${data.project_id}`);
-      revalidatePath(`/client/projects/${data.project_id}`);
-      revalidatePath('/client/dashboard');
-      revalidatePath(`/employee/deliverables/${data.project_id}`);
-      revalidatePath(`/employee/projects/${data.project_id}`);
+    // The decision function branches on the actor's role; resolve it once here.
+    const { data: profile } = await supabase
+      .from('user_profiles')
+      .select('role')
+      .eq('id', user.id)
+      .single();
 
-      // Determine who to notify based on who made the change
-      const { data: profile } = await supabase
-        .from('user_profiles')
-        .select('role')
-        .eq('id', user.id)
-        .single();
-      const isAdmin = profile?.role === 'super_admin' || profile?.role === 'admin';
+    await applyStatusChange({
+      entity: 'deliverable',
+      status,
+      ctx: {
+        entityId: data.id,
+        title: data.title,
+        projectId: data.project_id,
+        actorId: user.id,
+        actorRole: profile?.role,
+        uploadedBy: data.uploaded_by,
+      },
+    });
 
-      if (isAdmin) {
-        // Admin changed status -> notify client
-        const clientUserId = await getClientUserIdFromProject(data.project_id);
-        if (clientUserId) {
-          createNotification({
-            userId: clientUserId,
-            type: NOTIFICATION_TYPES.DELIVERABLE_REVIEWED,
-            title: `Deliverable "${data.title}" marked as ${status}`,
-            actionUrl: `/client/projects/${data.project_id}`,
-          });
-        }
-
-        // Also notify the employee who uploaded it
-        if (data.uploaded_by && data.uploaded_by !== user.id) {
-          createNotification({
-            userId: data.uploaded_by,
-            type: NOTIFICATION_TYPES.DELIVERABLE_REVIEWED,
-            title: `Deliverable "${data.title}" marked as ${status}`,
-            actionUrl: `/employee/deliverables/${data.project_id}`,
-          });
-        }
-      } else {
-        // Client changed status -> notify admins
-        const adminIds = await getAdminUserIds();
-        createNotificationForMany(adminIds, {
-          type: NOTIFICATION_TYPES.DELIVERABLE_REVIEWED,
-          title: `Deliverable "${data.title}" marked as ${status}`,
-          actionUrl: `/admin/projects/${data.project_id}`,
-        });
-      }
-    }
     return { data, error: null };
   } catch (err: unknown) {
     return {

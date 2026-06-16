@@ -75,6 +75,16 @@ export function invoiceRevalidatePaths(id: string): string[] {
   return ['/admin/invoices', `/admin/invoices/${id}`, '/client/invoices', '/client/dashboard'];
 }
 
+export function deliverableRevalidatePaths(projectId: string): string[] {
+  return [
+    `/admin/projects/${projectId}`,
+    `/client/projects/${projectId}`,
+    '/client/dashboard',
+    `/employee/deliverables/${projectId}`,
+    `/employee/projects/${projectId}`,
+  ];
+}
+
 // --- Per-entity decision functions ---
 
 function decideProjectEffects(status: string, ctx: StatusChangeContext): StatusEffects {
@@ -151,12 +161,54 @@ const NO_EFFECTS = (): StatusEffects => ({
   revalidate: [],
 });
 
+function decideDeliverableEffects(status: string, ctx: StatusChangeContext): StatusEffects {
+  const projectId = ctx.projectId;
+  if (!projectId) return NO_EFFECTS();
+
+  const title = `Deliverable "${ctx.title}" marked as ${status}`;
+  const isAdmin = ctx.actorRole === 'super_admin' || ctx.actorRole === 'admin';
+  const notifications: NotificationEffect[] = [];
+
+  if (isAdmin) {
+    notifications.push({
+      recipient: { kind: 'clientByProject', projectId },
+      type: NOTIFICATION_TYPES.DELIVERABLE_REVIEWED,
+      title,
+      actionUrl: `/client/projects/${projectId}`,
+    });
+    if (ctx.uploadedBy && ctx.uploadedBy !== ctx.actorId) {
+      notifications.push({
+        recipient: { kind: 'user', id: ctx.uploadedBy },
+        type: NOTIFICATION_TYPES.DELIVERABLE_REVIEWED,
+        title,
+        actionUrl: `/employee/deliverables/${projectId}`,
+      });
+    }
+  } else {
+    notifications.push({
+      recipient: { kind: 'admins' },
+      type: NOTIFICATION_TYPES.DELIVERABLE_REVIEWED,
+      title,
+      actionUrl: `/admin/projects/${projectId}`,
+    });
+  }
+
+  return {
+    notifications,
+    email: null,
+    calendarSync: false,
+    revalidate: deliverableRevalidatePaths(projectId),
+  };
+}
+
 export function decideStatusEffects(change: StatusChange): StatusEffects {
   switch (change.entity) {
     case 'project':
       return decideProjectEffects(change.status, change.ctx);
     case 'invoice':
       return decideInvoiceEffects(change.status, change.ctx);
+    case 'deliverable':
+      return decideDeliverableEffects(change.status, change.ctx);
     default:
       return NO_EFFECTS();
   }

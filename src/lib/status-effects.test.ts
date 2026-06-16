@@ -155,3 +155,100 @@ describe('decideStatusEffects — invoice', () => {
     ]);
   });
 });
+
+describe('decideStatusEffects — deliverable', () => {
+  it('admin change notifies client + uploader and revalidates all 5 paths', () => {
+    const effects = decideStatusEffects({
+      entity: 'deliverable',
+      status: 'approved',
+      ctx: {
+        entityId: 'd1',
+        title: 'Cut v2',
+        projectId: 'p1',
+        actorId: 'admin1',
+        actorRole: 'admin',
+        uploadedBy: 'emp1',
+      },
+    });
+
+    expect(effects.notifications).toEqual([
+      {
+        recipient: { kind: 'clientByProject', projectId: 'p1' },
+        type: 'deliverable_reviewed',
+        title: 'Deliverable "Cut v2" marked as approved',
+        actionUrl: '/client/projects/p1',
+      },
+      {
+        recipient: { kind: 'user', id: 'emp1' },
+        type: 'deliverable_reviewed',
+        title: 'Deliverable "Cut v2" marked as approved',
+        actionUrl: '/employee/deliverables/p1',
+      },
+    ]);
+    expect(effects.revalidate).toEqual([
+      '/admin/projects/p1',
+      '/client/projects/p1',
+      '/client/dashboard',
+      '/employee/deliverables/p1',
+      '/employee/projects/p1',
+    ]);
+  });
+
+  it('admin change does NOT notify the uploader when the admin is the uploader', () => {
+    const effects = decideStatusEffects({
+      entity: 'deliverable',
+      status: 'approved',
+      ctx: {
+        entityId: 'd1',
+        title: 'Cut v2',
+        projectId: 'p1',
+        actorId: 'admin1',
+        actorRole: 'super_admin',
+        uploadedBy: 'admin1',
+      },
+    });
+    expect(effects.notifications).toHaveLength(1);
+    expect(effects.notifications[0].recipient).toEqual({
+      kind: 'clientByProject',
+      projectId: 'p1',
+    });
+  });
+
+  it('non-admin (client) change notifies admins only', () => {
+    const effects = decideStatusEffects({
+      entity: 'deliverable',
+      status: 'changes_requested',
+      ctx: {
+        entityId: 'd1',
+        title: 'Cut v2',
+        projectId: 'p1',
+        actorId: 'client1',
+        actorRole: 'client',
+        uploadedBy: 'emp1',
+      },
+    });
+
+    expect(effects.notifications).toEqual([
+      {
+        recipient: { kind: 'admins' },
+        type: 'deliverable_reviewed',
+        title: 'Deliverable "Cut v2" marked as changes_requested',
+        actionUrl: '/admin/projects/p1',
+      },
+    ]);
+  });
+
+  it('emits nothing when projectId is missing', () => {
+    const effects = decideStatusEffects({
+      entity: 'deliverable',
+      status: 'approved',
+      ctx: { entityId: 'd1', title: 'Cut v2', projectId: null, actorRole: 'admin' },
+    });
+    expect(effects).toEqual({
+      notifications: [],
+      email: null,
+      calendarSync: false,
+      revalidate: [],
+    });
+  });
+});
