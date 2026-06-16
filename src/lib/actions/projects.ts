@@ -6,12 +6,12 @@ import type { ActionResult, ProjectWithClient, Project } from '@/types/index';
 import type { ProjectStatus, Priority } from '@/lib/constants';
 import { revalidatePath } from 'next/cache';
 import { escapePostgrestFilter } from '@/lib/utils';
-import { createNotification, getClientUserIdFromProject } from '@/lib/actions/notifications';
+import { createNotification } from '@/lib/actions/notifications';
 import { NOTIFICATION_TYPES } from '@/lib/notification-types';
 import { syncEntityToGoogle } from '@/lib/google-sync-helper';
-import { triggerProjectDeliveredEmail } from '@/lib/email/triggers/project-delivered';
 import { getGoogleColorId } from '@/lib/google-calendar';
 import { syncProjectFilmingToCalendar } from '@/lib/actions/sync-project-filming';
+import { applyStatusChange } from '@/lib/apply-status-change';
 
 interface ProjectFilters {
   client_id?: string;
@@ -254,38 +254,11 @@ export async function updateProjectStatus(
 
     if (error) return { data: null, error: error.message };
 
-    revalidatePath('/admin/projects');
-    revalidatePath(`/admin/projects/${id}`);
-    revalidatePath('/client/projects');
-    revalidatePath(`/client/projects/${id}`);
-    revalidatePath('/client/dashboard');
-
-    // Notify client of status change
-    const clientUserId = await getClientUserIdFromProject(id);
-    if (clientUserId) {
-      createNotification({
-        userId: clientUserId,
-        type: NOTIFICATION_TYPES.PROJECT_STATUS,
-        title: `Project "${data.title}" status updated to ${status}`,
-        actionUrl: `/client/projects/${id}`,
-      });
-    }
-
-    // Send email when project is delivered (fire-and-forget)
-    if (status === 'delivered' && data.client_id) {
-      triggerProjectDeliveredEmail({
-        projectId: id,
-        projectTitle: data.title,
-        clientId: data.client_id,
-      });
-    }
-
-    // Auto-sync a filming calendar event when the project enters (or leaves)
-    // the 'filming' phase. syncProjectFilmingToCalendar is idempotent and
-    // self-healing so calling it on every status change is safe.
-    if (status === 'filming') {
-      await syncProjectFilmingToCalendar(id);
-    }
+    await applyStatusChange({
+      entity: 'project',
+      status,
+      ctx: { entityId: id, title: data.title, clientId: data.client_id },
+    });
 
     return { data, error: null };
   } catch (err: unknown) {
