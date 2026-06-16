@@ -90,6 +90,12 @@ export function deliverableRevalidatePaths(projectId: string): string[] {
   ];
 }
 
+// Contracts are not routed through the orchestrator, but their review approve/reject
+// branches share this exact revalidate set — the one safe DRY win (see #45).
+export function contractReviewRevalidatePaths(id: string): string[] {
+  return ['/admin/contracts', `/admin/contracts/${id}`, '/client/contracts'];
+}
+
 // --- Per-entity decision functions ---
 
 function decideProjectEffects(status: string, ctx: StatusChangeContext): StatusEffects {
