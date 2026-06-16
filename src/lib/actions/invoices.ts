@@ -13,6 +13,7 @@ import {
 } from '@/lib/actions/notifications';
 import { NOTIFICATION_TYPES } from '@/lib/notification-types';
 import { syncEntityToGoogle } from '@/lib/google-sync-helper';
+import { countBulkOutcome } from '@/lib/bulk-result';
 import { triggerInvoiceSentEmail } from '@/lib/email/triggers/invoice-sent';
 import { getGoogleColorId } from '@/lib/google-calendar';
 
@@ -374,19 +375,66 @@ export async function bulkUpdateInvoiceStatus(
     } = await supabase.auth.getUser();
     if (!user) return { data: null, error: 'Unauthorized' };
 
-    let succeeded = 0;
-    let failed = 0;
+    const updateData: Record<string, unknown> = { status };
+    const nowIso = new Date().toISOString();
+    if (status === 'sent') updateData.sent_at = nowIso;
+    if (status === 'paid') updateData.paid_at = nowIso;
 
-    for (const id of ids) {
-      const result = await updateInvoiceStatus(id, status);
-      if (result.error) {
-        failed++;
-      } else {
-        succeeded++;
+    const { data, error } = await supabase
+      .from('invoices')
+      .update(updateData)
+      .in('id', ids)
+      .select('id, client_id, invoice_number, total, currency, due_date');
+
+    if (error) return { data: null, error: error.message };
+
+    const affected = data ?? [];
+    const { succeeded, failed } = countBulkOutcome(
+      ids,
+      affected.map((inv) => inv.id),
+    );
+
+    revalidatePath('/admin/invoices');
+    revalidatePath('/client/invoices');
+    revalidatePath('/client/dashboard');
+
+    // Preserve the per-invoice side-effects updateInvoiceStatus fires, in aggregate.
+    if (status === 'sent') {
+      for (const inv of affected) {
+        if (!inv.client_id) continue;
+        const clientUserId = await getClientUserIdFromClientId(inv.client_id);
+        if (clientUserId) {
+          createNotification({
+            userId: clientUserId,
+            type: NOTIFICATION_TYPES.INVOICE_SENT,
+            title: `Invoice ${inv.invoice_number} sent`,
+            body: `Amount: €${inv.total?.toFixed(2) ?? '0.00'}`,
+            actionUrl: '/client/invoices',
+          });
+        }
+        triggerInvoiceSentEmail({
+          invoiceId: inv.id,
+          clientId: inv.client_id,
+          invoiceNumber: inv.invoice_number,
+          total: inv.total ?? 0,
+          currency: inv.currency ?? 'EUR',
+          dueDate: inv.due_date,
+        });
       }
     }
 
-    revalidatePath('/admin/invoices');
+    if (status === 'paid') {
+      const adminIds = await getAdminUserIds();
+      for (const inv of affected) {
+        createNotificationForMany(adminIds, {
+          type: NOTIFICATION_TYPES.INVOICE_PAID,
+          title: `Invoice ${inv.invoice_number} paid`,
+          body: `Amount: €${inv.total?.toFixed(2) ?? '0.00'}`,
+          actionUrl: `/admin/invoices`,
+        });
+      }
+    }
+
     return { data: { succeeded, failed }, error: null };
   } catch (err: unknown) {
     return {
@@ -406,19 +454,33 @@ export async function bulkDeleteInvoices(
     } = await supabase.auth.getUser();
     if (!user) return { data: null, error: 'Unauthorized' };
 
-    let succeeded = 0;
-    let failed = 0;
+    // Fetch file_paths for Storage cleanup (one round-trip).
+    const { data: rows } = await supabase.from('invoices').select('id, file_path').in('id', ids);
 
-    for (const id of ids) {
-      const result = await deleteInvoice(id);
-      if (result.error) {
-        failed++;
-      } else {
-        succeeded++;
-      }
+    const filePaths = (rows ?? []).map((r) => r.file_path).filter((p): p is string => Boolean(p));
+    if (filePaths.length > 0) {
+      await supabase.storage.from('invoices').remove(filePaths);
     }
 
+    const { data: deleted, error } = await supabase
+      .from('invoices')
+      .delete()
+      .in('id', ids)
+      .select('id');
+
+    if (error) return { data: null, error: error.message };
+
+    const deletedIds = (deleted ?? []).map((r) => r.id);
+    const { succeeded, failed } = countBulkOutcome(ids, deletedIds);
+
     revalidatePath('/admin/invoices');
+    revalidatePath('/client/invoices');
+    revalidatePath('/client/dashboard');
+
+    for (const id of deletedIds) {
+      await syncEntityToGoogle({ entityType: 'invoice', entityId: id, operation: 'delete' });
+    }
+
     return { data: { succeeded, failed }, error: null };
   } catch (err: unknown) {
     return {
