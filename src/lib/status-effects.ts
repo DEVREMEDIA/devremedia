@@ -75,6 +75,11 @@ export function invoiceRevalidatePaths(id: string): string[] {
   return ['/admin/invoices', `/admin/invoices/${id}`, '/client/invoices', '/client/dashboard'];
 }
 
+export function taskRevalidatePaths(projectId: string | null): string[] {
+  const base = ['/employee/tasks', '/employee/dashboard'];
+  return projectId ? [`/admin/projects/${projectId}`, ...base] : base;
+}
+
 export function deliverableRevalidatePaths(projectId: string): string[] {
   return [
     `/admin/projects/${projectId}`,
@@ -201,6 +206,36 @@ function decideDeliverableEffects(status: string, ctx: StatusChangeContext): Sta
   };
 }
 
+function decideTaskEffects(status: string, ctx: StatusChangeContext): StatusEffects {
+  const id = ctx.entityId;
+  const notifications: NotificationEffect[] = [];
+
+  if (ctx.assignedTo && ctx.assignedTo !== ctx.actorId) {
+    // Someone other than the assignee changed it → notify the assignee.
+    notifications.push({
+      recipient: { kind: 'user', id: ctx.assignedTo },
+      type: NOTIFICATION_TYPES.TASK_UPDATED,
+      title: `Task "${ctx.title ?? ''}" status changed to ${status}`,
+      actionUrl: `/employee/tasks/${id}`,
+    });
+  } else if (ctx.assignedTo && ctx.assignedTo === ctx.actorId) {
+    // The assignee changed their own task → notify admins.
+    notifications.push({
+      recipient: { kind: 'admins' },
+      type: NOTIFICATION_TYPES.TASK_UPDATED,
+      title: `Task "${ctx.title ?? ''}" marked as ${status}`,
+      actionUrl: `/admin/projects/${ctx.projectId}?tab=tasks`,
+    });
+  }
+
+  return {
+    notifications,
+    email: null,
+    calendarSync: false,
+    revalidate: taskRevalidatePaths(ctx.projectId ?? null),
+  };
+}
+
 export function decideStatusEffects(change: StatusChange): StatusEffects {
   switch (change.entity) {
     case 'project':
@@ -209,6 +244,8 @@ export function decideStatusEffects(change: StatusChange): StatusEffects {
       return decideInvoiceEffects(change.status, change.ctx);
     case 'deliverable':
       return decideDeliverableEffects(change.status, change.ctx);
+    case 'task':
+      return decideTaskEffects(change.status, change.ctx);
     default:
       return NO_EFFECTS();
   }

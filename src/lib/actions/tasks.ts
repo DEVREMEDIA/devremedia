@@ -5,11 +5,8 @@ import { createTaskSchema, updateTaskSchema } from '@/lib/schemas/task';
 import type { ActionResult, Task } from '@/types/index';
 import type { TaskStatus } from '@/lib/constants';
 import { revalidatePath } from 'next/cache';
-import {
-  createNotification,
-  createNotificationForMany,
-  getAdminUserIds,
-} from '@/lib/actions/notifications';
+import { createNotification } from '@/lib/actions/notifications';
+import { applyStatusChange } from '@/lib/apply-status-change';
 import { NOTIFICATION_TYPES } from '@/lib/notification-types';
 import { syncEntityToGoogle } from '@/lib/google-sync-helper';
 import { getGoogleColorId } from '@/lib/google-calendar';
@@ -211,41 +208,17 @@ export async function updateTaskStatus(
 
     if (error) return { data: null, error: error.message };
 
-    if (data?.project_id) {
-      revalidatePath(`/admin/projects/${data.project_id}`);
-    }
-    revalidatePath('/employee/tasks');
-    revalidatePath('/employee/dashboard');
-
-    // Debug: trace notification logic
-    console.log('[DEBUG updateTaskStatus]', {
-      taskId: id,
-      newStatus: status,
-      userId: user.id,
-      assignedTo: data.assigned_to,
-      projectId: data.project_id,
-      isAssignedToSelf: data.assigned_to === user.id,
-      isAssignedToOther: data.assigned_to && data.assigned_to !== user.id,
+    await applyStatusChange({
+      entity: 'task',
+      status,
+      ctx: {
+        entityId: data.id,
+        title: data.title,
+        projectId: data.project_id,
+        actorId: user.id,
+        assignedTo: data.assigned_to,
+      },
     });
-
-    // Notify based on who changed the status
-    if (data.assigned_to && data.assigned_to !== user.id) {
-      // Admin changed status → notify assigned employee
-      await createNotification({
-        userId: data.assigned_to,
-        type: NOTIFICATION_TYPES.TASK_UPDATED,
-        title: `Task "${data.title}" status changed to ${status}`,
-        actionUrl: `/employee/tasks/${data.id}`,
-      });
-    } else if (data.assigned_to === user.id) {
-      // Employee changed status → notify all admins
-      const adminIds = await getAdminUserIds();
-      await createNotificationForMany(adminIds, {
-        type: NOTIFICATION_TYPES.TASK_UPDATED,
-        title: `Task "${data.title}" marked as ${status}`,
-        actionUrl: `/admin/projects/${data.project_id}?tab=tasks`,
-      });
-    }
 
     return { data, error: null };
   } catch (err: unknown) {

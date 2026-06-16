@@ -252,3 +252,91 @@ describe('decideStatusEffects — deliverable', () => {
     });
   });
 });
+
+describe('decideStatusEffects — task', () => {
+  it('notifies the assignee when someone else changed the status', () => {
+    const effects = decideStatusEffects({
+      entity: 'task',
+      status: 'in_progress',
+      ctx: {
+        entityId: 't1',
+        title: 'Edit reel',
+        projectId: 'p1',
+        actorId: 'admin1',
+        assignedTo: 'emp1',
+      },
+    });
+
+    expect(effects.notifications).toEqual([
+      {
+        recipient: { kind: 'user', id: 'emp1' },
+        type: 'task_updated',
+        title: 'Task "Edit reel" status changed to in_progress',
+        actionUrl: '/employee/tasks/t1',
+      },
+    ]);
+    expect(effects.revalidate).toEqual([
+      '/admin/projects/p1',
+      '/employee/tasks',
+      '/employee/dashboard',
+    ]);
+  });
+
+  it('notifies admins when the assignee changed their own task', () => {
+    const effects = decideStatusEffects({
+      entity: 'task',
+      status: 'completed',
+      ctx: {
+        entityId: 't1',
+        title: 'Edit reel',
+        projectId: 'p1',
+        actorId: 'emp1',
+        assignedTo: 'emp1',
+      },
+    });
+
+    expect(effects.notifications).toEqual([
+      {
+        recipient: { kind: 'admins' },
+        type: 'task_updated',
+        title: 'Task "Edit reel" marked as completed',
+        actionUrl: '/admin/projects/p1?tab=tasks',
+      },
+    ]);
+  });
+
+  it('emits no notification for an unassigned task but still revalidates', () => {
+    const effects = decideStatusEffects({
+      entity: 'task',
+      status: 'todo',
+      ctx: {
+        entityId: 't1',
+        title: 'Edit reel',
+        projectId: 'p1',
+        actorId: 'admin1',
+        assignedTo: null,
+      },
+    });
+    expect(effects.notifications).toEqual([]);
+    expect(effects.revalidate).toEqual([
+      '/admin/projects/p1',
+      '/employee/tasks',
+      '/employee/dashboard',
+    ]);
+  });
+
+  it('omits the admin-project path when projectId is missing', () => {
+    const effects = decideStatusEffects({
+      entity: 'task',
+      status: 'todo',
+      ctx: {
+        entityId: 't1',
+        title: 'Edit reel',
+        projectId: null,
+        actorId: 'admin1',
+        assignedTo: null,
+      },
+    });
+    expect(effects.revalidate).toEqual(['/employee/tasks', '/employee/dashboard']);
+  });
+});
