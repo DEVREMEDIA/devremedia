@@ -3,7 +3,6 @@
 import { createClient } from '@/lib/supabase/server';
 import type { ProjectType, ExpenseCategory } from '@/lib/constants';
 import { REVENUE_STATUSES, bucketMonthlyFinance, sumFinance } from '@/lib/finance';
-import type { FinanceInvoice } from '@/lib/finance';
 
 export type DateRange = {
   from: string;
@@ -118,26 +117,12 @@ export async function getProjectTypeBreakdown(
 ): Promise<ProjectTypeBreakdown[]> {
   try {
     const supabase = await createClient();
-    let query = supabase.from('projects').select('project_type').neq('status', 'archived');
-
-    if (dateRange) {
-      query = query.gte('created_at', dateRange.from).lte('created_at', dateRange.to);
-    }
-
-    const { data, error } = await query;
-
-    if (error || !data) return [];
-
-    // Count by type
-    const typeCounts: Record<string, number> = {};
-    data.forEach((project) => {
-      typeCounts[project.project_type] = (typeCounts[project.project_type] || 0) + 1;
+    const { data, error } = await supabase.rpc('get_project_type_breakdown', {
+      p_from: dateRange?.from ?? null,
+      p_to: dateRange?.to ?? null,
     });
-
-    return Object.entries(typeCounts).map(([type, count]) => ({
-      type: type as ProjectType,
-      count,
-    }));
+    if (error || !data) return [];
+    return data as ProjectTypeBreakdown[];
   } catch {
     return [];
   }
@@ -149,49 +134,13 @@ export async function getTopClientsByRevenue(
 ): Promise<ClientRevenue[]> {
   try {
     const supabase = await createClient();
-    let query = supabase
-      .from('invoices')
-      .select(
-        'client_id, total, status, issue_date, paid_at, client:clients(company_name, contact_name)',
-      )
-      .in('status', [...REVENUE_STATUSES]);
-
-    if (dateRange) {
-      query = query.or(
-        `and(issue_date.gte.${dateRange.from},issue_date.lte.${dateRange.to}),` +
-          `and(paid_at.gte.${dateRange.from},paid_at.lte.${dateRange.to})`,
-      );
-    }
-
-    const { data, error } = await query;
-
-    if (error || !data) return [];
-
-    // Group invoices by client, then total each group via the shared helper.
-    const grouped: Record<string, { name: string; invoices: FinanceInvoice[] }> = {};
-    data.forEach((invoice) => {
-      const clientId = invoice.client_id;
-      const client = invoice.client as { company_name?: string; contact_name?: string } | undefined;
-      if (!grouped[clientId]) {
-        const clientName = client?.company_name || client?.contact_name || 'Unknown';
-        grouped[clientId] = { name: clientName, invoices: [] };
-      }
-      grouped[clientId].invoices.push(invoice);
+    const { data, error } = await supabase.rpc('get_top_clients_by_revenue', {
+      p_limit: limit,
+      p_from: dateRange?.from ?? null,
+      p_to: dateRange?.to ?? null,
     });
-
-    return Object.entries(grouped)
-      .map(([client_id, { name, invoices }]) => {
-        const { revenue, collections } = sumFinance(invoices);
-        return {
-          client_id,
-          client_name: name,
-          total_revenue: revenue,
-          total_collections: collections,
-          project_count: invoices.length,
-        };
-      })
-      .sort((a, b) => b.total_revenue - a.total_revenue)
-      .slice(0, limit);
+    if (error || !data) return [];
+    return data as ClientRevenue[];
   } catch {
     return [];
   }
@@ -202,32 +151,12 @@ export async function getExpensesByCategory(
 ): Promise<ExpenseCategoryBreakdown[]> {
   try {
     const supabase = await createClient();
-    let query = supabase.from('expenses').select('category, amount');
-
-    if (dateRange) {
-      query = query.gte('date', dateRange.from).lte('date', dateRange.to);
-    }
-
-    const { data, error } = await query;
-
-    if (error || !data) return [];
-
-    // Group by category
-    const categoryData: Record<string, { amount: number; count: number }> = {};
-    data.forEach((expense) => {
-      const category = expense.category;
-      if (!categoryData[category]) {
-        categoryData[category] = { amount: 0, count: 0 };
-      }
-      categoryData[category].amount += expense.amount || 0;
-      categoryData[category].count += 1;
+    const { data, error } = await supabase.rpc('get_expenses_by_category', {
+      p_from: dateRange?.from ?? null,
+      p_to: dateRange?.to ?? null,
     });
-
-    return Object.entries(categoryData).map(([category, data]) => ({
-      category: category as ExpenseCategory,
-      amount: data.amount,
-      count: data.count,
-    }));
+    if (error || !data) return [];
+    return data as ExpenseCategoryBreakdown[];
   } catch {
     return [];
   }
