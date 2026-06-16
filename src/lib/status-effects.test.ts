@@ -130,5 +130,28 @@ describe('decideStatusEffects — invoice', () => {
       },
     ]);
     expect(effects.email).toBeNull();
+    expect(effects.revalidate).toEqual([
+      '/admin/invoices',
+      '/admin/invoices/inv1',
+      '/client/invoices',
+      '/client/dashboard',
+    ]);
+  });
+
+  it('emits no notifications/email for a neutral status but still revalidates', () => {
+    const effects = decideStatusEffects({
+      entity: 'invoice',
+      status: 'draft',
+      ctx: { entityId: 'inv1', invoiceNumber: 'DMS-2026-003', total: 50 },
+    });
+    expect(effects.notifications).toEqual([]);
+    expect(effects.email).toBeNull();
+    expect(effects.calendarSync).toBe(false);
+    expect(effects.revalidate).toEqual([
+      '/admin/invoices',
+      '/admin/invoices/inv1',
+      '/client/invoices',
+      '/client/dashboard',
+    ]);
   });
 });

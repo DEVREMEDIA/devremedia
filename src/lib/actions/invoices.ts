@@ -364,6 +364,8 @@ export async function bulkUpdateInvoiceStatus(
     // Route each affected invoice through the orchestrator (Option A: side-effects
     // preserved in aggregate, one fewer copy). Note: this also revalidates each
     // invoice's detail path — a harmless cache-only superset vs. the old 3-path set.
+    // Tradeoff: on 'paid', the executor resolves admin IDs per invoice (one indexed
+    // query each) rather than once; accepted for the clean seam at admin-only bulk sizes.
     for (const inv of affected) {
       await applyStatusChange({
         entity: 'invoice',

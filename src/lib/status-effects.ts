@@ -114,7 +114,7 @@ function decideInvoiceEffects(status: string, ctx: StatusChangeContext): StatusE
     notifications.push({
       recipient: { kind: 'clientByClient', clientId: ctx.clientId },
       type: NOTIFICATION_TYPES.INVOICE_SENT,
-      title: `Invoice ${ctx.invoiceNumber} sent`,
+      title: `Invoice ${ctx.invoiceNumber ?? ''} sent`,
       body: amount,
       actionUrl: '/client/invoices',
     });
@@ -135,7 +135,7 @@ function decideInvoiceEffects(status: string, ctx: StatusChangeContext): StatusE
     notifications.push({
       recipient: { kind: 'admins' },
       type: NOTIFICATION_TYPES.INVOICE_PAID,
-      title: `Invoice ${ctx.invoiceNumber} paid`,
+      title: `Invoice ${ctx.invoiceNumber ?? ''} paid`,
       body: amount,
       actionUrl: '/admin/invoices',
     });
