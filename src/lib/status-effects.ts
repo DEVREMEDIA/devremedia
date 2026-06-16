@@ -1,0 +1,258 @@
+import { NOTIFICATION_TYPES } from '@/lib/notification-types';
+
+export type Recipient =
+  | { kind: 'clientByProject'; projectId: string }
+  | { kind: 'clientByClient'; clientId: string }
+  | { kind: 'admins' }
+  | { kind: 'user'; id: string };
+
+export interface NotificationEffect {
+  recipient: Recipient;
+  type: string;
+  title: string;
+  body?: string;
+  actionUrl: string;
+}
+
+export type EmailEffect =
+  | {
+      trigger: 'invoice_sent';
+      payload: {
+        invoiceId: string;
+        clientId: string;
+        invoiceNumber: string;
+        total: number;
+        currency: string;
+        dueDate: string;
+      };
+    }
+  | {
+      trigger: 'project_delivered';
+      payload: { projectId: string; projectTitle: string; clientId: string };
+    };
+
+export interface StatusEffects {
+  notifications: NotificationEffect[];
+  email: EmailEffect | null;
+  calendarSync: boolean;
+  revalidate: string[];
+}
+
+export interface StatusChangeContext {
+  entityId: string;
+  title?: string;
+  projectId?: string | null;
+  clientId?: string | null;
+  actorId?: string;
+  actorRole?: string;
+  uploadedBy?: string | null;
+  assignedTo?: string | null;
+  invoiceNumber?: string;
+  total?: number | null;
+  currency?: string | null;
+  dueDate?: string | null;
+}
+
+export interface StatusChange {
+  entity: 'project' | 'invoice' | 'deliverable' | 'task';
+  status: string;
+  ctx: StatusChangeContext;
+}
+
+// --- Revalidate-path builders (pure string lists) ---
+
+export function projectRevalidatePaths(id: string): string[] {
+  return [
+    '/admin/projects',
+    `/admin/projects/${id}`,
+    '/client/projects',
+    `/client/projects/${id}`,
+    '/client/dashboard',
+  ];
+}
+
+export function invoiceRevalidatePaths(id: string): string[] {
+  return ['/admin/invoices', `/admin/invoices/${id}`, '/client/invoices', '/client/dashboard'];
+}
+
+export function taskRevalidatePaths(projectId: string | null): string[] {
+  const base = ['/employee/tasks', '/employee/dashboard'];
+  return projectId ? [`/admin/projects/${projectId}`, ...base] : base;
+}
+
+export function deliverableRevalidatePaths(projectId: string): string[] {
+  return [
+    `/admin/projects/${projectId}`,
+    `/client/projects/${projectId}`,
+    '/client/dashboard',
+    `/employee/deliverables/${projectId}`,
+    `/employee/projects/${projectId}`,
+  ];
+}
+
+// Contracts are not routed through the orchestrator, but their review approve/reject
+// branches share this exact revalidate set — the one safe DRY win (see #45).
+export function contractReviewRevalidatePaths(id: string): string[] {
+  return ['/admin/contracts', `/admin/contracts/${id}`, '/client/contracts'];
+}
+
+// --- Per-entity decision functions ---
+
+function decideProjectEffects(status: string, ctx: StatusChangeContext): StatusEffects {
+  const id = ctx.entityId;
+  const notifications: NotificationEffect[] = [
+    {
+      recipient: { kind: 'clientByProject', projectId: id },
+      type: NOTIFICATION_TYPES.PROJECT_STATUS,
+      title: `Project "${ctx.title ?? ''}" status updated to ${status}`,
+      actionUrl: `/client/projects/${id}`,
+    },
+  ];
+
+  const email: EmailEffect | null =
+    status === 'delivered' && ctx.clientId
+      ? {
+          trigger: 'project_delivered',
+          payload: { projectId: id, projectTitle: ctx.title ?? '', clientId: ctx.clientId },
+        }
+      : null;
+
+  return {
+    notifications,
+    email,
+    calendarSync: status === 'filming',
+    revalidate: projectRevalidatePaths(id),
+  };
+}
+
+function decideInvoiceEffects(status: string, ctx: StatusChangeContext): StatusEffects {
+  const id = ctx.entityId;
+  const amount = `Amount: €${(ctx.total ?? 0).toFixed(2)}`;
+  const notifications: NotificationEffect[] = [];
+  let email: EmailEffect | null = null;
+
+  if (status === 'sent' && ctx.clientId) {
+    notifications.push({
+      recipient: { kind: 'clientByClient', clientId: ctx.clientId },
+      type: NOTIFICATION_TYPES.INVOICE_SENT,
+      title: `Invoice ${ctx.invoiceNumber ?? ''} sent`,
+      body: amount,
+      actionUrl: '/client/invoices',
+    });
+    email = {
+      trigger: 'invoice_sent',
+      payload: {
+        invoiceId: id,
+        clientId: ctx.clientId,
+        invoiceNumber: ctx.invoiceNumber ?? '',
+        total: ctx.total ?? 0,
+        currency: ctx.currency ?? 'EUR',
+        dueDate: ctx.dueDate ?? '',
+      },
+    };
+  }
+
+  if (status === 'paid') {
+    notifications.push({
+      recipient: { kind: 'admins' },
+      type: NOTIFICATION_TYPES.INVOICE_PAID,
+      title: `Invoice ${ctx.invoiceNumber ?? ''} paid`,
+      body: amount,
+      actionUrl: '/admin/invoices',
+    });
+  }
+
+  return { notifications, email, calendarSync: false, revalidate: invoiceRevalidatePaths(id) };
+}
+
+const NO_EFFECTS = (): StatusEffects => ({
+  notifications: [],
+  email: null,
+  calendarSync: false,
+  revalidate: [],
+});
+
+function decideDeliverableEffects(status: string, ctx: StatusChangeContext): StatusEffects {
+  const projectId = ctx.projectId;
+  if (!projectId) return NO_EFFECTS();
+
+  const title = `Deliverable "${ctx.title ?? ''}" marked as ${status}`;
+  const isAdmin = ctx.actorRole === 'super_admin' || ctx.actorRole === 'admin';
+  const notifications: NotificationEffect[] = [];
+
+  if (isAdmin) {
+    notifications.push({
+      recipient: { kind: 'clientByProject', projectId },
+      type: NOTIFICATION_TYPES.DELIVERABLE_REVIEWED,
+      title,
+      actionUrl: `/client/projects/${projectId}`,
+    });
+    if (ctx.uploadedBy && ctx.uploadedBy !== ctx.actorId) {
+      notifications.push({
+        recipient: { kind: 'user', id: ctx.uploadedBy },
+        type: NOTIFICATION_TYPES.DELIVERABLE_REVIEWED,
+        title,
+        actionUrl: `/employee/deliverables/${projectId}`,
+      });
+    }
+  } else {
+    notifications.push({
+      recipient: { kind: 'admins' },
+      type: NOTIFICATION_TYPES.DELIVERABLE_REVIEWED,
+      title,
+      actionUrl: `/admin/projects/${projectId}`,
+    });
+  }
+
+  return {
+    notifications,
+    email: null,
+    calendarSync: false,
+    revalidate: deliverableRevalidatePaths(projectId),
+  };
+}
+
+function decideTaskEffects(status: string, ctx: StatusChangeContext): StatusEffects {
+  const id = ctx.entityId;
+  const notifications: NotificationEffect[] = [];
+
+  if (ctx.assignedTo && ctx.assignedTo !== ctx.actorId) {
+    // Someone other than the assignee changed it → notify the assignee.
+    notifications.push({
+      recipient: { kind: 'user', id: ctx.assignedTo },
+      type: NOTIFICATION_TYPES.TASK_UPDATED,
+      title: `Task "${ctx.title ?? ''}" status changed to ${status}`,
+      actionUrl: `/employee/tasks/${id}`,
+    });
+  } else if (ctx.assignedTo && ctx.assignedTo === ctx.actorId) {
+    // The assignee changed their own task → notify admins.
+    notifications.push({
+      recipient: { kind: 'admins' },
+      type: NOTIFICATION_TYPES.TASK_UPDATED,
+      title: `Task "${ctx.title ?? ''}" marked as ${status}`,
+      actionUrl: `/admin/projects/${ctx.projectId}?tab=tasks`,
+    });
+  }
+
+  return {
+    notifications,
+    email: null,
+    calendarSync: false,
+    revalidate: taskRevalidatePaths(ctx.projectId ?? null),
+  };
+}
+
+export function decideStatusEffects(change: StatusChange): StatusEffects {
+  switch (change.entity) {
+    case 'project':
+      return decideProjectEffects(change.status, change.ctx);
+    case 'invoice':
+      return decideInvoiceEffects(change.status, change.ctx);
+    case 'deliverable':
+      return decideDeliverableEffects(change.status, change.ctx);
+    case 'task':
+      return decideTaskEffects(change.status, change.ctx);
+    default:
+      return NO_EFFECTS();
+  }
+}

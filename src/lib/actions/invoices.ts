@@ -5,17 +5,10 @@ import { createInvoiceSchema, updateInvoiceSchema, type LineItem } from '@/lib/s
 import type { ActionResult, Invoice, InvoiceWithRelations } from '@/types/index';
 import type { InvoiceStatus } from '@/lib/constants';
 import { revalidatePath } from 'next/cache';
-import {
-  createNotification,
-  createNotificationForMany,
-  getClientUserIdFromClientId,
-  getAdminUserIds,
-} from '@/lib/actions/notifications';
-import { NOTIFICATION_TYPES } from '@/lib/notification-types';
 import { syncEntityToGoogle } from '@/lib/google-sync-helper';
 import { countBulkOutcome } from '@/lib/bulk-result';
-import { triggerInvoiceSentEmail } from '@/lib/email/triggers/invoice-sent';
 import { getGoogleColorId } from '@/lib/google-calendar';
+import { applyStatusChange } from '@/lib/apply-status-change';
 
 interface InvoiceFilters {
   status?: InvoiceStatus | InvoiceStatus[];
@@ -278,44 +271,18 @@ export async function updateInvoiceStatus(
 
     if (error) return { data: null, error: error.message };
 
-    revalidatePath('/admin/invoices');
-    revalidatePath(`/admin/invoices/${id}`);
-    revalidatePath('/client/invoices');
-    revalidatePath('/client/dashboard');
-
-    // Send notifications based on status change
-    if (status === 'sent' && data.client_id) {
-      const clientUserId = await getClientUserIdFromClientId(data.client_id);
-      if (clientUserId) {
-        createNotification({
-          userId: clientUserId,
-          type: NOTIFICATION_TYPES.INVOICE_SENT,
-          title: `Invoice ${data.invoice_number} sent`,
-          body: `Amount: €${data.total?.toFixed(2) ?? '0.00'}`,
-          actionUrl: '/client/invoices',
-        });
-      }
-
-      // Send email notification via Resend (fire-and-forget)
-      triggerInvoiceSentEmail({
-        invoiceId: data.id,
+    await applyStatusChange({
+      entity: 'invoice',
+      status,
+      ctx: {
+        entityId: id,
         clientId: data.client_id,
         invoiceNumber: data.invoice_number,
-        total: data.total ?? 0,
-        currency: data.currency ?? 'EUR',
+        total: data.total,
+        currency: data.currency,
         dueDate: data.due_date,
-      });
-    }
-
-    if (status === 'paid') {
-      const adminIds = await getAdminUserIds();
-      createNotificationForMany(adminIds, {
-        type: NOTIFICATION_TYPES.INVOICE_PAID,
-        title: `Invoice ${data.invoice_number} paid`,
-        body: `Amount: €${data.total?.toFixed(2) ?? '0.00'}`,
-        actionUrl: `/admin/invoices`,
-      });
-    }
+      },
+    });
 
     return { data, error: null };
   } catch (err: unknown) {
@@ -394,45 +361,24 @@ export async function bulkUpdateInvoiceStatus(
       affected.map((inv) => inv.id),
     );
 
-    revalidatePath('/admin/invoices');
-    revalidatePath('/client/invoices');
-    revalidatePath('/client/dashboard');
-
-    // Preserve the per-invoice side-effects updateInvoiceStatus fires, in aggregate.
-    if (status === 'sent') {
-      for (const inv of affected) {
-        if (!inv.client_id) continue;
-        const clientUserId = await getClientUserIdFromClientId(inv.client_id);
-        if (clientUserId) {
-          createNotification({
-            userId: clientUserId,
-            type: NOTIFICATION_TYPES.INVOICE_SENT,
-            title: `Invoice ${inv.invoice_number} sent`,
-            body: `Amount: €${inv.total?.toFixed(2) ?? '0.00'}`,
-            actionUrl: '/client/invoices',
-          });
-        }
-        triggerInvoiceSentEmail({
-          invoiceId: inv.id,
+    // Route each affected invoice through the orchestrator (Option A: side-effects
+    // preserved in aggregate, one fewer copy). Note: this also revalidates each
+    // invoice's detail path — a harmless cache-only superset vs. the old 3-path set.
+    // Tradeoff: on 'paid', the executor resolves admin IDs per invoice (one indexed
+    // query each) rather than once; accepted for the clean seam at admin-only bulk sizes.
+    for (const inv of affected) {
+      await applyStatusChange({
+        entity: 'invoice',
+        status,
+        ctx: {
+          entityId: inv.id,
           clientId: inv.client_id,
           invoiceNumber: inv.invoice_number,
-          total: inv.total ?? 0,
-          currency: inv.currency ?? 'EUR',
+          total: inv.total,
+          currency: inv.currency,
           dueDate: inv.due_date,
-        });
-      }
-    }
-
-    if (status === 'paid') {
-      const adminIds = await getAdminUserIds();
-      for (const inv of affected) {
-        createNotificationForMany(adminIds, {
-          type: NOTIFICATION_TYPES.INVOICE_PAID,
-          title: `Invoice ${inv.invoice_number} paid`,
-          body: `Amount: €${inv.total?.toFixed(2) ?? '0.00'}`,
-          actionUrl: `/admin/invoices`,
-        });
-      }
+        },
+      });
     }
 
     return { data: { succeeded, failed }, error: null };

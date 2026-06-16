@@ -22,6 +22,7 @@ import {
   getAdminUserIds,
 } from '@/lib/actions/notifications';
 import { NOTIFICATION_TYPES } from '@/lib/notification-types';
+import { contractReviewRevalidatePaths } from '@/lib/status-effects';
 
 export async function getContractsByProject(projectId: string): Promise<ActionResult<Contract[]>> {
   try {
@@ -411,9 +412,7 @@ export async function reviewSignedContract(
 
     if (error) return { data: null, error: error.message };
 
-    revalidatePath('/admin/contracts');
-    revalidatePath(`/admin/contracts/${id}`);
-    revalidatePath('/client/contracts');
+    for (const path of contractReviewRevalidatePaths(id)) revalidatePath(path);
     return { data, error: null };
   }
 
@@ -442,9 +441,7 @@ export async function reviewSignedContract(
     });
   }
 
-  revalidatePath('/admin/contracts');
-  revalidatePath(`/admin/contracts/${id}`);
-  revalidatePath('/client/contracts');
+  for (const path of contractReviewRevalidatePaths(id)) revalidatePath(path);
   return { data, error: null };
 }
 
