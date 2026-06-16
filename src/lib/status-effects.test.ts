@@ -61,3 +61,74 @@ describe('decideStatusEffects — project', () => {
     ).toBe(true);
   });
 });
+
+describe('decideStatusEffects — invoice', () => {
+  const sentCtx = {
+    entityId: 'inv1',
+    clientId: 'c1',
+    invoiceNumber: 'DMS-2026-001',
+    total: 1234.5,
+    currency: 'EUR',
+    dueDate: '2026-07-01',
+  };
+
+  it('notifies the client and fires invoice_sent email on sent', () => {
+    const effects = decideStatusEffects({ entity: 'invoice', status: 'sent', ctx: sentCtx });
+
+    expect(effects.notifications).toEqual([
+      {
+        recipient: { kind: 'clientByClient', clientId: 'c1' },
+        type: 'invoice_sent',
+        title: 'Invoice DMS-2026-001 sent',
+        body: 'Amount: €1234.50',
+        actionUrl: '/client/invoices',
+      },
+    ]);
+    expect(effects.email).toEqual({
+      trigger: 'invoice_sent',
+      payload: {
+        invoiceId: 'inv1',
+        clientId: 'c1',
+        invoiceNumber: 'DMS-2026-001',
+        total: 1234.5,
+        currency: 'EUR',
+        dueDate: '2026-07-01',
+      },
+    });
+    expect(effects.revalidate).toEqual([
+      '/admin/invoices',
+      '/admin/invoices/inv1',
+      '/client/invoices',
+      '/client/dashboard',
+    ]);
+  });
+
+  it('emits nothing notification/email-wise on sent without a client_id', () => {
+    const effects = decideStatusEffects({
+      entity: 'invoice',
+      status: 'sent',
+      ctx: { ...sentCtx, clientId: null },
+    });
+    expect(effects.notifications).toEqual([]);
+    expect(effects.email).toBeNull();
+  });
+
+  it('notifies admins on paid and treats a null total as 0.00', () => {
+    const effects = decideStatusEffects({
+      entity: 'invoice',
+      status: 'paid',
+      ctx: { entityId: 'inv1', invoiceNumber: 'DMS-2026-002', total: null },
+    });
+
+    expect(effects.notifications).toEqual([
+      {
+        recipient: { kind: 'admins' },
+        type: 'invoice_paid',
+        title: 'Invoice DMS-2026-002 paid',
+        body: 'Amount: €0.00',
+        actionUrl: '/admin/invoices',
+      },
+    ]);
+    expect(effects.email).toBeNull();
+  });
+});

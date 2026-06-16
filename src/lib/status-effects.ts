@@ -71,6 +71,10 @@ export function projectRevalidatePaths(id: string): string[] {
   ];
 }
 
+export function invoiceRevalidatePaths(id: string): string[] {
+  return ['/admin/invoices', `/admin/invoices/${id}`, '/client/invoices', '/client/dashboard'];
+}
+
 // --- Per-entity decision functions ---
 
 function decideProjectEffects(status: string, ctx: StatusChangeContext): StatusEffects {
@@ -100,6 +104,46 @@ function decideProjectEffects(status: string, ctx: StatusChangeContext): StatusE
   };
 }
 
+function decideInvoiceEffects(status: string, ctx: StatusChangeContext): StatusEffects {
+  const id = ctx.entityId;
+  const amount = `Amount: €${(ctx.total ?? 0).toFixed(2)}`;
+  const notifications: NotificationEffect[] = [];
+  let email: EmailEffect | null = null;
+
+  if (status === 'sent' && ctx.clientId) {
+    notifications.push({
+      recipient: { kind: 'clientByClient', clientId: ctx.clientId },
+      type: NOTIFICATION_TYPES.INVOICE_SENT,
+      title: `Invoice ${ctx.invoiceNumber} sent`,
+      body: amount,
+      actionUrl: '/client/invoices',
+    });
+    email = {
+      trigger: 'invoice_sent',
+      payload: {
+        invoiceId: id,
+        clientId: ctx.clientId,
+        invoiceNumber: ctx.invoiceNumber ?? '',
+        total: ctx.total ?? 0,
+        currency: ctx.currency ?? 'EUR',
+        dueDate: ctx.dueDate ?? '',
+      },
+    };
+  }
+
+  if (status === 'paid') {
+    notifications.push({
+      recipient: { kind: 'admins' },
+      type: NOTIFICATION_TYPES.INVOICE_PAID,
+      title: `Invoice ${ctx.invoiceNumber} paid`,
+      body: amount,
+      actionUrl: '/admin/invoices',
+    });
+  }
+
+  return { notifications, email, calendarSync: false, revalidate: invoiceRevalidatePaths(id) };
+}
+
 const NO_EFFECTS = (): StatusEffects => ({
   notifications: [],
   email: null,
@@ -111,6 +155,8 @@ export function decideStatusEffects(change: StatusChange): StatusEffects {
   switch (change.entity) {
     case 'project':
       return decideProjectEffects(change.status, change.ctx);
+    case 'invoice':
+      return decideInvoiceEffects(change.status, change.ctx);
     default:
       return NO_EFFECTS();
   }
