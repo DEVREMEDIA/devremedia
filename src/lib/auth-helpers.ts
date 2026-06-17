@@ -13,6 +13,19 @@ type AuthErr = {
   error: 'Unauthorized' | 'Forbidden: admin access required';
 };
 
+export async function requireUser(): Promise<AuthOk | AuthErr> {
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
+  if (!user) {
+    return { supabase, user: null, error: 'Unauthorized' };
+  }
+
+  return { supabase, user, error: null };
+}
+
 export async function requireAdmin(): Promise<AuthOk | AuthErr> {
   const supabase = await createClient();
   const {

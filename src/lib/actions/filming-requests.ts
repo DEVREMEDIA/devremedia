@@ -1,6 +1,5 @@
 'use server';
 
-import { createClient } from '@/lib/supabase/server';
 import { createAdminClient } from '@/lib/supabase/admin';
 import {
   createFilmingRequestSchema,
@@ -17,16 +16,14 @@ import {
   getAdminUserIds,
 } from '@/lib/actions/notifications';
 import { NOTIFICATION_TYPES } from '@/lib/notification-types';
+import { requireUser, requireAdmin } from '@/lib/auth-helpers';
 
 export async function getFilmingRequests(filters?: {
   status?: FilmingRequestStatus | FilmingRequestStatus[];
 }): Promise<ActionResult<FilmingRequest[]>> {
   try {
-    const supabase = await createClient();
-    const {
-      data: { user },
-    } = await supabase.auth.getUser();
-    if (!user) return { data: null, error: 'User not authenticated' };
+    const { supabase, error: authError } = await requireUser();
+    if (authError) return { data: null, error: authError };
 
     let query = supabase
       .from('filming_requests')
@@ -56,11 +53,8 @@ export async function getFilmingRequests(filters?: {
 
 export async function getClientFilmingRequests(): Promise<ActionResult<FilmingRequest[]>> {
   try {
-    const supabase = await createClient();
-    const {
-      data: { user },
-    } = await supabase.auth.getUser();
-    if (!user) return { data: null, error: 'Not authenticated' };
+    const { supabase, error: authError } = await requireUser();
+    if (authError) return { data: null, error: authError };
 
     // RLS automatically filters to only this client's requests
     const { data, error } = await supabase
@@ -82,11 +76,8 @@ export async function getClientFilmingRequests(): Promise<ActionResult<FilmingRe
 
 export async function getFilmingRequest(id: string): Promise<ActionResult<FilmingRequest>> {
   try {
-    const supabase = await createClient();
-    const {
-      data: { user },
-    } = await supabase.auth.getUser();
-    if (!user) return { data: null, error: 'User not authenticated' };
+    const { supabase, error: authError } = await requireUser();
+    if (authError) return { data: null, error: authError };
 
     const { data, error } = await supabase
       .from('filming_requests')
@@ -109,12 +100,8 @@ export async function getFilmingRequest(id: string): Promise<ActionResult<Filmin
 export async function createFilmingRequest(input: unknown): Promise<ActionResult<FilmingRequest>> {
   try {
     const validated = createFilmingRequestSchema.parse(input);
-    const supabase = await createClient();
-
-    const {
-      data: { user },
-    } = await supabase.auth.getUser();
-    if (!user) return { data: null, error: 'User not authenticated' };
+    const { supabase, user, error: authError } = await requireUser();
+    if (authError) return { data: null, error: authError };
 
     // Find the client record linked to this user
     const { data: client } = await supabase
@@ -165,21 +152,8 @@ export async function reviewFilmingRequest(
 ): Promise<ActionResult<FilmingRequest>> {
   try {
     const validated = reviewFilmingRequestSchema.parse(input);
-    const supabase = await createClient();
-
-    const {
-      data: { user },
-    } = await supabase.auth.getUser();
-    if (!user) return { data: null, error: 'User not authenticated' };
-
-    const { data: profile } = await supabase
-      .from('user_profiles')
-      .select('role')
-      .eq('id', user.id)
-      .single();
-    if (!profile || !['super_admin', 'admin'].includes(profile.role)) {
-      return { data: null, error: 'Forbidden: admin access required' };
-    }
+    const { supabase, user, error: authError } = await requireAdmin();
+    if (authError) return { data: null, error: authError };
 
     const { data, error } = await supabase
       .from('filming_requests')
@@ -226,22 +200,10 @@ export async function reviewFilmingRequest(
 
 export async function convertToProject(id: string): Promise<ActionResult<Project>> {
   try {
-    const supabase = await createClient();
+    const { supabase, user, error: authError } = await requireAdmin();
+    if (authError) return { data: null, error: authError };
+
     const adminSupabase = createAdminClient();
-
-    const {
-      data: { user },
-    } = await supabase.auth.getUser();
-    if (!user) return { data: null, error: 'User not authenticated' };
-
-    const { data: profile } = await supabase
-      .from('user_profiles')
-      .select('role')
-      .eq('id', user.id)
-      .single();
-    if (!profile || !['super_admin', 'admin'].includes(profile.role)) {
-      return { data: null, error: 'Forbidden: admin access required' };
-    }
 
     const { data: request, error: fetchError } = await supabase
       .from('filming_requests')

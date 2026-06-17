@@ -1,6 +1,7 @@
 'use server';
 
 import { createClient } from '@/lib/supabase/server';
+import { requireUser } from '@/lib/auth-helpers';
 import { createInvoiceSchema, updateInvoiceSchema, type LineItem } from '@/lib/schemas/invoice';
 import type { ActionResult, Invoice, InvoiceWithRelations } from '@/types/index';
 import type { InvoiceStatus } from '@/lib/constants';
@@ -22,11 +23,8 @@ export async function getInvoices(
   filters?: InvoiceFilters,
 ): Promise<ActionResult<InvoiceWithRelations[]>> {
   try {
-    const supabase = await createClient();
-    const {
-      data: { user },
-    } = await supabase.auth.getUser();
-    if (!user) return { data: null, error: 'Unauthorized' };
+    const { supabase, error: authError } = await requireUser();
+    if (authError) return { data: null, error: authError };
     let query = supabase
       .from('invoices')
       .select(
@@ -64,11 +62,8 @@ export async function getInvoices(
 
 export async function getInvoice(id: string): Promise<ActionResult<InvoiceWithRelations>> {
   try {
-    const supabase = await createClient();
-    const {
-      data: { user },
-    } = await supabase.auth.getUser();
-    if (!user) return { data: null, error: 'Unauthorized' };
+    const { supabase, error: authError } = await requireUser();
+    if (authError) return { data: null, error: authError };
     const { data, error } = await supabase
       .from('invoices')
       .select(
@@ -113,12 +108,8 @@ export async function getNextInvoiceNumber(): Promise<string> {
 export async function createInvoice(input: unknown): Promise<ActionResult<InvoiceWithRelations>> {
   try {
     const validated = createInvoiceSchema.parse(input);
-    const supabase = await createClient();
-
-    const {
-      data: { user },
-    } = await supabase.auth.getUser();
-    if (!user) return { data: null, error: 'User not authenticated' };
+    const { supabase, user, error: authError } = await requireUser();
+    if (authError) return { data: null, error: authError };
 
     const invoiceNumber = await getNextInvoiceNumber();
 
@@ -178,11 +169,8 @@ export async function updateInvoice(
 ): Promise<ActionResult<InvoiceWithRelations>> {
   try {
     const validated = updateInvoiceSchema.parse(input);
-    const supabase = await createClient();
-    const {
-      data: { user },
-    } = await supabase.auth.getUser();
-    if (!user) return { data: null, error: 'Unauthorized' };
+    const { supabase, error: authError } = await requireUser();
+    if (authError) return { data: null, error: authError };
 
     let updateData: Record<string, unknown> = { ...validated };
 
@@ -245,11 +233,8 @@ export async function updateInvoiceStatus(
   status: InvoiceStatus,
 ): Promise<ActionResult<Invoice>> {
   try {
-    const supabase = await createClient();
-    const {
-      data: { user },
-    } = await supabase.auth.getUser();
-    if (!user) return { data: null, error: 'Unauthorized' };
+    const { supabase, error: authError } = await requireUser();
+    if (authError) return { data: null, error: authError };
 
     const updateData: Record<string, unknown> = { status };
 
@@ -295,11 +280,8 @@ export async function updateInvoiceStatus(
 
 export async function deleteInvoice(id: string): Promise<ActionResult<void>> {
   try {
-    const supabase = await createClient();
-    const {
-      data: { user },
-    } = await supabase.auth.getUser();
-    if (!user) return { data: null, error: 'Unauthorized' };
+    const { supabase, error: authError } = await requireUser();
+    if (authError) return { data: null, error: authError };
 
     // Fetch file_path before deleting
     const { data: invoice } = await supabase
@@ -336,11 +318,8 @@ export async function bulkUpdateInvoiceStatus(
   status: InvoiceStatus,
 ): Promise<ActionResult<{ succeeded: number; failed: number }>> {
   try {
-    const supabase = await createClient();
-    const {
-      data: { user },
-    } = await supabase.auth.getUser();
-    if (!user) return { data: null, error: 'Unauthorized' };
+    const { supabase, error: authError } = await requireUser();
+    if (authError) return { data: null, error: authError };
 
     const updateData: Record<string, unknown> = { status };
     const nowIso = new Date().toISOString();
@@ -394,11 +373,8 @@ export async function bulkDeleteInvoices(
   ids: string[],
 ): Promise<ActionResult<{ succeeded: number; failed: number }>> {
   try {
-    const supabase = await createClient();
-    const {
-      data: { user },
-    } = await supabase.auth.getUser();
-    if (!user) return { data: null, error: 'Unauthorized' };
+    const { supabase, error: authError } = await requireUser();
+    if (authError) return { data: null, error: authError };
 
     // Fetch file_paths for Storage cleanup (one round-trip).
     const { data: rows } = await supabase.from('invoices').select('id, file_path').in('id', ids);

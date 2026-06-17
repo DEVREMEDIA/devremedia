@@ -1,6 +1,6 @@
 'use server';
 
-import { createClient as createSupabase } from '@/lib/supabase/server';
+import { requireUser } from '@/lib/auth-helpers';
 import type { ActionResult } from '@/types/index';
 import type { ActivityLogWithUser } from '@/types/relations';
 
@@ -14,11 +14,8 @@ export async function getActivityByClient(
   filters?: ActivityFilters,
 ): Promise<ActionResult<ActivityLogWithUser[]>> {
   try {
-    const supabase = await createSupabase();
-    const {
-      data: { user },
-    } = await supabase.auth.getUser();
-    if (!user) return { data: null, error: 'Unauthorized' };
+    const { supabase, error: authError } = await requireUser();
+    if (authError) return { data: null, error: authError };
 
     const limit = filters?.limit ?? 20;
     const offset = filters?.offset ?? 0;

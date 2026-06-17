@@ -1,6 +1,6 @@
 'use server';
 
-import { createClient } from '@/lib/supabase/server';
+import { requireUser, requireAdmin } from '@/lib/auth-helpers';
 import {
   createContractSchema,
   updateContractSchema,
@@ -26,11 +26,8 @@ import { contractReviewRevalidatePaths } from '@/lib/status-effects';
 
 export async function getContractsByProject(projectId: string): Promise<ActionResult<Contract[]>> {
   try {
-    const supabase = await createClient();
-    const {
-      data: { user },
-    } = await supabase.auth.getUser();
-    if (!user) return { data: null, error: 'User not authenticated' };
+    const { supabase, error: authError } = await requireUser();
+    if (authError) return { data: null, error: authError };
 
     const { data, error } = await supabase
       .from('contracts')
@@ -51,11 +48,8 @@ export async function getContractsByClient(
   clientId: string,
 ): Promise<ActionResult<ContractWithProject[]>> {
   try {
-    const supabase = await createClient();
-    const {
-      data: { user },
-    } = await supabase.auth.getUser();
-    if (!user) return { data: null, error: 'User not authenticated' };
+    const { supabase, error: authError } = await requireUser();
+    if (authError) return { data: null, error: authError };
 
     const { data, error } = await supabase
       .from('contracts')
@@ -74,11 +68,8 @@ export async function getContractsByClient(
 
 export async function getContract(id: string): Promise<ActionResult<ContractWithRelations>> {
   try {
-    const supabase = await createClient();
-    const {
-      data: { user },
-    } = await supabase.auth.getUser();
-    if (!user) return { data: null, error: 'User not authenticated' };
+    const { supabase, error: authError } = await requireUser();
+    if (authError) return { data: null, error: authError };
 
     const { data, error } = await supabase
       .from('contracts')
@@ -97,11 +88,8 @@ export async function getContract(id: string): Promise<ActionResult<ContractWith
 
 export async function getMyContracts(): Promise<ActionResult<ContractWithProject[]>> {
   try {
-    const supabase = await createClient();
-    const {
-      data: { user },
-    } = await supabase.auth.getUser();
-    if (!user) return { data: null, error: 'User not authenticated' };
+    const { supabase, user, error: authError } = await requireUser();
+    if (authError) return { data: null, error: authError };
 
     // Get client record for this user
     const { data: clientRecord } = await supabase
@@ -130,20 +118,8 @@ export async function getMyContracts(): Promise<ActionResult<ContractWithProject
 
 export async function getAllContracts(): Promise<ActionResult<Contract[]>> {
   try {
-    const supabase = await createClient();
-    const {
-      data: { user },
-    } = await supabase.auth.getUser();
-    if (!user) return { data: null, error: 'User not authenticated' };
-
-    const { data: profile } = await supabase
-      .from('user_profiles')
-      .select('role')
-      .eq('id', user.id)
-      .single();
-    if (!profile || !['super_admin', 'admin'].includes(profile.role)) {
-      return { data: null, error: 'Forbidden: admin access required' };
-    }
+    const { supabase, error: authError } = await requireAdmin();
+    if (authError) return { data: null, error: authError };
 
     const { data, error } = await supabase
       .from('contracts')
@@ -160,21 +136,8 @@ export async function getAllContracts(): Promise<ActionResult<Contract[]>> {
 export async function createContract(input: unknown): Promise<ActionResult<Contract>> {
   try {
     const validated = createContractSchema.parse(input);
-    const supabase = await createClient();
-
-    const {
-      data: { user },
-    } = await supabase.auth.getUser();
-    if (!user) return { data: null, error: 'User not authenticated' };
-
-    const { data: profile } = await supabase
-      .from('user_profiles')
-      .select('role')
-      .eq('id', user.id)
-      .single();
-    if (!profile || !['super_admin', 'admin'].includes(profile.role)) {
-      return { data: null, error: 'Forbidden: admin access required' };
-    }
+    const { supabase, user, error: authError } = await requireAdmin();
+    if (authError) return { data: null, error: authError };
 
     if (!validated.client_id) {
       return { data: null, error: 'A client is required to create a contract' };
@@ -252,21 +215,8 @@ export async function createContract(input: unknown): Promise<ActionResult<Contr
 export async function updateContract(id: string, input: unknown): Promise<ActionResult<Contract>> {
   try {
     const validated = updateContractSchema.parse(input);
-    const supabase = await createClient();
-
-    const {
-      data: { user },
-    } = await supabase.auth.getUser();
-    if (!user) return { data: null, error: 'User not authenticated' };
-
-    const { data: profile } = await supabase
-      .from('user_profiles')
-      .select('role')
-      .eq('id', user.id)
-      .single();
-    if (!profile || !['super_admin', 'admin'].includes(profile.role)) {
-      return { data: null, error: 'Forbidden: admin access required' };
-    }
+    const { supabase, error: authError } = await requireAdmin();
+    if (authError) return { data: null, error: authError };
 
     const { data, error } = await supabase
       .from('contracts')
@@ -299,12 +249,8 @@ export async function signContract(
 ): Promise<ActionResult<Contract>> {
   try {
     const validated = signContractSchema.parse(signatureData);
-    const supabase = await createClient();
-
-    const {
-      data: { user },
-    } = await supabase.auth.getUser();
-    if (!user) return { data: null, error: 'User not authenticated' };
+    const { supabase, user, error: authError } = await requireUser();
+    if (authError) return { data: null, error: authError };
 
     // Verify the signer is associated with this contract's client
     const { data: existing, error: fetchError } = await supabase
@@ -370,21 +316,8 @@ export async function reviewSignedContract(
   id: string,
   decision: 'approve' | 'reject',
 ): Promise<ActionResult<Contract>> {
-  const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-  if (!user) return { data: null, error: 'Unauthorized' };
-
-  const { data: profile } = await supabase
-    .from('user_profiles')
-    .select('role')
-    .eq('id', user.id)
-    .single();
-
-  if (!profile || !['admin', 'super_admin'].includes(profile.role)) {
-    return { data: null, error: 'Forbidden' };
-  }
+  const { supabase, error: authError } = await requireAdmin();
+  if (authError) return { data: null, error: authError };
 
   const { data: contract, error: fetchError } = await supabase
     .from('contracts')
@@ -447,21 +380,8 @@ export async function reviewSignedContract(
 
 export async function sendContract(id: string): Promise<ActionResult<{ id: string }>> {
   try {
-    const supabase = await createClient();
-
-    const {
-      data: { user },
-    } = await supabase.auth.getUser();
-    if (!user) return { data: null, error: 'User not authenticated' };
-
-    const { data: profile } = await supabase
-      .from('user_profiles')
-      .select('role')
-      .eq('id', user.id)
-      .single();
-    if (!profile || !['super_admin', 'admin'].includes(profile.role)) {
-      return { data: null, error: 'Forbidden: admin access required' };
-    }
+    const { supabase, error: authError } = await requireAdmin();
+    if (authError) return { data: null, error: authError };
 
     // Verify contract is in draft status
     const { data: contract, error: fetchError } = await supabase
@@ -501,21 +421,8 @@ export async function sendContract(id: string): Promise<ActionResult<{ id: strin
 
 export async function deleteContract(id: string): Promise<ActionResult<void>> {
   try {
-    const supabase = await createClient();
-
-    const {
-      data: { user },
-    } = await supabase.auth.getUser();
-    if (!user) return { data: null, error: 'User not authenticated' };
-
-    const { data: profile } = await supabase
-      .from('user_profiles')
-      .select('role')
-      .eq('id', user.id)
-      .single();
-    if (!profile || !['super_admin', 'admin'].includes(profile.role)) {
-      return { data: null, error: 'Forbidden: admin access required' };
-    }
+    const { supabase, error: authError } = await requireAdmin();
+    if (authError) return { data: null, error: authError };
 
     const { data: contract, error: fetchError } = await supabase
       .from('contracts')
@@ -542,20 +449,8 @@ export async function deleteContract(id: string): Promise<ActionResult<void>> {
 
 export async function getContractTemplates(): Promise<ActionResult<ContractTemplate[]>> {
   try {
-    const supabase = await createClient();
-    const {
-      data: { user },
-    } = await supabase.auth.getUser();
-    if (!user) return { data: null, error: 'User not authenticated' };
-
-    const { data: profile } = await supabase
-      .from('user_profiles')
-      .select('role')
-      .eq('id', user.id)
-      .single();
-    if (!profile || !['super_admin', 'admin'].includes(profile.role)) {
-      return { data: null, error: 'Forbidden: admin access required' };
-    }
+    const { supabase, error: authError } = await requireAdmin();
+    if (authError) return { data: null, error: authError };
 
     const { data, error } = await supabase
       .from('contract_templates')
@@ -578,21 +473,8 @@ export async function createContractTemplate(input: {
   placeholders?: Record<string, unknown>;
 }): Promise<ActionResult<ContractTemplate>> {
   try {
-    const supabase = await createClient();
-
-    const {
-      data: { user },
-    } = await supabase.auth.getUser();
-    if (!user) return { data: null, error: 'User not authenticated' };
-
-    const { data: profile } = await supabase
-      .from('user_profiles')
-      .select('role')
-      .eq('id', user.id)
-      .single();
-    if (!profile || !['super_admin', 'admin'].includes(profile.role)) {
-      return { data: null, error: 'Forbidden: admin access required' };
-    }
+    const { supabase, user, error: authError } = await requireAdmin();
+    if (authError) return { data: null, error: authError };
 
     const { data, error } = await supabase
       .from('contract_templates')
@@ -626,21 +508,8 @@ export async function updateContractTemplate(
   },
 ): Promise<ActionResult<ContractTemplate>> {
   try {
-    const supabase = await createClient();
-
-    const {
-      data: { user },
-    } = await supabase.auth.getUser();
-    if (!user) return { data: null, error: 'User not authenticated' };
-
-    const { data: profile } = await supabase
-      .from('user_profiles')
-      .select('role')
-      .eq('id', user.id)
-      .single();
-    if (!profile || !['super_admin', 'admin'].includes(profile.role)) {
-      return { data: null, error: 'Forbidden: admin access required' };
-    }
+    const { supabase, error: authError } = await requireAdmin();
+    if (authError) return { data: null, error: authError };
 
     const updateData: Record<string, unknown> = {};
     if (input.title !== undefined) updateData.title = input.title;
@@ -668,21 +537,8 @@ export async function updateContractTemplate(
 
 export async function deleteContractTemplate(id: string): Promise<ActionResult<void>> {
   try {
-    const supabase = await createClient();
-
-    const {
-      data: { user },
-    } = await supabase.auth.getUser();
-    if (!user) return { data: null, error: 'User not authenticated' };
-
-    const { data: profile } = await supabase
-      .from('user_profiles')
-      .select('role')
-      .eq('id', user.id)
-      .single();
-    if (!profile || !['super_admin', 'admin'].includes(profile.role)) {
-      return { data: null, error: 'Forbidden: admin access required' };
-    }
+    const { supabase, error: authError } = await requireAdmin();
+    if (authError) return { data: null, error: authError };
 
     const { error } = await supabase.from('contract_templates').delete().eq('id', id);
 

@@ -1,10 +1,10 @@
 'use server';
 
-import { createClient } from '@/lib/supabase/server';
 import { createExpenseSchema, updateExpenseSchema } from '@/lib/schemas/expense';
 import type { ActionResult, Expense } from '@/types/index';
 import type { ExpenseCategory } from '@/lib/constants';
 import { revalidatePath } from 'next/cache';
+import { requireUser, requireAdmin } from '@/lib/auth-helpers';
 
 interface ExpenseFilters {
   project_id?: string;
@@ -15,11 +15,9 @@ interface ExpenseFilters {
 
 export async function getExpenses(filters?: ExpenseFilters): Promise<ActionResult<Expense[]>> {
   try {
-    const supabase = await createClient();
-    const {
-      data: { user },
-    } = await supabase.auth.getUser();
-    if (!user) return { data: null, error: 'Unauthorized' };
+    const { supabase, error: authError } = await requireUser();
+    if (authError) return { data: null, error: authError };
+
     let query = supabase
       .from('expenses')
       .select('id, project_id, category, description, amount, date, receipt_path, created_at')
@@ -52,11 +50,9 @@ export async function getExpenses(filters?: ExpenseFilters): Promise<ActionResul
 
 export async function getExpense(id: string): Promise<ActionResult<Expense>> {
   try {
-    const supabase = await createClient();
-    const {
-      data: { user },
-    } = await supabase.auth.getUser();
-    if (!user) return { data: null, error: 'Unauthorized' };
+    const { supabase, error: authError } = await requireUser();
+    if (authError) return { data: null, error: authError };
+
     const { data, error } = await supabase
       .from('expenses')
       .select('id, project_id, category, description, amount, date, receipt_path, created_at')
@@ -73,12 +69,8 @@ export async function getExpense(id: string): Promise<ActionResult<Expense>> {
 export async function createExpense(input: unknown): Promise<ActionResult<Expense>> {
   try {
     const validated = createExpenseSchema.parse(input);
-    const supabase = await createClient();
-
-    const {
-      data: { user },
-    } = await supabase.auth.getUser();
-    if (!user) return { data: null, error: 'User not authenticated' };
+    const { supabase, user, error: authError } = await requireUser();
+    if (authError) return { data: null, error: authError };
 
     const { data, error } = await supabase
       .from('expenses')
@@ -107,19 +99,8 @@ export async function createExpense(input: unknown): Promise<ActionResult<Expens
 export async function updateExpense(id: string, input: unknown): Promise<ActionResult<Expense>> {
   try {
     const validated = updateExpenseSchema.parse(input);
-    const supabase = await createClient();
-    const {
-      data: { user },
-    } = await supabase.auth.getUser();
-    if (!user) return { data: null, error: 'Unauthorized' };
-    const { data: profile } = await supabase
-      .from('user_profiles')
-      .select('role')
-      .eq('id', user.id)
-      .single();
-    if (!profile || !['super_admin', 'admin'].includes(profile.role)) {
-      return { data: null, error: 'Forbidden: admin access required' };
-    }
+    const { supabase, error: authError } = await requireAdmin();
+    if (authError) return { data: null, error: authError };
 
     const { data, error } = await supabase
       .from('expenses')
@@ -145,19 +126,8 @@ export async function updateExpense(id: string, input: unknown): Promise<ActionR
 
 export async function deleteExpense(id: string): Promise<ActionResult<void>> {
   try {
-    const supabase = await createClient();
-    const {
-      data: { user },
-    } = await supabase.auth.getUser();
-    if (!user) return { data: null, error: 'Unauthorized' };
-    const { data: profile } = await supabase
-      .from('user_profiles')
-      .select('role')
-      .eq('id', user.id)
-      .single();
-    if (!profile || !['super_admin', 'admin'].includes(profile.role)) {
-      return { data: null, error: 'Forbidden: admin access required' };
-    }
+    const { supabase, error: authError } = await requireAdmin();
+    if (authError) return { data: null, error: authError };
 
     const { data: expense } = await supabase
       .from('expenses')

@@ -1,6 +1,5 @@
 'use server';
 
-import { createClient } from '@/lib/supabase/server';
 import { createAdminClient } from '@/lib/supabase/admin';
 import { requireAdmin } from '@/lib/auth-helpers';
 import { deliverInvitation } from '@/lib/invitations';
@@ -12,21 +11,8 @@ import { cookies } from 'next/headers';
 
 export async function getTeamMembers(): Promise<ActionResult<UserProfile[]>> {
   try {
-    const supabase = await createClient();
-
-    const {
-      data: { user },
-    } = await supabase.auth.getUser();
-    if (!user) return { data: null, error: 'Unauthorized' };
-
-    const { data: profile } = await supabase
-      .from('user_profiles')
-      .select('role')
-      .eq('id', user.id)
-      .single();
-    if (!profile || !['super_admin', 'admin'].includes(profile.role)) {
-      return { data: null, error: 'Forbidden: admin access required' };
-    }
+    const { supabase, error: authError } = await requireAdmin();
+    if (authError) return { data: null, error: authError };
 
     const { data, error } = await supabase
       .from('user_profiles')
@@ -49,21 +35,8 @@ export async function getTeamMembers(): Promise<ActionResult<UserProfile[]>> {
 
 export async function getAllUsers(): Promise<ActionResult<UserWithEmail[]>> {
   try {
-    const supabase = await createClient();
-
-    const {
-      data: { user },
-    } = await supabase.auth.getUser();
-    if (!user) return { data: null, error: 'Unauthorized' };
-
-    const { data: profile } = await supabase
-      .from('user_profiles')
-      .select('role')
-      .eq('id', user.id)
-      .single();
-    if (!profile || !['super_admin', 'admin'].includes(profile.role)) {
-      return { data: null, error: 'Forbidden: admin access required' };
-    }
+    const { supabase, error: authError } = await requireAdmin();
+    if (authError) return { data: null, error: authError };
 
     // Fetch all user profiles
     const { data: profiles, error: profilesError } = await supabase
@@ -77,12 +50,12 @@ export async function getAllUsers(): Promise<ActionResult<UserWithEmail[]>> {
 
     // Fetch emails from Supabase Auth via admin client
     const adminClient = createAdminClient();
-    const { data: authData, error: authError } = await adminClient.auth.admin.listUsers({
+    const { data: authData, error: authError2 } = await adminClient.auth.admin.listUsers({
       perPage: 1000,
     });
 
-    if (authError) {
-      return { data: null, error: authError.message };
+    if (authError2) {
+      return { data: null, error: authError2.message };
     }
 
     // Build email lookup map
@@ -158,21 +131,8 @@ export async function updateTeamMemberRole(
   role: UserRole,
 ): Promise<ActionResult<{ userId: string; role: UserRole }>> {
   try {
-    const supabase = await createClient();
-
-    const {
-      data: { user },
-    } = await supabase.auth.getUser();
-    if (!user) return { data: null, error: 'Unauthorized' };
-
-    const { data: profile } = await supabase
-      .from('user_profiles')
-      .select('role')
-      .eq('id', user.id)
-      .single();
-    if (!profile || !['super_admin', 'admin'].includes(profile.role)) {
-      return { data: null, error: 'Forbidden: admin access required' };
-    }
+    const { supabase, error: authError } = await requireAdmin();
+    if (authError) return { data: null, error: authError };
 
     // Use admin client to bypass RLS — caller is already verified as admin
     const adminClient = createAdminClient();
@@ -240,22 +200,8 @@ export async function deactivateTeamMember(
   userId: string,
 ): Promise<ActionResult<{ userId: string }>> {
   try {
-    const supabase = await createClient();
-
-    // Verify caller is admin
-    const {
-      data: { user },
-    } = await supabase.auth.getUser();
-    if (!user) return { data: null, error: 'Unauthorized' };
-
-    const { data: profile } = await supabase
-      .from('user_profiles')
-      .select('role')
-      .eq('id', user.id)
-      .single();
-    if (!profile || !['super_admin', 'admin'].includes(profile.role)) {
-      return { data: null, error: 'Forbidden: admin access required' };
-    }
+    const { user, error: authError } = await requireAdmin();
+    if (authError) return { data: null, error: authError };
 
     if (user.id === userId) {
       return { data: null, error: 'Cannot deactivate your own account' };
@@ -263,12 +209,12 @@ export async function deactivateTeamMember(
 
     // Use admin client to ban the user in Supabase Auth
     const adminClient = createAdminClient();
-    const { error: authError } = await adminClient.auth.admin.updateUserById(userId, {
+    const { error: banError } = await adminClient.auth.admin.updateUserById(userId, {
       ban_duration: '876600h', // ~100 years = effectively permanent
     });
 
-    if (authError) {
-      return { data: null, error: authError.message };
+    if (banError) {
+      return { data: null, error: banError.message };
     }
 
     // Also mark in user_profiles for UI purposes (use admin client to bypass RLS)
@@ -299,30 +245,17 @@ export async function reactivateTeamMember(
   userId: string,
 ): Promise<ActionResult<{ userId: string }>> {
   try {
-    const supabase = await createClient();
-
-    const {
-      data: { user },
-    } = await supabase.auth.getUser();
-    if (!user) return { data: null, error: 'Unauthorized' };
-
-    const { data: profile } = await supabase
-      .from('user_profiles')
-      .select('role')
-      .eq('id', user.id)
-      .single();
-    if (!profile || !['super_admin', 'admin'].includes(profile.role)) {
-      return { data: null, error: 'Forbidden: admin access required' };
-    }
+    const { error: authError } = await requireAdmin();
+    if (authError) return { data: null, error: authError };
 
     // Unban the user in Supabase Auth
     const adminClient = createAdminClient();
-    const { error: authError } = await adminClient.auth.admin.updateUserById(userId, {
+    const { error: banError } = await adminClient.auth.admin.updateUserById(userId, {
       ban_duration: 'none',
     });
 
-    if (authError) {
-      return { data: null, error: authError.message };
+    if (banError) {
+      return { data: null, error: banError.message };
     }
 
     // Remove deactivated flag from preferences (use admin client to bypass RLS)

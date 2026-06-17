@@ -1,6 +1,6 @@
 'use server';
 
-import { createClient as createSupabase } from '@/lib/supabase/server';
+import { requireUser, requireAdmin } from '@/lib/auth-helpers';
 import { createClientSchema, updateClientSchema } from '@/lib/schemas/client';
 import type { ActionResult, Client } from '@/types/index';
 import { revalidatePath } from 'next/cache';
@@ -11,11 +11,8 @@ export async function getClients(filters?: {
   search?: string;
 }): Promise<ActionResult<Client[]>> {
   try {
-    const supabase = await createSupabase();
-    const {
-      data: { user },
-    } = await supabase.auth.getUser();
-    if (!user) return { data: null, error: 'Unauthorized' };
+    const { supabase, error: authError } = await requireUser();
+    if (authError) return { data: null, error: authError };
     let query = supabase
       .from('clients')
       .select(
@@ -41,11 +38,8 @@ export async function getClients(filters?: {
 
 export async function getClient(id: string): Promise<ActionResult<Client>> {
   try {
-    const supabase = await createSupabase();
-    const {
-      data: { user },
-    } = await supabase.auth.getUser();
-    if (!user) return { data: null, error: 'Unauthorized' };
+    const { supabase, error: authError } = await requireUser();
+    if (authError) return { data: null, error: authError };
     const { data, error } = await supabase
       .from('clients')
       .select(
@@ -64,19 +58,8 @@ export async function getClient(id: string): Promise<ActionResult<Client>> {
 export async function createNewClient(input: unknown): Promise<ActionResult<Client>> {
   try {
     const validated = createClientSchema.parse(input);
-    const supabase = await createSupabase();
-    const {
-      data: { user },
-    } = await supabase.auth.getUser();
-    if (!user) return { data: null, error: 'Unauthorized' };
-    const { data: profile } = await supabase
-      .from('user_profiles')
-      .select('role')
-      .eq('id', user.id)
-      .single();
-    if (!profile || !['super_admin', 'admin'].includes(profile.role)) {
-      return { data: null, error: 'Forbidden: admin access required' };
-    }
+    const { supabase, error: authError } = await requireAdmin();
+    if (authError) return { data: null, error: authError };
 
     const { data, error } = await supabase
       .from('clients')
@@ -101,19 +84,8 @@ export async function createNewClient(input: unknown): Promise<ActionResult<Clie
 export async function updateClient(id: string, input: unknown): Promise<ActionResult<Client>> {
   try {
     const validated = updateClientSchema.parse(input);
-    const supabase = await createSupabase();
-    const {
-      data: { user },
-    } = await supabase.auth.getUser();
-    if (!user) return { data: null, error: 'Unauthorized' };
-    const { data: profile } = await supabase
-      .from('user_profiles')
-      .select('role')
-      .eq('id', user.id)
-      .single();
-    if (!profile || !['super_admin', 'admin'].includes(profile.role)) {
-      return { data: null, error: 'Forbidden: admin access required' };
-    }
+    const { supabase, error: authError } = await requireAdmin();
+    if (authError) return { data: null, error: authError };
 
     const { data, error } = await supabase
       .from('clients')
@@ -143,11 +115,8 @@ export async function getOrphanedClientsInfo(): Promise<
   ActionResult<{ total: number; withProjects: number; withoutProjects: number }>
 > {
   try {
-    const supabase = await createSupabase();
-    const {
-      data: { user },
-    } = await supabase.auth.getUser();
-    if (!user) return { data: null, error: 'Unauthorized' };
+    const { supabase, error: authError } = await requireUser();
+    if (authError) return { data: null, error: authError };
 
     const { data: orphaned, error: fetchError } = await supabase
       .from('clients')
@@ -186,20 +155,8 @@ export async function cleanupOrphanedClients(): Promise<
   ActionResult<{ archived: number; deleted: number }>
 > {
   try {
-    const supabase = await createSupabase();
-    const {
-      data: { user },
-    } = await supabase.auth.getUser();
-    if (!user) return { data: null, error: 'Unauthorized' };
-
-    const { data: profile } = await supabase
-      .from('user_profiles')
-      .select('role')
-      .eq('id', user.id)
-      .single();
-    if (!profile || !['super_admin', 'admin'].includes(profile.role)) {
-      return { data: null, error: 'Forbidden: admin access required' };
-    }
+    const { supabase, error: authError } = await requireAdmin();
+    if (authError) return { data: null, error: authError };
 
     const { data: orphaned, error: fetchError } = await supabase
       .from('clients')
@@ -245,19 +202,8 @@ export async function cleanupOrphanedClients(): Promise<
 
 export async function deleteClient(id: string): Promise<ActionResult<null>> {
   try {
-    const supabase = await createSupabase();
-    const {
-      data: { user },
-    } = await supabase.auth.getUser();
-    if (!user) return { data: null, error: 'Unauthorized' };
-    const { data: profile } = await supabase
-      .from('user_profiles')
-      .select('role')
-      .eq('id', user.id)
-      .single();
-    if (!profile || !['super_admin', 'admin'].includes(profile.role)) {
-      return { data: null, error: 'Forbidden: admin access required' };
-    }
+    const { supabase, error: authError } = await requireAdmin();
+    if (authError) return { data: null, error: authError };
     const { error } = await supabase.from('clients').delete().eq('id', id);
 
     if (error) return { data: null, error: error.message };

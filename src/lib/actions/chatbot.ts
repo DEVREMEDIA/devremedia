@@ -1,6 +1,6 @@
 'use server';
 
-import { createClient } from '@/lib/supabase/server';
+import { requireAdmin } from '@/lib/auth-helpers';
 import { createAdminClient } from '@/lib/supabase/admin';
 import { createKnowledgeSchema, updateKnowledgeSchema } from '@/lib/schemas/chatbot';
 import { getEmbedding } from '@/lib/chatbot/embeddings';
@@ -10,20 +10,8 @@ import { revalidatePath } from 'next/cache';
 export async function createKnowledgeEntry(input: unknown): Promise<ActionResult<ChatKnowledge>> {
   try {
     const validated = createKnowledgeSchema.parse(input);
-    const supabase = await createClient();
-    const {
-      data: { user },
-    } = await supabase.auth.getUser();
-    if (!user) return { data: null, error: 'Not authenticated' };
-
-    const { data: profile } = await supabase
-      .from('user_profiles')
-      .select('role')
-      .eq('id', user.id)
-      .single();
-    if (!profile || !['super_admin', 'admin'].includes(profile.role)) {
-      return { data: null, error: 'Forbidden: admin access required' };
-    }
+    const { error: authError } = await requireAdmin();
+    if (authError) return { data: null, error: authError };
 
     // Generate embedding
     const textToEmbed = `${validated.title}. ${validated.content_en || validated.content}`;
@@ -55,20 +43,8 @@ export async function updateKnowledgeEntry(
 ): Promise<ActionResult<ChatKnowledge>> {
   try {
     const validated = updateKnowledgeSchema.parse(input);
-    const supabase = await createClient();
-    const {
-      data: { user },
-    } = await supabase.auth.getUser();
-    if (!user) return { data: null, error: 'Not authenticated' };
-
-    const { data: profile } = await supabase
-      .from('user_profiles')
-      .select('role')
-      .eq('id', user.id)
-      .single();
-    if (!profile || !['super_admin', 'admin'].includes(profile.role)) {
-      return { data: null, error: 'Forbidden: admin access required' };
-    }
+    const { error: authError } = await requireAdmin();
+    if (authError) return { data: null, error: authError };
 
     const admin = createAdminClient();
 
@@ -115,20 +91,8 @@ export async function updateKnowledgeEntry(
 
 export async function deleteKnowledgeEntry(id: string): Promise<ActionResult<null>> {
   try {
-    const supabase = await createClient();
-    const {
-      data: { user },
-    } = await supabase.auth.getUser();
-    if (!user) return { data: null, error: 'Not authenticated' };
-
-    const { data: profile } = await supabase
-      .from('user_profiles')
-      .select('role')
-      .eq('id', user.id)
-      .single();
-    if (!profile || !['super_admin', 'admin'].includes(profile.role)) {
-      return { data: null, error: 'Forbidden: admin access required' };
-    }
+    const { error: authError } = await requireAdmin();
+    if (authError) return { data: null, error: authError };
 
     const admin = createAdminClient();
     const { error } = await admin.from('chat_knowledge').delete().eq('id', id);
@@ -143,20 +107,8 @@ export async function deleteKnowledgeEntry(id: string): Promise<ActionResult<nul
 
 export async function deleteChatConversation(id: string): Promise<ActionResult<null>> {
   try {
-    const supabase = await createClient();
-    const {
-      data: { user },
-    } = await supabase.auth.getUser();
-    if (!user) return { data: null, error: 'Not authenticated' };
-
-    const { data: profile } = await supabase
-      .from('user_profiles')
-      .select('role')
-      .eq('id', user.id)
-      .single();
-    if (!profile || !['super_admin', 'admin'].includes(profile.role)) {
-      return { data: null, error: 'Forbidden: admin access required' };
-    }
+    const { error: authError } = await requireAdmin();
+    if (authError) return { data: null, error: authError };
 
     const admin = createAdminClient();
     const { error } = await admin.from('chat_conversations').delete().eq('id', id);

@@ -1,6 +1,5 @@
 'use server';
 
-import { createClient } from '@/lib/supabase/server';
 import {
   updateEquipmentListSchema,
   updateShotListSchema,
@@ -9,14 +8,12 @@ import {
 } from '@/lib/schemas/filming-prep';
 import type { ActionResult, EquipmentList, ShotList, ConceptNote } from '@/types/index';
 import { revalidatePath } from 'next/cache';
+import { requireUser } from '@/lib/auth-helpers';
 
 export async function getEquipmentList(projectId: string): Promise<ActionResult<EquipmentList>> {
   try {
-    const supabase = await createClient();
-    const {
-      data: { user },
-    } = await supabase.auth.getUser();
-    if (!user) return { data: null, error: 'Unauthorized' };
+    const { supabase, error: authError } = await requireUser();
+    if (authError) return { data: null, error: authError };
 
     const { data, error } = await supabase
       .from('equipment_lists')
@@ -55,11 +52,8 @@ export async function updateEquipmentList(
 ): Promise<ActionResult<EquipmentList>> {
   try {
     const validated = updateEquipmentListSchema.parse(input);
-    const supabase = await createClient();
-    const {
-      data: { user },
-    } = await supabase.auth.getUser();
-    if (!user) return { data: null, error: 'Unauthorized' };
+    const { supabase, error: authError } = await requireUser();
+    if (authError) return { data: null, error: authError };
 
     const { data, error } = await supabase
       .from('equipment_lists')
@@ -82,11 +76,8 @@ export async function updateEquipmentList(
 
 export async function getShotLists(projectId: string): Promise<ActionResult<ShotList[]>> {
   try {
-    const supabase = await createClient();
-    const {
-      data: { user },
-    } = await supabase.auth.getUser();
-    if (!user) return { data: null, error: 'Unauthorized' };
+    const { supabase, error: authError } = await requireUser();
+    if (authError) return { data: null, error: authError };
 
     const { data, error } = await supabase
       .from('shot_lists')
@@ -103,11 +94,8 @@ export async function getShotLists(projectId: string): Promise<ActionResult<Shot
 
 export async function createShotList(projectId: string): Promise<ActionResult<ShotList>> {
   try {
-    const supabase = await createClient();
-    const {
-      data: { user },
-    } = await supabase.auth.getUser();
-    if (!user) return { data: null, error: 'Unauthorized' };
+    const { supabase, error: authError } = await requireUser();
+    if (authError) return { data: null, error: authError };
 
     const { data, error } = await supabase
       .from('shot_lists')
@@ -130,11 +118,8 @@ export async function createShotList(projectId: string): Promise<ActionResult<Sh
 export async function updateShotList(id: string, input: unknown): Promise<ActionResult<ShotList>> {
   try {
     const validated = updateShotListSchema.parse(input);
-    const supabase = await createClient();
-    const {
-      data: { user },
-    } = await supabase.auth.getUser();
-    if (!user) return { data: null, error: 'Unauthorized' };
+    const { supabase, error: authError } = await requireUser();
+    if (authError) return { data: null, error: authError };
 
     const { data, error } = await supabase
       .from('shot_lists')
@@ -159,11 +144,8 @@ export async function updateShotList(id: string, input: unknown): Promise<Action
 
 export async function getConceptNotes(projectId: string): Promise<ActionResult<ConceptNote[]>> {
   try {
-    const supabase = await createClient();
-    const {
-      data: { user },
-    } = await supabase.auth.getUser();
-    if (!user) return { data: null, error: 'Unauthorized' };
+    const { supabase, error: authError } = await requireUser();
+    if (authError) return { data: null, error: authError };
 
     const { data, error } = await supabase
       .from('concept_notes')
@@ -183,11 +165,8 @@ export async function getConceptNotes(projectId: string): Promise<ActionResult<C
 
 export async function getConceptNote(id: string): Promise<ActionResult<ConceptNote>> {
   try {
-    const supabase = await createClient();
-    const {
-      data: { user },
-    } = await supabase.auth.getUser();
-    if (!user) return { data: null, error: 'Unauthorized' };
+    const { supabase, error: authError } = await requireUser();
+    if (authError) return { data: null, error: authError };
 
     const { data, error } = await supabase
       .from('concept_notes')
@@ -208,11 +187,8 @@ export async function getConceptNote(id: string): Promise<ActionResult<ConceptNo
 export async function createConceptNote(input: unknown): Promise<ActionResult<ConceptNote>> {
   try {
     const validated = createConceptNoteSchema.parse(input);
-    const supabase = await createClient();
-    const {
-      data: { user },
-    } = await supabase.auth.getUser();
-    if (!user) return { data: null, error: 'Unauthorized' };
+    const { supabase, error: authError } = await requireUser();
+    if (authError) return { data: null, error: authError };
 
     const { data, error } = await supabase
       .from('concept_notes')
@@ -238,11 +214,8 @@ export async function updateConceptNote(
 ): Promise<ActionResult<ConceptNote>> {
   try {
     const validated = updateConceptNoteSchema.parse(input);
-    const supabase = await createClient();
-    const {
-      data: { user },
-    } = await supabase.auth.getUser();
-    if (!user) return { data: null, error: 'Unauthorized' };
+    const { supabase, error: authError } = await requireUser();
+    if (authError) return { data: null, error: authError };
 
     const { data, error } = await supabase
       .from('concept_notes')
@@ -267,11 +240,8 @@ export async function updateConceptNote(
 
 export async function deleteConceptNote(id: string): Promise<ActionResult<void>> {
   try {
-    const supabase = await createClient();
-    const {
-      data: { user },
-    } = await supabase.auth.getUser();
-    if (!user) return { data: null, error: 'Unauthorized' };
+    const { supabase, error: authError } = await requireUser();
+    if (authError) return { data: null, error: authError };
 
     const { data: note } = await supabase
       .from('concept_notes')

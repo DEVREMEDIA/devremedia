@@ -1,7 +1,7 @@
 'use server';
 
-import { createClient } from '@/lib/supabase/server';
 import { createAdminClient } from '@/lib/supabase/admin';
+import { requireUser } from '@/lib/auth-helpers';
 import type { ActionResult, Notification } from '@/types/index';
 import { revalidatePath } from 'next/cache';
 import { TYPE_TO_PREFERENCE } from '@/lib/notification-types';
@@ -106,11 +106,8 @@ export async function createNotificationForMany(
 
 export async function getMyNotifications(): Promise<ActionResult<Notification[]>> {
   try {
-    const supabase = await createClient();
-    const {
-      data: { user },
-    } = await supabase.auth.getUser();
-    if (!user) return { data: null, error: 'Unauthorized' };
+    const { supabase, user, error: authError } = await requireUser();
+    if (authError) return { data: null, error: authError };
 
     const { data, error } = await supabase
       .from('notifications')
@@ -133,11 +130,8 @@ export async function getMyNotifications(): Promise<ActionResult<Notification[]>
 
 export async function getUnreadCount(): Promise<ActionResult<number>> {
   try {
-    const supabase = await createClient();
-    const {
-      data: { user },
-    } = await supabase.auth.getUser();
-    if (!user) return { data: null, error: 'Unauthorized' };
+    const { supabase, user, error: authError } = await requireUser();
+    if (authError) return { data: null, error: authError };
 
     const { count, error } = await supabase
       .from('notifications')
@@ -157,11 +151,8 @@ export async function getUnreadCount(): Promise<ActionResult<number>> {
 
 export async function markAsRead(id: string): Promise<ActionResult<void>> {
   try {
-    const supabase = await createClient();
-    const {
-      data: { user },
-    } = await supabase.auth.getUser();
-    if (!user) return { data: null, error: 'Unauthorized' };
+    const { supabase, user, error: authError } = await requireUser();
+    if (authError) return { data: null, error: authError };
 
     const { error } = await supabase
       .from('notifications')
@@ -185,11 +176,8 @@ export async function markAsRead(id: string): Promise<ActionResult<void>> {
 
 export async function markAllAsRead(): Promise<ActionResult<void>> {
   try {
-    const supabase = await createClient();
-    const {
-      data: { user },
-    } = await supabase.auth.getUser();
-    if (!user) return { data: null, error: 'Unauthorized' };
+    const { supabase, user, error: authError } = await requireUser();
+    if (authError) return { data: null, error: authError };
 
     const { error } = await supabase
       .from('notifications')
@@ -215,11 +203,8 @@ export async function updateNotificationPreferences(
   preferences: Record<string, boolean>,
 ): Promise<ActionResult<void>> {
   try {
-    const supabase = await createClient();
-    const {
-      data: { user },
-    } = await supabase.auth.getUser();
-    if (!user) return { data: null, error: 'Unauthorized' };
+    const { supabase, user, error: authError } = await requireUser();
+    if (authError) return { data: null, error: authError };
 
     // Get current preferences
     const { data: profile } = await supabase
@@ -252,11 +237,8 @@ export async function updateNotificationPreferences(
 
 export async function getNotificationPreferences(): Promise<ActionResult<Record<string, boolean>>> {
   try {
-    const supabase = await createClient();
-    const {
-      data: { user },
-    } = await supabase.auth.getUser();
-    if (!user) return { data: null, error: 'Unauthorized' };
+    const { supabase, user, error: authError } = await requireUser();
+    if (authError) return { data: null, error: authError };
 
     const { data: profile } = await supabase
       .from('user_profiles')

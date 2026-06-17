@@ -1,6 +1,7 @@
 'use server';
 
 import { createClient } from '@/lib/supabase/server';
+import { requireUser, requireAdmin } from '@/lib/auth-helpers';
 import { createProjectSchema, updateProjectSchema } from '@/lib/schemas/project';
 import type { ActionResult, ProjectWithClient, Project } from '@/types/index';
 import type { ProjectStatus, Priority } from '@/lib/constants';
@@ -24,11 +25,8 @@ export async function getProjects(
   filters?: ProjectFilters,
 ): Promise<ActionResult<ProjectWithClient[]>> {
   try {
-    const supabase = await createClient();
-    const {
-      data: { user },
-    } = await supabase.auth.getUser();
-    if (!user) return { data: null, error: 'Unauthorized' };
+    const { supabase, error: authError } = await requireUser();
+    if (authError) return { data: null, error: authError };
     let query = supabase
       .from('projects')
       .select('*, client:clients(*)')
@@ -66,11 +64,8 @@ export async function getProjects(
 
 export async function getProject(id: string): Promise<ActionResult<ProjectWithClient>> {
   try {
-    const supabase = await createClient();
-    const {
-      data: { user },
-    } = await supabase.auth.getUser();
-    if (!user) return { data: null, error: 'Unauthorized' };
+    const { supabase, error: authError } = await requireUser();
+    if (authError) return { data: null, error: authError };
     const { data, error } = await supabase
       .from('projects')
       .select('*, client:clients(*)')
@@ -105,12 +100,8 @@ async function ensureClientPrefixedTitle(
 export async function createProject(input: unknown): Promise<ActionResult<ProjectWithClient>> {
   try {
     const validated = createProjectSchema.parse(input);
-    const supabase = await createClient();
-
-    const {
-      data: { user },
-    } = await supabase.auth.getUser();
-    if (!user) return { data: null, error: 'User not authenticated' };
+    const { supabase, user, error: authError } = await requireUser();
+    if (authError) return { data: null, error: authError };
 
     // Guarantee the client's name is part of the title regardless of how it was
     // entered in the form (see docs/adr/0001). Idempotent: skipped if the title
@@ -171,11 +162,8 @@ export async function updateProject(
 ): Promise<ActionResult<ProjectWithClient>> {
   try {
     const validated = updateProjectSchema.parse(input);
-    const supabase = await createClient();
-    const {
-      data: { user },
-    } = await supabase.auth.getUser();
-    if (!user) return { data: null, error: 'Unauthorized' };
+    const { supabase, error: authError } = await requireUser();
+    if (authError) return { data: null, error: authError };
 
     const { data, error } = await supabase
       .from('projects')
@@ -239,11 +227,8 @@ export async function updateProjectStatus(
   status: ProjectStatus,
 ): Promise<ActionResult<Project>> {
   try {
-    const supabase = await createClient();
-    const {
-      data: { user },
-    } = await supabase.auth.getUser();
-    if (!user) return { data: null, error: 'Unauthorized' };
+    const { supabase, error: authError } = await requireUser();
+    if (authError) return { data: null, error: authError };
 
     const { data, error } = await supabase
       .from('projects')
@@ -271,11 +256,8 @@ export async function updateProjectStatus(
 
 export async function deleteProject(id: string): Promise<ActionResult<void>> {
   try {
-    const supabase = await createClient();
-    const {
-      data: { user },
-    } = await supabase.auth.getUser();
-    if (!user) return { data: null, error: 'Unauthorized' };
+    const { supabase, error: authError } = await requireUser();
+    if (authError) return { data: null, error: authError };
     const { error } = await supabase.from('projects').delete().eq('id', id);
 
     if (error) return { data: null, error: error.message };
@@ -306,21 +288,8 @@ export async function assignProject(
   userId: string | null,
 ): Promise<ActionResult<Project>> {
   try {
-    const supabase = await createClient();
-    const {
-      data: { user },
-    } = await supabase.auth.getUser();
-    if (!user) return { data: null, error: 'Unauthorized' };
-
-    // Verify caller is admin
-    const { data: profile } = await supabase
-      .from('user_profiles')
-      .select('role')
-      .eq('id', user.id)
-      .single();
-    if (!profile || !['super_admin', 'admin'].includes(profile.role)) {
-      return { data: null, error: 'Forbidden: admin access required' };
-    }
+    const { supabase, user, error: authError } = await requireAdmin();
+    if (authError) return { data: null, error: authError };
 
     const { data, error } = await supabase
       .from('projects')

@@ -1,6 +1,5 @@
 'use server';
 
-import { createClient } from '@/lib/supabase/server';
 import {
   createDeliverableSchema,
   createAnnotationSchema,
@@ -12,16 +11,14 @@ import { revalidatePath } from 'next/cache';
 import { createNotification, getClientUserIdFromProject } from '@/lib/actions/notifications';
 import { applyStatusChange } from '@/lib/apply-status-change';
 import { NOTIFICATION_TYPES } from '@/lib/notification-types';
+import { requireUser } from '@/lib/auth-helpers';
 
 export async function getDeliverablesByProject(
   projectId: string,
 ): Promise<ActionResult<Deliverable[]>> {
   try {
-    const supabase = await createClient();
-    const {
-      data: { user },
-    } = await supabase.auth.getUser();
-    if (!user) return { data: null, error: 'Unauthorized' };
+    const { supabase, error: authError } = await requireUser();
+    if (authError) return { data: null, error: authError };
 
     const { data, error } = await supabase
       .from('deliverables')
@@ -43,11 +40,8 @@ export async function getDeliverablesByProject(
 
 export async function getDeliverable(id: string): Promise<ActionResult<Deliverable>> {
   try {
-    const supabase = await createClient();
-    const {
-      data: { user },
-    } = await supabase.auth.getUser();
-    if (!user) return { data: null, error: 'Unauthorized' };
+    const { supabase, error: authError } = await requireUser();
+    if (authError) return { data: null, error: authError };
 
     const { data, error } = await supabase
       .from('deliverables')
@@ -70,12 +64,8 @@ export async function getDeliverable(id: string): Promise<ActionResult<Deliverab
 export async function createDeliverable(input: unknown): Promise<ActionResult<Deliverable>> {
   try {
     const validated = createDeliverableSchema.parse(input);
-    const supabase = await createClient();
-
-    const {
-      data: { user },
-    } = await supabase.auth.getUser();
-    if (!user) return { data: null, error: 'User not authenticated' };
+    const { supabase, user, error: authError } = await requireUser();
+    if (authError) return { data: null, error: authError };
 
     const { data: maxVersion } = await supabase
       .from('deliverables')
@@ -135,12 +125,8 @@ export async function updateDeliverable(
 ): Promise<ActionResult<Deliverable>> {
   try {
     const validated = updateDeliverableSchema.parse(input);
-    const supabase = await createClient();
-
-    const {
-      data: { user },
-    } = await supabase.auth.getUser();
-    if (!user) return { data: null, error: 'Unauthorized' };
+    const { supabase, error: authError } = await requireUser();
+    if (authError) return { data: null, error: authError };
 
     // If file_path changed, bump version
     const updateData: Record<string, unknown> = { ...validated };
@@ -201,11 +187,8 @@ export async function updateDeliverableStatus(
   status: DeliverableStatus,
 ): Promise<ActionResult<Deliverable>> {
   try {
-    const supabase = await createClient();
-    const {
-      data: { user },
-    } = await supabase.auth.getUser();
-    if (!user) return { data: null, error: 'Unauthorized' };
+    const { supabase, user, error: authError } = await requireUser();
+    if (authError) return { data: null, error: authError };
 
     const { data, error } = await supabase
       .from('deliverables')
@@ -254,11 +237,8 @@ export async function updateDeliverableStatus(
 
 export async function deleteDeliverable(id: string): Promise<ActionResult<void>> {
   try {
-    const supabase = await createClient();
-    const {
-      data: { user },
-    } = await supabase.auth.getUser();
-    if (!user) return { data: null, error: 'Unauthorized' };
+    const { supabase, error: authError } = await requireUser();
+    if (authError) return { data: null, error: authError };
 
     const { data: deliverable } = await supabase
       .from('deliverables')
@@ -289,11 +269,8 @@ export async function getAnnotations(
   deliverableId: string,
 ): Promise<ActionResult<VideoAnnotation[]>> {
   try {
-    const supabase = await createClient();
-    const {
-      data: { user },
-    } = await supabase.auth.getUser();
-    if (!user) return { data: null, error: 'Unauthorized' };
+    const { supabase, error: authError } = await requireUser();
+    if (authError) return { data: null, error: authError };
 
     const { data, error } = await supabase
       .from('video_annotations')
@@ -314,12 +291,8 @@ export async function getAnnotations(
 export async function createAnnotation(input: unknown): Promise<ActionResult<VideoAnnotation>> {
   try {
     const validated = createAnnotationSchema.parse(input);
-    const supabase = await createClient();
-
-    const {
-      data: { user },
-    } = await supabase.auth.getUser();
-    if (!user) return { data: null, error: 'User not authenticated' };
+    const { supabase, user, error: authError } = await requireUser();
+    if (authError) return { data: null, error: authError };
 
     const { data, error } = await supabase
       .from('video_annotations')
@@ -353,11 +326,8 @@ export async function createAnnotation(input: unknown): Promise<ActionResult<Vid
 
 export async function resolveAnnotation(id: string): Promise<ActionResult<VideoAnnotation>> {
   try {
-    const supabase = await createClient();
-    const {
-      data: { user },
-    } = await supabase.auth.getUser();
-    if (!user) return { data: null, error: 'Unauthorized' };
+    const { supabase, error: authError } = await requireUser();
+    if (authError) return { data: null, error: authError };
 
     const { data: annotation } = await supabase
       .from('video_annotations')

@@ -1,6 +1,6 @@
 'use server';
 
-import { createClient } from '@/lib/supabase/server';
+import { requireAdmin, requireUser } from '@/lib/auth-helpers';
 import type { ActionResult } from '@/types';
 
 export type CompanySettings = {
@@ -25,21 +25,8 @@ export type NotificationSettings = {
 
 export async function getCompanySettings(): Promise<ActionResult<CompanySettings>> {
   try {
-    const supabase = await createClient();
-
-    const {
-      data: { user },
-    } = await supabase.auth.getUser();
-    if (!user) return { data: null, error: 'Unauthorized' };
-
-    const { data: profile } = await supabase
-      .from('user_profiles')
-      .select('role')
-      .eq('id', user.id)
-      .single();
-    if (!profile || !['super_admin', 'admin'].includes(profile.role)) {
-      return { data: null, error: 'Forbidden: admin access required' };
-    }
+    const { supabase, error: authError } = await requireAdmin();
+    if (authError) return { data: null, error: authError };
 
     // For now, we'll use a simple approach with a settings table
     const { data, error } = await supabase
@@ -78,21 +65,8 @@ export async function updateCompanySettings(
   settings: CompanySettings,
 ): Promise<ActionResult<CompanySettings>> {
   try {
-    const supabase = await createClient();
-
-    const {
-      data: { user },
-    } = await supabase.auth.getUser();
-    if (!user) return { data: null, error: 'Unauthorized' };
-
-    const { data: profile } = await supabase
-      .from('user_profiles')
-      .select('role')
-      .eq('id', user.id)
-      .single();
-    if (!profile || !['super_admin', 'admin'].includes(profile.role)) {
-      return { data: null, error: 'Forbidden: admin access required' };
-    }
+    const { supabase, error: authError } = await requireAdmin();
+    if (authError) return { data: null, error: authError };
 
     const { error } = await supabase.from('settings').upsert({
       key: 'company_settings',
@@ -117,12 +91,8 @@ export async function getNotificationSettings(
   userId: string,
 ): Promise<ActionResult<NotificationSettings>> {
   try {
-    const supabase = await createClient();
-
-    const {
-      data: { user },
-    } = await supabase.auth.getUser();
-    if (!user) return { data: null, error: 'Unauthorized' };
+    const { supabase, user, error: authError } = await requireUser();
+    if (authError) return { data: null, error: authError };
 
     const { data: profile } = await supabase
       .from('user_profiles')
@@ -178,12 +148,8 @@ export async function updateNotificationSettings(
   settings: NotificationSettings,
 ): Promise<ActionResult<NotificationSettings>> {
   try {
-    const supabase = await createClient();
-
-    const {
-      data: { user },
-    } = await supabase.auth.getUser();
-    if (!user) return { data: null, error: 'Unauthorized' };
+    const { supabase, user, error: authError } = await requireUser();
+    if (authError) return { data: null, error: authError };
 
     const { data: profile } = await supabase
       .from('user_profiles')

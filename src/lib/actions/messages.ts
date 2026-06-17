@@ -1,6 +1,6 @@
 'use server';
 
-import { createClient } from '@/lib/supabase/server';
+import { requireUser } from '@/lib/auth-helpers';
 import { createMessageSchema } from '@/lib/schemas/message';
 import type { ActionResult, Message } from '@/types/index';
 import { revalidatePath } from 'next/cache';
@@ -17,11 +17,8 @@ export async function getMessagesByProject(
   channel: 'client' | 'team' = 'client',
 ): Promise<ActionResult<Message[]>> {
   try {
-    const supabase = await createClient();
-    const {
-      data: { user },
-    } = await supabase.auth.getUser();
-    if (!user) return { data: null, error: 'Unauthorized' };
+    const { supabase, error: authError } = await requireUser();
+    if (authError) return { data: null, error: authError };
     const { data, error } = await supabase
       .from('messages')
       .select(
@@ -51,12 +48,8 @@ export async function getMessagesByProject(
 export async function createMessage(input: unknown): Promise<ActionResult<Message>> {
   try {
     const validated = createMessageSchema.parse(input);
-    const supabase = await createClient();
-
-    const {
-      data: { user },
-    } = await supabase.auth.getUser();
-    if (!user) return { data: null, error: 'User not authenticated' };
+    const { supabase, user, error: authError } = await requireUser();
+    if (authError) return { data: null, error: authError };
 
     const { data, error } = await supabase
       .from('messages')
@@ -115,12 +108,8 @@ export async function createMessage(input: unknown): Promise<ActionResult<Messag
 
 export async function markMessagesAsRead(projectId: string): Promise<ActionResult<void>> {
   try {
-    const supabase = await createClient();
-
-    const {
-      data: { user },
-    } = await supabase.auth.getUser();
-    if (!user) return { data: null, error: 'User not authenticated' };
+    const { supabase, user, error: authError } = await requireUser();
+    if (authError) return { data: null, error: authError };
 
     // Fetch messages not yet read by this user
     const { data: unread, error: fetchError } = await supabase
