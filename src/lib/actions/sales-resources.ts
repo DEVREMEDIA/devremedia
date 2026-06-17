@@ -1,6 +1,6 @@
 'use server';
 
-import { createClient } from '@/lib/supabase/server';
+import { requireUser, requireAdmin } from '@/lib/auth-helpers';
 import {
   createSalesResourceCategorySchema,
   updateSalesResourceCategorySchema,
@@ -13,11 +13,8 @@ import { revalidatePath } from 'next/cache';
 
 export async function getSalesResourceCategories(): Promise<ActionResult<SalesResourceCategory[]>> {
   try {
-    const supabase = await createClient();
-    const {
-      data: { user },
-    } = await supabase.auth.getUser();
-    if (!user) return { data: null, error: 'Unauthorized' };
+    const { supabase, error: authError } = await requireUser();
+    if (authError) return { data: null, error: authError };
     const { data, error } = await supabase
       .from('sales_resource_categories')
       .select('id, title, description, sort_order, created_at')
@@ -35,20 +32,8 @@ export async function createSalesResourceCategory(
 ): Promise<ActionResult<SalesResourceCategory>> {
   try {
     const validated = createSalesResourceCategorySchema.parse(input);
-    const supabase = await createClient();
-    const {
-      data: { user },
-    } = await supabase.auth.getUser();
-    if (!user) return { data: null, error: 'Unauthorized' };
-
-    const { data: profile } = await supabase
-      .from('user_profiles')
-      .select('role')
-      .eq('id', user.id)
-      .single();
-    if (!profile || !['super_admin', 'admin'].includes(profile.role)) {
-      return { data: null, error: 'Forbidden: admin access required' };
-    }
+    const { supabase, error: authError } = await requireAdmin();
+    if (authError) return { data: null, error: authError };
 
     const { data, error } = await supabase
       .from('sales_resource_categories')
@@ -73,20 +58,8 @@ export async function updateSalesResourceCategory(
 ): Promise<ActionResult<SalesResourceCategory>> {
   try {
     const validated = updateSalesResourceCategorySchema.parse(input);
-    const supabase = await createClient();
-    const {
-      data: { user },
-    } = await supabase.auth.getUser();
-    if (!user) return { data: null, error: 'Unauthorized' };
-
-    const { data: profile } = await supabase
-      .from('user_profiles')
-      .select('role')
-      .eq('id', user.id)
-      .single();
-    if (!profile || !['super_admin', 'admin'].includes(profile.role)) {
-      return { data: null, error: 'Forbidden: admin access required' };
-    }
+    const { supabase, error: authError } = await requireAdmin();
+    if (authError) return { data: null, error: authError };
 
     const { data, error } = await supabase
       .from('sales_resource_categories')
@@ -108,20 +81,8 @@ export async function updateSalesResourceCategory(
 
 export async function deleteSalesResourceCategory(id: string): Promise<ActionResult<void>> {
   try {
-    const supabase = await createClient();
-    const {
-      data: { user },
-    } = await supabase.auth.getUser();
-    if (!user) return { data: null, error: 'Unauthorized' };
-
-    const { data: profile } = await supabase
-      .from('user_profiles')
-      .select('role')
-      .eq('id', user.id)
-      .single();
-    if (!profile || !['super_admin', 'admin'].includes(profile.role)) {
-      return { data: null, error: 'Forbidden: admin access required' };
-    }
+    const { supabase, error: authError } = await requireAdmin();
+    if (authError) return { data: null, error: authError };
 
     const { error } = await supabase.from('sales_resource_categories').delete().eq('id', id);
 
@@ -141,11 +102,8 @@ export async function getSalesResources(
   categoryId?: string,
 ): Promise<ActionResult<SalesResource[]>> {
   try {
-    const supabase = await createClient();
-    const {
-      data: { user },
-    } = await supabase.auth.getUser();
-    if (!user) return { data: null, error: 'Unauthorized' };
+    const { supabase, error: authError } = await requireUser();
+    if (authError) return { data: null, error: authError };
     let query = supabase
       .from('sales_resources')
       .select('*, category:sales_resource_categories(title)')
@@ -166,12 +124,8 @@ export async function getSalesResources(
 export async function createSalesResource(input: unknown): Promise<ActionResult<SalesResource>> {
   try {
     const validated = createSalesResourceSchema.parse(input);
-    const supabase = await createClient();
-
-    const {
-      data: { user },
-    } = await supabase.auth.getUser();
-    if (!user) return { data: null, error: 'Unauthorized' };
+    const { supabase, user, error: authError } = await requireUser();
+    if (authError) return { data: null, error: authError };
 
     const { data, error } = await supabase
       .from('sales_resources')
@@ -194,20 +148,8 @@ export async function createSalesResource(input: unknown): Promise<ActionResult<
 
 export async function deleteSalesResource(id: string): Promise<ActionResult<void>> {
   try {
-    const supabase = await createClient();
-    const {
-      data: { user },
-    } = await supabase.auth.getUser();
-    if (!user) return { data: null, error: 'Unauthorized' };
-
-    const { data: profile } = await supabase
-      .from('user_profiles')
-      .select('role')
-      .eq('id', user.id)
-      .single();
-    if (!profile || !['super_admin', 'admin'].includes(profile.role)) {
-      return { data: null, error: 'Forbidden: admin access required' };
-    }
+    const { supabase, error: authError } = await requireAdmin();
+    if (authError) return { data: null, error: authError };
 
     // Get file path first to delete from storage
     const { data: resource } = await supabase
@@ -237,11 +179,8 @@ export async function getSalesResourceDownloadUrl(
   options?: { download?: boolean },
 ): Promise<ActionResult<string>> {
   try {
-    const supabase = await createClient();
-    const {
-      data: { user },
-    } = await supabase.auth.getUser();
-    if (!user) return { data: null, error: 'Unauthorized' };
+    const { supabase, error: authError } = await requireUser();
+    if (authError) return { data: null, error: authError };
 
     const { data, error } = await supabase.storage
       .from('sales-resources')

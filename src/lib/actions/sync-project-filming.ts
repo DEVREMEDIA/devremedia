@@ -1,6 +1,6 @@
 'use server';
 
-import { createClient } from '@/lib/supabase/server';
+import { requireUser } from '@/lib/auth-helpers';
 import { revalidatePath } from 'next/cache';
 
 /**
@@ -45,11 +45,8 @@ function athensOffsetFor(filmingDate: string): string {
 export async function syncProjectFilmingToCalendar(
   projectId: string,
 ): Promise<{ ok: boolean; error?: string }> {
-  const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-  if (!user) return { ok: false, error: 'Unauthorized' };
+  const { supabase, user, error: authError } = await requireUser();
+  if (authError) return { ok: false, error: authError };
 
   const { data: project, error: pErr } = await supabase
     .from('projects')

@@ -1,17 +1,14 @@
 'use server';
 
-import { createClient } from '@/lib/supabase/server';
+import { requireUser } from '@/lib/auth-helpers';
 import { createLeadActivitySchema } from '@/lib/schemas/lead-activity';
 import type { ActionResult, LeadActivity } from '@/types';
 import { revalidatePath } from 'next/cache';
 
 export async function getLeadActivities(leadId: string): Promise<ActionResult<LeadActivity[]>> {
   try {
-    const supabase = await createClient();
-    const {
-      data: { user },
-    } = await supabase.auth.getUser();
-    if (!user) return { data: null, error: 'Unauthorized' };
+    const { supabase, error: authError } = await requireUser();
+    if (authError) return { data: null, error: authError };
     const { data, error } = await supabase
       .from('lead_activities')
       .select(
@@ -30,12 +27,8 @@ export async function getLeadActivities(leadId: string): Promise<ActionResult<Le
 export async function createLeadActivity(input: unknown): Promise<ActionResult<LeadActivity>> {
   try {
     const validated = createLeadActivitySchema.parse(input);
-    const supabase = await createClient();
-
-    const {
-      data: { user },
-    } = await supabase.auth.getUser();
-    if (!user) return { data: null, error: 'Unauthorized' };
+    const { supabase, user, error: authError } = await requireUser();
+    if (authError) return { data: null, error: authError };
 
     const { data, error } = await supabase
       .from('lead_activities')

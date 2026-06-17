@@ -1,6 +1,6 @@
 'use server';
 
-import { createClient } from '@/lib/supabase/server';
+import { requireUser } from '@/lib/auth-helpers';
 import { createLeadSchema, updateLeadSchema } from '@/lib/schemas/lead';
 import type { ActionResult, LeadFilters, Lead, Client } from '@/types';
 import { LEAD_STAGES } from '@/lib/constants';
@@ -9,11 +9,8 @@ import { escapePostgrestFilter } from '@/lib/utils';
 
 export async function getLeads(filters?: LeadFilters): Promise<ActionResult<Lead[]>> {
   try {
-    const supabase = await createClient();
-    const {
-      data: { user },
-    } = await supabase.auth.getUser();
-    if (!user) return { data: null, error: 'Unauthorized' };
+    const { supabase, error: authError } = await requireUser();
+    if (authError) return { data: null, error: authError };
     let query = supabase
       .from('leads')
       .select(
@@ -53,11 +50,8 @@ export async function getLeads(filters?: LeadFilters): Promise<ActionResult<Lead
 
 export async function getLeadsByAssignee(userId: string): Promise<ActionResult<Lead[]>> {
   try {
-    const supabase = await createClient();
-    const {
-      data: { user },
-    } = await supabase.auth.getUser();
-    if (!user) return { data: null, error: 'Unauthorized' };
+    const { supabase, error: authError } = await requireUser();
+    if (authError) return { data: null, error: authError };
     const { data, error } = await supabase
       .from('leads')
       .select(
@@ -75,11 +69,8 @@ export async function getLeadsByAssignee(userId: string): Promise<ActionResult<L
 
 export async function getLead(id: string): Promise<ActionResult<Lead>> {
   try {
-    const supabase = await createClient();
-    const {
-      data: { user },
-    } = await supabase.auth.getUser();
-    if (!user) return { data: null, error: 'Unauthorized' };
+    const { supabase, error: authError } = await requireUser();
+    if (authError) return { data: null, error: authError };
     const { data, error } = await supabase
       .from('leads')
       .select(
@@ -98,12 +89,8 @@ export async function getLead(id: string): Promise<ActionResult<Lead>> {
 export async function createLead(input: unknown): Promise<ActionResult<Lead>> {
   try {
     const validated = createLeadSchema.parse(input);
-    const supabase = await createClient();
-
-    const {
-      data: { user },
-    } = await supabase.auth.getUser();
-    if (!user) return { data: null, error: 'Unauthorized' };
+    const { supabase, user, error: authError } = await requireUser();
+    if (authError) return { data: null, error: authError };
 
     const { data, error } = await supabase
       .from('leads')
@@ -130,11 +117,8 @@ export async function createLead(input: unknown): Promise<ActionResult<Lead>> {
 export async function updateLead(id: string, input: unknown): Promise<ActionResult<Lead>> {
   try {
     const validated = updateLeadSchema.parse(input);
-    const supabase = await createClient();
-    const {
-      data: { user },
-    } = await supabase.auth.getUser();
-    if (!user) return { data: null, error: 'Unauthorized' };
+    const { supabase, error: authError } = await requireUser();
+    if (authError) return { data: null, error: authError };
 
     const { data, error } = await supabase
       .from('leads')
@@ -163,11 +147,8 @@ export async function updateLeadStage(id: string, stage: string): Promise<Action
     if (!LEAD_STAGES.includes(stage as (typeof LEAD_STAGES)[number])) {
       return { data: null, error: `Invalid stage: ${stage}` };
     }
-    const supabase = await createClient();
-    const {
-      data: { user },
-    } = await supabase.auth.getUser();
-    if (!user) return { data: null, error: 'Unauthorized' };
+    const { supabase, user, error: authError } = await requireUser();
+    if (authError) return { data: null, error: authError };
 
     const { data, error } = await supabase
       .from('leads')
@@ -199,11 +180,8 @@ export async function updateLeadStage(id: string, stage: string): Promise<Action
 
 export async function deleteLead(id: string): Promise<ActionResult<void>> {
   try {
-    const supabase = await createClient();
-    const {
-      data: { user },
-    } = await supabase.auth.getUser();
-    if (!user) return { data: null, error: 'Unauthorized' };
+    const { supabase, error: authError } = await requireUser();
+    if (authError) return { data: null, error: authError };
     const { error } = await supabase.from('leads').delete().eq('id', id);
 
     if (error) return { data: null, error: error.message };
@@ -218,11 +196,8 @@ export async function deleteLead(id: string): Promise<ActionResult<void>> {
 
 export async function convertLeadToClient(id: string): Promise<ActionResult<Client>> {
   try {
-    const supabase = await createClient();
-    const {
-      data: { user },
-    } = await supabase.auth.getUser();
-    if (!user) return { data: null, error: 'Unauthorized' };
+    const { supabase, user, error: authError } = await requireUser();
+    if (authError) return { data: null, error: authError };
 
     // Fetch the lead
     const { data: lead, error: leadError } = await supabase

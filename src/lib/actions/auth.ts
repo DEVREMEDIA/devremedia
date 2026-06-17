@@ -2,7 +2,7 @@
 
 import { createClient } from '@/lib/supabase/server';
 import { createAdminClient } from '@/lib/supabase/admin';
-import { requireAdmin } from '@/lib/auth-helpers';
+import { requireAdmin, requireUser } from '@/lib/auth-helpers';
 import { confirmationSchema } from '@/lib/schemas/auth';
 import { deliverInvitation } from '@/lib/invitations';
 import type { ActionResult } from '@/types';
@@ -56,15 +56,8 @@ export async function completeOnboarding(
 ): Promise<ActionResult<{ role: string }>> {
   try {
     const validated = confirmationSchema.parse(input);
-    const supabase = await createClient();
-
-    const {
-      data: { user },
-    } = await supabase.auth.getUser();
-
-    if (!user) {
-      return { data: null, error: 'Unauthorized' };
-    }
+    const { supabase, user, error: authError } = await requireUser();
+    if (authError) return { data: null, error: authError };
 
     const { error: passwordError } = await supabase.auth.updateUser({
       password: validated.password,
