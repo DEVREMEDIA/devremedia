@@ -69,6 +69,7 @@ export async function POST(
       .update({
         status: 'paid',
         paid_at: new Date().toISOString(),
+        payment_method: 'card',
       })
       .eq('id', invoiceId);
 
