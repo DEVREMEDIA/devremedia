@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { bucketMonthlyFinance, sumFinance, type FinanceInvoice } from './finance';
+import { bucketMonthlyFinance, sumFinance, REVENUE_STATUSES, type FinanceInvoice } from './finance';
 
 const invoice = (overrides: Partial<FinanceInvoice>): FinanceInvoice => ({
   total: 100,
@@ -97,5 +97,59 @@ describe('sumFinance', () => {
       revenue: 0,
       collections: 0,
     });
+  });
+});
+
+// ---------------------------------------------------------------------------
+// Shared fixture — the single source of truth for the Revenue/Collections rule
+//
+// These fixtures and expected values are the contract between the TS
+// bucketMonthlyFinance/sumFinance functions and the get_monthly_revenue /
+// get_profit_margin SQL RPCs (migration 00053).  If the rule changes, update
+// ALL THREE places and keep this describe block passing.
+//
+// ADR-0002: Revenue (Τζίρος) = status in REVENUE_STATUSES, bucketed by
+//           issue_date.  Collections (Εισπράξεις) = status 'paid', bucketed
+//           by paid_at.
+// ---------------------------------------------------------------------------
+
+// Canonical invoices — the same rows the SQL RPC would receive.
+const SHARED_FIXTURES: FinanceInvoice[] = [
+  { total: 500, status: 'sent', issue_date: '2026-01-10', paid_at: null },
+  { total: 300, status: 'paid', issue_date: '2026-01-15', paid_at: '2026-01-20' },
+  { total: 200, status: 'overdue', issue_date: '2026-02-05', paid_at: null },
+  { total: 100, status: 'viewed', issue_date: '2026-02-10', paid_at: null },
+  { total: 999, status: 'draft', issue_date: '2026-01-01', paid_at: null }, // excluded from Revenue
+  { total: 50, status: 'paid', issue_date: '2026-01-25', paid_at: '2026-03-01' }, // Revenue Jan, Collections Mar
+];
+
+describe('REVENUE_STATUSES — ADR-0002 contract', () => {
+  it('is exactly the four non-terminal statuses (sent, viewed, paid, overdue)', () => {
+    expect([...REVENUE_STATUSES].sort()).toEqual(['overdue', 'paid', 'sent', 'viewed']);
+  });
+});
+
+describe('Shared fixture — bucketMonthlyFinance matches get_monthly_revenue RPC', () => {
+  it('produces canonical monthly Revenue + Collections series', () => {
+    // Jan: revenue = 500 (sent) + 300 (paid) + 50 (paid, issued Jan) = 850
+    //      collections = 300 (paid Jan 20)
+    // Feb: revenue = 200 (overdue) + 100 (viewed) = 300
+    //      collections = 0
+    // Mar: revenue = 0
+    //      collections = 50 (paid Mar 1)
+    // draft (999) excluded from all buckets.
+    expect(bucketMonthlyFinance(SHARED_FIXTURES)).toEqual([
+      { month: '2026-01', revenue: 850, collections: 300 },
+      { month: '2026-02', revenue: 300, collections: 0 },
+      { month: '2026-03', revenue: 0, collections: 50 },
+    ]);
+  });
+});
+
+describe('Shared fixture — sumFinance matches get_profit_margin RPC', () => {
+  it('produces canonical Revenue + Collections totals', () => {
+    // Revenue = 500 + 300 + 200 + 100 + 50 = 1150 (draft 999 excluded)
+    // Collections = 300 + 50 = 350
+    expect(sumFinance(SHARED_FIXTURES)).toEqual({ revenue: 1150, collections: 350 });
   });
 });
