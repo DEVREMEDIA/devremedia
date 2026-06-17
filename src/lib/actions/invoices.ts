@@ -5,16 +5,10 @@ import { createInvoiceSchema, updateInvoiceSchema, type LineItem } from '@/lib/s
 import type { ActionResult, Invoice, InvoiceWithRelations } from '@/types/index';
 import type { InvoiceStatus } from '@/lib/constants';
 import { revalidatePath } from 'next/cache';
-import {
-  createNotification,
-  createNotificationForMany,
-  getClientUserIdFromClientId,
-  getAdminUserIds,
-} from '@/lib/actions/notifications';
-import { NOTIFICATION_TYPES } from '@/lib/notification-types';
 import { syncEntityToGoogle } from '@/lib/google-sync-helper';
-import { triggerInvoiceSentEmail } from '@/lib/email/triggers/invoice-sent';
+import { countBulkOutcome } from '@/lib/bulk-result';
 import { getGoogleColorId } from '@/lib/google-calendar';
+import { applyStatusChange } from '@/lib/apply-status-change';
 
 interface InvoiceFilters {
   status?: InvoiceStatus | InvoiceStatus[];
@@ -277,44 +271,18 @@ export async function updateInvoiceStatus(
 
     if (error) return { data: null, error: error.message };
 
-    revalidatePath('/admin/invoices');
-    revalidatePath(`/admin/invoices/${id}`);
-    revalidatePath('/client/invoices');
-    revalidatePath('/client/dashboard');
-
-    // Send notifications based on status change
-    if (status === 'sent' && data.client_id) {
-      const clientUserId = await getClientUserIdFromClientId(data.client_id);
-      if (clientUserId) {
-        createNotification({
-          userId: clientUserId,
-          type: NOTIFICATION_TYPES.INVOICE_SENT,
-          title: `Invoice ${data.invoice_number} sent`,
-          body: `Amount: €${data.total?.toFixed(2) ?? '0.00'}`,
-          actionUrl: '/client/invoices',
-        });
-      }
-
-      // Send email notification via Resend (fire-and-forget)
-      triggerInvoiceSentEmail({
-        invoiceId: data.id,
+    await applyStatusChange({
+      entity: 'invoice',
+      status,
+      ctx: {
+        entityId: id,
         clientId: data.client_id,
         invoiceNumber: data.invoice_number,
-        total: data.total ?? 0,
-        currency: data.currency ?? 'EUR',
+        total: data.total,
+        currency: data.currency,
         dueDate: data.due_date,
-      });
-    }
-
-    if (status === 'paid') {
-      const adminIds = await getAdminUserIds();
-      createNotificationForMany(adminIds, {
-        type: NOTIFICATION_TYPES.INVOICE_PAID,
-        title: `Invoice ${data.invoice_number} paid`,
-        body: `Amount: €${data.total?.toFixed(2) ?? '0.00'}`,
-        actionUrl: `/admin/invoices`,
-      });
-    }
+      },
+    });
 
     return { data, error: null };
   } catch (err: unknown) {
@@ -374,19 +342,45 @@ export async function bulkUpdateInvoiceStatus(
     } = await supabase.auth.getUser();
     if (!user) return { data: null, error: 'Unauthorized' };
 
-    let succeeded = 0;
-    let failed = 0;
+    const updateData: Record<string, unknown> = { status };
+    const nowIso = new Date().toISOString();
+    if (status === 'sent') updateData.sent_at = nowIso;
+    if (status === 'paid') updateData.paid_at = nowIso;
 
-    for (const id of ids) {
-      const result = await updateInvoiceStatus(id, status);
-      if (result.error) {
-        failed++;
-      } else {
-        succeeded++;
-      }
+    const { data, error } = await supabase
+      .from('invoices')
+      .update(updateData)
+      .in('id', ids)
+      .select('id, client_id, invoice_number, total, currency, due_date');
+
+    if (error) return { data: null, error: error.message };
+
+    const affected = data ?? [];
+    const { succeeded, failed } = countBulkOutcome(
+      ids,
+      affected.map((inv) => inv.id),
+    );
+
+    // Route each affected invoice through the orchestrator (Option A: side-effects
+    // preserved in aggregate, one fewer copy). Note: this also revalidates each
+    // invoice's detail path — a harmless cache-only superset vs. the old 3-path set.
+    // Tradeoff: on 'paid', the executor resolves admin IDs per invoice (one indexed
+    // query each) rather than once; accepted for the clean seam at admin-only bulk sizes.
+    for (const inv of affected) {
+      await applyStatusChange({
+        entity: 'invoice',
+        status,
+        ctx: {
+          entityId: inv.id,
+          clientId: inv.client_id,
+          invoiceNumber: inv.invoice_number,
+          total: inv.total,
+          currency: inv.currency,
+          dueDate: inv.due_date,
+        },
+      });
     }
 
-    revalidatePath('/admin/invoices');
     return { data: { succeeded, failed }, error: null };
   } catch (err: unknown) {
     return {
@@ -406,19 +400,33 @@ export async function bulkDeleteInvoices(
     } = await supabase.auth.getUser();
     if (!user) return { data: null, error: 'Unauthorized' };
 
-    let succeeded = 0;
-    let failed = 0;
+    // Fetch file_paths for Storage cleanup (one round-trip).
+    const { data: rows } = await supabase.from('invoices').select('id, file_path').in('id', ids);
 
-    for (const id of ids) {
-      const result = await deleteInvoice(id);
-      if (result.error) {
-        failed++;
-      } else {
-        succeeded++;
-      }
+    const filePaths = (rows ?? []).map((r) => r.file_path).filter((p): p is string => Boolean(p));
+    if (filePaths.length > 0) {
+      await supabase.storage.from('invoices').remove(filePaths);
     }
 
+    const { data: deleted, error } = await supabase
+      .from('invoices')
+      .delete()
+      .in('id', ids)
+      .select('id');
+
+    if (error) return { data: null, error: error.message };
+
+    const deletedIds = (deleted ?? []).map((r) => r.id);
+    const { succeeded, failed } = countBulkOutcome(ids, deletedIds);
+
     revalidatePath('/admin/invoices');
+    revalidatePath('/client/invoices');
+    revalidatePath('/client/dashboard');
+
+    for (const id of deletedIds) {
+      await syncEntityToGoogle({ entityType: 'invoice', entityId: id, operation: 'delete' });
+    }
+
     return { data: { succeeded, failed }, error: null };
   } catch (err: unknown) {
     return {
