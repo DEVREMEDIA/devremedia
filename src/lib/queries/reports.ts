@@ -2,7 +2,6 @@
 
 import { createClient } from '@/lib/supabase/server';
 import type { ProjectType, ExpenseCategory } from '@/lib/constants';
-import { REVENUE_STATUSES, bucketMonthlyFinance, sumFinance } from '@/lib/finance';
 
 export type DateRange = {
   from: string;
@@ -43,33 +42,12 @@ export type ExpenseCategoryBreakdown = {
 export async function getMonthlyRevenue(dateRange?: DateRange): Promise<MonthlyRevenue[]> {
   try {
     const supabase = await createClient();
-    let query = supabase
-      .from('invoices')
-      .select('total, status, issue_date, paid_at')
-      .in('status', [...REVENUE_STATUSES]);
-
-    if (dateRange) {
-      // An invoice contributes to Revenue (issue_date) and/or Collections (paid_at),
-      // so include any invoice issued OR paid within the range.
-      query = query.or(
-        `and(issue_date.gte.${dateRange.from},issue_date.lte.${dateRange.to}),` +
-          `and(paid_at.gte.${dateRange.from},paid_at.lte.${dateRange.to})`,
-      );
-    }
-
-    const { data, error } = await query;
-
+    const { data, error } = await supabase.rpc('get_monthly_revenue', {
+      p_from: dateRange?.from ?? null,
+      p_to: dateRange?.to ?? null,
+    });
     if (error || !data) return [];
-
-    const monthly = bucketMonthlyFinance(data);
-
-    if (!dateRange) return monthly;
-
-    // Drop months that fall outside the range (an invoice paid in-range but issued
-    // out-of-range, or vice versa, can produce a stray bucket).
-    const fromMonth = dateRange.from.substring(0, 7);
-    const toMonth = dateRange.to.substring(0, 7);
-    return monthly.filter((m) => m.month >= fromMonth && m.month <= toMonth);
+    return data as MonthlyRevenue[];
   } catch {
     return [];
   }
@@ -167,36 +145,12 @@ export async function getProfitMargin(
 ): Promise<{ revenue: number; expenses: number; profit: number; margin: number }> {
   try {
     const supabase = await createClient();
-
-    // Profit margin pairs accrual with accrual: Revenue (Τζίρος, issued by issue_date)
-    // against expenses of the same period.
-    let revenueQuery = supabase
-      .from('invoices')
-      .select('total, status, issue_date, paid_at')
-      .in('status', [...REVENUE_STATUSES]);
-
-    if (dateRange) {
-      revenueQuery = revenueQuery.gte('issue_date', dateRange.from).lte('issue_date', dateRange.to);
-    }
-
-    let expenseQuery = supabase.from('expenses').select('amount');
-
-    if (dateRange) {
-      expenseQuery = expenseQuery.gte('date', dateRange.from).lte('date', dateRange.to);
-    }
-
-    const [{ data: revenueData }, { data: expenseData }] = await Promise.all([
-      revenueQuery,
-      expenseQuery,
-    ]);
-
-    const { revenue } = sumFinance(revenueData ?? []);
-    const expenses = expenseData?.reduce((sum, exp) => sum + (exp.amount || 0), 0) || 0;
-
-    const profit = revenue - expenses;
-    const margin = revenue > 0 ? (profit / revenue) * 100 : 0;
-
-    return { revenue, expenses, profit, margin };
+    const { data, error } = await supabase.rpc('get_profit_margin', {
+      p_from: dateRange?.from ?? null,
+      p_to: dateRange?.to ?? null,
+    });
+    if (error || !data) return { revenue: 0, expenses: 0, profit: 0, margin: 0 };
+    return data as { revenue: number; expenses: number; profit: number; margin: number };
   } catch {
     return { revenue: 0, expenses: 0, profit: 0, margin: 0 };
   }
