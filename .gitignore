@@ -6,6 +6,9 @@
 # gitnexus (local code-graph index cache)
 .gitnexus/
 
+# sandcastle (AFK agent runner; contains pulled Vercel OIDC token)
+.sandcastle/
+
 # dependencies
 /node_modules
 /.pnp
