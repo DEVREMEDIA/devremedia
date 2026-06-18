@@ -32,6 +32,20 @@ export const PROJECT_STATUSES = [
 ] as const;
 export type ProjectStatus = (typeof PROJECT_STATUSES)[number];
 
+// The linear production pipeline shown as a progress timeline — PROJECT_STATUSES
+// minus the terminal 'archived' state. Single source for the client/employee
+// project timeline cards. `satisfies` guards against drift from PROJECT_STATUSES.
+export const PROJECT_STAGES = [
+  'briefing',
+  'pre_production',
+  'filming',
+  'editing',
+  'review',
+  'revisions',
+  'delivered',
+] as const satisfies readonly ProjectStatus[];
+export type ProjectStage = (typeof PROJECT_STAGES)[number];
+
 // Priority
 export const PRIORITIES = ['low', 'medium', 'high', 'urgent'] as const;
 export type Priority = (typeof PRIORITIES)[number];

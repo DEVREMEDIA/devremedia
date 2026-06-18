@@ -6,16 +6,7 @@ import { useTranslations } from 'next-intl';
 import { Badge } from '@/components/ui/badge';
 import { EmptyState } from '@/components/shared/empty-state';
 import { cn } from '@/lib/utils';
-
-const PROJECT_STAGES = [
-  'briefing',
-  'pre_production',
-  'filming',
-  'editing',
-  'review',
-  'revisions',
-  'delivered',
-] as const;
+import { PROJECT_STAGES } from '@/lib/constants';
 
 interface ProjectItem {
   id: string;

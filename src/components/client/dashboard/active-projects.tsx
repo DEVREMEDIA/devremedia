@@ -1,7 +1,7 @@
 'use client';
 
 import { Card } from '@/components/ui/card';
-import { PROJECT_TYPE_LABELS } from '@/lib/constants';
+import { PROJECT_TYPE_LABELS, PROJECT_STAGES } from '@/lib/constants';
 import { format } from 'date-fns';
 import { FolderKanban, ArrowRight, Calendar, Clapperboard } from 'lucide-react';
 import { useRouter } from 'next/navigation';
@@ -9,16 +9,6 @@ import { EmptyState } from '@/components/shared/empty-state';
 import { useTranslations } from 'next-intl';
 import { cn } from '@/lib/utils';
 import type { ProjectWithClient } from '@/types';
-
-const PROJECT_STAGES = [
-  'briefing',
-  'pre_production',
-  'filming',
-  'editing',
-  'review',
-  'revisions',
-  'delivered',
-] as const;
 
 interface ActiveProjectsProps {
   projects: ProjectWithClient[];

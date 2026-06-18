@@ -12,10 +12,6 @@ import type {
   ActivityLog,
   Lead,
   LeadActivity,
-  Expense,
-  EquipmentList,
-  ShotList,
-  ConceptNote,
   ChatConversation,
   ChatMessage,
 } from './entities';
@@ -93,62 +89,8 @@ export type ChatConversationWithMessages = ChatConversation & {
   messages: ChatMessage[];
 };
 
-export type CreateClientInput = Omit<Client, 'id' | 'created_at' | 'updated_at'>;
-
-export type UpdateClientInput = Partial<CreateClientInput>;
-
-export type CreateProjectInput = Omit<Project, 'id' | 'created_at' | 'updated_at' | 'created_by'>;
-
-export type UpdateProjectInput = Partial<CreateProjectInput>;
-
-export type CreateTaskInput = Omit<Task, 'id' | 'created_at'>;
-
-export type UpdateTaskInput = Partial<CreateTaskInput>;
-
-export type CreateDeliverableInput = Omit<
-  Deliverable,
-  'id' | 'created_at' | 'uploaded_by' | 'download_count'
->;
-
-export type CreateInvoiceInput = Omit<
-  Invoice,
-  'id' | 'created_at' | 'updated_at' | 'created_by' | 'sent_at' | 'viewed_at' | 'paid_at'
->;
-
-export type UpdateInvoiceInput = Partial<CreateInvoiceInput>;
-
-export type CreateExpenseInput = Omit<Expense, 'id' | 'created_at'>;
-
-export type UpdateExpenseInput = Partial<CreateExpenseInput>;
-
-export type CreateMessageInput = Omit<Message, 'id' | 'created_at' | 'sender_id' | 'read_by'>;
-
-export type CreateContractInput = Omit<
-  Contract,
-  'id' | 'created_at' | 'created_by' | 'sent_at' | 'viewed_at' | 'signed_at' | 'signature_data'
->;
-
-export type UpdateContractInput = Partial<CreateContractInput>;
-
-export type CreateFilmingRequestInput = Omit<
-  FilmingRequest,
-  'id' | 'created_at' | 'status' | 'admin_notes' | 'converted_project_id' | 'client_id'
->;
-
-export type CreateEquipmentListInput = Omit<
-  EquipmentList,
-  'id' | 'created_at' | 'updated_at' | 'created_by'
->;
-
-export type UpdateEquipmentListInput = Partial<CreateEquipmentListInput>;
-
-export type CreateShotListInput = Omit<ShotList, 'id' | 'created_at' | 'updated_at' | 'created_by'>;
-
-export type UpdateShotListInput = Partial<CreateShotListInput>;
-
-export type CreateConceptNoteInput = Omit<
-  ConceptNote,
-  'id' | 'created_at' | 'updated_at' | 'created_by'
->;
-
-export type UpdateConceptNoteInput = Partial<CreateConceptNoteInput>;
+// Create*/Update* input types are owned by the Zod schemas in src/lib/schemas/*
+// (z.infer of the create/update schemas). Server actions take `input: unknown`
+// and validate at the boundary with those schemas, so the hand-written Omit-based
+// duplicates that used to live here were unused and drifted — removed in #52.
+// This file holds relation/join types only.
