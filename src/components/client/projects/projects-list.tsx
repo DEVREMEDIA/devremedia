@@ -2,7 +2,7 @@
 
 import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { PROJECT_TYPE_LABELS } from '@/lib/constants';
+import { PROJECT_TYPE_LABELS, PROJECT_STAGES } from '@/lib/constants';
 import { format } from 'date-fns';
 import {
   FolderKanban,
@@ -19,16 +19,6 @@ import { EmptyState } from '@/components/shared/empty-state';
 import { useTranslations } from 'next-intl';
 import { cn } from '@/lib/utils';
 import type { Project, FilmingRequest } from '@/types';
-
-const PROJECT_STAGES = [
-  'briefing',
-  'pre_production',
-  'filming',
-  'editing',
-  'review',
-  'revisions',
-  'delivered',
-] as const;
 
 const BOOKING_STAGES = ['pending', 'reviewed', 'accepted'] as const;
 
