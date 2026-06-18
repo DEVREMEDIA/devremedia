@@ -6,6 +6,7 @@ import { createInvoiceSchema, updateInvoiceSchema, type LineItem } from '@/lib/s
 import type { ActionResult, Invoice, InvoiceWithRelations } from '@/types/index';
 import type { InvoiceStatus } from '@/lib/constants';
 import { revalidatePath } from 'next/cache';
+import { buildInvoiceStatusPayload } from '@/lib/invoice-status-payload';
 import { syncEntityToGoogle } from '@/lib/google-sync-helper';
 import { countBulkOutcome } from '@/lib/bulk-result';
 import { getGoogleColorId } from '@/lib/google-calendar';
@@ -231,26 +232,20 @@ export async function updateInvoice(
 export async function updateInvoiceStatus(
   id: string,
   status: InvoiceStatus,
+  paymentMethod?: string,
 ): Promise<ActionResult<Invoice>> {
   try {
     const { supabase, error: authError } = await requireUser();
     if (authError) return { data: null, error: authError };
 
-    const updateData: Record<string, unknown> = { status };
-
-    if (status === 'sent' && !updateData.sent_at) {
-      updateData.sent_at = new Date().toISOString();
-    }
-    if (status === 'paid' && !updateData.paid_at) {
-      updateData.paid_at = new Date().toISOString();
-    }
+    const updateData = buildInvoiceStatusPayload(status, { paymentMethod });
 
     const { data, error } = await supabase
       .from('invoices')
       .update(updateData)
       .eq('id', id)
       .select(
-        'id, project_id, client_id, invoice_number, issue_date, due_date, status, subtotal, tax_amount, total, currency, line_items, notes, tax_rate, sent_at, viewed_at, paid_at, file_path, created_by, created_at, updated_at',
+        'id, project_id, client_id, invoice_number, issue_date, due_date, status, subtotal, tax_amount, total, currency, line_items, notes, tax_rate, sent_at, viewed_at, paid_at, payment_method, file_path, created_by, created_at, updated_at',
       )
       .single();
 

@@ -59,7 +59,7 @@ export function PaymentActions({ invoice, onStatusChange }: PaymentActionsProps)
 
   const handleRecordPayment = async () => {
     setIsUpdating(true);
-    const result = await updateInvoiceStatus(invoice.id, 'paid');
+    const result = await updateInvoiceStatus(invoice.id, 'paid', paymentMethod);
     setIsUpdating(false);
 
     if (result.error) {
