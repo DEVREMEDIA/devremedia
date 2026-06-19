@@ -205,6 +205,7 @@ export function DeliverablesTab({ deliverables }: DeliverablesTabProps) {
             setIsAnnotationDialogOpen(true);
           }}
           onAnnotationCreated={fetchAnnotations}
+          onReplyAdded={fetchAnnotations}
         />
         <DeliverableReviewDialog
           open={reviewDialogOpen}

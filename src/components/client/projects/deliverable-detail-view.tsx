@@ -55,6 +55,7 @@ interface DeliverableDetailViewProps {
   onAnnotationDialogOpenChange: (open: boolean) => void;
   onAddAnnotationClick: () => void;
   onAnnotationCreated: () => void;
+  onReplyAdded: () => void;
 }
 
 export function DeliverableDetailView({
@@ -73,6 +74,7 @@ export function DeliverableDetailView({
   onAnnotationDialogOpenChange,
   onAddAnnotationClick,
   onAnnotationCreated,
+  onReplyAdded,
 }: DeliverableDetailViewProps) {
   const resolvedVideoSrc = videoUrl ?? deliverable.file_url;
 
@@ -166,6 +168,7 @@ export function DeliverableDetailView({
                   onTimeClick(annotation.timestamp_seconds);
                 }
               }}
+              onReplyAdded={onReplyAdded}
             />
           )}
         </div>
