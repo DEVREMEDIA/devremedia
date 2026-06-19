@@ -237,18 +237,34 @@ export async function updateDeliverableStatus(
 
 export async function deleteDeliverable(id: string): Promise<ActionResult<void>> {
   try {
-    const { supabase, error: authError } = await requireUser();
+    const { supabase, user, error: authError } = await requireUser();
     if (authError) return { data: null, error: authError };
 
+    // Snapshot the deliverable before deletion so the audit trail records what was
+    // removed (the underlying Drive/YouTube/Vimeo video itself is never touched).
     const { data: deliverable } = await supabase
       .from('deliverables')
-      .select('project_id')
+      .select('project_id, title, file_path, version')
       .eq('id', id)
       .single();
 
     const { error } = await supabase.from('deliverables').delete().eq('id', id);
 
     if (error) return { data: null, error: error.message };
+
+    // Best-effort audit entry — surfaces in the admin recent-activity feed.
+    await supabase.rpc('log_activity', {
+      p_user_id: user.id,
+      p_action: 'deleted',
+      p_entity_type: 'deliverable',
+      p_entity_id: id,
+      p_metadata: {
+        title: deliverable?.title ?? null,
+        file_path: deliverable?.file_path ?? null,
+        version: deliverable?.version ?? null,
+        project_id: deliverable?.project_id ?? null,
+      },
+    });
 
     if (deliverable?.project_id) {
       revalidatePath(`/admin/projects/${deliverable.project_id}`);
