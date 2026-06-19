@@ -11,7 +11,7 @@ vi.mock('@/lib/actions/notifications', () => ({
 }));
 
 import { createClient } from '@/lib/supabase/server';
-import { requestRevisionWithNote } from './deliverables';
+import { requestRevisionWithNote, addAnnotationReply } from './deliverables';
 
 const mockCreateClient = vi.mocked(createClient);
 
@@ -74,11 +74,9 @@ function makeSupabaseWithResponses(responses: Record<string, unknown>) {
         };
       }
       return {
-        select: vi
-          .fn()
-          .mockReturnValue({
-            eq: vi.fn().mockReturnValue({ single: vi.fn().mockResolvedValue({ data: null }) }),
-          }),
+        select: vi.fn().mockReturnValue({
+          eq: vi.fn().mockReturnValue({ single: vi.fn().mockResolvedValue({ data: null }) }),
+        }),
       };
     }),
   };
@@ -153,5 +151,82 @@ describe('requestRevisionWithNote', () => {
 
     const result = await requestRevisionWithNote(DELIVERABLE_ID, 'Change something');
     expect(result.error).toBe('DB error');
+  });
+});
+
+const ANNOTATION_ID = '123e4567-e89b-42d3-a456-426614174002';
+
+describe('addAnnotationReply', () => {
+  it('returns error immediately when content is empty', async () => {
+    const result = await addAnnotationReply(ANNOTATION_ID, '', DELIVERABLE_ID);
+    expect(result.error).toBe('Reply content is required');
+    expect(result.data).toBeNull();
+  });
+
+  it('returns error immediately when content is only whitespace', async () => {
+    const result = await addAnnotationReply(ANNOTATION_ID, '   ', DELIVERABLE_ID);
+    expect(result.error).toBe('Reply content is required');
+    expect(result.data).toBeNull();
+  });
+
+  it('returns Unauthorized when not logged in', async () => {
+    mockCreateClient.mockResolvedValue({
+      auth: { getUser: vi.fn().mockResolvedValue({ data: { user: null } }) },
+    } as never);
+
+    const result = await addAnnotationReply(ANNOTATION_ID, 'Looks good', DELIVERABLE_ID);
+    expect(result.error).toBe('Unauthorized');
+  });
+
+  it('inserts reply with correct parent_id, deliverable_id and null timestamp', async () => {
+    const insertMock = vi.fn().mockReturnValue({
+      select: vi.fn().mockReturnValue({
+        single: vi.fn().mockResolvedValue({
+          data: {
+            id: 'reply-1',
+            deliverable_id: DELIVERABLE_ID,
+            user_id: USER_ID,
+            parent_id: ANNOTATION_ID,
+            timestamp_seconds: null,
+            content: 'Looks good now',
+            resolved: false,
+            created_at: '2026-01-01T00:00:00Z',
+          },
+          error: null,
+        }),
+      }),
+    });
+
+    const supabase = {
+      auth: {
+        getUser: vi.fn().mockResolvedValue({ data: { user: { id: USER_ID } } }),
+      },
+      from: vi.fn((table: string) => {
+        if (table === 'video_annotations') {
+          return { insert: insertMock };
+        }
+        return {
+          select: vi.fn().mockReturnValue({
+            eq: vi.fn().mockReturnValue({ single: vi.fn().mockResolvedValue({ data: null }) }),
+          }),
+        };
+      }),
+    };
+
+    mockCreateClient.mockResolvedValue(supabase as never);
+
+    const result = await addAnnotationReply(ANNOTATION_ID, 'Looks good now', DELIVERABLE_ID);
+
+    expect(result.error).toBeNull();
+    expect(result.data).not.toBeNull();
+    expect(result.data?.parent_id).toBe(ANNOTATION_ID);
+    expect(result.data?.timestamp_seconds).toBeNull();
+
+    const insertPayload = insertMock.mock.calls[0][0];
+    expect(insertPayload.parent_id).toBe(ANNOTATION_ID);
+    expect(insertPayload.deliverable_id).toBe(DELIVERABLE_ID);
+    expect(insertPayload.timestamp_seconds).toBeNull();
+    expect(insertPayload.content).toBe('Looks good now');
+    expect(insertPayload.user_id).toBe(USER_ID);
   });
 });

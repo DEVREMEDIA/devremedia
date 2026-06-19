@@ -206,6 +206,7 @@ export type VideoAnnotation = {
   id: string;
   deliverable_id: string;
   user_id: string;
+  parent_id?: string | null;
   timestamp_seconds: number | null;
   content: string;
   resolved: boolean;

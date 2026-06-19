@@ -217,6 +217,7 @@ export function DeliverableDetail({ deliverable, projectId, onBack }: Deliverabl
                 annotations={annotations}
                 onAnnotationClick={handleAnnotationClick}
                 onResolve={handleResolve}
+                onReplyAdded={fetchAnnotations}
               />
             )}
           </div>
