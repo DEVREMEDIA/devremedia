@@ -31,11 +31,7 @@ export function EmployeeDeliverables({
         />
       </div>
 
-      <DeliverableList
-        deliverables={deliverables}
-        canDelete={false}
-        onRefresh={() => router.refresh()}
-      />
+      <DeliverableList deliverables={deliverables} onRefresh={() => router.refresh()} />
     </div>
   );
 }

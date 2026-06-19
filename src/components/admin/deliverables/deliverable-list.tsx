@@ -41,8 +41,6 @@ interface DeliverableListProps {
   deliverables: Deliverable[];
   onSelect?: (deliverable: Deliverable) => void;
   onRefresh?: () => void;
-  /** Show the delete action. Admins delete; employees get edit + preview only. */
-  canDelete?: boolean;
 }
 
 const STATUS_COLOR: Record<string, string> = {
@@ -52,11 +50,7 @@ const STATUS_COLOR: Record<string, string> = {
   final: 'bg-blue-500/10 text-blue-700 dark:text-blue-400 border-blue-500/20',
 };
 
-export function DeliverableList({
-  deliverables,
-  onRefresh,
-  canDelete = true,
-}: DeliverableListProps) {
+export function DeliverableList({ deliverables, onRefresh }: DeliverableListProps) {
   const t = useTranslations('deliverables');
   const [deleteId, setDeleteId] = useState<string | null>(null);
   const [isDeleting, setIsDeleting] = useState(false);
@@ -162,16 +156,14 @@ export function DeliverableList({
                 >
                   <Pencil className="h-4 w-4" />
                 </Button>
-                {canDelete && (
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    className="text-muted-foreground hover:text-destructive"
-                    onClick={() => setDeleteId(deliverable.id)}
-                  >
-                    <Trash2 className="h-4 w-4" />
-                  </Button>
-                )}
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="text-muted-foreground hover:text-destructive"
+                  onClick={() => setDeleteId(deliverable.id)}
+                >
+                  <Trash2 className="h-4 w-4" />
+                </Button>
               </div>
             </div>
 
