@@ -65,16 +65,26 @@ export async function deliverInvitation({
     },
   });
 
-  if (error || !linkData?.properties?.action_link) {
+  if (error || !linkData?.properties?.hashed_token) {
     if (error?.message.toLowerCase().includes('rate limit')) {
       return { ok: false, error: rateLimitMessage(locale) };
     }
     return { ok: false, error: error?.message ?? 'Failed to generate invitation link' };
   }
 
+  // Build a self-contained token_hash link straight to `/auth/confirm` (ADR-0003). We must
+  // NOT email Supabase's hosted `action_link`: it routes through `/auth/v1/verify` and lands
+  // on `/auth/confirm` with a PKCE `?code=` that cannot be exchanged — the invite is
+  // server-initiated, so the invitee's browser has no `code_verifier` cookie — making every
+  // link read as "expired". The confirm route verifies the `token_hash` OTP directly instead.
+  const confirmUrl = new URL('/auth/confirm', APP_URL);
+  confirmUrl.searchParams.set('token_hash', linkData.properties.hashed_token);
+  confirmUrl.searchParams.set('type', 'invite');
+  confirmUrl.searchParams.set('next', CONFIRMATION_ROUTE);
+
   const emailResult = await sendInviteEmail({
     to: email,
-    inviteLink: linkData.properties.action_link,
+    inviteLink: confirmUrl.toString(),
     locale,
   });
 
