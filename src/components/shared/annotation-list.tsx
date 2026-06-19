@@ -1,15 +1,21 @@
 'use client';
 
 import { Badge } from '@/components/ui/badge';
-import { CheckCircle2, Circle, Clock } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { Textarea } from '@/components/ui/textarea';
+import { CheckCircle2, Circle, Clock, MessageSquare, Send } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useTranslations } from 'next-intl';
+import { useState } from 'react';
+import { addAnnotationReply } from '@/lib/actions/deliverables';
+import { toast } from 'sonner';
 import type { VideoAnnotation } from '@/types';
 
 type AnnotationListProps = {
   annotations: VideoAnnotation[];
   onAnnotationClick: (annotation: VideoAnnotation) => void;
   onResolve: (id: string) => void;
+  onReplyAdded?: () => void;
 };
 
 const formatTimestamp = (seconds: number) => {
@@ -18,17 +24,140 @@ const formatTimestamp = (seconds: number) => {
   return `${mins}:${secs.toString().padStart(2, '0')}`;
 };
 
-export function AnnotationList({ annotations, onAnnotationClick, onResolve }: AnnotationListProps) {
+const formatDate = (iso: string) => {
+  const d = new Date(iso);
+  return d.toLocaleDateString(undefined, {
+    month: 'short',
+    day: 'numeric',
+    hour: '2-digit',
+    minute: '2-digit',
+  });
+};
+
+function ReplyThread({
+  annotation,
+  replies,
+  onReplyAdded,
+}: {
+  annotation: VideoAnnotation;
+  replies: VideoAnnotation[];
+  onReplyAdded?: () => void;
+}) {
   const t = useTranslations('deliverables');
-  const sortedAnnotations = [...annotations].sort((a, b) => {
-    // General notes (null timestamp) go first, then by created_at
+  const [showReplyInput, setShowReplyInput] = useState(false);
+  const [replyContent, setReplyContent] = useState('');
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
+  const handleSubmitReply = async () => {
+    if (!replyContent.trim()) return;
+    if (!annotation.deliverable_id) return;
+
+    setIsSubmitting(true);
+    try {
+      const result = await addAnnotationReply(
+        annotation.id,
+        replyContent.trim(),
+        annotation.deliverable_id,
+      );
+      if (result.error) {
+        toast.error(result.error);
+      } else {
+        setReplyContent('');
+        setShowReplyInput(false);
+        onReplyAdded?.();
+      }
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  return (
+    <div className="space-y-2">
+      {replies.map((reply) => (
+        <div key={reply.id} className="ml-8 pl-3 border-l-2 border-muted space-y-1">
+          <div className="flex items-center gap-2 flex-wrap">
+            {reply.author_name ? (
+              <span className="text-xs font-medium">{reply.author_name}</span>
+            ) : null}
+            <span className="text-xs text-muted-foreground">{formatDate(reply.created_at)}</span>
+          </div>
+          <p className="text-sm">{reply.content}</p>
+        </div>
+      ))}
+
+      {!annotation.resolved && (
+        <div className="ml-8">
+          {showReplyInput ? (
+            <div className="space-y-2">
+              <Textarea
+                value={replyContent}
+                onChange={(e) => setReplyContent(e.target.value)}
+                placeholder={t('replyPlaceholder')}
+                rows={2}
+                disabled={isSubmitting}
+                className="text-sm"
+              />
+              <div className="flex items-center gap-2">
+                <Button
+                  size="sm"
+                  onClick={handleSubmitReply}
+                  disabled={isSubmitting || !replyContent.trim()}
+                >
+                  <Send className="h-3 w-3 mr-1" />
+                  {t('sendReply')}
+                </Button>
+                <Button
+                  size="sm"
+                  variant="ghost"
+                  onClick={() => {
+                    setShowReplyInput(false);
+                    setReplyContent('');
+                  }}
+                  disabled={isSubmitting}
+                >
+                  {t('cancel')}
+                </Button>
+              </div>
+            </div>
+          ) : (
+            <button
+              onClick={() => setShowReplyInput(true)}
+              className="flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground transition-colors"
+            >
+              <MessageSquare className="h-3 w-3" />
+              {t('reply')}
+            </button>
+          )}
+        </div>
+      )}
+    </div>
+  );
+}
+
+export function AnnotationList({
+  annotations,
+  onAnnotationClick,
+  onResolve,
+  onReplyAdded,
+}: AnnotationListProps) {
+  const t = useTranslations('deliverables');
+
+  const topLevel = annotations.filter((a) => !a.parent_id);
+  const repliesByParent = annotations.reduce<Record<string, VideoAnnotation[]>>((acc, a) => {
+    if (!a.parent_id) return acc;
+    if (!acc[a.parent_id]) acc[a.parent_id] = [];
+    acc[a.parent_id].push(a);
+    return acc;
+  }, {});
+
+  const sortedTopLevel = [...topLevel].sort((a, b) => {
     if (a.timestamp_seconds === null && b.timestamp_seconds === null) return 0;
     if (a.timestamp_seconds === null) return -1;
     if (b.timestamp_seconds === null) return 1;
     return a.timestamp_seconds - b.timestamp_seconds;
   });
 
-  if (annotations.length === 0) {
+  if (topLevel.length === 0) {
     return (
       <div className="rounded-lg border border-dashed p-8">
         <div className="flex flex-col items-center justify-center text-center space-y-2">
@@ -44,14 +173,14 @@ export function AnnotationList({ annotations, onAnnotationClick, onResolve }: An
 
   return (
     <div className="space-y-3">
-      {sortedAnnotations.map((annotation) => (
+      {sortedTopLevel.map((annotation) => (
         <div
           key={annotation.id}
           className={cn(
             'rounded-lg border p-4 space-y-3 transition-colors',
             annotation.resolved
               ? 'bg-muted/30 opacity-75'
-              : 'bg-card hover:bg-accent cursor-pointer',
+              : 'bg-card hover:bg-accent/50 cursor-pointer',
           )}
           onClick={() => !annotation.resolved && onAnnotationClick(annotation)}
         >
@@ -100,6 +229,15 @@ export function AnnotationList({ annotations, onAnnotationClick, onResolve }: An
                 </p>
               </div>
             </div>
+          </div>
+
+          {/* Threaded replies */}
+          <div onClick={(e) => e.stopPropagation()}>
+            <ReplyThread
+              annotation={annotation}
+              replies={repliesByParent[annotation.id] ?? []}
+              onReplyAdded={onReplyAdded}
+            />
           </div>
         </div>
       ))}

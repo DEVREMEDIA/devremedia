@@ -300,7 +300,7 @@ export async function getAnnotations(
     const { data, error } = await supabase
       .from('video_annotations')
       .select(
-        'id, deliverable_id, user_id, timestamp_seconds, content, resolved, created_at, user_profiles(display_name, avatar_url)',
+        'id, deliverable_id, user_id, parent_id, timestamp_seconds, content, resolved, created_at, user_profiles(display_name, avatar_url)',
       )
       .eq('deliverable_id', deliverableId)
       .order('created_at', { ascending: true });
@@ -313,6 +313,7 @@ export async function getAnnotations(
         id: row.id,
         deliverable_id: row.deliverable_id,
         user_id: row.user_id,
+        parent_id: row.parent_id ?? null,
         timestamp_seconds: row.timestamp_seconds,
         content: row.content,
         resolved: row.resolved,
@@ -421,14 +422,12 @@ export async function requestRevisionWithNote(
     const { supabase, user, error: authError } = await requireUser();
     if (authError) return { data: null, error: authError };
 
-    const { error: annotationError } = await supabase
-      .from('video_annotations')
-      .insert({
-        deliverable_id: deliverableId,
-        timestamp_seconds: null,
-        content: note.trim(),
-        user_id: user.id,
-      });
+    const { error: annotationError } = await supabase.from('video_annotations').insert({
+      deliverable_id: deliverableId,
+      timestamp_seconds: null,
+      content: note.trim(),
+      user_id: user.id,
+    });
 
     if (annotationError) return { data: null, error: annotationError.message };
 
@@ -476,6 +475,55 @@ export async function requestRevisionWithNote(
     return {
       data: null,
       error: err instanceof Error ? err.message : 'Failed to request revision',
+    };
+  }
+}
+
+export async function addAnnotationReply(
+  parentId: string,
+  content: string,
+  deliverableId: string,
+): Promise<ActionResult<VideoAnnotation>> {
+  if (!content.trim()) {
+    return { data: null, error: 'Reply content is required' };
+  }
+
+  try {
+    const { supabase, user, error: authError } = await requireUser();
+    if (authError) return { data: null, error: authError };
+
+    const { data, error } = await supabase
+      .from('video_annotations')
+      .insert({
+        parent_id: parentId,
+        deliverable_id: deliverableId,
+        timestamp_seconds: null,
+        content: content.trim(),
+        user_id: user.id,
+      })
+      .select(
+        'id, deliverable_id, user_id, parent_id, timestamp_seconds, content, resolved, created_at',
+      )
+      .single();
+
+    if (error) return { data: null, error: error.message };
+
+    revalidatePath(`/admin/deliverables/${deliverableId}`);
+    const { data: deliverable } = await supabase
+      .from('deliverables')
+      .select('project_id')
+      .eq('id', deliverableId)
+      .single();
+    if (deliverable?.project_id) {
+      revalidatePath(`/client/projects/${deliverable.project_id}`);
+      revalidatePath(`/employee/deliverables/${deliverable.project_id}`);
+    }
+
+    return { data, error: null };
+  } catch (err: unknown) {
+    return {
+      data: null,
+      error: err instanceof Error ? err.message : 'Failed to add reply',
     };
   }
 }
