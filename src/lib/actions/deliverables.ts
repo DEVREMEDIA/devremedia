@@ -299,12 +299,30 @@ export async function getAnnotations(
 
     const { data, error } = await supabase
       .from('video_annotations')
-      .select('id, deliverable_id, user_id, timestamp_seconds, content, resolved, created_at')
+      .select(
+        'id, deliverable_id, user_id, timestamp_seconds, content, resolved, created_at, user_profiles(display_name, avatar_url)',
+      )
       .eq('deliverable_id', deliverableId)
-      .order('timestamp_seconds', { ascending: true });
+      .order('created_at', { ascending: true });
 
     if (error) return { data: null, error: error.message };
-    return { data, error: null };
+
+    const annotations: VideoAnnotation[] = (data ?? []).map((row) => {
+      const profile = Array.isArray(row.user_profiles) ? row.user_profiles[0] : row.user_profiles;
+      return {
+        id: row.id,
+        deliverable_id: row.deliverable_id,
+        user_id: row.user_id,
+        timestamp_seconds: row.timestamp_seconds,
+        content: row.content,
+        resolved: row.resolved,
+        created_at: row.created_at,
+        author_name: profile?.display_name ?? null,
+        author_avatar_url: profile?.avatar_url ?? null,
+      };
+    });
+
+    return { data: annotations, error: null };
   } catch (err: unknown) {
     return {
       data: null,
@@ -387,6 +405,77 @@ export async function resolveAnnotation(id: string): Promise<ActionResult<VideoA
     return {
       data: null,
       error: err instanceof Error ? err.message : 'Failed to resolve annotation',
+    };
+  }
+}
+
+export async function requestRevisionWithNote(
+  deliverableId: string,
+  note: string,
+): Promise<ActionResult<Deliverable>> {
+  if (!note.trim()) {
+    return { data: null, error: 'Revision note is required' };
+  }
+
+  try {
+    const { supabase, user, error: authError } = await requireUser();
+    if (authError) return { data: null, error: authError };
+
+    const { error: annotationError } = await supabase
+      .from('video_annotations')
+      .insert({
+        deliverable_id: deliverableId,
+        timestamp_seconds: null,
+        content: note.trim(),
+        user_id: user.id,
+      });
+
+    if (annotationError) return { data: null, error: annotationError.message };
+
+    const { data, error } = await supabase
+      .from('deliverables')
+      .update({ status: 'revision_requested' })
+      .eq('id', deliverableId)
+      .select(
+        'id, project_id, title, description, file_path, file_size, file_type, version, status, uploaded_by, download_count, expires_at, created_at',
+      )
+      .single();
+
+    if (error) return { data: null, error: error.message };
+
+    let actorRole: string | undefined;
+    if (data.project_id) {
+      const { data: profile } = await supabase
+        .from('user_profiles')
+        .select('role')
+        .eq('id', user.id)
+        .single();
+      actorRole = profile?.role;
+    }
+
+    await applyStatusChange({
+      entity: 'deliverable',
+      status: 'revision_requested',
+      ctx: {
+        entityId: data.id,
+        title: data.title,
+        projectId: data.project_id,
+        actorId: user.id,
+        actorRole,
+        uploadedBy: data.uploaded_by,
+      },
+    });
+
+    revalidatePath(`/admin/projects/${data.project_id}`);
+    revalidatePath(`/client/projects/${data.project_id}`);
+    revalidatePath(`/admin/deliverables/${deliverableId}`);
+    revalidatePath(`/employee/deliverables/${data.project_id}`);
+
+    return { data, error: null };
+  } catch (err: unknown) {
+    return {
+      data: null,
+      error: err instanceof Error ? err.message : 'Failed to request revision',
     };
   }
 }

@@ -13,7 +13,7 @@ import {
 } from '@/components/ui/dialog';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
-import { updateDeliverableStatus } from '@/lib/actions/deliverables';
+import { updateDeliverableStatus, requestRevisionWithNote } from '@/lib/actions/deliverables';
 import { DELIVERABLE_STATUS_LABELS } from '@/lib/constants';
 import type { DeliverableStatus } from '@/lib/constants';
 import { toast } from 'sonner';
@@ -92,7 +92,7 @@ export function ApprovalActions({ deliverable, onStatusChange }: ApprovalActions
     setIsSubmitting(true);
 
     try {
-      const result = await updateDeliverableStatus(deliverable.id, 'revision_requested');
+      const result = await requestRevisionWithNote(deliverable.id, revisionComment);
 
       if (result.error) {
         throw new Error(result.error);

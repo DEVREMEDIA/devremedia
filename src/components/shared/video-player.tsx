@@ -123,7 +123,7 @@ export function VideoPlayer({
   const handleAnnotationMarkerClick = (annotation: VideoAnnotation, e: React.MouseEvent) => {
     e.stopPropagation();
     const video = videoRef.current;
-    if (video) {
+    if (video && annotation.timestamp_seconds !== null) {
       video.currentTime = annotation.timestamp_seconds;
       setCurrentTime(annotation.timestamp_seconds);
     }
@@ -151,21 +151,23 @@ export function VideoPlayer({
                   <div className="absolute right-0 top-1/2 -translate-y-1/2 w-3 h-3 bg-primary rounded-full" />
                 </div>
 
-                {/* Annotation Markers */}
-                {annotations.map((annotation) => (
-                  <button
-                    key={annotation.id}
-                    className={cn(
-                      'absolute top-1/2 -translate-y-1/2 w-2 h-2 rounded-full transition-all hover:scale-150',
-                      annotation.resolved ? 'bg-green-500' : 'bg-yellow-500',
-                    )}
-                    style={{
-                      left: `${(annotation.timestamp_seconds / duration) * 100}%`,
-                    }}
-                    onClick={(e) => handleAnnotationMarkerClick(annotation, e)}
-                    title={annotation.content}
-                  />
-                ))}
+                {/* Annotation Markers — only for timestamped annotations */}
+                {annotations
+                  .filter((a) => a.timestamp_seconds !== null)
+                  .map((annotation) => (
+                    <button
+                      key={annotation.id}
+                      className={cn(
+                        'absolute top-1/2 -translate-y-1/2 w-2 h-2 rounded-full transition-all hover:scale-150',
+                        annotation.resolved ? 'bg-green-500' : 'bg-yellow-500',
+                      )}
+                      style={{
+                        left: `${((annotation.timestamp_seconds as number) / duration) * 100}%`,
+                      }}
+                      onClick={(e) => handleAnnotationMarkerClick(annotation, e)}
+                      title={annotation.content}
+                    />
+                  ))}
               </div>
             </div>
 
