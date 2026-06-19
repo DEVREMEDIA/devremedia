@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import { VideoUpload } from '@/components/admin/deliverables/video-upload';
 import { DeliverableList } from '@/components/admin/deliverables/deliverable-list';
+import { DeliverableDetail } from '@/components/admin/deliverables/deliverable-detail';
 import { getDeliverablesByProject } from '@/lib/actions/deliverables';
 import { Loader2 } from 'lucide-react';
 import { useTranslations } from 'next-intl';
@@ -17,6 +18,7 @@ interface DeliverablesTabProps {
 export function DeliverablesTab({ projectId, clientName, projectName }: DeliverablesTabProps) {
   const t = useTranslations('deliverables');
   const [deliverables, setDeliverables] = useState<Deliverable[]>([]);
+  const [selectedDeliverable, setSelectedDeliverable] = useState<Deliverable | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [refreshCounter, setRefreshCounter] = useState(0);
@@ -63,6 +65,19 @@ export function DeliverablesTab({ projectId, clientName, projectName }: Delivera
     );
   }
 
+  if (selectedDeliverable) {
+    return (
+      <DeliverableDetail
+        deliverable={selectedDeliverable}
+        projectId={projectId}
+        onBack={() => {
+          setSelectedDeliverable(null);
+          handleRefresh();
+        }}
+      />
+    );
+  }
+
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
@@ -74,7 +89,11 @@ export function DeliverablesTab({ projectId, clientName, projectName }: Delivera
           projectName={projectName}
         />
       </div>
-      <DeliverableList deliverables={deliverables} onSelect={() => {}} onRefresh={handleRefresh} />
+      <DeliverableList
+        deliverables={deliverables}
+        onSelect={setSelectedDeliverable}
+        onRefresh={handleRefresh}
+      />
     </div>
   );
 }

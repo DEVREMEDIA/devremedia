@@ -3,7 +3,6 @@
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { DELIVERABLE_STATUS_LABELS } from '@/lib/constants';
-import type { DeliverableStatus } from '@/lib/constants';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import {
@@ -13,29 +12,14 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog';
-import { ExternalLink, FileVideo, Calendar, Trash2, Pencil } from 'lucide-react';
+import { ExternalLink, FileVideo, Calendar, Trash2, Pencil, MessageSquare } from 'lucide-react';
 import { format } from 'date-fns';
 import { useTranslations } from 'next-intl';
 import { deleteDeliverable, updateDeliverable } from '@/lib/actions/deliverables';
 import { toast } from 'sonner';
 import { useState } from 'react';
 import { ConfirmDialog } from '@/components/shared/confirm-dialog';
-
-interface Deliverable {
-  id: string;
-  project_id: string;
-  title: string;
-  description: string | null;
-  file_path: string;
-  file_size: number | null;
-  file_type: string | null;
-  version: number;
-  status: DeliverableStatus;
-  download_count: number;
-  expires_at: string | null;
-  uploaded_by: string | null;
-  created_at: string;
-}
+import type { Deliverable } from '@/types';
 
 interface DeliverableListProps {
   deliverables: Deliverable[];
@@ -50,7 +34,7 @@ const STATUS_COLOR: Record<string, string> = {
   final: 'bg-blue-500/10 text-blue-700 dark:text-blue-400 border-blue-500/20',
 };
 
-export function DeliverableList({ deliverables, onRefresh }: DeliverableListProps) {
+export function DeliverableList({ deliverables, onSelect, onRefresh }: DeliverableListProps) {
   const t = useTranslations('deliverables');
   const [deleteId, setDeleteId] = useState<string | null>(null);
   const [isDeleting, setIsDeleting] = useState(false);
@@ -148,6 +132,12 @@ export function DeliverableList({ deliverables, onRefresh }: DeliverableListProp
                 )}
               </div>
               <div className="flex items-center gap-1 shrink-0">
+                {onSelect && (
+                  <Button variant="outline" size="sm" onClick={() => onSelect(deliverable)}>
+                    <MessageSquare className="h-3.5 w-3.5 mr-1.5" />
+                    {t('review')}
+                  </Button>
+                )}
                 <Button
                   variant="ghost"
                   size="icon"
