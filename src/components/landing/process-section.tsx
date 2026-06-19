@@ -7,7 +7,11 @@ export async function ProcessSection() {
   const steps = [1, 2, 3, 4] as const;
 
   return (
-    <section id="process" className="relative py-24 sm:py-32 md:py-40" aria-labelledby="process-heading">
+    <section
+      id="process"
+      className="relative py-24 sm:py-32 md:py-40"
+      aria-labelledby="process-heading"
+    >
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         <ScrollReveal>
           <div className="text-center mb-14 sm:mb-20">
@@ -29,6 +33,7 @@ export async function ProcessSection() {
         <div className="relative">
           {/* Connecting gold line (desktop only) */}
           <div
+            data-process-line
             className="hidden lg:block absolute top-5 left-[12.5%] right-[12.5%] h-px bg-gradient-to-r from-gold-500/20 via-gold-500/30 to-gold-500/20 z-0"
             aria-hidden="true"
           />

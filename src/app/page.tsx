@@ -1,6 +1,5 @@
 import { getTranslations } from 'next-intl/server';
 import {
-  CinematicBackground,
   LandingNav,
   HeroSection,
   BrandsStrip,
@@ -18,15 +17,21 @@ import {
   CtaSection,
   LandingFooter,
 } from '@/components/landing';
+import { AtmosphereCanvas, Preloader, LandingExperience } from '@/components/landing/experience';
 import { ChatWidgetLazy } from '@/components/shared/chatbot/chat-widget-lazy';
-import { ScrollRevealInit } from '@/components/shared/scroll-reveal-init';
 
 export default async function LandingPage() {
   const t = await getTranslations('landing');
 
   return (
     <>
-      <CinematicBackground />
+      {/* Static dark backdrop — rendered server-side so the page is never light-flashed */}
+      <div className="fixed inset-0 z-0 bg-[#09090b]" aria-hidden="true" />
+      {/* L5 gold-dust atmosphere (desktop + motion only; replaces the particle network) */}
+      <AtmosphereCanvas />
+      {/* Cinematic preloader (skipped for no-JS / reduced-motion / repeat visits) */}
+      <Preloader />
+
       <div className="relative z-[1] min-h-screen text-white selection:bg-gold-500/30 selection:text-white overflow-x-hidden">
         {/* Skip to content link for keyboard/screen reader users */}
         <a
@@ -58,7 +63,7 @@ export default async function LandingPage() {
         <LandingFooter />
 
         <ChatWidgetLazy />
-        <ScrollRevealInit />
+        <LandingExperience />
       </div>
     </>
   );

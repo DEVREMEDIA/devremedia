@@ -3,6 +3,7 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { ArrowRight, ChevronDown } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { HeroCanvas } from '@/components/landing/experience/hero-canvas';
 
 export async function HeroSection() {
   const t = await getTranslations('landing');
@@ -23,6 +24,9 @@ export async function HeroSection() {
           priority
         />
       </div>
+
+      {/* WebGL film-emulsion treatment over the real hero photo (desktop + motion only) */}
+      <HeroCanvas src="/images/hero/home1.jpg" />
 
       {/* Cinematic overlays — radial focus from center */}
       <div className="absolute inset-0 bg-zinc-950/70" aria-hidden="true" />
