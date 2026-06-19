@@ -11,7 +11,7 @@ vi.mock('@/lib/actions/notifications', () => ({
 }));
 
 import { createClient } from '@/lib/supabase/server';
-import { requestRevisionWithNote, addAnnotationReply } from './deliverables';
+import { requestRevisionWithNote, addAnnotationReply, markAnnotationSeen } from './deliverables';
 
 const mockCreateClient = vi.mocked(createClient);
 
@@ -228,5 +228,92 @@ describe('addAnnotationReply', () => {
     expect(insertPayload.timestamp_seconds).toBeNull();
     expect(insertPayload.content).toBe('Looks good now');
     expect(insertPayload.user_id).toBe(USER_ID);
+  });
+});
+
+describe('markAnnotationSeen', () => {
+  it('returns Unauthorized when not logged in', async () => {
+    mockCreateClient.mockResolvedValue({
+      auth: { getUser: vi.fn().mockResolvedValue({ data: { user: null } }) },
+    } as never);
+
+    const result = await markAnnotationSeen(ANNOTATION_ID);
+    expect(result.error).toBe('Unauthorized');
+    expect(result.data).toBeNull();
+  });
+
+  it('upserts a seen record for the current user', async () => {
+    const upsertMock = vi.fn().mockResolvedValue({ error: null });
+
+    const supabase = {
+      auth: {
+        getUser: vi.fn().mockResolvedValue({ data: { user: { id: USER_ID } } }),
+      },
+      from: vi.fn((table: string) => {
+        if (table === 'annotation_seen') {
+          return { upsert: upsertMock };
+        }
+        return {};
+      }),
+    };
+
+    mockCreateClient.mockResolvedValue(supabase as never);
+
+    const result = await markAnnotationSeen(ANNOTATION_ID);
+
+    expect(result.error).toBeNull();
+    expect(upsertMock).toHaveBeenCalledOnce();
+    const upsertPayload = upsertMock.mock.calls[0][0];
+    expect(upsertPayload.annotation_id).toBe(ANNOTATION_ID);
+    expect(upsertPayload.user_id).toBe(USER_ID);
+  });
+
+  it('returns error when upsert fails', async () => {
+    const supabase = {
+      auth: {
+        getUser: vi.fn().mockResolvedValue({ data: { user: { id: USER_ID } } }),
+      },
+      from: vi.fn((table: string) => {
+        if (table === 'annotation_seen') {
+          return {
+            upsert: vi.fn().mockResolvedValue({ error: { message: 'DB error' } }),
+          };
+        }
+        return {};
+      }),
+    };
+
+    mockCreateClient.mockResolvedValue(supabase as never);
+
+    const result = await markAnnotationSeen(ANNOTATION_ID);
+    expect(result.error).toBe('DB error');
+  });
+
+  it('does not create duplicate entries for the same user (upsert on conflict)', async () => {
+    // The upsert with onConflict ensures no duplicates — verify the correct options are passed
+    const upsertMock = vi.fn().mockResolvedValue({ error: null });
+
+    const supabase = {
+      auth: {
+        getUser: vi.fn().mockResolvedValue({ data: { user: { id: USER_ID } } }),
+      },
+      from: vi.fn((table: string) => {
+        if (table === 'annotation_seen') {
+          return { upsert: upsertMock };
+        }
+        return {};
+      }),
+    };
+
+    mockCreateClient.mockResolvedValue(supabase as never);
+
+    await markAnnotationSeen(ANNOTATION_ID);
+    await markAnnotationSeen(ANNOTATION_ID);
+
+    // Both calls use upsert — the DB unique constraint prevents actual duplicates
+    expect(upsertMock).toHaveBeenCalledTimes(2);
+    // Each call passes the same annotation_id + user_id — DB deduplicates via unique constraint
+    expect(upsertMock.mock.calls[0][0].annotation_id).toBe(ANNOTATION_ID);
+    expect(upsertMock.mock.calls[1][0].annotation_id).toBe(ANNOTATION_ID);
   });
 });

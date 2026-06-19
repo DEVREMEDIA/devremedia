@@ -202,6 +202,12 @@ export type Deliverable = {
   created_at: string;
 };
 
+export type AnnotationSeenEntry = {
+  user_id: string;
+  name: string | null;
+  seen_at: string;
+};
+
 export type VideoAnnotation = {
   id: string;
   deliverable_id: string;
@@ -213,6 +219,7 @@ export type VideoAnnotation = {
   created_at: string;
   author_name?: string | null;
   author_avatar_url?: string | null;
+  seen_by?: AnnotationSeenEntry[];
 };
 
 export type InvoiceLineItem = {

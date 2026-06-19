@@ -3,13 +3,14 @@
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
-import { CheckCircle2, Circle, Clock, MessageSquare, Send } from 'lucide-react';
+import { CheckCircle2, Circle, Clock, Eye, MessageSquare, Send } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useTranslations } from 'next-intl';
-import { useState } from 'react';
-import { addAnnotationReply } from '@/lib/actions/deliverables';
+import { useEffect, useState } from 'react';
+import { addAnnotationReply, markAnnotationSeen } from '@/lib/actions/deliverables';
 import { toast } from 'sonner';
-import type { VideoAnnotation } from '@/types';
+import { useAuth } from '@/hooks/use-auth';
+import type { AnnotationSeenEntry, VideoAnnotation } from '@/types';
 
 type AnnotationListProps = {
   annotations: VideoAnnotation[];
@@ -34,13 +35,42 @@ const formatDate = (iso: string) => {
   });
 };
 
+function SeenByIndicator({
+  seenBy,
+  currentUserId,
+}: {
+  seenBy: AnnotationSeenEntry[];
+  currentUserId: string | null;
+}) {
+  const t = useTranslations('deliverables');
+  const others = seenBy.filter((s) => s.user_id !== currentUserId);
+  if (others.length === 0) return null;
+
+  return (
+    <div className="flex items-center gap-1 flex-wrap mt-1">
+      {others.map((s) => (
+        <span
+          key={s.user_id}
+          className="inline-flex items-center gap-1 text-xs text-muted-foreground"
+          title={formatDate(s.seen_at)}
+        >
+          <Eye className="h-3 w-3" />
+          {t('seenBy', { name: s.name ?? '?' })}
+        </span>
+      ))}
+    </div>
+  );
+}
+
 function ReplyThread({
   annotation,
   replies,
+  currentUserId,
   onReplyAdded,
 }: {
   annotation: VideoAnnotation;
   replies: VideoAnnotation[];
+  currentUserId: string | null;
   onReplyAdded?: () => void;
 }) {
   const t = useTranslations('deliverables');
@@ -82,6 +112,7 @@ function ReplyThread({
             <span className="text-xs text-muted-foreground">{formatDate(reply.created_at)}</span>
           </div>
           <p className="text-sm">{reply.content}</p>
+          <SeenByIndicator seenBy={reply.seen_by ?? []} currentUserId={currentUserId} />
         </div>
       ))}
 
@@ -141,6 +172,18 @@ export function AnnotationList({
   onReplyAdded,
 }: AnnotationListProps) {
   const t = useTranslations('deliverables');
+  const { user } = useAuth();
+  const currentUserId = user?.id ?? null;
+
+  // Fire-and-forget: mark all visible annotations as seen by the current user.
+  useEffect(() => {
+    if (!currentUserId || annotations.length === 0) return;
+    for (const annotation of annotations) {
+      markAnnotationSeen(annotation.id).catch(() => {
+        // Best-effort; do not surface errors to the user
+      });
+    }
+  }, [currentUserId, annotations]);
 
   const topLevel = annotations.filter((a) => !a.parent_id);
   const repliesByParent = annotations.reduce<Record<string, VideoAnnotation[]>>((acc, a) => {
@@ -227,6 +270,7 @@ export function AnnotationList({
                 >
                   {annotation.content}
                 </p>
+                <SeenByIndicator seenBy={annotation.seen_by ?? []} currentUserId={currentUserId} />
               </div>
             </div>
           </div>
@@ -236,6 +280,7 @@ export function AnnotationList({
             <ReplyThread
               annotation={annotation}
               replies={repliesByParent[annotation.id] ?? []}
+              currentUserId={currentUserId}
               onReplyAdded={onReplyAdded}
             />
           </div>
