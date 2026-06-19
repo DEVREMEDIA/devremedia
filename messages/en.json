@@ -990,6 +990,7 @@
   "deliverables": {
     "title": "Deliverables",
     "description": "Manage video deliverables",
+    "review": "Review",
     "addDeliverable": "Add Deliverable",
     "addDeliverableDescription": "Add a link to the video with title and description",
     "descriptionOptional": "Description (optional)",

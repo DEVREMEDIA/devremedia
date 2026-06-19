@@ -46,6 +46,27 @@ type DeliverableDetailProps = {
   onBack: () => void;
 };
 
+/** Convert video URLs to embeddable format for YouTube, Vimeo, Google Drive, Loom */
+function getEmbedUrl(url: string): string | null {
+  const trimmed = url.trim();
+
+  const ytMatch = trimmed.match(
+    /(?:youtu\.be\/|youtube\.com\/(?:watch\?v=|embed\/|v\/|shorts\/))([a-zA-Z0-9_-]{11})/,
+  );
+  if (ytMatch) return `https://www.youtube.com/embed/${ytMatch[1]}`;
+
+  const vimeoMatch = trimmed.match(/vimeo\.com\/(\d+)/);
+  if (vimeoMatch) return `https://player.vimeo.com/video/${vimeoMatch[1]}`;
+
+  const driveMatch = trimmed.match(/drive\.google\.com\/file\/d\/([a-zA-Z0-9_-]+)/);
+  if (driveMatch) return `https://drive.google.com/file/d/${driveMatch[1]}/preview`;
+
+  const loomMatch = trimmed.match(/loom\.com\/share\/([a-zA-Z0-9]+)/);
+  if (loomMatch) return `https://www.loom.com/embed/${loomMatch[1]}`;
+
+  return null;
+}
+
 export function DeliverableDetail({ deliverable, projectId, onBack }: DeliverableDetailProps) {
   const t = useTranslations('deliverables');
   const tToast = useTranslations('toast');
@@ -85,11 +106,19 @@ export function DeliverableDetail({ deliverable, projectId, onBack }: Deliverabl
   };
 
   const fetchVideoUrl = async () => {
+    const path = deliverable.file_path;
+
+    // External URL (Drive/YouTube/Vimeo/Loom) — use directly, no storage round-trip
+    if (path.startsWith('http://') || path.startsWith('https://')) {
+      setVideoUrl(path);
+      return;
+    }
+
     try {
       const supabase = createClient();
       const { data: signedUrlData } = await supabase.storage
         .from('deliverables')
-        .createSignedUrl(deliverable.file_path, 3600); // 1 hour expiry
+        .createSignedUrl(path, 3600); // 1 hour expiry
 
       if (signedUrlData?.signedUrl) {
         setVideoUrl(signedUrlData.signedUrl);
@@ -178,14 +207,25 @@ export function DeliverableDetail({ deliverable, projectId, onBack }: Deliverabl
       <div className="grid gap-6 lg:grid-cols-3">
         {/* Left Column - Video & Annotations */}
         <div className="lg:col-span-2 space-y-6">
-          {/* Video Player */}
+          {/* Video Player — iframe embed for YouTube/Vimeo/Drive/Loom, native player for direct files */}
           {videoUrl ? (
-            <VideoPlayer
-              src={videoUrl}
-              annotations={annotations}
-              onTimeClick={handleTimeClick}
-              onAnnotationClick={handleAnnotationClick}
-            />
+            getEmbedUrl(videoUrl) ? (
+              <div className="aspect-video rounded-lg overflow-hidden bg-black">
+                <iframe
+                  src={getEmbedUrl(videoUrl)!}
+                  className="w-full h-full border-0"
+                  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                  allowFullScreen
+                />
+              </div>
+            ) : (
+              <VideoPlayer
+                src={videoUrl}
+                annotations={annotations}
+                onTimeClick={handleTimeClick}
+                onAnnotationClick={handleAnnotationClick}
+              />
+            )
           ) : (
             <div className="aspect-video bg-muted rounded-lg flex items-center justify-center">
               <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />

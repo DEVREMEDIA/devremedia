@@ -990,6 +990,7 @@
   "deliverables": {
     "title": "Παραδοτέα",
     "description": "Διαχείριση παραδοτέων βίντεο",
+    "review": "Επισκόπηση",
     "addDeliverable": "Προσθήκη Παραδοτέου",
     "addDeliverableDescription": "Προσθέστε link προς το βίντεο με τίτλο και περιγραφή",
     "descriptionOptional": "Περιγραφή (προαιρετικό)",
