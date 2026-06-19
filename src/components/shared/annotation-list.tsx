@@ -20,9 +20,13 @@ const formatTimestamp = (seconds: number) => {
 
 export function AnnotationList({ annotations, onAnnotationClick, onResolve }: AnnotationListProps) {
   const t = useTranslations('deliverables');
-  const sortedAnnotations = [...annotations].sort(
-    (a, b) => a.timestamp_seconds - b.timestamp_seconds,
-  );
+  const sortedAnnotations = [...annotations].sort((a, b) => {
+    // General notes (null timestamp) go first, then by created_at
+    if (a.timestamp_seconds === null && b.timestamp_seconds === null) return 0;
+    if (a.timestamp_seconds === null) return -1;
+    if (b.timestamp_seconds === null) return 1;
+    return a.timestamp_seconds - b.timestamp_seconds;
+  });
 
   if (annotations.length === 0) {
     return (
@@ -67,11 +71,16 @@ export function AnnotationList({ annotations, onAnnotationClick, onResolve }: An
                 )}
               </button>
               <div className="flex-1 space-y-2">
-                <div className="flex items-center gap-2">
-                  <Badge variant="outline" className="text-xs">
-                    <Clock className="h-3 w-3 mr-1" />
-                    {formatTimestamp(annotation.timestamp_seconds)}
-                  </Badge>
+                <div className="flex items-center gap-2 flex-wrap">
+                  {annotation.timestamp_seconds !== null ? (
+                    <Badge variant="outline" className="text-xs">
+                      <Clock className="h-3 w-3 mr-1" />
+                      {formatTimestamp(annotation.timestamp_seconds)}
+                    </Badge>
+                  ) : null}
+                  {annotation.author_name ? (
+                    <span className="text-xs text-muted-foreground">{annotation.author_name}</span>
+                  ) : null}
                   {annotation.resolved && (
                     <Badge
                       variant="outline"

@@ -54,7 +54,7 @@ export type DeliverableResponse = z.infer<typeof deliverableResponseSchema>;
  */
 export const createAnnotationSchema = z.object({
   deliverable_id: z.string().uuid('Invalid deliverable ID'),
-  timestamp_seconds: z.number().min(0, 'Timestamp must be positive'),
+  timestamp_seconds: z.number().min(0, 'Timestamp must be positive').nullable().default(null),
   content: z
     .string()
     .min(1, 'Content is required')

@@ -206,10 +206,12 @@ export type VideoAnnotation = {
   id: string;
   deliverable_id: string;
   user_id: string;
-  timestamp_seconds: number;
+  timestamp_seconds: number | null;
   content: string;
   resolved: boolean;
   created_at: string;
+  author_name?: string | null;
+  author_avatar_url?: string | null;
 };
 
 export type InvoiceLineItem = {

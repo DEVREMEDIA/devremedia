@@ -7,6 +7,7 @@ import { FileVideo } from 'lucide-react';
 import { useState, useEffect } from 'react';
 import {
   updateDeliverableStatus,
+  requestRevisionWithNote,
   getAnnotations,
   resolveAnnotation,
 } from '@/lib/actions/deliverables';
@@ -134,7 +135,11 @@ export function DeliverablesTab({ deliverables }: DeliverablesTabProps) {
     }
 
     setLoading(true);
-    const result = await updateDeliverableStatus(deliverableId, status);
+
+    const result =
+      status === 'revision_requested'
+        ? await requestRevisionWithNote(deliverableId, revisionNotes)
+        : await updateDeliverableStatus(deliverableId, status);
 
     if (result.error) {
       toast.error(result.error);
