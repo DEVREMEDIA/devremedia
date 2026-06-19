@@ -248,9 +248,18 @@ export async function deleteDeliverable(id: string): Promise<ActionResult<void>>
       .eq('id', id)
       .single();
 
-    const { error } = await supabase.from('deliverables').delete().eq('id', id);
+    // .select() returns the rows actually deleted. If RLS blocks the delete it
+    // removes 0 rows with no error — guard against silently reporting success.
+    const { data: deleted, error } = await supabase
+      .from('deliverables')
+      .delete()
+      .eq('id', id)
+      .select('id');
 
     if (error) return { data: null, error: error.message };
+    if (!deleted || deleted.length === 0) {
+      return { data: null, error: 'Deliverable not found or not permitted' };
+    }
 
     // Best-effort audit entry — surfaces in the admin recent-activity feed.
     await supabase.rpc('log_activity', {
