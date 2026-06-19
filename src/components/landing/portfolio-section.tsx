@@ -1,97 +1,74 @@
 import { getTranslations } from 'next-intl/server';
 import Image from 'next/image';
-import { ArrowRight, Play, Youtube } from 'lucide-react';
-import { ScrollReveal } from '@/components/shared/scroll-reveal';
+import { richAccent } from './rich';
 import { PORTFOLIO_VIDEOS } from './constants';
+
+const CATEGORIES = [
+  'Event · 2025',
+  'Corporate · 2025',
+  'Social · 2025',
+  'Event · 2025',
+  'Brand · 2026',
+  'Commercial · 2026',
+];
 
 export async function PortfolioSection() {
   const t = await getTranslations('landing');
 
   return (
-    <section id="portfolio" className="relative py-24 sm:py-32 md:py-40" aria-labelledby="portfolio-heading">
-      <div
-        className="absolute inset-0 bg-[radial-gradient(ellipse_60%_40%_at_50%_50%,rgba(201,160,51,0.03),transparent)]"
-        aria-hidden="true"
-      />
-
-      <div className="relative mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-        <div className="flex flex-col md:flex-row md:items-end justify-between gap-4 sm:gap-6 mb-12 sm:mb-16">
-          <ScrollReveal>
-            <div>
-              <span className="text-gold-500 text-xs font-semibold tracking-[0.2em] uppercase">
-                {t('portfolio.label')}
-              </span>
-              <h2
-                id="portfolio-heading"
-                className="mt-3 sm:mt-4 text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-black text-white leading-[1.05]"
-              >
-                {t('portfolio.title')}
-              </h2>
-            </div>
-          </ScrollReveal>
-
-          <ScrollReveal delay={200}>
-            <a
-              href="https://www.youtube.com/@devremedia"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="hidden md:inline-flex items-center gap-2 text-gold-500 hover:text-gold-400 font-semibold text-sm group flex-shrink-0 min-h-[48px] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold-500 rounded-sm"
-              aria-label={`${t('portfolio.watchOnYoutube')} - YouTube`}
-            >
-              <Youtube className="h-5 w-5" aria-hidden="true" />
-              {t('portfolio.watchOnYoutube')}
-              <ArrowRight className="h-4 w-4 group-hover:translate-x-1 transition-transform" aria-hidden="true" />
-            </a>
-          </ScrollReveal>
+    <section className="section" id="portfolio" aria-labelledby="portfolio-heading">
+      <div className="wrap">
+        <div className="sec-head">
+          <div className="meta">
+            <span className="eyebrow">{t('portfolio.label')}</span>
+            <h2 id="portfolio-heading" className="sec-title" data-l5-title>
+              {t.rich('portfolio.title', richAccent)}
+            </h2>
+          </div>
+          <span className="secnum">04</span>
         </div>
 
-        {/* 3x2 video grid — titles always visible */}
-        <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4">
+        <p className="sec-lead" data-reveal>
+          {t('portfolio.description')}
+        </p>
+
+        <div className="pf-grid">
           {PORTFOLIO_VIDEOS.map((video, i) => (
-            <ScrollReveal key={video.id} delay={i * 100}>
-              <a
-                href={`https://www.youtube.com/watch?v=${video.id}`}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="video-card block group aspect-video rounded-2xl focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold-500 focus-visible:ring-offset-2 focus-visible:ring-offset-zinc-950"
-                aria-label={`${t(`portfolio.${video.key}`)} - YouTube`}
-              >
-                <Image
-                  src={`https://img.youtube.com/vi/${video.id}/hqdefault.jpg`}
-                  alt=""
-                  width={480}
-                  height={360}
-                  sizes="(min-width: 1024px) 33vw, (min-width: 640px) 50vw, 100vw"
-                  className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700"
-                  loading="lazy"
-                />
-                <div className="absolute inset-0 z-10 flex items-center justify-center" aria-hidden="true">
-                  <div className="w-12 h-12 sm:w-14 sm:h-14 rounded-full bg-gold-500/90 flex items-center justify-center opacity-0 group-hover:opacity-100 scale-75 group-hover:scale-100 transition-all duration-300 shadow-[0_0_40px_rgba(201,160,51,0.3)]">
-                    <Play className="h-5 w-5 sm:h-6 sm:w-6 text-black ml-0.5" fill="black" />
-                  </div>
-                </div>
-                <div className="absolute bottom-0 left-0 right-0 p-4 sm:p-5 z-10">
-                  <h3 className="text-white font-bold text-sm sm:text-base">{t(`portfolio.${video.key}`)}</h3>
-                </div>
-              </a>
-            </ScrollReveal>
+            <a
+              key={video.id}
+              className="pf-item"
+              data-reveal
+              href={`https://www.youtube.com/watch?v=${video.id}`}
+              target="_blank"
+              rel="noopener noreferrer"
+              aria-label={`${t(`portfolio.${video.key}`)} — YouTube`}
+            >
+              <Image
+                src={`https://img.youtube.com/vi/${video.id}/hqdefault.jpg`}
+                alt=""
+                fill
+                sizes="(max-width: 900px) 100vw, 33vw"
+                loading="lazy"
+              />
+              <span className="play" aria-hidden="true">
+                ▶
+              </span>
+              <span className="cap">
+                {t(`portfolio.${video.key}`)}
+                <small>{CATEGORIES[i]}</small>
+              </span>
+            </a>
           ))}
         </div>
 
-        {/* Mobile YouTube link */}
-        <div className="mt-6 sm:mt-8 text-center md:hidden">
-          <a
-            href="https://www.youtube.com/@devremedia"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="inline-flex items-center gap-2 text-gold-500 hover:text-gold-400 font-semibold text-sm min-h-[48px] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold-500 rounded-sm"
-            aria-label={`${t('portfolio.watchOnYoutube')} - YouTube`}
-          >
-            <Youtube className="h-5 w-5" aria-hidden="true" />
-            {t('portfolio.watchOnYoutube')}
-            <ArrowRight className="h-4 w-4" aria-hidden="true" />
-          </a>
-        </div>
+        <a
+          className="pf-link"
+          href="https://www.youtube.com/@DevreMedia"
+          target="_blank"
+          rel="noopener noreferrer"
+        >
+          {t('portfolio.watchOnYoutube')} →
+        </a>
       </div>
     </section>
   );
