@@ -5,7 +5,12 @@ import {
   createAnnotationSchema,
   updateDeliverableSchema,
 } from '@/lib/schemas/deliverable';
-import type { ActionResult, Deliverable, VideoAnnotation } from '@/types/index';
+import type {
+  ActionResult,
+  Deliverable,
+  VideoAnnotation,
+  AnnotationSeenEntry,
+} from '@/types/index';
 import type { DeliverableStatus } from '@/lib/constants';
 import { revalidatePath } from 'next/cache';
 import { createNotification, getClientUserIdFromProject } from '@/lib/actions/notifications';
@@ -300,7 +305,7 @@ export async function getAnnotations(
     const { data, error } = await supabase
       .from('video_annotations')
       .select(
-        'id, deliverable_id, user_id, parent_id, timestamp_seconds, content, resolved, created_at, user_profiles(display_name, avatar_url)',
+        'id, deliverable_id, user_id, parent_id, timestamp_seconds, content, resolved, created_at, user_profiles(display_name, avatar_url), annotation_seen(user_id, seen_at, user_profiles(display_name))',
       )
       .eq('deliverable_id', deliverableId)
       .order('created_at', { ascending: true });
@@ -309,6 +314,21 @@ export async function getAnnotations(
 
     const annotations: VideoAnnotation[] = (data ?? []).map((row) => {
       const profile = Array.isArray(row.user_profiles) ? row.user_profiles[0] : row.user_profiles;
+      const seenRows = Array.isArray(row.annotation_seen) ? row.annotation_seen : [];
+      const seen_by: AnnotationSeenEntry[] = seenRows.map(
+        (s: {
+          user_id: string;
+          seen_at: string;
+          user_profiles: { display_name: string | null } | { display_name: string | null }[] | null;
+        }) => {
+          const sp = Array.isArray(s.user_profiles) ? s.user_profiles[0] : s.user_profiles;
+          return {
+            user_id: s.user_id,
+            name: sp?.display_name ?? null,
+            seen_at: s.seen_at,
+          };
+        },
+      );
       return {
         id: row.id,
         deliverable_id: row.deliverable_id,
@@ -320,6 +340,7 @@ export async function getAnnotations(
         created_at: row.created_at,
         author_name: profile?.display_name ?? null,
         author_avatar_url: profile?.avatar_url ?? null,
+        seen_by,
       };
     });
 
@@ -328,6 +349,28 @@ export async function getAnnotations(
     return {
       data: null,
       error: err instanceof Error ? err.message : 'Failed to fetch annotations',
+    };
+  }
+}
+
+export async function markAnnotationSeen(annotationId: string): Promise<ActionResult<void>> {
+  try {
+    const { supabase, user, error: authError } = await requireUser();
+    if (authError) return { data: null, error: authError };
+
+    const { error } = await supabase
+      .from('annotation_seen')
+      .upsert(
+        { annotation_id: annotationId, user_id: user.id, seen_at: new Date().toISOString() },
+        { onConflict: 'annotation_id,user_id' },
+      );
+
+    if (error) return { data: null, error: error.message };
+    return { data: undefined, error: null };
+  } catch (err: unknown) {
+    return {
+      data: null,
+      error: err instanceof Error ? err.message : 'Failed to mark as seen',
     };
   }
 }
