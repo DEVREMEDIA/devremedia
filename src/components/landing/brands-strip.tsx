@@ -1,35 +1,34 @@
 import { getTranslations } from 'next-intl/server';
 import { CLIENT_LOGOS } from './constants';
-import { BrandsTicker } from './brands-ticker';
 
 export async function BrandsStrip() {
   const t = await getTranslations('landing');
+  const names = CLIENT_LOGOS.map((c) => c.name);
 
   return (
-    <div className="relative py-10 sm:py-14" role="region" aria-label={t('hero.trustedBy')}>
-      {/* Top gold gradient line */}
-      <div
-        className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-gold-500/20 to-transparent"
-        aria-hidden="true"
-      />
-      {/* Bottom gold gradient line */}
-      <div
-        className="absolute bottom-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-gold-500/20 to-transparent"
-        aria-hidden="true"
-      />
-
-      <p className="text-center text-zinc-400 text-xs tracking-[0.3em] uppercase mb-6 sm:mb-8">
-        {t('hero.trustedBy')}
-      </p>
-
-      <BrandsTicker logos={CLIENT_LOGOS} />
-
-      {/* Screen reader list of clients */}
+    <section className="brands" aria-label={t('hero.trustedBy')}>
+      <div className="wrap">
+        <p className="brands-label">{t('hero.trustedBy')}</p>
+      </div>
+      <div className="brands-marquee">
+        <div className="brands-track" data-marquee>
+          {names.map((name, i) => (
+            <span className="brand-chip" key={`a-${i}`}>
+              {name}
+            </span>
+          ))}
+          {names.map((name, i) => (
+            <span className="brand-chip" key={`b-${i}`} aria-hidden="true">
+              {name}
+            </span>
+          ))}
+        </div>
+      </div>
       <ul className="sr-only">
-        {CLIENT_LOGOS.map((brand) => (
-          <li key={brand.name}>{brand.name}</li>
+        {names.map((name) => (
+          <li key={name}>{name}</li>
         ))}
       </ul>
-    </div>
+    </section>
   );
 }

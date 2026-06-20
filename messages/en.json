@@ -179,6 +179,22 @@
     "proposals": "Proposals"
   },
 
+  "breadcrumb": {
+    "clients": "Client",
+    "projects": "Project",
+    "filming-prep": "Prep",
+    "deliverables": "Deliverables",
+    "invoices": "Invoice",
+    "leads": "Lead",
+    "contracts": "Contract",
+    "proposals": "Proposal",
+    "filming-requests": "Request",
+    "tasks": "Task",
+    "resources": "Category",
+    "articles": "Article",
+    "chatbot": "Conversation"
+  },
+
   "users": {
     "title": "User Management",
     "description": "Manage all users and their roles",
@@ -2031,6 +2047,7 @@
       "approach": "Approach",
       "work": "Work",
       "mainNavigation": "Main navigation",
+      "navigate": "Navigation",
       "openMenu": "Open menu",
       "closeMenu": "Close menu",
       "mobileMenu": "Mobile menu",
@@ -2042,7 +2059,7 @@
       "headline": "Where Velocity, Meets Vision.",
       "subtitle": "Crafting Your Story, At The Speed Of Now.",
       "titleLine1": "Crafting Your Story,",
-      "titleLine2": "At The Speed Of Now.",
+      "titleLine2": "<g>At The Speed</g> Of Now.",
       "description": "Video production & advertising content for brands that want to stand out. From monthly social media to full-scale commercial productions — we become your strategic visual partner.",
       "ctaPrimary": "Book a Discovery Call",
       "ctaSecondary": "Watch Showreel",
@@ -2051,7 +2068,7 @@
     },
     "about": {
       "label": "About Us",
-      "title": "Crafting Stories, One Frame at a Time",
+      "title": "Crafting Stories, <i>One Frame at a Time</i>",
       "description": "Based in Thessaloniki, we combine the speed of modern digital production with the quality standards of traditional cinematography.",
       "text1": "Devre Media was born from a simple belief: every brand deserves cinematic-quality content without the wait. We specialize in social media videos, corporate films, podcast production, and event coverage — delivering everything your brand needs to dominate on screen.",
       "text2": "Our lightweight, agile approach means we move fast without compromising quality. Where others take weeks, we deliver in days — because your brand can't afford to wait.",
@@ -2065,7 +2082,7 @@
     },
     "approach": {
       "label": "Our Approach",
-      "title": "The best of both worlds",
+      "title": "The best of <i>both worlds</i>",
       "description": "The market has two extremes: heavy-camera cinematographers who are slow and expensive, and phone-wielding content creators who sacrifice quality. We sit right in the middle.",
       "card1Title": "Mobile-first setup",
       "card1Desc": "Lightweight, agile equipment means we shoot fast. In 1-2 filming days we produce an entire month's worth of content for your brand.",
@@ -2077,7 +2094,7 @@
     },
     "services": {
       "label": "Services",
-      "title": "Everything your brand needs on screen",
+      "title": "Everything your brand needs <i>on screen</i>",
       "socialTitle": "Social Media Video",
       "socialDesc": "Monthly packages of 4-20 videos per month. Brief, filming, editing, music, subtitles — all included.",
       "socialTag": "From 4 videos/month",
@@ -2104,7 +2121,7 @@
     },
     "portfolio": {
       "label": "Portfolio",
-      "title": "Our Work Speaks for Itself",
+      "title": "Our Work <i>Speaks for Itself</i>",
       "description": "A selection of our recent productions — from exhibitions and corporate films to social media content and beyond.",
       "video1Title": "Exhibition Highlight Reel",
       "video2Title": "Corporate Brand Film",
@@ -2117,7 +2134,7 @@
     },
     "process": {
       "label": "Process",
-      "title": "From first call to final cut",
+      "title": "From first call <i>to final cut</i>",
       "description": "A clear, professional process. No surprises, no guesswork.",
       "step1Title": "Discovery Call",
       "step1Desc": "We learn your business, goals, competitors, and vision. 30-45 minutes to understand exactly what you need.",
@@ -2130,7 +2147,7 @@
     },
     "work": {
       "label": "Results",
-      "title": "Brands that trust us",
+      "title": "Brands that <i>trust us</i>",
       "mavriTag": "Gastronomy",
       "mavriDesc": "Full-scale content partnership: 60 reels, 3 vlogs, and 6 podcast episodes per month. The go-to brand powerhouse in the Thessaloniki food scene.",
       "technomatTag": "Retail / B2B",
@@ -2141,7 +2158,7 @@
     },
     "team": {
       "label": "Our Team",
-      "title": "The People Behind the Lens",
+      "title": "The People <i>Behind the Lens</i>",
       "description": "A small, dedicated team that treats every production as our own.",
       "harisName": "Haris Devrentlis",
       "harisRole": "Editing Director",
@@ -2152,7 +2169,7 @@
     },
     "pricing": {
       "label": "Packages",
-      "title": "Transparent pricing, real results",
+      "title": "Transparent pricing, <i>real results</i>",
       "description": "Monthly packages designed for consistency. Minimum 3-month commitment — because real brand building takes time.",
       "socialLabel": "Social Media Video",
       "starter": "Starter",
@@ -2178,7 +2195,7 @@
     },
     "whyUs": {
       "label": "Why Us",
-      "title": "Not just a camera crew",
+      "title": "Not just <i>a camera crew</i>",
       "description": "We're moving toward a full agency model — taking over your entire visual identity across social media, YouTube, website, and beyond.",
       "cinematicTitle": "Cinematic aesthetics",
       "cinematicDesc": "Every piece of content follows professional cinematography rules. Your brand deserves more than phone-shot clips.",
@@ -2202,7 +2219,7 @@
     },
     "contact": {
       "label": "Get in Touch",
-      "title": "Let's Create Something Together",
+      "title": "Let's Create <i>Something Together</i>",
       "description": "Have a production in mind? We'd love to hear about it. Fill out the form or reach us directly.",
       "nameLabel": "Your Name",
       "namePlaceholder": "Full name",
@@ -2227,7 +2244,7 @@
     },
     "cta": {
       "title1": "Ready to level up",
-      "title2": "your brand's image?",
+      "title2": "<i>your brand's</i> image?",
       "description": "Let's sit down for 30 minutes and map out a content plan that actually makes sense for your business. No pushy sales — just an honest conversation about where your brand can go.",
       "button": "Book Your Free Discovery Call",
       "location": "Thessaloniki. Available for productions across Europe and internationally."

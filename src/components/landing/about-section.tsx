@@ -1,97 +1,55 @@
 import { getTranslations } from 'next-intl/server';
 import Image from 'next/image';
-import { Clock, Layers, Handshake } from 'lucide-react';
-import { ScrollReveal } from '@/components/shared/scroll-reveal';
+import { richAccent } from './rich';
 
 export async function AboutSection() {
   const t = await getTranslations('landing');
 
   const highlights = [
-    { Icon: Clock, title: t('about.highlight1Title'), desc: t('about.highlight1Desc') },
-    { Icon: Layers, title: t('about.highlight2Title'), desc: t('about.highlight2Desc') },
-    { Icon: Handshake, title: t('about.highlight3Title'), desc: t('about.highlight3Desc') },
+    { n: 'i.', title: t('about.highlight1Title'), desc: t('about.highlight1Desc') },
+    { n: 'ii.', title: t('about.highlight2Title'), desc: t('about.highlight2Desc') },
+    { n: 'iii.', title: t('about.highlight3Title'), desc: t('about.highlight3Desc') },
   ];
 
   return (
-    <section id="about" className="relative py-24 sm:py-32 md:py-40" aria-labelledby="about-heading">
-      <div
-        className="absolute inset-0 bg-[radial-gradient(ellipse_80%_50%_at_80%_20%,rgba(201,160,51,0.03),transparent)]"
-        aria-hidden="true"
-      />
+    <section className="section chapter" id="about" aria-labelledby="about-heading">
+      <div className="wrap">
+        <div className="sec-head">
+          <div className="meta">
+            <span className="eyebrow">{t('about.label')}</span>
+            <h2 id="about-heading" className="sec-title" data-l5-title>
+              {t.rich('about.title', richAccent)}
+            </h2>
+          </div>
+          <span className="secnum">01</span>
+        </div>
 
-      <div className="relative mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-        <div className="grid lg:grid-cols-5 gap-12 sm:gap-16 lg:gap-20 items-start">
-          {/* Text side — 60% */}
-          <div className="lg:col-span-3">
-            <ScrollReveal>
-              <span className="text-gold-500 text-xs font-semibold tracking-[0.2em] uppercase">
-                {t('about.label')}
-              </span>
-            </ScrollReveal>
-
-            <ScrollReveal delay={100}>
-              <h2
-                id="about-heading"
-                className="mt-3 sm:mt-4 text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-black text-white leading-[1.05]"
-              >
-                {t('about.title')}
-              </h2>
-            </ScrollReveal>
-
-            <ScrollReveal delay={200}>
-              <p className="mt-6 sm:mt-8 text-lg sm:text-xl text-zinc-300 leading-relaxed">
-                {t('about.description')}
-              </p>
-            </ScrollReveal>
-
-            <ScrollReveal delay={300}>
-              <p className="mt-4 sm:mt-5 text-base sm:text-lg text-zinc-400 leading-relaxed">
-                {t('about.text1')}
-              </p>
-            </ScrollReveal>
-
-            <ScrollReveal delay={400}>
-              <p className="mt-3 sm:mt-4 text-base sm:text-lg text-zinc-400 leading-relaxed">
-                {t('about.text2')}
-              </p>
-            </ScrollReveal>
-
-            {/* Highlight cards below text */}
-            <div className="grid grid-cols-3 gap-2 sm:gap-3 mt-8 sm:mt-10">
-              {highlights.map((item, i) => (
-                <ScrollReveal key={i} delay={500 + i * 100}>
-                  <div className="glass-card rounded-xl p-3 sm:p-4 text-center group min-h-[48px]">
-                    <item.Icon
-                      className="h-4 w-4 sm:h-5 sm:w-5 text-gold-500 mx-auto mb-1.5 sm:mb-2 group-hover:scale-110 transition-transform"
-                      aria-hidden="true"
-                    />
-                    <h4 className="text-xs font-bold text-white mb-0.5 sm:mb-1">
-                      {item.title}
-                    </h4>
-                    <p className="text-[11px] sm:text-xs text-zinc-400 leading-snug">
-                      {item.desc}
-                    </p>
-                  </div>
-                </ScrollReveal>
+        <div className="about-grid">
+          <div data-reveal>
+            <p className="about-lead">{t('about.description')}</p>
+            <div className="about-cols">
+              <p>{t('about.text1')}</p>
+              <p>{t('about.text2')}</p>
+            </div>
+            <div className="highlights">
+              {highlights.map((h) => (
+                <div className="hl" key={h.n}>
+                  <span className="n">{h.n}</span>
+                  <span className="t">{h.title}</span>
+                  <span className="d">{h.desc}</span>
+                </div>
               ))}
             </div>
           </div>
 
-          {/* Image side — 40% */}
-          <div className="lg:col-span-2">
-            <ScrollReveal animation="slide-left" delay={300}>
-              <div className="relative aspect-[3/4] rounded-2xl overflow-hidden">
-                <Image
-                  src="/images/hero/home2.jpg"
-                  alt={t('about.imageAlt')}
-                  fill
-                  sizes="(min-width: 1024px) 40vw, 100vw"
-                  className="object-cover"
-                />
-                <div className="absolute inset-0 bg-gradient-to-t from-zinc-950 via-zinc-950/20 to-transparent" aria-hidden="true" />
-                <div className="absolute inset-0 rounded-2xl ring-1 ring-inset ring-white/[0.06]" aria-hidden="true" />
-              </div>
-            </ScrollReveal>
+          <div className="about-frame" data-reveal="scale">
+            <Image
+              src="/images/hero/home2.jpg"
+              alt={t('about.imageAlt')}
+              fill
+              sizes="(max-width: 900px) 100vw, 40vw"
+            />
+            <span className="frame-label">On Set — Thessaloniki</span>
           </div>
         </div>
       </div>

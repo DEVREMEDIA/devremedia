@@ -1,4 +1,3 @@
-export { CinematicBackground } from './cinematic-background';
 export { LandingNav } from './landing-nav';
 export { HeroSection } from './hero-section';
 export { BrandsStrip } from './brands-strip';
@@ -10,6 +9,7 @@ export { ProcessSection } from './process-section';
 export { CaseStudiesSection } from './case-studies-section';
 export { TeamSection } from './team-section';
 export { StatsSection } from './stats-section';
+export { VelocityMarquee } from './velocity-marquee';
 export { PricingSection } from './pricing-section';
 export { WhyUsSection } from './why-us-section';
 export { ContactSection } from './contact-section';

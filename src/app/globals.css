@@ -672,6 +672,77 @@
 }
 
 /* ═══════════════════════════════════════════════════════════════
+   L5 EXPERIENCE LAYER — preloader, cursor, smooth-scroll, GSAP mode
+   ═══════════════════════════════════════════════════════════════ */
+
+/* Lenis smooth scroll (recommended baseline) */
+html.lenis,
+html.lenis body { height: auto; }
+.lenis.lenis-smooth { scroll-behavior: auto !important; }
+.lenis.lenis-smooth [data-lenis-prevent] { overscroll-behavior: contain; }
+.lenis.lenis-stopped { overflow: hidden; }
+
+/* When GSAP owns the reveals, kill the CSS transition so it doesn't fight rAF */
+html.l5-on [data-reveal] { transition: none !important; }
+
+/* When the hero photo is drawn by WebGL, fade out the static <img> */
+html.hero-gl-on .hero-ken-burns { opacity: 0; transition: opacity 0.6s ease; }
+
+/* Masked headline lines */
+html.l5-on .line { overflow: hidden; padding-bottom: 0.1em; }
+.l5-line-inner { display: block; will-change: transform; }
+
+/* Cursor light + dot (desktop pointers only) */
+.l5-cursor-light {
+  position: fixed; top: 0; left: 0;
+  width: 420px; height: 420px; margin: -210px 0 0 -210px;
+  border-radius: 50%; pointer-events: none; z-index: 60;
+  opacity: 0; transition: opacity 0.4s ease;
+  background: radial-gradient(circle, rgba(201, 160, 51, 0.10), transparent 60%);
+  mix-blend-mode: screen;
+}
+.l5-cursor-light.on { opacity: 1; }
+.l5-cursor-dot {
+  position: fixed; top: 0; left: 0;
+  width: 8px; height: 8px; margin: -4px 0 0 -4px;
+  border-radius: 50%; pointer-events: none; z-index: 61;
+  opacity: 0; background: #e5c766;
+  box-shadow: 0 0 12px rgba(201, 160, 51, 0.8);
+  transition: opacity 0.3s ease;
+}
+.l5-cursor-dot.on { opacity: 1; }
+@media (hover: none), (pointer: coarse) {
+  .l5-cursor-light, .l5-cursor-dot { display: none !important; }
+}
+
+/* Cinematic preloader */
+.l5-preloader {
+  position: fixed; inset: 0; z-index: 200;
+  background: #09090b;
+  display: flex; align-items: center; justify-content: center;
+  will-change: transform;
+  transition: transform 0.9s cubic-bezier(0.76, 0, 0.24, 1);
+}
+.l5-preloader.done { transform: translateY(-100%); }
+.l5-preloader__inner { display: flex; flex-direction: column; align-items: center; gap: 22px; }
+.l5-preloader__brand {
+  font-size: 11px; letter-spacing: 0.4em; text-transform: uppercase; color: #9a968c;
+}
+.l5-preloader__count {
+  font-size: clamp(64px, 12vw, 160px); font-weight: 800; line-height: 1; color: #fff;
+  font-variant-numeric: tabular-nums;
+}
+.l5-preloader__bar {
+  width: min(260px, 60vw); height: 1px; background: rgba(255, 255, 255, 0.12); overflow: hidden;
+}
+.l5-preloader__fill {
+  display: block; width: 100%; height: 100%;
+  background: linear-gradient(90deg, #a68428, #f0d98a); transform-origin: left;
+}
+@media (scripting: none) { .l5-preloader { display: none; } }
+@media (prefers-reduced-motion: reduce) { .l5-preloader { display: none; } }
+
+/* ═══════════════════════════════════════════════════════════════
    FULLCALENDAR — Shadcn Theme Integration
    ═══════════════════════════════════════════════════════════════ */
 
