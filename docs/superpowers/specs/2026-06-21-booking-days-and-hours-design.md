@@ -286,9 +286,14 @@ existing_start < p_end`.
    - `end_date` = `start_date` + `duration_minutes` (πραγματική λήξη, όχι null),
    - `all_day = false`, `event_type = 'filming'`, `project_id` link όπως σήμερα.
 3. **Περνάει στο Google μέσω της ΥΠΑΡΧΟΥΣΑΣ διαδρομής** — καλεί
-   `syncEntityToGoogle({ entityType: 'custom', entityId: <calendar_event.id>, ... })`,
+   `syncEntityToGoogle({ entityType: 'custom', eventType: 'filming', entityId: <calendar_event.id>, ... })`,
    ακριβώς όπως κάνουν ήδη τα calendar-events server actions. **Καμία** αλλαγή σε
    `google-sync-helper.ts`, webhook, ή cron.
+
+**Οπτική διάκριση:** το event είναι `event_type='filming'` → στην εφαρμογή
+εμφανίζεται/χρωματίζεται ως γύρισμα, και στο Google παίρνει ξεχωριστό χρώμα μέσω
+του υπάρχοντος `ENTITY_COLOR_MAP['custom_filming'] = '9'` (`google-calendar.ts:43`).
+Προϋπόθεση: το sync call να περνάει `eventType: 'filming'` ώστε να πιάσει ο χάρτης.
 
 **Bidirectional «τζάμπα»:** Επειδή το event ζει ως `calendar_events` (custom), ο
 reverse webhook-path που ήδη ενημερώνει τα custom `calendar_events` από αλλαγές
