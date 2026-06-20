@@ -179,6 +179,22 @@
     "proposals": "Προσφορές"
   },
 
+  "breadcrumb": {
+    "clients": "Πελάτης",
+    "projects": "Παραγωγή",
+    "filming-prep": "Προετοιμασία",
+    "deliverables": "Παραδοτέα",
+    "invoices": "Τιμολόγιο",
+    "leads": "Lead",
+    "contracts": "Συμβόλαιο",
+    "proposals": "Προσφορά",
+    "filming-requests": "Αίτημα",
+    "tasks": "Εργασία",
+    "resources": "Κατηγορία",
+    "articles": "Άρθρο",
+    "chatbot": "Συνομιλία"
+  },
+
   "users": {
     "title": "Διαχείριση Χρηστών",
     "description": "Διαχειριστείτε όλους τους χρήστες και τους ρόλους τους",

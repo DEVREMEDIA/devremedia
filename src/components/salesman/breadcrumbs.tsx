@@ -13,10 +13,12 @@ import {
 import { Home } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { formatPathSegment as formatSegment } from '@/lib/format';
+import { isUuidSegment, useBreadcrumbLabels } from '@/components/shared/use-breadcrumb-labels';
 
 export function SalesmanBreadcrumbs() {
   const pathname = usePathname();
   const t = useTranslations('nav');
+  const tb = useTranslations('breadcrumb');
 
   const segments = pathname.split('/').filter((segment) => segment !== '');
 
@@ -25,6 +27,8 @@ export function SalesmanBreadcrumbs() {
   if (salesmanIndex !== -1) {
     segments.splice(salesmanIndex, 1);
   }
+
+  const resolvedLabels = useBreadcrumbLabels(segments);
 
   // Segment-to-translation-key mapping
   const segmentLabels: Record<string, string> = {
@@ -50,7 +54,12 @@ export function SalesmanBreadcrumbs() {
         {segments.map((segment, index) => {
           const isLast = index === segments.length - 1;
           const href = `/salesman/${segments.slice(0, index + 1).join('/')}`;
-          const label = segmentLabels[segment] || formatSegment(segment);
+          const parent = segments[index - 1];
+          const label =
+            segmentLabels[segment] ??
+            (isUuidSegment(segment)
+              ? (resolvedLabels[segment] ?? (parent && tb.has(parent) ? tb(parent) : '…'))
+              : formatSegment(segment));
 
           return (
             <div key={href} className="flex items-center gap-1.5">

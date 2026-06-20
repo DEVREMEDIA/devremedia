@@ -179,6 +179,22 @@
     "proposals": "Proposals"
   },
 
+  "breadcrumb": {
+    "clients": "Client",
+    "projects": "Project",
+    "filming-prep": "Prep",
+    "deliverables": "Deliverables",
+    "invoices": "Invoice",
+    "leads": "Lead",
+    "contracts": "Contract",
+    "proposals": "Proposal",
+    "filming-requests": "Request",
+    "tasks": "Task",
+    "resources": "Category",
+    "articles": "Article",
+    "chatbot": "Conversation"
+  },
+
   "users": {
     "title": "User Management",
     "description": "Manage all users and their roles",
