@@ -1642,7 +1642,21 @@
 
   "booking": {
     "title": "Κράτηση Γυρίσματος",
-    "description": "Αίτημα για νέο γύρισμα",
+    "description": "Οι διαθέσιμες ημερομηνίες γυρισμάτων σας για αυτόν τον μήνα",
+    "yourPackage": "Το πακέτο σας: {name}",
+    "remainingAllowance": "Απομένουν {count} {unit} αυτόν τον μήνα",
+    "allowanceUnit": {
+      "days": "ημέρες",
+      "slots": "ζώνες"
+    },
+    "available": "Διαθέσιμο",
+    "unavailable": {
+      "capacity_full": "Πλήρες",
+      "allowance_exhausted": "Όριο"
+    },
+    "noAgreementTitle": "Δεν υπάρχει ενεργό πλάνο κρατήσεων",
+    "noAgreementBody": "Δεν έχετε ακόμη ενεργή συμφωνία, οπότε δεν υπάρχουν διαθέσιμες ημερομηνίες. Επικοινωνήστε μαζί μας για να τη ρυθμίσουμε.",
+    "contactUs": "Επικοινωνήστε μαζί μας",
     "step": "Βήμα",
     "projectType": "Τύπος",
     "package": "Πακέτο",
