@@ -110,6 +110,8 @@ export type ProposalPackage = {
   name: string;
   video_count: number | null;
   shooting_days: number | null;
+  allowance_count: number | null;
+  allowance_unit: 'days' | 'slots';
   shooting_hours: number;
   editing_hours: number;
   price_mode: 'manual' | 'auto';
