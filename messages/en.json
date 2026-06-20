@@ -1879,6 +1879,20 @@
       "viewAll": "View all",
       "completedProjectsTitle": "Completed Productions"
     },
+    "agreement": {
+      "title": "My Agreement",
+      "package": "Your package: {name}",
+      "includes": "Includes",
+      "monthlyPrice": "Monthly price",
+      "remainingThisMonth": "Remaining this month",
+      "allowanceUnit": {
+        "days": "days",
+        "slots": "slots"
+      },
+      "noAgreementTitle": "No active agreement",
+      "noAgreementBody": "You don't have an active agreement yet. Get in touch and we'll set one up for you.",
+      "contactUs": "Contact us"
+    },
     "projects": {
       "title": "My Productions",
       "description": "Your video production productions",

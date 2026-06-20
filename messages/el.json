@@ -1879,6 +1879,20 @@
       "viewAll": "Προβολή όλων",
       "completedProjectsTitle": "Ολοκληρωμένες Παραγωγές"
     },
+    "agreement": {
+      "title": "Η Συμφωνία Μου",
+      "package": "Το πακέτο σας: {name}",
+      "includes": "Περιλαμβάνει",
+      "monthlyPrice": "Μηνιαία τιμή",
+      "remainingThisMonth": "Απομένουν αυτόν τον μήνα",
+      "allowanceUnit": {
+        "days": "ημέρες",
+        "slots": "ζώνες"
+      },
+      "noAgreementTitle": "Δεν υπάρχει ενεργή συμφωνία",
+      "noAgreementBody": "Δεν έχετε ακόμη ενεργή συμφωνία. Επικοινωνήστε μαζί μας για να τη ρυθμίσουμε.",
+      "contactUs": "Επικοινωνήστε μαζί μας"
+    },
     "projects": {
       "title": "Οι Παραγωγές Μου",
       "description": "Τα παραγωγές παραγωγής βίντεο σας",
