@@ -740,6 +740,7 @@
     "assignScopeLabel": "What to assign",
     "assignScopeProduction": "Whole production",
     "assignScopeTask": "Specific task",
+    "assignEmployees": "Assign employees",
     "taskTitlePlaceholder": "e.g. Video editing",
     "taskTitleRequired": "Enter a task title.",
     "assignAfterCreateFailed": "Production created, but the assignment failed — try again from the production page.",
