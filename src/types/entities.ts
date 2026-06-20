@@ -345,6 +345,8 @@ export type FilmingRequest = {
   title: string;
   description: string | null;
   preferred_dates: Array<{ date?: string; time_slot?: string }> | null;
+  booking_date: string | null;
+  slot_id: string | null;
   location: string | null;
   project_type: string | null;
   budget_range: string | null;

@@ -22,7 +22,12 @@ import {
   Building2,
 } from 'lucide-react';
 import { useRouter } from 'next/navigation';
-import { reviewFilmingRequest, convertToProject } from '@/lib/actions/filming-requests';
+import {
+  reviewFilmingRequest,
+  convertToProject,
+  approveHold,
+  rejectHold,
+} from '@/lib/actions/filming-requests';
 import { toast } from 'sonner';
 import { PROJECT_TYPE_LABELS } from '@/lib/constants';
 import { Separator } from '@/components/ui/separator';
@@ -108,6 +113,35 @@ export function FilmingRequestDetail({ request }: FilmingRequestDetailProps) {
     setReviewDialogOpen(true);
   };
 
+  // A "Hold" is a booking that already carries a concrete date+Slot (#78).
+  // It is approved into a confirmed Filming, or rejected to free the slot,
+  // in a single step — distinct from the legacy two-step review→convert flow.
+  const isHold = !!request.booking_date;
+
+  const handleApproveHold = async () => {
+    setLoading(true);
+    const result = await approveHold(request.id);
+    if (result.error) {
+      toast.error(result.error);
+    } else {
+      toast.success(t('holdApproved'));
+      router.push(`/admin/projects/${result.data!.id}`);
+    }
+    setLoading(false);
+  };
+
+  const handleRejectHold = async () => {
+    setLoading(true);
+    const result = await rejectHold(request.id);
+    if (result.error) {
+      toast.error(result.error);
+    } else {
+      toast.success(t('holdRejected'));
+      router.refresh();
+    }
+    setLoading(false);
+  };
+
   const BUDGET_RANGE_LABELS: Record<string, string> = {
     under_1000: t('budgetUnder1000'),
     '1000_2500': t('budget1000_2500'),
@@ -134,7 +168,24 @@ export function FilmingRequestDetail({ request }: FilmingRequestDetailProps) {
               </span>
             </div>
           </div>
-          {request.status === 'pending' && (
+          {request.status === 'pending' && isHold && (
+            <div className="flex items-center gap-2">
+              <Button
+                variant="outline"
+                onClick={handleRejectHold}
+                disabled={loading}
+                className="gap-2"
+              >
+                <X className="h-4 w-4" />
+                {t('reject')}
+              </Button>
+              <Button onClick={handleApproveHold} disabled={loading} className="gap-2">
+                <Check className="h-4 w-4" />
+                {t('approve')}
+              </Button>
+            </div>
+          )}
+          {request.status === 'pending' && !isHold && (
             <div className="flex items-center gap-2">
               <Button
                 variant="outline"
@@ -162,6 +213,23 @@ export function FilmingRequestDetail({ request }: FilmingRequestDetailProps) {
             </Button>
           )}
         </div>
+
+        {/* Booked date+slot (Hold) */}
+        {isHold && request.booking_date && (
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Calendar className="h-5 w-5" />
+                {t('bookedSlot')}
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="text-base font-medium">
+                {format(new Date(request.booking_date), 'MMMM d, yyyy')}
+              </div>
+            </CardContent>
+          </Card>
+        )}
 
         {/* Request Details */}
         <Card>
