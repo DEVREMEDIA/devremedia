@@ -9,14 +9,13 @@ import { toast } from 'sonner';
 
 import { publicBookingSchema, type PublicBookingInput } from '@/lib/schemas/filming-request';
 import { createPublicFilmingRequest } from '@/lib/actions/filming-requests';
-import { getServiceCategory, type ProjectType } from '@/lib/constants';
+import { type ProjectType } from '@/lib/constants';
 
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { BookingSuccess } from '@/components/shared/booking-success';
 import { BookingContactSection } from '@/components/shared/booking-contact-section';
 import { BookingProjectTypeSection } from '@/components/shared/booking-project-type-section';
-import { BookingPackageSection } from '@/components/shared/booking-package-section';
 import { BookingDetailsSection } from '@/components/shared/booking-details-section';
 import { BookingDatesSection } from '@/components/shared/booking-dates-section';
 import { BookingLocationBudgetSection } from '@/components/shared/booking-location-budget-section';
@@ -45,7 +44,6 @@ export function PublicBookingForm() {
       title: '',
       description: '',
       project_type: undefined,
-      selected_package: '',
       budget_range: '',
       location: '',
       preferred_dates: [],
@@ -58,11 +56,9 @@ export function PublicBookingForm() {
   });
 
   const selectedProjectType = watch('project_type') as ProjectType | undefined;
-  const serviceCategory = selectedProjectType ? getServiceCategory(selectedProjectType) : undefined;
 
   const handleProjectTypeSelect = (type: ProjectType) => {
     setValue('project_type', type);
-    setValue('selected_package', '');
   };
 
   const onSubmit = async (data: PublicBookingFormData) => {
@@ -94,14 +90,6 @@ export function PublicBookingForm() {
         errors={errors}
         onSelect={handleProjectTypeSelect}
       />
-
-      {serviceCategory && (
-        <BookingPackageSection
-          packages={serviceCategory.packages}
-          selectedPackage={watch('selected_package') ?? ''}
-          onSelect={(id) => setValue('selected_package', id)}
-        />
-      )}
 
       <BookingDetailsSection register={register} errors={errors} />
 

@@ -110,6 +110,8 @@ export type ProposalPackage = {
   name: string;
   video_count: number | null;
   shooting_days: number | null;
+  allowance_count: number | null;
+  allowance_unit: 'days' | 'slots';
   shooting_hours: number;
   editing_hours: number;
   price_mode: 'manual' | 'auto';
@@ -126,6 +128,27 @@ export type ProposalPackage = {
 export type ProposalPackageWithPrice = ProposalPackage & {
   computed_price: number;
   computed_cost: number;
+};
+
+// =====================================================================
+// Client Agreement — the Package a Client holds + the price agreed with
+// that Client specifically. Source of truth for "which Package may this
+// Client book". Prices are admin-internal.
+// =====================================================================
+
+export type ClientAgreement = {
+  id: string;
+  client_id: string;
+  package_id: string;
+  agreed_monthly_price: number;
+  active: boolean;
+  created_by: string | null;
+  created_at: string;
+  updated_at: string;
+};
+
+export type ClientAgreementWithPackage = ClientAgreement & {
+  package: Pick<ProposalPackage, 'id' | 'name' | 'allowance_count' | 'allowance_unit'> | null;
 };
 
 export type ProposalStatus = 'draft' | 'sent' | 'accepted' | 'rejected' | 'expired';
@@ -322,6 +345,8 @@ export type FilmingRequest = {
   title: string;
   description: string | null;
   preferred_dates: Array<{ date?: string; time_slot?: string }> | null;
+  booking_date: string | null;
+  slot_id: string | null;
   location: string | null;
   project_type: string | null;
   budget_range: string | null;

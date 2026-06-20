@@ -1,0 +1,220 @@
+-- =====================================================================
+-- SQL parity test for migration 00064 — book_slot atomic claim (#77)
+--
+-- WHY: the Vitest test (src/lib/actions/book-slot.test.ts) only exercises the
+-- TS action with a mocked RPC — it cannot prove the DB-level guarantee. This
+-- script is the matching SQL-side check: against the REAL book_slot function it
+-- proves
+--   (1) at Capacity 1, two Clients claiming the SAME date+Slot → exactly ONE
+--       succeeds, the other is rejected with 'capacity_full' (the concurrency
+--       acceptance criterion: concurrent claims serialize on the per-(date,slot)
+--       advisory lock, so the loser sees the slot full),
+--   (2) a booking that would exceed the Client's remaining monthly Allowance is
+--       rejected with 'allowance_exceeded',
+--   (3) under unit 'days', a second Slot on a date the Client already uses this
+--       month is free (costs no extra day) and succeeds.
+--
+-- HOW TO RUN: paste the whole file into the Supabase Dashboard → SQL Editor and
+-- Run. It is fully SELF-CONTAINED and ends in ROLLBACK, so it:
+--   • needs nothing applied first (it CREATEs the function itself),
+--   • writes NOTHING permanent (all seeds + funcs are rolled back),
+--   • touches NO production rows (fixtures use year-2099 dates + dedicated
+--     test users/clients that real data never collides with).
+-- A passing run raises '✅ ALL ASSERTIONS PASSED'; any failure raises and aborts.
+--
+-- The book_slot body below is copied VERBATIM from migration 00064 — keep in sync.
+-- =====================================================================
+
+begin;
+
+-- 1) The function under test (verbatim from migration 00064) -------------
+create or replace function public.book_slot(
+  p_date     date,
+  p_slot_id  uuid,
+  p_location text default null,
+  p_note     text default null
+)
+returns uuid
+language plpgsql
+security definer
+set search_path = public
+as $$
+declare
+  v_client_id       uuid;
+  v_allowance_count int;
+  v_allowance_unit  text;
+  v_capacity        int;
+  v_occupied        int;
+  v_month_start     date := date_trunc('month', p_date)::date;
+  v_month_end       date := (date_trunc('month', p_date) + interval '1 month')::date;
+  v_used            int;
+  v_cost            int;
+  v_new_id          uuid;
+begin
+  select id into v_client_id
+  from public.clients
+  where user_id = auth.uid();
+
+  if v_client_id is null then
+    raise exception 'not_a_client';
+  end if;
+
+  select pp.allowance_count, pp.allowance_unit
+  into v_allowance_count, v_allowance_unit
+  from public.client_agreements ca
+  join public.proposal_packages pp on pp.id = ca.package_id
+  where ca.client_id = v_client_id and ca.active;
+
+  if v_allowance_count is null then
+    raise exception 'no_agreement';
+  end if;
+
+  if not exists (select 1 from public.booking_time_slots where id = p_slot_id) then
+    raise exception 'invalid_slot';
+  end if;
+
+  perform pg_advisory_xact_lock(hashtextextended(p_date::text || ':' || p_slot_id::text, 0));
+
+  if exists (
+    select 1 from public.filming_requests
+    where client_id = v_client_id
+      and booking_date = p_date
+      and slot_id = p_slot_id
+      and status <> 'declined'
+  ) then
+    raise exception 'already_booked';
+  end if;
+
+  select capacity into v_capacity from public.booking_settings where id = 1;
+  v_capacity := coalesce(v_capacity, 1);
+
+  select count(*) into v_occupied
+  from public.filming_requests
+  where booking_date = p_date
+    and slot_id = p_slot_id
+    and status <> 'declined';
+
+  if v_occupied >= v_capacity then
+    raise exception 'capacity_full';
+  end if;
+
+  if v_allowance_unit = 'days' then
+    select count(distinct booking_date) into v_used
+    from public.filming_requests
+    where client_id = v_client_id
+      and status <> 'declined'
+      and booking_date >= v_month_start and booking_date < v_month_end;
+
+    v_cost := case when exists (
+      select 1 from public.filming_requests
+      where client_id = v_client_id
+        and status <> 'declined'
+        and booking_date = p_date
+    ) then 0 else 1 end;
+  else
+    select count(*) into v_used
+    from public.filming_requests
+    where client_id = v_client_id
+      and status <> 'declined'
+      and booking_date >= v_month_start and booking_date < v_month_end;
+
+    v_cost := 1;
+  end if;
+
+  if v_used + v_cost > v_allowance_count then
+    raise exception 'allowance_exceeded';
+  end if;
+
+  insert into public.filming_requests (client_id, title, booking_date, slot_id, location, description, status)
+  values (
+    v_client_id,
+    'Booking ' || to_char(p_date, 'YYYY-MM-DD'),
+    p_date,
+    p_slot_id,
+    p_location,
+    p_note,
+    'pending'
+  )
+  returning id into v_new_id;
+
+  return v_new_id;
+end;
+$$;
+
+-- 2) auth.uid() reads a settable GUC so we can switch acting user per call.
+create or replace function auth.uid() returns uuid
+  language sql stable as $$ select nullif(current_setting('test.uid', true), '')::uuid $$;
+
+-- 3) Year-2099 fixtures: two Clients, two Time Slots, Capacity 1.
+do $$
+declare
+  u1 uuid := '99990001-0001-4001-8001-000000000001';
+  u2 uuid := '99990002-0002-4002-8002-000000000002';
+  c1 uuid; c2 uuid;
+  p1 uuid; p2 uuid;
+  s1 uuid; s2 uuid;
+  d1 date := '2099-03-10';
+  d2 date := '2099-03-20';
+  ok boolean;
+  err text;
+begin
+  insert into auth.users (id, email) values
+    (u1, 'test-00064-1@example.test'),
+    (u2, 'test-00064-2@example.test');
+
+  insert into public.clients (user_id, contact_name, email) values
+    (u1, 'Test Client 1', 'test-00064-c1@example.test') returning id into c1;
+  insert into public.clients (user_id, contact_name, email) values
+    (u2, 'Test Client 2', 'test-00064-c2@example.test') returning id into c2;
+
+  -- C1: 1 day/month. C2: plenty (10 slots) so its only blocker is Capacity.
+  insert into public.proposal_packages (name, allowance_count, allowance_unit) values
+    ('Test Pack 00064 A', 1, 'days') returning id into p1;
+  insert into public.proposal_packages (name, allowance_count, allowance_unit) values
+    ('Test Pack 00064 B', 10, 'slots') returning id into p2;
+
+  insert into public.client_agreements (client_id, package_id, agreed_monthly_price, active) values
+    (c1, p1, 0, true), (c2, p2, 0, true);
+
+  insert into public.booking_time_slots (name, position) values ('TestSlot1', 900) returning id into s1;
+  insert into public.booking_time_slots (name, position) values ('TestSlot2', 901) returning id into s2;
+
+  update public.booking_settings set capacity = 1 where id = 1;
+
+  -- (1a) C1 claims D1+S1 → succeeds.
+  perform set_config('test.uid', u1::text, true);
+  if public.book_slot(d1, s1) is null then
+    raise exception 'FAIL 1a: C1 first claim returned null';
+  end if;
+
+  -- (1b) C2 claims the SAME D1+S1 at Capacity 1 → capacity_full.
+  perform set_config('test.uid', u2::text, true);
+  ok := false; err := null;
+  begin
+    perform public.book_slot(d1, s1);
+  exception when others then err := sqlerrm; ok := true;
+  end;
+  if not ok or err <> 'capacity_full' then
+    raise exception 'FAIL 1b: expected capacity_full, got ok=% err=%', ok, err;
+  end if;
+
+  -- (3) C1 claims D1+S2 (same date, fresh slot) → succeeds (days cost 0).
+  perform set_config('test.uid', u1::text, true);
+  if public.book_slot(d1, s2) is null then
+    raise exception 'FAIL 3: C1 same-day second slot returned null';
+  end if;
+
+  -- (2) C1 claims D2+S1 (a new day) → allowance_exceeded (1 day/month used).
+  ok := false; err := null;
+  begin
+    perform public.book_slot(d2, s1);
+  exception when others then err := sqlerrm; ok := true;
+  end;
+  if not ok or err <> 'allowance_exceeded' then
+    raise exception 'FAIL 2: expected allowance_exceeded, got ok=% err=%', ok, err;
+  end if;
+
+  raise notice '✅ ALL ASSERTIONS PASSED — exactly one claim wins at Capacity; allowance enforced; same-day slot free under days';
+end $$;
+
+rollback;

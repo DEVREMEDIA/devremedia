@@ -16,6 +16,8 @@ function shape(row: Record<string, unknown>): ProposalPackage {
     name: String(row.name),
     video_count: row.video_count == null ? null : Number(row.video_count),
     shooting_days: row.shooting_days == null ? null : Number(row.shooting_days),
+    allowance_count: row.allowance_count == null ? null : Number(row.allowance_count),
+    allowance_unit: (row.allowance_unit as ProposalPackage['allowance_unit']) ?? 'days',
     shooting_hours: Number(row.shooting_hours ?? 0),
     editing_hours: Number(row.editing_hours ?? 0),
     price_mode: (row.price_mode as ProposalPackage['price_mode']) ?? 'manual',

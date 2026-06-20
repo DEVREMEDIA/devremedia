@@ -3,7 +3,9 @@ import { getProjects } from '@/lib/actions/projects';
 import { getInvoices } from '@/lib/actions/invoices';
 import { getDeliverablesByProject } from '@/lib/actions/deliverables';
 import { getMyContracts } from '@/lib/actions/contracts';
+import { getMyAgreement } from '@/lib/actions/my-agreement';
 import { redirect } from 'next/navigation';
+import { MyAgreementCard } from '@/components/client/dashboard/my-agreement-card';
 import { ActiveProjects } from '@/components/client/dashboard/active-projects';
 import { PendingActions } from '@/components/client/dashboard/pending-actions';
 import { RecentDeliverables } from '@/components/client/dashboard/recent-deliverables';
@@ -69,6 +71,10 @@ export default async function ClientDashboardPage() {
   const contractsResult = await getMyContracts();
   const contracts = contractsResult.data ?? [];
 
+  // Fetch the client's own Agreement (package, agreed price, remaining allowance)
+  const agreementResult = await getMyAgreement();
+  const agreement = agreementResult.data;
+
   // Contracts awaiting signature
   const unsignedContracts = contracts.filter((c) => c.status === 'sent' || c.status === 'viewed');
 
@@ -102,6 +108,9 @@ export default async function ClientDashboardPage() {
             .length
         }
       />
+
+      {/* My Agreement — package, agreed price, remaining allowance this month */}
+      <MyAgreementCard agreement={agreement} />
 
       {/* Active Projects with timeline */}
       <ActiveProjects projects={activeProjects} />
