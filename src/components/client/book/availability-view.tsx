@@ -2,6 +2,7 @@ import { getLocale, getTranslations } from 'next-intl/server';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { cn } from '@/lib/utils';
+import { BookSlotButton } from '@/components/client/book/book-slot-button';
 import type { ClientAvailability } from '@/lib/actions/booking-availability';
 
 interface AvailabilityViewProps {
@@ -45,9 +46,16 @@ export async function AvailabilityView({ availability }: AvailabilityViewProps) 
                   <span className={cn(!slot.available && 'text-muted-foreground')}>
                     {slot.slot_name}
                   </span>
-                  <Badge variant={slot.available ? 'default' : 'secondary'}>
-                    {slot.available ? t('available') : t(`unavailable.${slot.reason}`)}
-                  </Badge>
+                  {slot.available ? (
+                    <BookSlotButton
+                      date={day.date}
+                      slotId={slot.slot_id}
+                      slotName={slot.slot_name}
+                      dateLabel={formatDate(day.date, locale)}
+                    />
+                  ) : (
+                    <Badge variant="secondary">{t(`unavailable.${slot.reason}`)}</Badge>
+                  )}
                 </div>
               ))}
             </CardContent>
