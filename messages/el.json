@@ -2542,5 +2542,19 @@
       "saveSuccess": "Αποθηκεύτηκε",
       "saveError": "Αποτυχία αποθήκευσης"
     }
+  },
+
+  "notificationsPage": {
+    "title": "Ειδοποιήσεις",
+    "tabAll": "Όλες",
+    "tabUnread": "Μη αναγνωσμένες",
+    "groupToday": "Σήμερα",
+    "groupYesterday": "Χθες",
+    "groupEarlier": "Παλαιότερα",
+    "loadMore": "Φόρτωση περισσότερων",
+    "markAllRead": "Σήμανση όλων ως αναγνωσμένα",
+    "empty": "Δεν υπάρχουν ειδοποιήσεις",
+    "emptyUnread": "Δεν υπάρχουν μη αναγνωσμένες ειδοποιήσεις",
+    "seeAll": "Δείτε όλες"
   }
 }

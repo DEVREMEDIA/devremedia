@@ -1,6 +1,9 @@
 'use client';
 
 import { useEffect, useState, useCallback } from 'react';
+import { useRouter } from 'next/navigation';
+import { useTranslations } from 'next-intl';
+import { toast } from 'sonner';
 import { createClient } from '@/lib/supabase/client';
 import {
   getMyNotifications,
@@ -21,6 +24,8 @@ interface UseNotificationsResult {
 export function useNotifications(currentUserId: string | null): UseNotificationsResult {
   const [notifications, setNotifications] = useState<Notification[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const router = useRouter();
+  const t = useTranslations('common');
 
   const unreadCount = notifications.filter((n) => !n.read).length;
 
@@ -66,6 +71,18 @@ export function useNotifications(currentUserId: string | null): UseNotifications
         (payload: any) => {
           const newNotification = payload.new as Notification;
           setNotifications((prev) => [newNotification, ...prev]);
+
+          // Discreet, clickable toast so a new notification is noticed while
+          // the user is in the app, beyond the silent badge bump.
+          toast(newNotification.title, {
+            description: newNotification.body ?? undefined,
+            action: newNotification.action_url
+              ? {
+                  label: t('view'),
+                  onClick: () => router.push(newNotification.action_url!),
+                }
+              : undefined,
+          });
         },
       )
       .subscribe();
@@ -73,7 +90,7 @@ export function useNotifications(currentUserId: string | null): UseNotifications
     return () => {
       supabase.removeChannel(channel);
     };
-  }, [currentUserId, fetchNotifications]);
+  }, [currentUserId, fetchNotifications, router, t]);
 
   return {
     notifications,
