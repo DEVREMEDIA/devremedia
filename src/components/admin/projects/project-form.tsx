@@ -8,6 +8,7 @@ import { ProjectWithClient, Client } from '@/types';
 import { createProject, updateProject, assignProject } from '@/lib/actions/projects';
 import { createTask } from '@/lib/actions/tasks';
 import { TeamMemberSelect } from '@/components/shared/team-member-select';
+import { TeamMemberMultiSelect } from '@/components/shared/team-member-multi-select';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { PROJECT_TYPES, PROJECT_TYPE_LABELS, PRIORITIES, PRIORITY_LABELS } from '@/lib/constants';
 import { Button } from '@/components/ui/button';
@@ -67,12 +68,13 @@ export function ProjectForm({ project, clients, onSuccess }: ProjectFormProps) {
   const autoPrefixRef = useRef<string | null>(null);
 
   // Optional assignment block, shown only while creating a new Production.
-  // A Production can be handed to a single team member either as a whole
-  // (assignScope 'production' -> projects.assigned_to) or as one discrete
-  // Task (assignScope 'task' -> a new tasks row). See CONTEXT.md "Task".
+  // Whole-production scope hands it to a single owner (projects.assigned_to);
+  // task scope creates one Task per selected member (a tasks row each), since
+  // a Task holds a single assignee. See CONTEXT.md "Task".
   const isCreating = !project;
-  const [assigneeId, setAssigneeId] = useState<string | null>(null);
   const [assignScope, setAssignScope] = useState<'production' | 'task'>('production');
+  const [ownerId, setOwnerId] = useState<string | null>(null);
+  const [taskAssigneeIds, setTaskAssigneeIds] = useState<string[]>([]);
   const [taskTitle, setTaskTitle] = useState('');
 
   // On NEW productions, prefill the title with "{Client} — " so the client is
@@ -93,8 +95,8 @@ export function ProjectForm({ project, clients, onSuccess }: ProjectFormProps) {
   }, [selectedClientId, project, clients, form]);
 
   const onSubmit = async (data: FormData) => {
-    // Block submit if an assignment was started but is incomplete.
-    if (isCreating && assigneeId && assignScope === 'task' && !taskTitle.trim()) {
+    // Block submit if a task assignment was started but has no title.
+    if (isCreating && assignScope === 'task' && taskAssigneeIds.length > 0 && !taskTitle.trim()) {
       toast.error(t('taskTitleRequired'));
       return;
     }
@@ -115,20 +117,26 @@ export function ProjectForm({ project, clients, onSuccess }: ProjectFormProps) {
       toast.success(t('projectCreated'));
 
       // Production exists now — apply the optional assignment. Both paths fire
-      // the assignee's notification. If only this step fails, the Production is
-      // kept and the user is told to retry from the production page.
-      if (assigneeId) {
-        const assign =
-          assignScope === 'task'
-            ? await createTask({
-                title: taskTitle.trim(),
-                project_id: result.data.id,
-                assigned_to: assigneeId,
-              })
-            : await assignProject(result.data.id, assigneeId);
-        if (assign.error) {
-          toast.warning(t('assignAfterCreateFailed'));
-        }
+      // the assignee notification. Task scope creates one Task per member. If
+      // only this step fails, the Production is kept and the user is warned.
+      let assignFailed = false;
+      if (assignScope === 'task' && taskAssigneeIds.length > 0) {
+        const results = await Promise.all(
+          taskAssigneeIds.map((userId) =>
+            createTask({
+              title: taskTitle.trim(),
+              project_id: result.data!.id,
+              assigned_to: userId,
+            }),
+          ),
+        );
+        assignFailed = results.some((r) => r.error);
+      } else if (assignScope === 'production' && ownerId) {
+        const assign = await assignProject(result.data.id, ownerId);
+        assignFailed = !!assign.error;
+      }
+      if (assignFailed) {
+        toast.warning(t('assignAfterCreateFailed'));
       }
     }
 
@@ -350,35 +358,42 @@ export function ProjectForm({ project, clients, onSuccess }: ProjectFormProps) {
           <div className="space-y-4 rounded-lg border p-4">
             <p className="text-sm font-medium">{t('assignmentSectionTitle')}</p>
 
-            <div className="space-y-2">
-              <FormLabel>{t('assignEmployee')}</FormLabel>
-              <TeamMemberSelect value={assigneeId} onValueChange={setAssigneeId} />
+            <div className="space-y-3">
+              <FormLabel>{t('assignScopeLabel')}</FormLabel>
+              <RadioGroup
+                value={assignScope}
+                onValueChange={(v) => setAssignScope(v as 'production' | 'task')}
+              >
+                <label className="flex items-center gap-2 text-sm font-normal">
+                  <RadioGroupItem value="production" />
+                  {t('assignScopeProduction')}
+                </label>
+                <label className="flex items-center gap-2 text-sm font-normal">
+                  <RadioGroupItem value="task" />
+                  {t('assignScopeTask')}
+                </label>
+              </RadioGroup>
             </div>
 
-            {assigneeId && (
+            {assignScope === 'production' ? (
+              <div className="space-y-2">
+                <FormLabel>{t('assignEmployee')}</FormLabel>
+                <TeamMemberSelect value={ownerId} onValueChange={setOwnerId} />
+              </div>
+            ) : (
               <div className="space-y-3">
-                <FormLabel>{t('assignScopeLabel')}</FormLabel>
-                <RadioGroup
-                  value={assignScope}
-                  onValueChange={(v) => setAssignScope(v as 'production' | 'task')}
-                >
-                  <label className="flex items-center gap-2 text-sm font-normal">
-                    <RadioGroupItem value="production" />
-                    {t('assignScopeProduction')}
-                  </label>
-                  <label className="flex items-center gap-2 text-sm font-normal">
-                    <RadioGroupItem value="task" />
-                    {t('assignScopeTask')}
-                  </label>
-                </RadioGroup>
-
-                {assignScope === 'task' && (
-                  <Input
-                    placeholder={t('taskTitlePlaceholder')}
-                    value={taskTitle}
-                    onChange={(e) => setTaskTitle(e.target.value)}
+                <div className="space-y-2">
+                  <FormLabel>{t('assignEmployees')}</FormLabel>
+                  <TeamMemberMultiSelect
+                    value={taskAssigneeIds}
+                    onValueChange={setTaskAssigneeIds}
                   />
-                )}
+                </div>
+                <Input
+                  placeholder={t('taskTitlePlaceholder')}
+                  value={taskTitle}
+                  onChange={(e) => setTaskTitle(e.target.value)}
+                />
               </div>
             )}
           </div>

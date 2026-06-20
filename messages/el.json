@@ -740,6 +740,7 @@
     "assignScopeLabel": "Τι αναθέτεις",
     "assignScopeProduction": "Όλη την παραγωγή",
     "assignScopeTask": "Συγκεκριμένη εργασία",
+    "assignEmployees": "Ανάθεση σε υπαλλήλους",
     "taskTitlePlaceholder": "π.χ. Μοντάζ βίντεο",
     "taskTitleRequired": "Δώσε τίτλο εργασίας.",
     "assignAfterCreateFailed": "Η παραγωγή δημιουργήθηκε, αλλά η ανάθεση απέτυχε — δοκίμασε ξανά από την καρτέλα της παραγωγής.",
