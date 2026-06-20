@@ -5,8 +5,10 @@ import { CompanyProfile } from '@/components/admin/settings/company-profile';
 import { BrandingSettings } from '@/components/admin/settings/branding-settings';
 import { StripeConfig } from '@/components/admin/settings/stripe-config';
 import { NotificationSettingsComponent } from '@/components/admin/settings/notification-settings';
+import { BookingSettings } from '@/components/admin/settings/booking-settings';
 import { getTeamMembers } from '@/lib/actions/team';
 import { getCompanySettings, getNotificationSettings } from '@/lib/actions/settings';
+import { getBookingConfig } from '@/lib/actions/booking-config';
 import { createClient } from '@/lib/supabase/server';
 import { getTranslations } from 'next-intl/server';
 
@@ -17,10 +19,16 @@ export default async function SettingsPage() {
     data: { user },
   } = await supabase.auth.getUser();
 
-  const [teamMembersResult, companySettingsResult, notificationSettingsResult] = await Promise.all([
+  const [
+    teamMembersResult,
+    companySettingsResult,
+    notificationSettingsResult,
+    bookingConfigResult,
+  ] = await Promise.all([
     getTeamMembers(),
     getCompanySettings(),
     user ? getNotificationSettings(user.id) : null,
+    getBookingConfig(),
   ]);
 
   const teamMembers = teamMembersResult.data ?? [];
@@ -35,6 +43,7 @@ export default async function SettingsPage() {
     profession: 'ΥΠΗΡΕΣΙΕΣ ΦΩΤΟΓΡΑΦΙΣΗΣ ΚΑΙ ΒΙΝΤΕΟΣΚΟΠΗΣΗΣ',
     primary_color: null,
   };
+  const bookingConfig = bookingConfigResult.data ?? { time_slots: [], capacity: 1 };
   const notificationSettings = notificationSettingsResult?.data ?? {
     email_new_project: true,
     email_project_deadline: true,
@@ -54,6 +63,7 @@ export default async function SettingsPage() {
             <TabsTrigger value="team">{t('team')}</TabsTrigger>
             <TabsTrigger value="branding">{t('branding')}</TabsTrigger>
             <TabsTrigger value="integrations">{t('integrations')}</TabsTrigger>
+            <TabsTrigger value="booking">{t('booking')}</TabsTrigger>
             <TabsTrigger value="notifications">{t('notificationPreferences')}</TabsTrigger>
           </TabsList>
         </div>
@@ -72,6 +82,10 @@ export default async function SettingsPage() {
 
         <TabsContent value="integrations" className="space-y-6">
           <StripeConfig />
+        </TabsContent>
+
+        <TabsContent value="booking" className="space-y-6">
+          <BookingSettings config={bookingConfig} />
         </TabsContent>
 
         <TabsContent value="notifications" className="space-y-6">
