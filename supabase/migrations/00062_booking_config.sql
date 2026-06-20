@@ -1,5 +1,5 @@
 -- =====================================================================
--- 00061 — Booking configuration: Time Slots + global Capacity (#74)
+-- 00062 — Booking configuration: Time Slots + global Capacity (#74)
 --
 -- Two admin-managed inputs the availability calculation will use later:
 --   * booking_time_slots — an ordered list of named parts of a day

@@ -5,7 +5,7 @@
 -- Supabase client (src/lib/actions/filming-requests-hold.test.ts) — that proves
 -- the action writes the right status, but NOT the DB-level capacity/allowance
 -- consequence. Resolution works purely by flipping filming_requests.status, and
--- the atomic claim (book_slot, migration 00063) counts only rows where
+-- the atomic claim (book_slot, migration 00064) counts only rows where
 -- status <> 'declined'. This script proves, against the REAL book_slot:
 --   (1) APPROVE keeps the spot taken — a Hold moved to 'converted' (a confirmed
 --       Filming) still occupies Capacity, so a second Client claiming the same
@@ -23,12 +23,12 @@
 -- (year-2099 dates + dedicated test users). A pass raises '✅ ALL ASSERTIONS
 -- PASSED'; any failure raises and aborts.
 --
--- The book_slot body below is copied VERBATIM from migration 00063 — keep in sync.
+-- The book_slot body below is copied VERBATIM from migration 00064 — keep in sync.
 -- =====================================================================
 
 begin;
 
--- 1) The function under test (verbatim from migration 00063) -------------
+-- 1) The function under test (verbatim from migration 00064) -------------
 create or replace function public.book_slot(
   p_date     date,
   p_slot_id  uuid,

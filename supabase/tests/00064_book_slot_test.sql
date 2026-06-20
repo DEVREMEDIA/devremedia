@@ -1,5 +1,5 @@
 -- =====================================================================
--- SQL parity test for migration 00063 — book_slot atomic claim (#77)
+-- SQL parity test for migration 00064 — book_slot atomic claim (#77)
 --
 -- WHY: the Vitest test (src/lib/actions/book-slot.test.ts) only exercises the
 -- TS action with a mocked RPC — it cannot prove the DB-level guarantee. This
@@ -22,12 +22,12 @@
 --     test users/clients that real data never collides with).
 -- A passing run raises '✅ ALL ASSERTIONS PASSED'; any failure raises and aborts.
 --
--- The book_slot body below is copied VERBATIM from migration 00063 — keep in sync.
+-- The book_slot body below is copied VERBATIM from migration 00064 — keep in sync.
 -- =====================================================================
 
 begin;
 
--- 1) The function under test (verbatim from migration 00063) -------------
+-- 1) The function under test (verbatim from migration 00064) -------------
 create or replace function public.book_slot(
   p_date     date,
   p_slot_id  uuid,
@@ -159,19 +159,19 @@ declare
   err text;
 begin
   insert into auth.users (id, email) values
-    (u1, 'test-00063-1@example.test'),
-    (u2, 'test-00063-2@example.test');
+    (u1, 'test-00064-1@example.test'),
+    (u2, 'test-00064-2@example.test');
 
   insert into public.clients (user_id, contact_name, email) values
-    (u1, 'Test Client 1', 'test-00063-c1@example.test') returning id into c1;
+    (u1, 'Test Client 1', 'test-00064-c1@example.test') returning id into c1;
   insert into public.clients (user_id, contact_name, email) values
-    (u2, 'Test Client 2', 'test-00063-c2@example.test') returning id into c2;
+    (u2, 'Test Client 2', 'test-00064-c2@example.test') returning id into c2;
 
   -- C1: 1 day/month. C2: plenty (10 slots) so its only blocker is Capacity.
   insert into public.proposal_packages (name, allowance_count, allowance_unit) values
-    ('Test Pack 00063 A', 1, 'days') returning id into p1;
+    ('Test Pack 00064 A', 1, 'days') returning id into p1;
   insert into public.proposal_packages (name, allowance_count, allowance_unit) values
-    ('Test Pack 00063 B', 10, 'slots') returning id into p2;
+    ('Test Pack 00064 B', 10, 'slots') returning id into p2;
 
   insert into public.client_agreements (client_id, package_id, agreed_monthly_price, active) values
     (c1, p1, 0, true), (c2, p2, 0, true);

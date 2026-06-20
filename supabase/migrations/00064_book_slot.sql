@@ -1,5 +1,5 @@
 -- =====================================================================
--- 00063 — Book a slot: Holds on filming_requests + atomic claim RPC (#77)
+-- 00064 — Book a slot: Holds on filming_requests + atomic claim RPC (#77)
 --
 -- A "Hold" is a filming_requests row in status 'pending' that carries a
 -- concrete booking_date + slot_id. Holds (and any non-declined later state)
