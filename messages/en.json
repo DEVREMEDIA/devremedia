@@ -1245,6 +1245,8 @@
     "titlePlaceholder": "e.g., Monthly Social Media Content",
     "descriptionLabel": "Description (Optional)",
     "descriptionPlaceholder": "Tell us about your goals, target audience, and any specific requirements...",
+    "messageLabel": "Message (Optional)",
+    "messagePlaceholder": "Tell us about your project, goals, and how we can help...",
     "datesSection": "Preferred Dates (Optional)",
     "datesHelp": "Let us know when you'd like to start. We'll confirm availability.",
     "addDate": "Add Date",

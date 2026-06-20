@@ -64,7 +64,7 @@ export const publicBookingSchema = z.object({
   contact_email: z.string().email('Invalid email').max(255),
   contact_phone: z.string().max(50).optional().or(z.literal('')),
   contact_company: z.string().max(255).optional().or(z.literal('')),
-  title: z.string().min(1, 'Title is required').max(255),
+  title: z.string().max(255).optional().or(z.literal('')),
   description: z.string().max(5000).optional().or(z.literal('')),
   project_type: z.enum(PROJECT_TYPES).optional(),
   selected_package: z.string().max(100).optional().or(z.literal('')),
