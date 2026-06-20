@@ -90,11 +90,28 @@ export async function getMyAvailability(): Promise<ActionResult<ClientAvailabili
 
     const allowance: Allowance = { count: pkg.allowance_count, unit: pkg.allowance_unit };
     const today = todayInAthens();
+    const monthStart = `${today.slice(0, 7)}-01`;
 
-    // Holds + confirmed Filmings are introduced in a later slice of #70; until
-    // then nothing occupies Capacity and the Client has no recorded usage.
-    const bookings: Booking[] = [];
-    const clientUsage: Booking[] = [];
+    // Holds (pending filming_requests with a date+Slot) and confirmed Filmings
+    // both occupy Capacity. Read every non-declined Hold in the current month;
+    // the Client's own Holds also count against their monthly Allowance.
+    const { data: holds, error: holdsError } = await admin
+      .from('filming_requests')
+      .select('client_id, booking_date, slot_id')
+      .not('booking_date', 'is', null)
+      .not('slot_id', 'is', null)
+      .neq('status', 'declined')
+      .gte('booking_date', monthStart);
+
+    if (holdsError) return { data: null, error: holdsError.message };
+
+    const bookings: Booking[] = (holds ?? []).map((h) => ({
+      date: h.booking_date as string,
+      slot_id: h.slot_id as string,
+    }));
+    const clientUsage: Booking[] = (holds ?? [])
+      .filter((h) => h.client_id === clientRecord.id)
+      .map((h) => ({ date: h.booking_date as string, slot_id: h.slot_id as string }));
 
     const result = computeAvailability({
       dates: datesToMonthEnd(today),
