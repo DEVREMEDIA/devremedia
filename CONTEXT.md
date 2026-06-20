@@ -19,6 +19,10 @@ _Avoid_: Customer, account
 **Deliverable**:
 A finished video/asset handed to the Client, belonging to a Production. Backed by `deliverables`.
 
+**Task (Εργασία)**:
+A discrete unit of work inside a Production, assigned to a single team member (e.g. "Μοντάζ βίντεο"). Backed by `tasks`; always belongs to one Production. Distinct from assigning the **whole** Production to an owner (`projects.assigned_to`): a Task is one part of the work, a Production owner answers for all of it. Both kinds of assignment notify the assignee.
+_Avoid_: using "ανάθεση" without saying whether it means a Task or the Production owner.
+
 **Filming Request**:
 A signed-in Client's request for a specific Filming date + Time Slot, for the Package in their Agreement. Creates a Hold and awaits admin approval; once approved it becomes a confirmed Filming. Backed by `filming_requests`.
 _Avoid_: Booking (as the canonical term); confusing it with the public "contact us" form (that creates a Lead, not a Filming Request).
