@@ -1,11 +1,14 @@
 'use client';
 
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useForm, useWatch } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { createProjectSchema } from '@/lib/schemas/project';
 import { ProjectWithClient, Client } from '@/types';
-import { createProject, updateProject } from '@/lib/actions/projects';
+import { createProject, updateProject, assignProject } from '@/lib/actions/projects';
+import { createTask } from '@/lib/actions/tasks';
+import { TeamMemberSelect } from '@/components/shared/team-member-select';
+import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { PROJECT_TYPES, PROJECT_TYPE_LABELS, PRIORITIES, PRIORITY_LABELS } from '@/lib/constants';
 import { Button } from '@/components/ui/button';
 import {
@@ -63,6 +66,15 @@ export function ProjectForm({ project, clients, onSuccess }: ProjectFormProps) {
   const selectedClientId = useWatch({ control: form.control, name: 'client_id' });
   const autoPrefixRef = useRef<string | null>(null);
 
+  // Optional assignment block, shown only while creating a new Production.
+  // A Production can be handed to a single team member either as a whole
+  // (assignScope 'production' -> projects.assigned_to) or as one discrete
+  // Task (assignScope 'task' -> a new tasks row). See CONTEXT.md "Task".
+  const isCreating = !project;
+  const [assigneeId, setAssigneeId] = useState<string | null>(null);
+  const [assignScope, setAssignScope] = useState<'production' | 'task'>('production');
+  const [taskTitle, setTaskTitle] = useState('');
+
   // On NEW productions, prefill the title with "{Client} — " so the client is
   // always part of the name (see docs/adr/0001). Runs only while creating and
   // only when the title is empty or still an untouched auto-prefix, so it never
@@ -81,19 +93,51 @@ export function ProjectForm({ project, clients, onSuccess }: ProjectFormProps) {
   }, [selectedClientId, project, clients, form]);
 
   const onSubmit = async (data: FormData) => {
-    const result = project ? await updateProject(project.id, data) : await createProject(data);
+    // Block submit if an assignment was started but is incomplete.
+    if (isCreating && assigneeId && assignScope === 'task' && !taskTitle.trim()) {
+      toast.error(t('taskTitleRequired'));
+      return;
+    }
 
-    if (!result.error) {
-      toast.success(project ? t('projectUpdated') : t('projectCreated'));
-      if (onSuccess) {
-        onSuccess();
+    if (project) {
+      const result = await updateProject(project.id, data);
+      if (result.error) {
+        toast.error(result.error);
         return;
       }
-      router.push('/admin/projects');
-      router.refresh();
+      toast.success(t('projectUpdated'));
     } else {
-      toast.error(result.error);
+      const result = await createProject(data);
+      if (result.error || !result.data) {
+        toast.error(result.error ?? t('projectCreated'));
+        return;
+      }
+      toast.success(t('projectCreated'));
+
+      // Production exists now — apply the optional assignment. Both paths fire
+      // the assignee's notification. If only this step fails, the Production is
+      // kept and the user is told to retry from the production page.
+      if (assigneeId) {
+        const assign =
+          assignScope === 'task'
+            ? await createTask({
+                title: taskTitle.trim(),
+                project_id: result.data.id,
+                assigned_to: assigneeId,
+              })
+            : await assignProject(result.data.id, assigneeId);
+        if (assign.error) {
+          toast.warning(t('assignAfterCreateFailed'));
+        }
+      }
     }
+
+    if (onSuccess) {
+      onSuccess();
+      return;
+    }
+    router.push('/admin/projects');
+    router.refresh();
   };
 
   return (
@@ -301,6 +345,44 @@ export function ProjectForm({ project, clients, onSuccess }: ProjectFormProps) {
             )}
           />
         </div>
+
+        {isCreating && (
+          <div className="space-y-4 rounded-lg border p-4">
+            <p className="text-sm font-medium">{t('assignmentSectionTitle')}</p>
+
+            <div className="space-y-2">
+              <FormLabel>{t('assignEmployee')}</FormLabel>
+              <TeamMemberSelect value={assigneeId} onValueChange={setAssigneeId} />
+            </div>
+
+            {assigneeId && (
+              <div className="space-y-3">
+                <FormLabel>{t('assignScopeLabel')}</FormLabel>
+                <RadioGroup
+                  value={assignScope}
+                  onValueChange={(v) => setAssignScope(v as 'production' | 'task')}
+                >
+                  <label className="flex items-center gap-2 text-sm font-normal">
+                    <RadioGroupItem value="production" />
+                    {t('assignScopeProduction')}
+                  </label>
+                  <label className="flex items-center gap-2 text-sm font-normal">
+                    <RadioGroupItem value="task" />
+                    {t('assignScopeTask')}
+                  </label>
+                </RadioGroup>
+
+                {assignScope === 'task' && (
+                  <Input
+                    placeholder={t('taskTitlePlaceholder')}
+                    value={taskTitle}
+                    onChange={(e) => setTaskTitle(e.target.value)}
+                  />
+                )}
+              </div>
+            )}
+          </div>
+        )}
 
         <div className="flex gap-4">
           <Button type="submit" disabled={form.formState.isSubmitting}>
