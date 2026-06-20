@@ -63,6 +63,20 @@ _Avoid_: Signup, registration (those imply the user enters their own details)
 What an invitee does after following the invitation link: they review their admin-entered details (shown read-only) and set a password. That single step is the whole of their first sign-in — there is no profile form to fill.
 _Avoid_: Onboarding (the old name, when the invitee filled out their own name/company/phone — that data-entry step no longer exists), Sign-up
 
+## Notifications
+
+**Notification**:
+An in-app message to a single user about a system event (status change, new message, invoice, etc.). Backed by the `notifications` table; delivered in realtime while the user is in the app, surfaced both in the header bell (quick glance) and a dedicated per-role Notifications page (full, readable log with read/unread state). One user only ever sees their own.
+_Avoid_: confusing it with Email (a separate channel) or "Push".
+
+**Email**:
+A message sent to the user's inbox via Resend for a subset of events. A separate delivery channel from a Notification, not a replacement for it.
+_Avoid_: treating an Email as the same thing as an in-app Notification.
+
+**Web Push**:
+OS/browser-level push that arrives even when the app is closed (Push API + service worker + VAPID). **Not built** — when a Client asks for "PUSH", confirm intent: so far it has meant "make in-app Notifications easier to read", not true Web Push.
+_Avoid_: assuming "PUSH" means Web Push; it has meant the in-app Notifications log.
+
 ## Finance
 
 **Revenue (Τζίρος)**:

@@ -2542,5 +2542,19 @@
       "saveSuccess": "Saved",
       "saveError": "Failed to save"
     }
+  },
+
+  "notificationsPage": {
+    "title": "Notifications",
+    "tabAll": "All",
+    "tabUnread": "Unread",
+    "groupToday": "Today",
+    "groupYesterday": "Yesterday",
+    "groupEarlier": "Earlier",
+    "loadMore": "Load more",
+    "markAllRead": "Mark all as read",
+    "empty": "No notifications",
+    "emptyUnread": "No unread notifications",
+    "seeAll": "See all"
   }
 }

@@ -6,6 +6,17 @@ import type { ActionResult, Notification } from '@/types/index';
 import { revalidatePath } from 'next/cache';
 import { TYPE_TO_PREFERENCE } from '@/lib/notification-types';
 
+const NOTIFICATION_ROLES = ['admin', 'client', 'employee', 'salesman'] as const;
+
+// Keep the bell (dashboard) and the dedicated Notifications page in sync after
+// a read state change, across every role surface.
+function revalidateNotificationSurfaces(): void {
+  for (const role of NOTIFICATION_ROLES) {
+    revalidatePath(`/${role}/dashboard`);
+    revalidatePath(`/${role}/notifications`);
+  }
+}
+
 // --- Helper functions ---
 
 export async function getClientUserIdFromProject(projectId: string): Promise<string | null> {
@@ -128,6 +139,56 @@ export async function getMyNotifications(): Promise<ActionResult<Notification[]>
   }
 }
 
+export interface NotificationsPage {
+  notifications: Notification[];
+  hasMore: boolean;
+}
+
+interface GetNotificationsPageInput {
+  offset?: number;
+  limit?: number;
+  filter?: 'all' | 'unread';
+}
+
+export async function getMyNotificationsPage({
+  offset = 0,
+  limit = 20,
+  filter = 'all',
+}: GetNotificationsPageInput = {}): Promise<ActionResult<NotificationsPage>> {
+  try {
+    const { supabase, user, error: authError } = await requireUser();
+    if (authError) return { data: null, error: authError };
+
+    // Fetch one extra row to determine whether more pages exist.
+    let query = supabase
+      .from('notifications')
+      .select(
+        'id, user_id, type, title, body, read, action_url, action_type, action_data, created_at',
+      )
+      .eq('user_id', user.id);
+
+    if (filter === 'unread') query = query.eq('read', false);
+
+    const { data, error } = await query
+      .order('created_at', { ascending: false })
+      .range(offset, offset + limit);
+
+    if (error) return { data: null, error: error.message };
+
+    const rows = (data ?? []) as Notification[];
+    const hasMore = rows.length > limit;
+    return {
+      data: { notifications: hasMore ? rows.slice(0, limit) : rows, hasMore },
+      error: null,
+    };
+  } catch (err: unknown) {
+    return {
+      data: null,
+      error: err instanceof Error ? err.message : 'Failed to fetch notifications',
+    };
+  }
+}
+
 export async function getUnreadCount(): Promise<ActionResult<number>> {
   try {
     const { supabase, user, error: authError } = await requireUser();
@@ -162,9 +223,7 @@ export async function markAsRead(id: string): Promise<ActionResult<void>> {
 
     if (error) return { data: null, error: error.message };
 
-    revalidatePath('/admin/dashboard');
-    revalidatePath('/client/dashboard');
-    revalidatePath('/employee/dashboard');
+    revalidateNotificationSurfaces();
     return { data: undefined, error: null };
   } catch (err: unknown) {
     return {
@@ -187,9 +246,7 @@ export async function markAllAsRead(): Promise<ActionResult<void>> {
 
     if (error) return { data: null, error: error.message };
 
-    revalidatePath('/admin/dashboard');
-    revalidatePath('/client/dashboard');
-    revalidatePath('/employee/dashboard');
+    revalidateNotificationSurfaces();
     return { data: undefined, error: null };
   } catch (err: unknown) {
     return {

@@ -1,7 +1,7 @@
 'use client';
 
 import { Bell, Check } from 'lucide-react';
-import { useRouter } from 'next/navigation';
+import { useRouter, usePathname } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import {
   DropdownMenu,
@@ -19,7 +19,12 @@ import type { GoogleSyncActionData } from '@/types';
 
 export function NotificationBell() {
   const t = useTranslations('common');
+  const tPage = useTranslations('notificationsPage');
   const router = useRouter();
+  const pathname = usePathname();
+  // The bell is mounted inside each role's header; route "See all" to the
+  // current role's Notifications page (first path segment is the role).
+  const role = pathname.split('/')[1] || 'admin';
   const { user } = useAuth();
   const { notifications, unreadCount, isLoading, markAsRead, markAllAsRead } = useNotifications(
     user?.id ?? null,
@@ -113,6 +118,13 @@ export function NotificationBell() {
             ))}
           </>
         )}
+        <DropdownMenuSeparator />
+        <DropdownMenuItem
+          className="text-xs text-center text-primary cursor-pointer justify-center font-medium"
+          onClick={() => router.push(`/${role}/notifications`)}
+        >
+          {tPage('seeAll')}
+        </DropdownMenuItem>
       </DropdownMenuContent>
     </DropdownMenu>
   );
