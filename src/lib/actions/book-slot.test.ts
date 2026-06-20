@@ -103,6 +103,35 @@ describe('bookSlot', () => {
     expect(mockCreateNotificationForMany).not.toHaveBeenCalled();
   });
 
+  it('reports a clear message when the Client already holds this date+slot', async () => {
+    const { client } = makeClient({
+      data: null,
+      error: { message: 'already_booked' },
+    });
+    asUser(client);
+
+    const result = await bookSlot(VALID);
+
+    expect(result.data).toBeNull();
+    expect(result.error).toBeTruthy();
+    expect(result.error).not.toMatch(/already_booked/);
+    expect(result.error).toMatch(/already/i);
+    expect(mockCreateNotificationForMany).not.toHaveBeenCalled();
+  });
+
+  it('returns a clean field message (not raw JSON) on invalid input', async () => {
+    const { client } = makeClient({ data: null, error: null });
+    asUser(client);
+
+    const result = await bookSlot({ date: 'nope', slot_id: 'nope' });
+
+    expect(result.data).toBeNull();
+    expect(result.error).toBeTruthy();
+    // Must not leak the raw ZodError JSON array of issues.
+    expect(result.error).not.toMatch(/^\s*\[/);
+    expect(result.error).toMatch(/date|time slot/i);
+  });
+
   it('validates input and does not call the RPC when the slot id is missing', async () => {
     const { client, rpc } = makeClient({ data: null, error: null });
     asUser(client);

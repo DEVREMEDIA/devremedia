@@ -1,5 +1,6 @@
 'use server';
 
+import { z } from 'zod';
 import { requireUser } from '@/lib/auth-helpers';
 import { bookSlotSchema } from '@/lib/schemas/booking';
 import { getAdminUserIds, createNotificationForMany } from '@/lib/actions/notifications';
@@ -19,6 +20,7 @@ function bookingErrorMessage(raw: string): string {
   if (raw.includes('no_agreement')) return 'You do not have an active booking agreement.';
   if (raw.includes('not_a_client')) return 'Only clients can book a slot.';
   if (raw.includes('invalid_slot')) return 'That time slot does not exist.';
+  if (raw.includes('already_booked')) return 'You have already booked this date and time slot.';
   return raw;
 }
 
@@ -60,6 +62,10 @@ export async function bookSlot(input: unknown): Promise<ActionResult<{ id: strin
 
     return { data: { id }, error: null };
   } catch (err: unknown) {
+    if (err instanceof z.ZodError) {
+      // Surface the first field's friendly message, not the raw issues JSON.
+      return { data: null, error: err.issues[0]?.message ?? 'Invalid booking details' };
+    }
     return {
       data: null,
       error: err instanceof Error ? err.message : 'Failed to book slot',
