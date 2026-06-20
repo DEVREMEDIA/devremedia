@@ -28,7 +28,7 @@ export async function getFilmingRequests(filters?: {
     let query = supabase
       .from('filming_requests')
       .select(
-        'id, client_id, title, description, preferred_dates, location, project_type, budget_range, reference_links, selected_package, status, admin_notes, converted_project_id, contact_name, contact_email, contact_phone, contact_company, created_at',
+        'id, client_id, title, description, preferred_dates, booking_date, slot_id, location, project_type, budget_range, reference_links, selected_package, status, admin_notes, converted_project_id, contact_name, contact_email, contact_phone, contact_company, created_at',
       )
       .order('created_at', { ascending: false });
 
@@ -60,7 +60,7 @@ export async function getClientFilmingRequests(): Promise<ActionResult<FilmingRe
     const { data, error } = await supabase
       .from('filming_requests')
       .select(
-        'id, client_id, title, description, preferred_dates, location, project_type, budget_range, reference_links, selected_package, status, admin_notes, converted_project_id, contact_name, contact_email, contact_phone, contact_company, created_at',
+        'id, client_id, title, description, preferred_dates, booking_date, slot_id, location, project_type, budget_range, reference_links, selected_package, status, admin_notes, converted_project_id, contact_name, contact_email, contact_phone, contact_company, created_at',
       )
       .order('created_at', { ascending: false });
 
@@ -82,7 +82,7 @@ export async function getFilmingRequest(id: string): Promise<ActionResult<Filmin
     const { data, error } = await supabase
       .from('filming_requests')
       .select(
-        'id, client_id, title, description, preferred_dates, location, project_type, budget_range, reference_links, selected_package, status, admin_notes, converted_project_id, contact_name, contact_email, contact_phone, contact_company, created_at',
+        'id, client_id, title, description, preferred_dates, booking_date, slot_id, location, project_type, budget_range, reference_links, selected_package, status, admin_notes, converted_project_id, contact_name, contact_email, contact_phone, contact_company, created_at',
       )
       .eq('id', id)
       .single();
@@ -118,7 +118,7 @@ export async function createFilmingRequest(input: unknown): Promise<ActionResult
         status: 'pending',
       })
       .select(
-        'id, client_id, title, description, preferred_dates, location, project_type, budget_range, reference_links, selected_package, status, admin_notes, converted_project_id, contact_name, contact_email, contact_phone, contact_company, created_at',
+        'id, client_id, title, description, preferred_dates, booking_date, slot_id, location, project_type, budget_range, reference_links, selected_package, status, admin_notes, converted_project_id, contact_name, contact_email, contact_phone, contact_company, created_at',
       )
       .single();
 
@@ -165,7 +165,7 @@ export async function reviewFilmingRequest(
       })
       .eq('id', id)
       .select(
-        'id, client_id, title, description, preferred_dates, location, project_type, budget_range, reference_links, selected_package, status, admin_notes, converted_project_id, contact_name, contact_email, contact_phone, contact_company, created_at',
+        'id, client_id, title, description, preferred_dates, booking_date, slot_id, location, project_type, budget_range, reference_links, selected_package, status, admin_notes, converted_project_id, contact_name, contact_email, contact_phone, contact_company, created_at',
       )
       .single();
 
@@ -208,7 +208,7 @@ export async function convertToProject(id: string): Promise<ActionResult<Project
     const { data: request, error: fetchError } = await supabase
       .from('filming_requests')
       .select(
-        'id, client_id, title, description, preferred_dates, location, project_type, budget_range, reference_links, selected_package, status, admin_notes, converted_project_id, contact_name, contact_email, contact_phone, contact_company, created_at',
+        'id, client_id, title, description, preferred_dates, booking_date, slot_id, location, project_type, budget_range, reference_links, selected_package, status, admin_notes, converted_project_id, contact_name, contact_email, contact_phone, contact_company, created_at',
       )
       .eq('id', id)
       .single();
@@ -341,6 +341,170 @@ export async function convertToProject(id: string): Promise<ActionResult<Project
       error: err instanceof Error ? err.message : 'Failed to convert filming request to project',
     };
   }
+}
+
+/**
+ * Approve a Hold into a confirmed Filming. The pending filming_request keeps its
+ * date+Slot (so it goes on counting toward Capacity and the Client's monthly
+ * Allowance — approval does NOT free the spot), one new Production is created per
+ * Filming (the existing convert behavior), the Filming is placed on the calendar,
+ * and the Client is notified. (#78)
+ */
+export async function approveHold(id: string): Promise<ActionResult<Project>> {
+  try {
+    const { supabase, user, error: authError } = await requireAdmin();
+    if (authError) return { data: null, error: authError };
+
+    const { data: hold, error: fetchError } = await supabase
+      .from('filming_requests')
+      .select('id, client_id, title, description, status, booking_date, slot_id, location')
+      .eq('id', id)
+      .single();
+
+    if (fetchError) return { data: null, error: fetchError.message };
+    if (!hold) return { data: null, error: 'Hold not found' };
+    if (hold.status !== 'pending') {
+      return { data: null, error: 'Only a pending Hold can be approved' };
+    }
+
+    // The Time Slot's name is the human-readable filming time.
+    let slotName: string | null = null;
+    if (hold.slot_id) {
+      const { data: slot } = await supabase
+        .from('booking_time_slots')
+        .select('name')
+        .eq('id', hold.slot_id)
+        .single();
+      slotName = (slot?.name as string | null) ?? null;
+    }
+
+    const filmingDate = hold.booking_date as string | null;
+
+    // One Production per confirmed Filming (unchanged behavior).
+    const { data: project, error: projectError } = await supabase
+      .from('projects')
+      .insert({
+        client_id: hold.client_id,
+        title: hold.title,
+        description: hold.description,
+        project_type: 'other',
+        status: 'briefing',
+        priority: 'medium',
+        created_by: user.id,
+        filming_date: filmingDate,
+        filming_time: slotName,
+        location: hold.location,
+      })
+      .select(
+        'id, client_id, title, description, project_type, status, priority, budget, deadline, start_date, assigned_to, filming_date, filming_time, location, shooting_hours, editing_hours, cost_per_hour_snapshot, quoted_price, created_at, updated_at',
+      )
+      .single();
+
+    if (projectError) return { data: null, error: projectError.message };
+
+    // Put the confirmed Filming on the calendar.
+    if (filmingDate) {
+      await supabase.from('calendar_events').insert({
+        title: `🎬 ${hold.title}`,
+        description: hold.location ? `📍 ${hold.location}` : null,
+        start_date: filmingDate,
+        end_date: filmingDate,
+        all_day: true,
+        event_type: 'filming',
+        created_by: user.id,
+      });
+    }
+
+    // Confirm the Hold — 'converted' still counts (approval doesn't free the spot).
+    const { error: updateError } = await supabase
+      .from('filming_requests')
+      .update({ status: 'converted', converted_project_id: project.id })
+      .eq('id', id);
+
+    if (updateError) return { data: null, error: updateError.message };
+
+    revalidatePath('/admin/filming-requests');
+    revalidatePath(`/admin/filming-requests/${id}`);
+    revalidatePath('/admin/projects');
+    revalidatePath('/admin/calendar');
+    revalidatePath('/client/book');
+    revalidatePath('/client/dashboard');
+
+    await notifyClientOfHoldOutcome(hold.client_id as string | null, hold.title as string, true);
+
+    return { data: project, error: null };
+  } catch (err: unknown) {
+    return {
+      data: null,
+      error: err instanceof Error ? err.message : 'Failed to approve Hold',
+    };
+  }
+}
+
+/**
+ * Reject a Hold. The pending filming_request is moved to 'declined', which
+ * releases its date+Slot back to Free: both the availability calculation
+ * (getMyAvailability) and the atomic claim (book_slot) count only rows where
+ * status <> 'declined', so a rejected Hold stops counting against Capacity and
+ * the Client's monthly Allowance. The Client is notified of the outcome. (#78)
+ */
+export async function rejectHold(id: string): Promise<ActionResult<FilmingRequest>> {
+  try {
+    const { supabase, error: authError } = await requireAdmin();
+    if (authError) return { data: null, error: authError };
+
+    const { data: hold, error: fetchError } = await supabase
+      .from('filming_requests')
+      .select('id, client_id, title, status, booking_date, slot_id')
+      .eq('id', id)
+      .single();
+
+    if (fetchError) return { data: null, error: fetchError.message };
+    if (!hold) return { data: null, error: 'Hold not found' };
+    if (hold.status !== 'pending') {
+      return { data: null, error: 'Only a pending Hold can be rejected' };
+    }
+
+    const { error: updateError } = await supabase
+      .from('filming_requests')
+      .update({ status: 'declined' })
+      .eq('id', id);
+
+    if (updateError) return { data: null, error: updateError.message };
+
+    revalidatePath('/admin/filming-requests');
+    revalidatePath(`/admin/filming-requests/${id}`);
+    revalidatePath('/client/book');
+    revalidatePath('/client/dashboard');
+
+    await notifyClientOfHoldOutcome(hold.client_id as string | null, hold.title as string, false);
+
+    return { data: { ...hold, status: 'declined' } as FilmingRequest, error: null };
+  } catch (err: unknown) {
+    return {
+      data: null,
+      error: err instanceof Error ? err.message : 'Failed to reject Hold',
+    };
+  }
+}
+
+/** Notify a Client that their Hold was approved or rejected (best-effort). */
+async function notifyClientOfHoldOutcome(
+  clientId: string | null,
+  title: string,
+  approved: boolean,
+): Promise<void> {
+  if (!clientId) return;
+  const clientUserId = await getClientUserIdFromClientId(clientId);
+  if (!clientUserId) return;
+  await createNotification({
+    userId: clientUserId,
+    type: NOTIFICATION_TYPES.FILMING_REQUEST_STATUS,
+    title: approved
+      ? `Your booking "${title}" was confirmed`
+      : `Your booking "${title}" was declined`,
+    actionUrl: '/client/dashboard',
+  });
 }
 
 export async function createPublicFilmingRequest(
