@@ -1642,7 +1642,21 @@
 
   "booking": {
     "title": "Book Filming",
-    "description": "Request a new filming session",
+    "description": "Your available filming dates for this month",
+    "yourPackage": "Your package: {name}",
+    "remainingAllowance": "{count} {unit} remaining this month",
+    "allowanceUnit": {
+      "days": "days",
+      "slots": "slots"
+    },
+    "available": "Available",
+    "unavailable": {
+      "capacity_full": "Full",
+      "allowance_exhausted": "Limit reached"
+    },
+    "noAgreementTitle": "No active booking plan",
+    "noAgreementBody": "You don't have an active agreement yet, so there are no dates to book. Get in touch and we'll set one up for you.",
+    "contactUs": "Contact us",
     "step": "Step",
     "projectType": "Production Type",
     "package": "Package",
