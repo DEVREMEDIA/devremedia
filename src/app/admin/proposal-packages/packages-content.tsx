@@ -43,6 +43,8 @@ type FormState = {
   name: string;
   video_count: string;
   shooting_days: string;
+  allowance_count: string;
+  allowance_unit: 'days' | 'slots';
   shooting_hours: string;
   editing_hours: string;
   price_mode: 'manual' | 'auto';
@@ -57,6 +59,8 @@ const EMPTY: FormState = {
   name: '',
   video_count: '',
   shooting_days: '',
+  allowance_count: '',
+  allowance_unit: 'days',
   shooting_hours: '0',
   editing_hours: '0',
   price_mode: 'manual',
@@ -100,6 +104,8 @@ export function PackagesContent({ packages }: Props) {
       name: p.name,
       video_count: p.video_count != null ? String(p.video_count) : '',
       shooting_days: p.shooting_days != null ? String(p.shooting_days) : '',
+      allowance_count: p.allowance_count != null ? String(p.allowance_count) : '',
+      allowance_unit: p.allowance_unit,
       shooting_hours: String(p.shooting_hours),
       editing_hours: String(p.editing_hours),
       price_mode: p.price_mode,
@@ -118,6 +124,8 @@ export function PackagesContent({ packages }: Props) {
         name: form.name.trim(),
         video_count: numeric(form.video_count),
         shooting_days: numeric(form.shooting_days),
+        allowance_count: numeric(form.allowance_count),
+        allowance_unit: form.allowance_unit,
         shooting_hours: numeric(form.shooting_hours, 0) ?? 0,
         editing_hours: numeric(form.editing_hours, 0) ?? 0,
         price_mode: form.price_mode,
@@ -218,6 +226,12 @@ export function PackagesContent({ packages }: Props) {
                       {p.shooting_days}d shooting
                     </span>
                   )}
+                  {p.allowance_count != null && (
+                    <span className="bg-primary/10 text-primary px-2 py-0.5 rounded">
+                      {p.allowance_count}{' '}
+                      {tf(`allowanceUnit${p.allowance_unit === 'slots' ? 'Slots' : 'Days'}`)}/mo
+                    </span>
+                  )}
                   <span className="bg-muted px-2 py-0.5 rounded">
                     {(p.shooting_hours + p.editing_hours).toFixed(1)}h
                   </span>
@@ -298,6 +312,32 @@ export function PackagesContent({ packages }: Props) {
                   value={form.editing_hours}
                   onChange={(e) => setForm({ ...form, editing_hours: e.target.value })}
                 />
+              </div>
+            </div>
+
+            <div className="grid grid-cols-2 gap-3">
+              <div className="space-y-2">
+                <Label>{tf('allowanceCount')}</Label>
+                <Input
+                  inputMode="numeric"
+                  value={form.allowance_count}
+                  onChange={(e) => setForm({ ...form, allowance_count: e.target.value })}
+                />
+              </div>
+              <div className="space-y-2">
+                <Label>{tf('allowanceUnit')}</Label>
+                <Select
+                  value={form.allowance_unit}
+                  onValueChange={(v: 'days' | 'slots') => setForm({ ...form, allowance_unit: v })}
+                >
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="days">{tf('allowanceUnitDays')}</SelectItem>
+                    <SelectItem value="slots">{tf('allowanceUnitSlots')}</SelectItem>
+                  </SelectContent>
+                </Select>
               </div>
             </div>
 
