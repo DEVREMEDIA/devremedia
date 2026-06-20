@@ -13,6 +13,7 @@ import { ClientOverviewTab } from '@/components/admin/clients/client-overview-ta
 import { ClientProjectsTab } from '@/components/admin/clients/client-projects-tab';
 import { ClientInvoicesTab } from '@/components/admin/clients/client-invoices-tab';
 import { ClientContractsTab } from '@/components/admin/clients/client-contracts-tab';
+import { ClientAgreementTab } from '@/components/admin/clients/client-agreement-tab';
 import { ClientActivityTab } from '@/components/admin/clients/client-activity-tab';
 import { ClientDrawer } from '@/components/admin/clients/client-drawer';
 import { Button } from '@/components/ui/button';
@@ -167,6 +168,7 @@ export function ClientDetail({
             <TabsTrigger value="projects">{t('tabs.projects')}</TabsTrigger>
             <TabsTrigger value="invoices">{t('tabs.invoices')}</TabsTrigger>
             <TabsTrigger value="contracts">{t('tabs.contracts')}</TabsTrigger>
+            <TabsTrigger value="agreement">{t('tabs.agreement')}</TabsTrigger>
             <TabsTrigger value="activity">{t('tabs.activity')}</TabsTrigger>
           </TabsList>
         </div>
@@ -199,6 +201,14 @@ export function ClientDetail({
 
         <TabsContent value="contracts">
           <ClientContractsTab clientId={client.id} refreshKey={refreshKey} />
+        </TabsContent>
+
+        <TabsContent value="agreement">
+          <ClientAgreementTab
+            clientId={client.id}
+            refreshKey={refreshKey}
+            onSaved={handleDrawerSuccess}
+          />
         </TabsContent>
 
         <TabsContent value="activity">

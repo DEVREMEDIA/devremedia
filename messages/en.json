@@ -611,7 +611,23 @@
       "projects": "Projects",
       "invoices": "Invoices",
       "contracts": "Contracts",
+      "agreement": "Agreement",
       "activity": "Activity"
+    },
+    "agreement": {
+      "title": "Agreement",
+      "description": "The Package this client currently holds and the monthly price agreed with them specifically. Prices are admin-internal.",
+      "package": "Package",
+      "selectPackage": "Select a package",
+      "monthlyPrice": "Agreed monthly price (€)",
+      "priceHint": "Admin-internal only — never shown to the client.",
+      "current": "Current agreement",
+      "create": "Create agreement",
+      "update": "Update agreement",
+      "prefillFromContract": "Prefill from signed contract",
+      "prefilled": "Filled from the contract",
+      "noContractToPrefill": "No signed contract to prefill from",
+      "saved": "Agreement saved"
     },
     "stats": {
       "totalProjects": "Total Projects",

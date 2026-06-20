@@ -130,6 +130,27 @@ export type ProposalPackageWithPrice = ProposalPackage & {
   computed_cost: number;
 };
 
+// =====================================================================
+// Client Agreement — the Package a Client holds + the price agreed with
+// that Client specifically. Source of truth for "which Package may this
+// Client book". Prices are admin-internal.
+// =====================================================================
+
+export type ClientAgreement = {
+  id: string;
+  client_id: string;
+  package_id: string;
+  agreed_monthly_price: number;
+  active: boolean;
+  created_by: string | null;
+  created_at: string;
+  updated_at: string;
+};
+
+export type ClientAgreementWithPackage = ClientAgreement & {
+  package: Pick<ProposalPackage, 'id' | 'name' | 'allowance_count' | 'allowance_unit'> | null;
+};
+
 export type ProposalStatus = 'draft' | 'sent' | 'accepted' | 'rejected' | 'expired';
 
 export type ProposalSelectedPackage = {
