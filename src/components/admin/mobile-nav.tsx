@@ -9,6 +9,7 @@ import {
   FolderKanban,
   Receipt,
   CalendarDays,
+  CalendarClock,
   Film,
   FileText,
   BarChart3,
@@ -83,6 +84,11 @@ export function MobileNav({ open, onOpenChange }: MobileNavProps) {
       href: '/admin/leads',
       icon: UserPlus,
       label: t('leads'),
+    },
+    {
+      href: '/admin/availability',
+      icon: CalendarClock,
+      label: t('availability'),
     },
     {
       href: '/admin/university',

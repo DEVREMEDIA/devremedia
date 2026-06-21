@@ -176,7 +176,8 @@
     "users": "Users",
     "costModel": "Cost Model",
     "pricingHealth": "Pricing Health",
-    "proposals": "Proposals"
+    "proposals": "Proposals",
+    "availability": "Availability"
   },
 
   "breadcrumb": {
@@ -2566,5 +2567,14 @@
     "empty": "No notifications",
     "emptyUnread": "No unread notifications",
     "seeAll": "See all"
+  },
+
+  "availability": {
+    "title": "Availability",
+    "description": "Which days and hours are open for bookings",
+    "open": "Open",
+    "closed": "Closed",
+    "applyTemplate": "Apply template to month",
+    "templateApplied": "Template applied ({count} days written)"
   }
 }

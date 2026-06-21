@@ -176,7 +176,8 @@
     "users": "Χρήστες",
     "costModel": "Μοντέλο Κόστους",
     "pricingHealth": "Υγεία Τιμολόγησης",
-    "proposals": "Προσφορές"
+    "proposals": "Προσφορές",
+    "availability": "Διαθεσιμότητα"
   },
 
   "breadcrumb": {
@@ -2566,5 +2567,14 @@
     "empty": "Δεν υπάρχουν ειδοποιήσεις",
     "emptyUnread": "Δεν υπάρχουν μη αναγνωσμένες ειδοποιήσεις",
     "seeAll": "Δείτε όλες"
+  },
+
+  "availability": {
+    "title": "Διαθεσιμότητα",
+    "description": "Ποιες μέρες & ώρες είναι ανοιχτές για κρατήσεις",
+    "open": "Ανοιχτά",
+    "closed": "Κλειστά",
+    "applyTemplate": "Εφαρμογή template στον μήνα",
+    "templateApplied": "Template εφαρμόστηκε ({count} μέρες)"
   }
 }
