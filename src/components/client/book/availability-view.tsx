@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { useTranslations } from 'next-intl';
+import { useTranslations, useLocale } from 'next-intl';
 import { toast } from 'sonner';
 import { Loader2 } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -34,12 +34,15 @@ const toHHMM = (m: number): string =>
 const formatDuration = (minutes: number): string =>
   minutes % 60 === 0 ? `${minutes / 60}ω` : `${minutes}΄`;
 
-const formatDate = (date: string): string =>
-  new Date(`${date}T00:00:00`).toLocaleDateString('el-GR', {
-    weekday: 'short',
-    day: 'numeric',
-    month: 'short',
-  });
+const useFormatDate = () => {
+  const locale = useLocale();
+  return (date: string): string =>
+    new Date(`${date}T00:00:00`).toLocaleDateString(locale, {
+      weekday: 'short',
+      day: 'numeric',
+      month: 'short',
+    });
+};
 
 function formatRemaining(remaining: number, unit: string): string {
   if (unit === 'hours') {
@@ -76,6 +79,7 @@ function ConfirmDialog({
   loading,
 }: ConfirmDialogProps) {
   const t = useTranslations('booking');
+  const formatDate = useFormatDate();
   const [location, setLocation] = useState('');
   const [note, setNote] = useState('');
 
@@ -136,6 +140,7 @@ interface DayCardProps {
 
 function DayCard({ day, durations, onBook }: DayCardProps) {
   const t = useTranslations('booking');
+  const formatDate = useFormatDate();
   const [selectedDuration, setSelectedDuration] = useState<number | null>(null);
 
   const visibleDurations = durations.filter((d) => !isDurationAllowanceExhausted(day, d));
@@ -254,13 +259,9 @@ export function AvailabilityView({ availability }: AvailabilityViewProps) {
     router.refresh();
   };
 
-  const openDays = days.filter((d) =>
-    d.durations.some((g) => g.starts.some((s) => s.reason !== 'allowance_exhausted')),
-  );
+  const openDays = days.filter((d) => d.durations.some((g) => g.starts.some((s) => s.available)));
 
-  const allAllowanceExhausted =
-    days.length > 0 &&
-    days.every((d) => d.durations.every((g) => g.starts.every((s) => !s.available)));
+  const allAllowanceExhausted = remaining_allowance <= 0;
 
   return (
     <div className="space-y-6">
