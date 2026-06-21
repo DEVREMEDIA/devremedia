@@ -396,7 +396,9 @@ export async function approveHold(id: string): Promise<ActionResult<Project>> {
     }
 
     const filmingDate = hold.booking_date as string | null;
-    const startTime = hold.start_time as string | null; // "HH:MM"
+    // PostgREST returns `time` columns as "HH:MM:SS"; slice to "HH:MM" so the
+    // ISO timestamp we build is valid (avoids "HH:MM:SS:00+offset" pattern).
+    const startTime = (hold.start_time as string | null)?.slice(0, 5) ?? null;
     const duration = hold.duration_minutes as number | null;
 
     // One Production per confirmed Filming (unchanged behavior).
@@ -411,7 +413,7 @@ export async function approveHold(id: string): Promise<ActionResult<Project>> {
         priority: 'medium',
         created_by: user.id,
         filming_date: filmingDate,
-        filming_time: startTime,
+        filming_time: startTime, // already "HH:MM" — normalized above
         location: hold.location,
       })
       .select(
@@ -488,7 +490,7 @@ export async function approveHold(id: string): Promise<ActionResult<Project>> {
 /**
  * Reject a Hold. The pending filming_request is moved to 'declined', which
  * releases its date+Slot back to Free: both the availability calculation
- * (getMyAvailability) and the atomic claim (book_slot) count only rows where
+ * (getMyAvailability) and the atomic claim (book_filming) count only rows where
  * status <> 'declined', so a rejected Hold stops counting against Capacity and
  * the Client's monthly Allowance. The Client is notified of the outcome. (#78)
  */

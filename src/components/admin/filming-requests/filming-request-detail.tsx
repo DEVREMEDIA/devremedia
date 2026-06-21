@@ -229,7 +229,7 @@ export function FilmingRequestDetail({ request }: FilmingRequestDetailProps) {
               </div>
               {request.start_time && (
                 <div className="text-sm text-muted-foreground mt-1">
-                  {request.start_time}
+                  {(request.start_time as string).slice(0, 5)}
                   {request.duration_minutes != null && (
                     <span className="ml-1">({Math.round(request.duration_minutes / 60)}ω)</span>
                   )}

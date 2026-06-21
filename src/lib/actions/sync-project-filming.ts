@@ -87,12 +87,15 @@ export async function syncProjectFilmingToCalendar(
 
   const DEFAULT_FILMING_MINUTES = 60;
   const allDay = !project.filming_time;
+  // Defensive: PostgREST may return `time` columns as "HH:MM:SS"; slice to "HH:MM"
+  // so the composed ISO string is valid and addMinutes parses cleanly.
+  const filmingTimeNorm = allDay ? null : (project.filming_time as string).slice(0, 5);
   const startIso = allDay
     ? `${project.filming_date}T00:00:00+00:00`
-    : `${project.filming_date}T${project.filming_time}:00${athensOffsetFor(project.filming_date)}`;
+    : `${project.filming_date}T${filmingTimeNorm}:00${athensOffsetFor(project.filming_date)}`;
   const endIso = allDay
     ? null
-    : `${project.filming_date}T${addMinutes(project.filming_time as string, DEFAULT_FILMING_MINUTES)}:00${athensOffsetFor(project.filming_date)}`;
+    : `${project.filming_date}T${addMinutes(filmingTimeNorm as string, DEFAULT_FILMING_MINUTES)}:00${athensOffsetFor(project.filming_date)}`;
 
   const payload = {
     project_id: projectId,
