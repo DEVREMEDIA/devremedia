@@ -17,6 +17,32 @@ import {
 } from '@/lib/actions/notifications';
 import { NOTIFICATION_TYPES } from '@/lib/notification-types';
 import { requireUser, requireAdmin } from '@/lib/auth-helpers';
+import { syncEntityToGoogle } from '@/lib/google-sync-helper';
+import { getGoogleColorId } from '@/lib/google-calendar';
+
+/** ISO Athens offset (e.g. "+03:00") for a date — copy of sync-project-filming.athensOffsetFor. */
+function athensOffsetFor(filmingDate: string): string {
+  const [y, m, d] = filmingDate.split('-').map(Number);
+  try {
+    const probe = new Date(Date.UTC(y, (m || 1) - 1, d || 1, 12, 0, 0));
+    const fmt = new Intl.DateTimeFormat('en', {
+      timeZone: 'Europe/Athens',
+      timeZoneName: 'longOffset',
+    });
+    const part = fmt.formatToParts(probe).find((p) => p.type === 'timeZoneName')?.value;
+    if (part?.startsWith('GMT')) return part.replace('GMT', '').trim() || '+00:00';
+  } catch {
+    /* fall through */
+  }
+  return '+02:00';
+}
+
+/** "HH:MM" + minutes → "HH:MM" (same day; durations never cross midnight here). */
+function addMinutes(time: string, minutes: number): string {
+  const [h, m] = time.split(':').map(Number);
+  const total = h * 60 + m + minutes;
+  return `${String(Math.floor(total / 60)).padStart(2, '0')}:${String(total % 60).padStart(2, '0')}`;
+}
 
 export async function getFilmingRequests(filters?: {
   status?: FilmingRequestStatus | FilmingRequestStatus[];
@@ -28,7 +54,7 @@ export async function getFilmingRequests(filters?: {
     let query = supabase
       .from('filming_requests')
       .select(
-        'id, client_id, title, description, preferred_dates, booking_date, slot_id, location, project_type, budget_range, reference_links, selected_package, status, admin_notes, converted_project_id, contact_name, contact_email, contact_phone, contact_company, created_at',
+        'id, client_id, title, description, preferred_dates, booking_date, start_time, duration_minutes, location, project_type, budget_range, reference_links, selected_package, status, admin_notes, converted_project_id, contact_name, contact_email, contact_phone, contact_company, created_at',
       )
       .order('created_at', { ascending: false });
 
@@ -60,7 +86,7 @@ export async function getClientFilmingRequests(): Promise<ActionResult<FilmingRe
     const { data, error } = await supabase
       .from('filming_requests')
       .select(
-        'id, client_id, title, description, preferred_dates, booking_date, slot_id, location, project_type, budget_range, reference_links, selected_package, status, admin_notes, converted_project_id, contact_name, contact_email, contact_phone, contact_company, created_at',
+        'id, client_id, title, description, preferred_dates, booking_date, start_time, duration_minutes, location, project_type, budget_range, reference_links, selected_package, status, admin_notes, converted_project_id, contact_name, contact_email, contact_phone, contact_company, created_at',
       )
       .order('created_at', { ascending: false });
 
@@ -82,7 +108,7 @@ export async function getFilmingRequest(id: string): Promise<ActionResult<Filmin
     const { data, error } = await supabase
       .from('filming_requests')
       .select(
-        'id, client_id, title, description, preferred_dates, booking_date, slot_id, location, project_type, budget_range, reference_links, selected_package, status, admin_notes, converted_project_id, contact_name, contact_email, contact_phone, contact_company, created_at',
+        'id, client_id, title, description, preferred_dates, booking_date, start_time, duration_minutes, location, project_type, budget_range, reference_links, selected_package, status, admin_notes, converted_project_id, contact_name, contact_email, contact_phone, contact_company, created_at',
       )
       .eq('id', id)
       .single();
@@ -118,7 +144,7 @@ export async function createFilmingRequest(input: unknown): Promise<ActionResult
         status: 'pending',
       })
       .select(
-        'id, client_id, title, description, preferred_dates, booking_date, slot_id, location, project_type, budget_range, reference_links, selected_package, status, admin_notes, converted_project_id, contact_name, contact_email, contact_phone, contact_company, created_at',
+        'id, client_id, title, description, preferred_dates, booking_date, start_time, duration_minutes, location, project_type, budget_range, reference_links, selected_package, status, admin_notes, converted_project_id, contact_name, contact_email, contact_phone, contact_company, created_at',
       )
       .single();
 
@@ -165,7 +191,7 @@ export async function reviewFilmingRequest(
       })
       .eq('id', id)
       .select(
-        'id, client_id, title, description, preferred_dates, booking_date, slot_id, location, project_type, budget_range, reference_links, selected_package, status, admin_notes, converted_project_id, contact_name, contact_email, contact_phone, contact_company, created_at',
+        'id, client_id, title, description, preferred_dates, booking_date, start_time, duration_minutes, location, project_type, budget_range, reference_links, selected_package, status, admin_notes, converted_project_id, contact_name, contact_email, contact_phone, contact_company, created_at',
       )
       .single();
 
@@ -208,7 +234,7 @@ export async function convertToProject(id: string): Promise<ActionResult<Project
     const { data: request, error: fetchError } = await supabase
       .from('filming_requests')
       .select(
-        'id, client_id, title, description, preferred_dates, booking_date, slot_id, location, project_type, budget_range, reference_links, selected_package, status, admin_notes, converted_project_id, contact_name, contact_email, contact_phone, contact_company, created_at',
+        'id, client_id, title, description, preferred_dates, booking_date, start_time, duration_minutes, location, project_type, budget_range, reference_links, selected_package, status, admin_notes, converted_project_id, contact_name, contact_email, contact_phone, contact_company, created_at',
       )
       .eq('id', id)
       .single();
@@ -357,7 +383,9 @@ export async function approveHold(id: string): Promise<ActionResult<Project>> {
 
     const { data: hold, error: fetchError } = await supabase
       .from('filming_requests')
-      .select('id, client_id, title, description, status, booking_date, slot_id, location')
+      .select(
+        'id, client_id, title, description, status, booking_date, start_time, duration_minutes, location',
+      )
       .eq('id', id)
       .single();
 
@@ -367,18 +395,11 @@ export async function approveHold(id: string): Promise<ActionResult<Project>> {
       return { data: null, error: 'Only a pending Hold can be approved' };
     }
 
-    // The Time Slot's name is the human-readable filming time.
-    let slotName: string | null = null;
-    if (hold.slot_id) {
-      const { data: slot } = await supabase
-        .from('booking_time_slots')
-        .select('name')
-        .eq('id', hold.slot_id)
-        .single();
-      slotName = (slot?.name as string | null) ?? null;
-    }
-
     const filmingDate = hold.booking_date as string | null;
+    // PostgREST returns `time` columns as "HH:MM:SS"; slice to "HH:MM" so the
+    // ISO timestamp we build is valid (avoids "HH:MM:SS:00+offset" pattern).
+    const startTime = (hold.start_time as string | null)?.slice(0, 5) ?? null;
+    const duration = hold.duration_minutes as number | null;
 
     // One Production per confirmed Filming (unchanged behavior).
     const { data: project, error: projectError } = await supabase
@@ -392,7 +413,7 @@ export async function approveHold(id: string): Promise<ActionResult<Project>> {
         priority: 'medium',
         created_by: user.id,
         filming_date: filmingDate,
-        filming_time: slotName,
+        filming_time: startTime, // already "HH:MM" — normalized above
         location: hold.location,
       })
       .select(
@@ -402,17 +423,42 @@ export async function approveHold(id: string): Promise<ActionResult<Project>> {
 
     if (projectError) return { data: null, error: projectError.message };
 
-    // Put the confirmed Filming on the calendar.
-    if (filmingDate) {
-      await supabase.from('calendar_events').insert({
-        title: `🎬 ${hold.title}`,
-        description: hold.location ? `📍 ${hold.location}` : null,
-        start_date: filmingDate,
-        end_date: filmingDate,
-        all_day: true,
-        event_type: 'filming',
-        created_by: user.id,
-      });
+    // Put the confirmed Filming on the calendar as a TIMED event and push to Google.
+    if (filmingDate && startTime && duration) {
+      const offset = athensOffsetFor(filmingDate);
+      const startIso = `${filmingDate}T${startTime}:00${offset}`;
+      const endIso = `${filmingDate}T${addMinutes(startTime, duration)}:00${offset}`;
+
+      const { data: event, error: eventError } = await supabase
+        .from('calendar_events')
+        .insert({
+          title: `🎬 ${hold.title}`,
+          description: hold.location ? `📍 ${hold.location}` : null,
+          start_date: startIso,
+          end_date: endIso,
+          all_day: false,
+          event_type: 'filming',
+          project_id: project.id,
+          created_by: user.id,
+        })
+        .select('id, title, description, start_date, end_date, all_day, event_type')
+        .single();
+
+      if (!eventError && event) {
+        await syncEntityToGoogle({
+          entityType: 'custom',
+          entityId: event.id,
+          operation: 'create',
+          eventData: {
+            title: event.title,
+            description: event.description ?? undefined,
+            startDate: event.start_date,
+            endDate: event.end_date ?? undefined,
+            allDay: event.all_day,
+            colorId: getGoogleColorId('custom', null, event.event_type),
+          },
+        });
+      }
     }
 
     // Confirm the Hold — 'converted' still counts (approval doesn't free the spot).
@@ -444,7 +490,7 @@ export async function approveHold(id: string): Promise<ActionResult<Project>> {
 /**
  * Reject a Hold. The pending filming_request is moved to 'declined', which
  * releases its date+Slot back to Free: both the availability calculation
- * (getMyAvailability) and the atomic claim (book_slot) count only rows where
+ * (getMyAvailability) and the atomic claim (book_filming) count only rows where
  * status <> 'declined', so a rejected Hold stops counting against Capacity and
  * the Client's monthly Allowance. The Client is notified of the outcome. (#78)
  */
@@ -455,7 +501,7 @@ export async function rejectHold(id: string): Promise<ActionResult<FilmingReques
 
     const { data: hold, error: fetchError } = await supabase
       .from('filming_requests')
-      .select('id, client_id, title, status, booking_date, slot_id')
+      .select('id, client_id, title, status, booking_date, start_time, duration_minutes')
       .eq('id', id)
       .single();
 

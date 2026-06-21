@@ -176,7 +176,8 @@
     "users": "Χρήστες",
     "costModel": "Μοντέλο Κόστους",
     "pricingHealth": "Υγεία Τιμολόγησης",
-    "proposals": "Προσφορές"
+    "proposals": "Προσφορές",
+    "availability": "Διαθεσιμότητα"
   },
 
   "breadcrumb": {
@@ -1497,7 +1498,17 @@
     "newMessages": "Νέα Μηνύματα",
     "newMessagesDescription": "Λάβετε ειδοποίηση όταν λαμβάνετε νέο μήνυμα",
     "deliverableFeedback": "Σχόλια Παραδοτέων",
-    "deliverableFeedbackDescription": "Λάβετε ειδοποίηση όταν πελάτες σχολιάζουν παραδοτέα"
+    "deliverableFeedbackDescription": "Λάβετε ειδοποίηση όταν πελάτες σχολιάζουν παραδοτέα",
+    "bookingDurations": "Διάρκειες Κράτησης",
+    "addDuration": "Προσθήκη Διάρκειας",
+    "startInterval": "Διάστημα Έναρξης",
+    "intervalMinutes": "Λεπτά μεταξύ διαθέσιμων ωρών έναρξης",
+    "weeklyTemplate": "Εβδομαδιαίο Πρόγραμμα",
+    "open": "Ανοιχτά",
+    "closed": "Κλειστά",
+    "from": "Από",
+    "to": "Έως",
+    "save": "Αποθήκευση"
   },
 
   "leads": {
@@ -1676,7 +1687,8 @@
     "remainingAllowance": "Απομένουν {count} {unit} αυτόν τον μήνα",
     "allowanceUnit": {
       "days": "ημέρες",
-      "slots": "ζώνες"
+      "slots": "ζώνες",
+      "hours": "ώρες"
     },
     "available": "Διαθέσιμο",
     "unavailable": {
@@ -1686,6 +1698,16 @@
     "noAgreementTitle": "Δεν υπάρχει ενεργό πλάνο κρατήσεων",
     "noAgreementBody": "Δεν έχετε ακόμη ενεργή συμφωνία, οπότε δεν υπάρχουν διαθέσιμες ημερομηνίες. Επικοινωνήστε μαζί μας για να τη ρυθμίσουμε.",
     "contactUs": "Επικοινωνήστε μαζί μας",
+    "chooseDuration": "Επιλέξτε διάρκεια",
+    "chooseTime": "Επιλέξτε ώρα",
+    "noOpenDays": "Δεν υπάρχουν διαθέσιμες ημερομηνίες αυτόν τον μήνα.",
+    "allowanceExhausted": "Έχετε χρησιμοποιήσει ολόκληρο το επίδομα του μήνα.",
+    "needAgreement": "Επικοινωνήστε μαζί μας για να ρυθμίσουμε τη συμφωνία σας.",
+    "full": "γεμάτο",
+    "past": "πέρασε",
+    "remaining": "Απομένουν {count} αυτόν τον μήνα",
+    "book": "Κράτηση",
+    "confirm": "Επιβεβαίωση",
     "bookSlot": "Κράτηση",
     "bookSlotTitle": "Κράτηση {date} — {slot}",
     "bookSlotDescription": "Προσθέστε προαιρετικά τοποθεσία και σημείωση και επιβεβαιώστε την κράτησή σας.",
@@ -1916,7 +1938,8 @@
       "remainingThisMonth": "Απομένουν αυτόν τον μήνα",
       "allowanceUnit": {
         "days": "ημέρες",
-        "slots": "ζώνες"
+        "slots": "ζώνες",
+        "hours": "ώρες"
       },
       "noAgreementTitle": "Δεν υπάρχει ενεργή συμφωνία",
       "noAgreementBody": "Δεν έχετε ακόμη ενεργή συμφωνία. Επικοινωνήστε μαζί μας για να τη ρυθμίσουμε.",
@@ -2487,6 +2510,7 @@
       "allowanceUnit": "Μονάδα Ορίου",
       "allowanceUnitDays": "ημέρες",
       "allowanceUnitSlots": "slots",
+      "allowanceUnitHours": "ώρες",
       "shootingHours": "Ώρες Γυρίσματος",
       "editingHours": "Ώρες Μοντάζ",
       "priceMode": "Τρόπος Τιμής",
@@ -2564,5 +2588,14 @@
     "empty": "Δεν υπάρχουν ειδοποιήσεις",
     "emptyUnread": "Δεν υπάρχουν μη αναγνωσμένες ειδοποιήσεις",
     "seeAll": "Δείτε όλες"
+  },
+
+  "availability": {
+    "title": "Διαθεσιμότητα",
+    "description": "Ποιες μέρες & ώρες είναι ανοιχτές για κρατήσεις",
+    "open": "Ανοιχτά",
+    "closed": "Κλειστά",
+    "applyTemplate": "Εφαρμογή template στον μήνα",
+    "templateApplied": "Template εφαρμόστηκε ({count} μέρες)"
   }
 }

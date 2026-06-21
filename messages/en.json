@@ -176,7 +176,8 @@
     "users": "Users",
     "costModel": "Cost Model",
     "pricingHealth": "Pricing Health",
-    "proposals": "Proposals"
+    "proposals": "Proposals",
+    "availability": "Availability"
   },
 
   "breadcrumb": {
@@ -1497,7 +1498,17 @@
     "newMessages": "New Messages",
     "newMessagesDescription": "Get notified when you receive a new message",
     "deliverableFeedback": "Deliverable Feedback",
-    "deliverableFeedbackDescription": "Get notified when clients provide feedback on deliverables"
+    "deliverableFeedbackDescription": "Get notified when clients provide feedback on deliverables",
+    "bookingDurations": "Booking Durations",
+    "addDuration": "Add Duration",
+    "startInterval": "Start Interval",
+    "intervalMinutes": "Minutes between available start times",
+    "weeklyTemplate": "Weekly Template",
+    "open": "Open",
+    "closed": "Closed",
+    "from": "From",
+    "to": "To",
+    "save": "Save"
   },
 
   "leads": {
@@ -1676,7 +1687,8 @@
     "remainingAllowance": "{count} {unit} remaining this month",
     "allowanceUnit": {
       "days": "days",
-      "slots": "slots"
+      "slots": "slots",
+      "hours": "hours"
     },
     "available": "Available",
     "unavailable": {
@@ -1686,6 +1698,16 @@
     "noAgreementTitle": "No active booking plan",
     "noAgreementBody": "You don't have an active agreement yet, so there are no dates to book. Get in touch and we'll set one up for you.",
     "contactUs": "Contact us",
+    "chooseDuration": "Choose duration",
+    "chooseTime": "Choose time",
+    "noOpenDays": "No available dates this month.",
+    "allowanceExhausted": "You have used your full monthly allowance.",
+    "needAgreement": "Contact us to set up your agreement.",
+    "full": "full",
+    "past": "past",
+    "remaining": "{count} remaining this month",
+    "book": "Book",
+    "confirm": "Confirm",
     "bookSlot": "Book",
     "bookSlotTitle": "Book {date} — {slot}",
     "bookSlotDescription": "Add an optional location and note, then confirm your booking.",
@@ -1916,7 +1938,8 @@
       "remainingThisMonth": "Remaining this month",
       "allowanceUnit": {
         "days": "days",
-        "slots": "slots"
+        "slots": "slots",
+        "hours": "hours"
       },
       "noAgreementTitle": "No active agreement",
       "noAgreementBody": "You don't have an active agreement yet. Get in touch and we'll set one up for you.",
@@ -2487,6 +2510,7 @@
       "allowanceUnit": "Allowance Unit",
       "allowanceUnitDays": "days",
       "allowanceUnitSlots": "slots",
+      "allowanceUnitHours": "hours",
       "shootingHours": "Shooting Hours",
       "editingHours": "Editing Hours",
       "priceMode": "Price Mode",
@@ -2564,5 +2588,14 @@
     "empty": "No notifications",
     "emptyUnread": "No unread notifications",
     "seeAll": "See all"
+  },
+
+  "availability": {
+    "title": "Availability",
+    "description": "Which days and hours are open for bookings",
+    "open": "Open",
+    "closed": "Closed",
+    "applyTemplate": "Apply template to month",
+    "templateApplied": "Template applied ({count} days written)"
   }
 }

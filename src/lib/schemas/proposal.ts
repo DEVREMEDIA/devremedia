@@ -9,7 +9,7 @@ export const proposalPackageSchema = z.object({
   video_count: z.number().int().min(0).max(1000).nullable().optional(),
   shooting_days: z.number().int().min(0).max(365).nullable().optional(),
   allowance_count: z.number().int().min(0).max(1000).nullable().optional(),
-  allowance_unit: z.enum(['days', 'slots']).default('days'),
+  allowance_unit: z.enum(['days', 'slots', 'hours']).default('days'),
   shooting_hours: z.number().min(0).max(10_000),
   editing_hours: z.number().min(0).max(10_000),
   price_mode: z.enum(['manual', 'auto']).default('manual'),

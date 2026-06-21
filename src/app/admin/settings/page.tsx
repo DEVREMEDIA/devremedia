@@ -8,7 +8,7 @@ import { NotificationSettingsComponent } from '@/components/admin/settings/notif
 import { BookingSettings } from '@/components/admin/settings/booking-settings';
 import { getTeamMembers } from '@/lib/actions/team';
 import { getCompanySettings, getNotificationSettings } from '@/lib/actions/settings';
-import { getBookingConfig } from '@/lib/actions/booking-config';
+import { getBookingConfig, getWeeklyTemplate } from '@/lib/actions/booking-config';
 import { createClient } from '@/lib/supabase/server';
 import { getTranslations } from 'next-intl/server';
 
@@ -24,11 +24,13 @@ export default async function SettingsPage() {
     companySettingsResult,
     notificationSettingsResult,
     bookingConfigResult,
+    weeklyTemplateResult,
   ] = await Promise.all([
     getTeamMembers(),
     getCompanySettings(),
     user ? getNotificationSettings(user.id) : null,
     getBookingConfig(),
+    getWeeklyTemplate(),
   ]);
 
   const teamMembers = teamMembersResult.data ?? [];
@@ -43,7 +45,8 @@ export default async function SettingsPage() {
     profession: 'ΥΠΗΡΕΣΙΕΣ ΦΩΤΟΓΡΑΦΙΣΗΣ ΚΑΙ ΒΙΝΤΕΟΣΚΟΠΗΣΗΣ',
     primary_color: null,
   };
-  const bookingConfig = bookingConfigResult.data ?? { time_slots: [], capacity: 1 };
+  const bookingConfig = bookingConfigResult.data ?? { durations: [], capacity: 1, interval: 30 };
+  const weeklyTemplate = weeklyTemplateResult.data ?? [];
   const notificationSettings = notificationSettingsResult?.data ?? {
     email_new_project: true,
     email_project_deadline: true,
@@ -85,7 +88,7 @@ export default async function SettingsPage() {
         </TabsContent>
 
         <TabsContent value="booking" className="space-y-6">
-          <BookingSettings config={bookingConfig} />
+          <BookingSettings config={bookingConfig} weeklyTemplate={weeklyTemplate} />
         </TabsContent>
 
         <TabsContent value="notifications" className="space-y-6">

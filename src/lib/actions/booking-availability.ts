@@ -6,8 +6,8 @@ import {
   computeAvailability,
   type Allowance,
   type Booking,
-  type DateAvailability,
-  type TimeSlot,
+  type DayAvailability,
+  type OpenDay,
 } from '@/lib/booking';
 import type { ActionResult } from '@/types';
 
@@ -15,37 +15,34 @@ export type ClientAvailability = {
   package_name: string;
   allowance: Allowance;
   remaining_allowance: number;
-  dates: DateAvailability[];
+  durations: number[];
+  interval: number;
+  days: DayAvailability[];
 };
 
 const ATHENS_TZ = 'Europe/Athens';
 
-/** Today's date in Athens, as YYYY-MM-DD. */
+/** Today's date in Athens, YYYY-MM-DD. */
 const todayInAthens = (): string => new Date().toLocaleDateString('en-CA', { timeZone: ATHENS_TZ });
 
-/** The remaining calendar dates of the current month, from `today` onward. */
-function datesToMonthEnd(today: string): string[] {
-  const [year, month, day] = today.split('-').map(Number);
-  const lastDay = new Date(year, month, 0).getDate(); // month is 1-based here
-  const dates: string[] = [];
-  for (let d = day; d <= lastDay; d++) {
-    dates.push(`${year}-${String(month).padStart(2, '0')}-${String(d).padStart(2, '0')}`);
-  }
-  return dates;
-}
+/** Minutes-from-midnight now in Athens. */
+const nowMinutesInAthens = (): number => {
+  const hm = new Date().toLocaleTimeString('en-GB', {
+    timeZone: ATHENS_TZ,
+    hour: '2-digit',
+    minute: '2-digit',
+    hour12: false,
+  });
+  const [h, m] = hm.split(':').map(Number);
+  return h * 60 + m;
+};
 
-/**
- * The signed-in Client's availability for the current month: the dates × Time
- * Slots they may book under their active Agreement's Package, with full Slots
- * and Allowance-exhausted Slots marked unavailable.
- *
- * Returns null when the Client has no active Agreement (the view shows a
- * "contact us" prompt instead of a booking surface).
- *
- * Uses the admin client to read admin-RLS-locked booking config + Agreement,
- * but authenticates the user first and returns only availability — never the
- * admin-internal agreed price.
- */
+/** "HH:MM[:SS]" → minutes-from-midnight. */
+const timeToMinutes = (t: string): number => {
+  const [h, m] = t.split(':').map(Number);
+  return h * 60 + m;
+};
+
 export async function getMyAvailability(): Promise<ActionResult<ClientAvailability | null>> {
   try {
     const { supabase, user, error: authError } = await requireUser();
@@ -58,7 +55,7 @@ export async function getMyAvailability(): Promise<ActionResult<ClientAvailabili
       .maybeSingle();
 
     if (clientError) return { data: null, error: clientError.message };
-    if (!clientRecord) return { data: null, error: null }; // not a Client → no surface
+    if (!clientRecord) return { data: null, error: null };
 
     const admin = createAdminClient();
 
@@ -73,54 +70,85 @@ export async function getMyAvailability(): Promise<ActionResult<ClientAvailabili
 
     const pkg = (
       Array.isArray(agreement?.package) ? agreement?.package[0] : agreement?.package
-    ) as { name: string; allowance_count: number | null; allowance_unit: 'days' | 'slots' } | null;
+    ) as {
+      name: string;
+      allowance_count: number | null;
+      allowance_unit: 'days' | 'slots' | 'hours';
+    } | null;
 
-    if (!pkg || pkg.allowance_count === null) {
-      return { data: null, error: null }; // no active Agreement / no Allowance set
-    }
+    if (!pkg || pkg.allowance_count === null) return { data: null, error: null };
 
-    const [{ data: slots, error: slotsError }, { data: settings, error: settingsError }] =
-      await Promise.all([
-        admin.from('booking_time_slots').select('id, name').order('position', { ascending: true }),
-        admin.from('booking_settings').select('capacity').eq('id', 1).maybeSingle(),
-      ]);
-
-    if (slotsError) return { data: null, error: slotsError.message };
-    if (settingsError) return { data: null, error: settingsError.message };
-
-    const allowance: Allowance = { count: pkg.allowance_count, unit: pkg.allowance_unit };
     const today = todayInAthens();
     const monthStart = `${today.slice(0, 7)}-01`;
 
-    // Holds (pending filming_requests with a date+Slot) and confirmed Filmings
-    // both occupy Capacity. Read every non-declined Hold in the current month;
-    // the Client's own Holds also count against their monthly Allowance.
-    const { data: holds, error: holdsError } = await admin
-      .from('filming_requests')
-      .select('client_id, booking_date, slot_id')
-      .not('booking_date', 'is', null)
-      .not('slot_id', 'is', null)
-      .neq('status', 'declined')
-      .gte('booking_date', monthStart);
+    const [
+      { data: durationsRows, error: durErr },
+      { data: settings, error: settingsError },
+      { data: dayRows, error: daysError },
+      { data: holds, error: holdsError },
+    ] = await Promise.all([
+      admin.from('booking_durations').select('minutes').order('position', { ascending: true }),
+      admin
+        .from('booking_settings')
+        .select('capacity, slot_interval_minutes')
+        .eq('id', 1)
+        .maybeSingle(),
+      admin
+        .from('booking_day_availability')
+        .select('date, open_time, close_time')
+        .eq('is_open', true)
+        .gte('date', today)
+        .order('date', { ascending: true }),
+      admin
+        .from('filming_requests')
+        .select('client_id, booking_date, start_time, duration_minutes')
+        .not('booking_date', 'is', null)
+        .not('start_time', 'is', null)
+        .neq('status', 'declined')
+        .gte('booking_date', monthStart),
+    ]);
 
+    if (durErr) return { data: null, error: durErr.message };
+    if (settingsError) return { data: null, error: settingsError.message };
+    if (daysError) return { data: null, error: daysError.message };
     if (holdsError) return { data: null, error: holdsError.message };
 
-    const bookings: Booking[] = (holds ?? []).map((h) => ({
-      date: h.booking_date as string,
-      slot_id: h.slot_id as string,
+    const allowance: Allowance = { count: pkg.allowance_count, unit: pkg.allowance_unit };
+    const durations = (durationsRows ?? []).map((d) => d.minutes as number);
+    const interval = settings?.slot_interval_minutes ?? 30;
+
+    const openDays: OpenDay[] = (dayRows ?? []).map((d) => ({
+      date: d.date as string,
+      open: timeToMinutes(d.open_time as string),
+      close: timeToMinutes(d.close_time as string),
     }));
+
+    const toBooking = (h: {
+      booking_date: unknown;
+      start_time: unknown;
+      duration_minutes: unknown;
+    }): Booking => ({
+      date: h.booking_date as string,
+      start: timeToMinutes(h.start_time as string),
+      duration: (h.duration_minutes as number) ?? 0,
+    });
+
+    const bookings: Booking[] = (holds ?? []).map(toBooking);
     const clientUsage: Booking[] = (holds ?? [])
       .filter((h) => h.client_id === clientRecord.id)
-      .map((h) => ({ date: h.booking_date as string, slot_id: h.slot_id as string }));
+      .map(toBooking);
 
     const result = computeAvailability({
-      dates: datesToMonthEnd(today),
-      slots: (slots as TimeSlot[]) ?? [],
+      openDays,
+      durations,
+      interval,
       capacity: settings?.capacity ?? 1,
       bookings,
       allowance,
       clientUsage,
       month: today.slice(0, 7),
+      today,
+      nowMinutes: nowMinutesInAthens(),
     });
 
     return {
@@ -128,7 +156,9 @@ export async function getMyAvailability(): Promise<ActionResult<ClientAvailabili
         package_name: pkg.name,
         allowance,
         remaining_allowance: result.remaining_allowance,
-        dates: result.dates,
+        durations,
+        interval,
+        days: result.days,
       },
       error: null,
     };

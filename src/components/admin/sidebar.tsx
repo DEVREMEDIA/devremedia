@@ -10,6 +10,7 @@ import {
   FolderKanban,
   Receipt,
   CalendarDays,
+  CalendarClock,
   Film,
   FileText,
   BarChart3,
@@ -76,6 +77,11 @@ export function Sidebar() {
       href: '/admin/filming-requests',
       icon: Video,
       label: t('filmingRequests'),
+    },
+    {
+      href: '/admin/availability',
+      icon: CalendarClock,
+      label: t('availability'),
     },
     {
       href: '/admin/contracts',

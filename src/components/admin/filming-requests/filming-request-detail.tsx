@@ -214,7 +214,7 @@ export function FilmingRequestDetail({ request }: FilmingRequestDetailProps) {
           )}
         </div>
 
-        {/* Booked date+slot (Hold) */}
+        {/* Booked date+time (Hold) */}
         {isHold && request.booking_date && (
           <Card>
             <CardHeader>
@@ -227,6 +227,14 @@ export function FilmingRequestDetail({ request }: FilmingRequestDetailProps) {
               <div className="text-base font-medium">
                 {format(new Date(request.booking_date), 'MMMM d, yyyy')}
               </div>
+              {request.start_time && (
+                <div className="text-sm text-muted-foreground mt-1">
+                  {(request.start_time as string).slice(0, 5)}
+                  {request.duration_minutes != null && (
+                    <span className="ml-1">({Math.round(request.duration_minutes / 60)}ω)</span>
+                  )}
+                </div>
+              )}
             </CardContent>
           </Card>
         )}

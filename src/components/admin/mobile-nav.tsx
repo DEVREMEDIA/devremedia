@@ -9,6 +9,7 @@ import {
   FolderKanban,
   Receipt,
   CalendarDays,
+  CalendarClock,
   Film,
   FileText,
   BarChart3,
@@ -18,6 +19,7 @@ import {
   GraduationCap,
   FolderOpen,
   ShieldCheck,
+  Video,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
@@ -68,6 +70,16 @@ export function MobileNav({ open, onOpenChange }: MobileNavProps) {
       href: '/admin/filming-prep',
       icon: Film,
       label: t('filmingPrep'),
+    },
+    {
+      href: '/admin/filming-requests',
+      icon: Video,
+      label: t('filmingRequests'),
+    },
+    {
+      href: '/admin/availability',
+      icon: CalendarClock,
+      label: t('availability'),
     },
     {
       href: '/admin/contracts',

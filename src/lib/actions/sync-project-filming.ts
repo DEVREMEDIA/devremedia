@@ -28,6 +28,17 @@ function athensOffsetFor(filmingDate: string): string {
 }
 
 /**
+ * Adds `minutes` to a "HH:MM" time string and returns the resulting "HH:MM".
+ */
+function addMinutes(time: string, minutes: number): string {
+  const [h, m] = time.split(':').map(Number);
+  const total = (h || 0) * 60 + (m || 0) + minutes;
+  const hh = String(Math.floor(total / 60) % 24).padStart(2, '0');
+  const mm = String(total % 60).padStart(2, '0');
+  return `${hh}:${mm}`;
+}
+
+/**
  * Upsert (or remove) the auto-generated filming calendar event for a project.
  *
  * - If the project has filming_date: upsert a calendar_event keyed by project_id
@@ -74,17 +85,24 @@ export async function syncProjectFilmingToCalendar(
     return { ok: true };
   }
 
+  const DEFAULT_FILMING_MINUTES = 60;
   const allDay = !project.filming_time;
+  // Defensive: PostgREST may return `time` columns as "HH:MM:SS"; slice to "HH:MM"
+  // so the composed ISO string is valid and addMinutes parses cleanly.
+  const filmingTimeNorm = allDay ? null : (project.filming_time as string).slice(0, 5);
   const startIso = allDay
     ? `${project.filming_date}T00:00:00+00:00`
-    : `${project.filming_date}T${project.filming_time}:00${athensOffsetFor(project.filming_date)}`;
+    : `${project.filming_date}T${filmingTimeNorm}:00${athensOffsetFor(project.filming_date)}`;
+  const endIso = allDay
+    ? null
+    : `${project.filming_date}T${addMinutes(filmingTimeNorm as string, DEFAULT_FILMING_MINUTES)}:00${athensOffsetFor(project.filming_date)}`;
 
   const payload = {
     project_id: projectId,
     title: `Γύρισμα: ${project.title}`,
     description: project.location ?? null,
     start_date: startIso,
-    end_date: null,
+    end_date: endIso,
     all_day: allDay,
     color: null,
     event_type: 'filming' as const,
