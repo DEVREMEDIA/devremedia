@@ -1489,7 +1489,17 @@
     "newMessages": "New Messages",
     "newMessagesDescription": "Get notified when you receive a new message",
     "deliverableFeedback": "Deliverable Feedback",
-    "deliverableFeedbackDescription": "Get notified when clients provide feedback on deliverables"
+    "deliverableFeedbackDescription": "Get notified when clients provide feedback on deliverables",
+    "bookingDurations": "Booking Durations",
+    "addDuration": "Add Duration",
+    "startInterval": "Start Interval",
+    "intervalMinutes": "Minutes between available start times",
+    "weeklyTemplate": "Weekly Template",
+    "open": "Open",
+    "closed": "Closed",
+    "from": "From",
+    "to": "To",
+    "save": "Save"
   },
 
   "leads": {

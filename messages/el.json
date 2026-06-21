@@ -1489,7 +1489,17 @@
     "newMessages": "Νέα Μηνύματα",
     "newMessagesDescription": "Λάβετε ειδοποίηση όταν λαμβάνετε νέο μήνυμα",
     "deliverableFeedback": "Σχόλια Παραδοτέων",
-    "deliverableFeedbackDescription": "Λάβετε ειδοποίηση όταν πελάτες σχολιάζουν παραδοτέα"
+    "deliverableFeedbackDescription": "Λάβετε ειδοποίηση όταν πελάτες σχολιάζουν παραδοτέα",
+    "bookingDurations": "Διάρκειες Κράτησης",
+    "addDuration": "Προσθήκη Διάρκειας",
+    "startInterval": "Διάστημα Έναρξης",
+    "intervalMinutes": "Λεπτά μεταξύ διαθέσιμων ωρών έναρξης",
+    "weeklyTemplate": "Εβδομαδιαίο Πρόγραμμα",
+    "open": "Ανοιχτά",
+    "closed": "Κλειστά",
+    "from": "Από",
+    "to": "Έως",
+    "save": "Αποθήκευση"
   },
 
   "leads": {
