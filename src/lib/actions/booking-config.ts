@@ -248,6 +248,13 @@ export async function applyTemplateToMonth(
         rows.push({ date, is_open: true, open_time: t.open_time, close_time: t.close_time });
       }
     }
+
+    // Guard: if no rows to write, return early (avoid wasteful/error-prone empty upsert)
+    if (rows.length === 0) {
+      revalidatePath('/admin/availability');
+      return { data: { written: 0 }, error: null };
+    }
+
     // on conflict do nothing → never clobber manual edits (PRD #87 §7.1)
     const { error } = await supabase
       .from('booking_day_availability')

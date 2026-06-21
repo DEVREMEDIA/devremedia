@@ -416,11 +416,33 @@ describe('applyTemplateToMonth', () => {
     const result = await applyTemplateToMonth('2025-01');
 
     expect(result.error).toBeNull();
-    // January 2025 has 5 Mondays → 5 rows written
-    expect(result.data?.written).toBe(5);
+    // January 2025 has 4 Mondays (6, 13, 20, 27) → 4 rows written
+    expect(result.data?.written).toBe(4);
     expect(calls[1].q.upsert).toHaveBeenCalledWith(expect.any(Array), {
       onConflict: 'date',
       ignoreDuplicates: true,
     });
+  });
+
+  it('returns { written: 0 } without calling upsert when all template days are closed', async () => {
+    // template: all closed
+    const template = [
+      { weekday: 0, is_open: false, open_time: null, close_time: null },
+      { weekday: 1, is_open: false, open_time: null, close_time: null },
+      { weekday: 2, is_open: false, open_time: null, close_time: null },
+      { weekday: 3, is_open: false, open_time: null, close_time: null },
+      { weekday: 4, is_open: false, open_time: null, close_time: null },
+      { weekday: 5, is_open: false, open_time: null, close_time: null },
+      { weekday: 6, is_open: false, open_time: null, close_time: null },
+    ];
+    const { client, calls } = makeClient([{ data: template, error: null }]);
+    asAdmin(client);
+
+    const result = await applyTemplateToMonth('2025-01');
+
+    expect(result.error).toBeNull();
+    expect(result.data?.written).toBe(0);
+    // upsert should not be called when rows is empty
+    expect(calls.length).toBe(1); // only the template query
   });
 });
