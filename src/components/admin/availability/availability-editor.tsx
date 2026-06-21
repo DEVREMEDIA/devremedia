@@ -216,17 +216,31 @@ export function AvailabilityEditor({ initialMonth }: AvailabilityEditorProps) {
                 <div className="flex items-center gap-2">
                   <Input
                     type="time"
-                    defaultValue={openTime}
+                    value={openTime}
                     disabled={!isOpen}
                     className="w-32 text-sm h-8"
+                    onChange={(e) =>
+                      setRows((prev) =>
+                        prev.map((r) =>
+                          r.date === date ? { ...r, open_time: e.target.value } : r,
+                        ),
+                      )
+                    }
                     onBlur={(e) => isOpen && handleTimeBlur(date, 'open_time', e.target.value)}
                   />
                   <span className="text-xs text-muted-foreground">–</span>
                   <Input
                     type="time"
-                    defaultValue={closeTime}
+                    value={closeTime}
                     disabled={!isOpen}
                     className="w-32 text-sm h-8"
+                    onChange={(e) =>
+                      setRows((prev) =>
+                        prev.map((r) =>
+                          r.date === date ? { ...r, close_time: e.target.value } : r,
+                        ),
+                      )
+                    }
                     onBlur={(e) => isOpen && handleTimeBlur(date, 'close_time', e.target.value)}
                   />
                 </div>

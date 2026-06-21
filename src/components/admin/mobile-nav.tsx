@@ -19,6 +19,7 @@ import {
   GraduationCap,
   FolderOpen,
   ShieldCheck,
+  Video,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
@@ -71,6 +72,16 @@ export function MobileNav({ open, onOpenChange }: MobileNavProps) {
       label: t('filmingPrep'),
     },
     {
+      href: '/admin/filming-requests',
+      icon: Video,
+      label: t('filmingRequests'),
+    },
+    {
+      href: '/admin/availability',
+      icon: CalendarClock,
+      label: t('availability'),
+    },
+    {
       href: '/admin/contracts',
       icon: FileText,
       label: t('contracts'),
@@ -84,11 +95,6 @@ export function MobileNav({ open, onOpenChange }: MobileNavProps) {
       href: '/admin/leads',
       icon: UserPlus,
       label: t('leads'),
-    },
-    {
-      href: '/admin/availability',
-      icon: CalendarClock,
-      label: t('availability'),
     },
     {
       href: '/admin/university',
