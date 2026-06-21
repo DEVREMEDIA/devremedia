@@ -1679,7 +1679,8 @@
     "remainingAllowance": "Απομένουν {count} {unit} αυτόν τον μήνα",
     "allowanceUnit": {
       "days": "ημέρες",
-      "slots": "ζώνες"
+      "slots": "ζώνες",
+      "hours": "ώρες"
     },
     "available": "Διαθέσιμο",
     "unavailable": {
@@ -1929,7 +1930,8 @@
       "remainingThisMonth": "Απομένουν αυτόν τον μήνα",
       "allowanceUnit": {
         "days": "ημέρες",
-        "slots": "ζώνες"
+        "slots": "ζώνες",
+        "hours": "ώρες"
       },
       "noAgreementTitle": "Δεν υπάρχει ενεργή συμφωνία",
       "noAgreementBody": "Δεν έχετε ακόμη ενεργή συμφωνία. Επικοινωνήστε μαζί μας για να τη ρυθμίσουμε.",
@@ -2500,6 +2502,7 @@
       "allowanceUnit": "Μονάδα Ορίου",
       "allowanceUnitDays": "ημέρες",
       "allowanceUnitSlots": "slots",
+      "allowanceUnitHours": "ώρες",
       "shootingHours": "Ώρες Γυρίσματος",
       "editingHours": "Ώρες Μοντάζ",
       "priceMode": "Τρόπος Τιμής",

@@ -1679,7 +1679,8 @@
     "remainingAllowance": "{count} {unit} remaining this month",
     "allowanceUnit": {
       "days": "days",
-      "slots": "slots"
+      "slots": "slots",
+      "hours": "hours"
     },
     "available": "Available",
     "unavailable": {
@@ -1929,7 +1930,8 @@
       "remainingThisMonth": "Remaining this month",
       "allowanceUnit": {
         "days": "days",
-        "slots": "slots"
+        "slots": "slots",
+        "hours": "hours"
       },
       "noAgreementTitle": "No active agreement",
       "noAgreementBody": "You don't have an active agreement yet. Get in touch and we'll set one up for you.",
@@ -2500,6 +2502,7 @@
       "allowanceUnit": "Allowance Unit",
       "allowanceUnitDays": "days",
       "allowanceUnitSlots": "slots",
+      "allowanceUnitHours": "hours",
       "shootingHours": "Shooting Hours",
       "editingHours": "Editing Hours",
       "priceMode": "Price Mode",

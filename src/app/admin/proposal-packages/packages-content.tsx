@@ -44,7 +44,7 @@ type FormState = {
   video_count: string;
   shooting_days: string;
   allowance_count: string;
-  allowance_unit: 'days' | 'slots';
+  allowance_unit: 'days' | 'slots' | 'hours';
   shooting_hours: string;
   editing_hours: string;
   price_mode: 'manual' | 'auto';
@@ -229,7 +229,10 @@ export function PackagesContent({ packages }: Props) {
                   {p.allowance_count != null && (
                     <span className="bg-primary/10 text-primary px-2 py-0.5 rounded">
                       {p.allowance_count}{' '}
-                      {tf(`allowanceUnit${p.allowance_unit === 'slots' ? 'Slots' : 'Days'}`)}/mo
+                      {tf(
+                        `allowanceUnit${p.allowance_unit === 'slots' ? 'Slots' : p.allowance_unit === 'hours' ? 'Hours' : 'Days'}`,
+                      )}
+                      /mo
                     </span>
                   )}
                   <span className="bg-muted px-2 py-0.5 rounded">
@@ -328,7 +331,9 @@ export function PackagesContent({ packages }: Props) {
                 <Label>{tf('allowanceUnit')}</Label>
                 <Select
                   value={form.allowance_unit}
-                  onValueChange={(v: 'days' | 'slots') => setForm({ ...form, allowance_unit: v })}
+                  onValueChange={(v: 'days' | 'slots' | 'hours') =>
+                    setForm({ ...form, allowance_unit: v })
+                  }
                 >
                   <SelectTrigger>
                     <SelectValue />
@@ -336,6 +341,7 @@ export function PackagesContent({ packages }: Props) {
                   <SelectContent>
                     <SelectItem value="days">{tf('allowanceUnitDays')}</SelectItem>
                     <SelectItem value="slots">{tf('allowanceUnitSlots')}</SelectItem>
+                    <SelectItem value="hours">{tf('allowanceUnitHours')}</SelectItem>
                   </SelectContent>
                 </Select>
               </div>

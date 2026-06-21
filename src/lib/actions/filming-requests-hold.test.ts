@@ -24,7 +24,8 @@ const HOLD = {
   title: 'Booking 2099-03-10',
   description: 'Bring the drone',
   booking_date: '2099-03-10',
-  slot_id: 'slot-1',
+  start_time: '10:00',
+  duration_minutes: 120,
   location: 'Studio A',
   status: 'pending',
   project_type: null,
@@ -78,7 +79,6 @@ describe('approveHold', () => {
   it('creates one Production from the Hold, confirms it, and notifies the client', async () => {
     const { client, calls } = makeSupabase({
       filming_requests: { row: { data: HOLD, error: null } },
-      booking_time_slots: { row: { data: { name: 'Morning' }, error: null } },
       projects: { row: { data: { id: 'project-1', client_id: 'client-1' }, error: null } },
     });
     asAdmin(client);
@@ -111,7 +111,6 @@ describe('approveHold', () => {
   it('puts the confirmed Filming on the calendar', async () => {
     const { client, calls } = makeSupabase({
       filming_requests: { row: { data: HOLD, error: null } },
-      booking_time_slots: { row: { data: { name: 'Morning' }, error: null } },
       projects: { row: { data: { id: 'project-1', client_id: 'client-1' }, error: null } },
     });
     asAdmin(client);
@@ -121,8 +120,11 @@ describe('approveHold', () => {
     expect(calls.calendar_events.inserts).toHaveLength(1);
     expect(calls.calendar_events.inserts[0]).toMatchObject({
       event_type: 'filming',
-      start_date: '2099-03-10',
+      all_day: false,
     });
+    // start_date carries a timed ISO string (date + HH:MM + Athens offset)
+    const insert = calls.calendar_events.inserts[0] as Record<string, unknown>;
+    expect(insert.start_date).toMatch(/^2099-03-10T10:00/);
   });
 });
 

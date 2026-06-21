@@ -33,11 +33,23 @@ describe('proposalPackageSchema — allowance', () => {
     }
   });
 
-  it('rejects an unit other than "days" or "slots"', () => {
+  it('accepts unit "hours" (valid since allowance_unit gained hours support)', () => {
     const result = proposalPackageSchema.safeParse({
       ...BASE,
       allowance_count: 4,
       allowance_unit: 'hours',
+    });
+    expect(result.success).toBe(true);
+    if (result.success) {
+      expect(result.data.allowance_unit).toBe('hours');
+    }
+  });
+
+  it('rejects an unit other than "days", "slots", or "hours"', () => {
+    const result = proposalPackageSchema.safeParse({
+      ...BASE,
+      allowance_count: 4,
+      allowance_unit: 'weeks',
     });
     expect(result.success).toBe(false);
   });

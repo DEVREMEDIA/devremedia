@@ -65,7 +65,7 @@ export async function getMyAgreement(): Promise<ActionResult<MyAgreement | null>
       name: string;
       inclusions: string[] | null;
       allowance_count: number | null;
-      allowance_unit: 'days' | 'slots';
+      allowance_unit: 'days' | 'slots' | 'hours';
     } | null;
 
     if (!pkg || pkg.allowance_count === null) {

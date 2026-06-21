@@ -54,7 +54,7 @@ export async function getFilmingRequests(filters?: {
     let query = supabase
       .from('filming_requests')
       .select(
-        'id, client_id, title, description, preferred_dates, booking_date, slot_id, location, project_type, budget_range, reference_links, selected_package, status, admin_notes, converted_project_id, contact_name, contact_email, contact_phone, contact_company, created_at',
+        'id, client_id, title, description, preferred_dates, booking_date, start_time, duration_minutes, location, project_type, budget_range, reference_links, selected_package, status, admin_notes, converted_project_id, contact_name, contact_email, contact_phone, contact_company, created_at',
       )
       .order('created_at', { ascending: false });
 
@@ -86,7 +86,7 @@ export async function getClientFilmingRequests(): Promise<ActionResult<FilmingRe
     const { data, error } = await supabase
       .from('filming_requests')
       .select(
-        'id, client_id, title, description, preferred_dates, booking_date, slot_id, location, project_type, budget_range, reference_links, selected_package, status, admin_notes, converted_project_id, contact_name, contact_email, contact_phone, contact_company, created_at',
+        'id, client_id, title, description, preferred_dates, booking_date, start_time, duration_minutes, location, project_type, budget_range, reference_links, selected_package, status, admin_notes, converted_project_id, contact_name, contact_email, contact_phone, contact_company, created_at',
       )
       .order('created_at', { ascending: false });
 
@@ -108,7 +108,7 @@ export async function getFilmingRequest(id: string): Promise<ActionResult<Filmin
     const { data, error } = await supabase
       .from('filming_requests')
       .select(
-        'id, client_id, title, description, preferred_dates, booking_date, slot_id, location, project_type, budget_range, reference_links, selected_package, status, admin_notes, converted_project_id, contact_name, contact_email, contact_phone, contact_company, created_at',
+        'id, client_id, title, description, preferred_dates, booking_date, start_time, duration_minutes, location, project_type, budget_range, reference_links, selected_package, status, admin_notes, converted_project_id, contact_name, contact_email, contact_phone, contact_company, created_at',
       )
       .eq('id', id)
       .single();
@@ -144,7 +144,7 @@ export async function createFilmingRequest(input: unknown): Promise<ActionResult
         status: 'pending',
       })
       .select(
-        'id, client_id, title, description, preferred_dates, booking_date, slot_id, location, project_type, budget_range, reference_links, selected_package, status, admin_notes, converted_project_id, contact_name, contact_email, contact_phone, contact_company, created_at',
+        'id, client_id, title, description, preferred_dates, booking_date, start_time, duration_minutes, location, project_type, budget_range, reference_links, selected_package, status, admin_notes, converted_project_id, contact_name, contact_email, contact_phone, contact_company, created_at',
       )
       .single();
 
@@ -191,7 +191,7 @@ export async function reviewFilmingRequest(
       })
       .eq('id', id)
       .select(
-        'id, client_id, title, description, preferred_dates, booking_date, slot_id, location, project_type, budget_range, reference_links, selected_package, status, admin_notes, converted_project_id, contact_name, contact_email, contact_phone, contact_company, created_at',
+        'id, client_id, title, description, preferred_dates, booking_date, start_time, duration_minutes, location, project_type, budget_range, reference_links, selected_package, status, admin_notes, converted_project_id, contact_name, contact_email, contact_phone, contact_company, created_at',
       )
       .single();
 
@@ -234,7 +234,7 @@ export async function convertToProject(id: string): Promise<ActionResult<Project
     const { data: request, error: fetchError } = await supabase
       .from('filming_requests')
       .select(
-        'id, client_id, title, description, preferred_dates, booking_date, slot_id, location, project_type, budget_range, reference_links, selected_package, status, admin_notes, converted_project_id, contact_name, contact_email, contact_phone, contact_company, created_at',
+        'id, client_id, title, description, preferred_dates, booking_date, start_time, duration_minutes, location, project_type, budget_range, reference_links, selected_package, status, admin_notes, converted_project_id, contact_name, contact_email, contact_phone, contact_company, created_at',
       )
       .eq('id', id)
       .single();
@@ -523,7 +523,7 @@ export async function rejectHold(id: string): Promise<ActionResult<FilmingReques
 
     await notifyClientOfHoldOutcome(hold.client_id as string | null, hold.title as string, false);
 
-    return { data: { ...hold, status: 'declined' } as unknown as FilmingRequest, error: null };
+    return { data: { ...hold, status: 'declined' } as FilmingRequest, error: null };
   } catch (err: unknown) {
     return {
       data: null,

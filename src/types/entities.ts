@@ -111,7 +111,7 @@ export type ProposalPackage = {
   video_count: number | null;
   shooting_days: number | null;
   allowance_count: number | null;
-  allowance_unit: 'days' | 'slots';
+  allowance_unit: 'days' | 'slots' | 'hours';
   shooting_hours: number;
   editing_hours: number;
   price_mode: 'manual' | 'auto';
@@ -346,7 +346,8 @@ export type FilmingRequest = {
   description: string | null;
   preferred_dates: Array<{ date?: string; time_slot?: string }> | null;
   booking_date: string | null;
-  slot_id: string | null;
+  start_time: string | null;
+  duration_minutes: number | null;
   location: string | null;
   project_type: string | null;
   budget_range: string | null;
