@@ -120,7 +120,7 @@ export function BookingSettings({ config, weeklyTemplate }: BookingSettingsProps
     refresh();
   };
 
-  const handleWeekdayTime = async (
+  const handleWeekdayTimeChange = (
     weekday: number,
     field: 'open_time' | 'close_time',
     value: string,
@@ -129,11 +129,16 @@ export function BookingSettings({ config, weeklyTemplate }: BookingSettingsProps
     if (!row) return;
     const updated = { ...row, [field]: value };
     setTemplate((prev) => prev.map((r) => (r.weekday === weekday ? updated : r)));
+  };
+
+  const handleWeekdayTimeBlur = async (weekday: number) => {
+    const row = template.find((r) => r.weekday === weekday);
+    if (!row) return;
     const result = await setWeekdayHours({
       weekday,
-      is_open: updated.is_open,
-      open_time: updated.open_time,
-      close_time: updated.close_time,
+      is_open: row.is_open,
+      open_time: row.open_time,
+      close_time: row.close_time,
     });
     if (result.error) {
       toast.error(result.error);
@@ -288,7 +293,10 @@ export function BookingSettings({ config, weeklyTemplate }: BookingSettingsProps
                           type="time"
                           className="w-28"
                           value={row.open_time ?? '09:00'}
-                          onChange={(e) => handleWeekdayTime(weekday, 'open_time', e.target.value)}
+                          onChange={(e) =>
+                            handleWeekdayTimeChange(weekday, 'open_time', e.target.value)
+                          }
+                          onBlur={() => handleWeekdayTimeBlur(weekday)}
                         />
                       </div>
                       <div className="flex items-center gap-1">
@@ -297,7 +305,10 @@ export function BookingSettings({ config, weeklyTemplate }: BookingSettingsProps
                           type="time"
                           className="w-28"
                           value={row.close_time ?? '17:00'}
-                          onChange={(e) => handleWeekdayTime(weekday, 'close_time', e.target.value)}
+                          onChange={(e) =>
+                            handleWeekdayTimeChange(weekday, 'close_time', e.target.value)
+                          }
+                          onBlur={() => handleWeekdayTimeBlur(weekday)}
                         />
                       </div>
                     </>
