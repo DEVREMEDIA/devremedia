@@ -1,70 +1,46 @@
 /**
- * Pure booking-availability logic — the single source of truth for what a
- * Client may book. Modelled on src/lib/finance.ts: no I/O, no Date, no
- * Supabase. Callers gather the inputs and feed them in; the view renders the
- * result.
+ * Pure booking-availability engine — the single source of truth for what a
+ * Client may book. No I/O, no Date, no Supabase (mirrors src/lib/finance.ts).
+ * Times are minutes-from-midnight (Athens wall-clock supplied by the caller).
  *
- * Given the candidate dates × Time Slots, the global Capacity, the existing
- * Holds + confirmed Filmings (which occupy Capacity), the Client's Package
- * Allowance, and the Client's own Holds + Filmings, it returns per-date /
- * per-Slot availability and the Client's remaining monthly Allowance.
- *
- * A Slot is unavailable when either:
- *   - Holds + confirmed Filmings on that date+Slot have reached Capacity, or
- *   - booking it would exceed the Client's remaining monthly Allowance.
- *
- * Allowance is counted per the Package unit and resets on the 1st of each
- * calendar month:
- *   - 'days'  = distinct dates used in the month
- *   - 'slots' = individual date+Slot pairs used in the month
+ * A start time is unavailable when it is in the past, its window has reached
+ * Capacity (overlapping Holds + Filmings), or booking it would exceed the
+ * Client's remaining monthly Allowance. Allowance resets on the 1st and is
+ * counted per Package unit: days = distinct dates, slots = bookings,
+ * hours = summed duration / 60.
  */
 
-export type BookingUnit = 'days' | 'slots';
+export type BookingUnit = 'days' | 'slots' | 'hours';
 
-/** One occupied (or candidate) date+Slot pair. A Hold and a confirmed Filming
- * are indistinguishable here — both occupy Capacity the same way. */
-export type Booking = {
-  date: string; // YYYY-MM-DD
-  slot_id: string;
-};
+/** One occupied (or candidate) time window. A Hold and a confirmed Filming are
+ * indistinguishable here — both occupy Capacity the same way. */
+export type Booking = { date: string; start: number; duration: number };
 
-export type TimeSlot = {
-  id: string;
-  name: string;
-};
+export type OpenDay = { date: string; open: number; close: number };
 
-export type Allowance = {
-  count: number;
-  unit: BookingUnit;
-};
+export type Allowance = { count: number; unit: BookingUnit };
 
-export type SlotUnavailableReason = 'available' | 'capacity_full' | 'allowance_exhausted';
-
-export type SlotAvailability = {
-  slot_id: string;
-  slot_name: string;
-  available: boolean;
-  reason: SlotUnavailableReason;
-};
-
-export type DateAvailability = {
+export type Reason = 'available' | 'capacity_full' | 'allowance_exhausted' | 'past';
+export type StartOption = { start: number; available: boolean; reason: Reason };
+export type DurationGroup = { duration: number; starts: StartOption[] };
+export type DayAvailability = {
   date: string;
-  slots: SlotAvailability[];
+  open: number;
+  close: number;
+  durations: DurationGroup[];
 };
-
-export type AvailabilityResult = {
-  dates: DateAvailability[];
-  remaining_allowance: number;
-};
+export type AvailabilityResult = { days: DayAvailability[]; remaining_allowance: number };
 
 export type AvailabilityInput = {
-  /** Candidate dates to show (YYYY-MM-DD). */
-  dates: string[];
-  /** The ordered Time Slot list for the Client's Package. */
-  slots: TimeSlot[];
-  /** Global crew Capacity per date+Slot. */
+  /** Open days for the Client's window, as minutes. */
+  openDays: OpenDay[];
+  /** Offered durations (minutes), ordered. */
+  durations: number[];
+  /** Start-time granularity (minutes). */
+  interval: number;
+  /** Global crew Capacity. */
   capacity: number;
-  /** All Holds + confirmed Filmings (any Client) — they occupy Capacity. */
+  /** All non-declined Holds + Filmings (any Client) — they occupy Capacity. */
   bookings: Booking[];
   /** The Client's Package Allowance, or null when there is no active Agreement. */
   allowance: Allowance | null;
@@ -72,83 +48,118 @@ export type AvailabilityInput = {
   clientUsage: Booking[];
   /** The calendar month whose Allowance applies (YYYY-MM). */
   month: string;
+  /** Today's date in Athens (YYYY-MM-DD) — used to mark past starts. */
+  today: string;
+  /** Minutes-from-midnight now in Athens — past threshold for `today`. */
+  nowMinutes: number;
 };
 
-const monthOf = (date: string): string => date.substring(0, 7); // YYYY-MM
+const monthOf = (date: string): string => date.substring(0, 7);
 
-/** The Client's Holds + Filmings that fall in the given calendar month. */
 const usageInMonth = (usage: Booking[], month: string): Booking[] =>
   usage.filter((u) => monthOf(u.date) === month);
 
-/**
- * How much of the Allowance the Client has already consumed this month,
- * counted per the Package unit.
- */
-export function remainingAllowance(allowance: Allowance, monthUsage: Booking[]): number {
-  const used =
-    allowance.unit === 'days' ? new Set(monthUsage.map((u) => u.date)).size : monthUsage.length;
-  return Math.max(0, allowance.count - used);
+/** All start times in steps of `interval` where the whole window fits before close. */
+export function candidateStarts(
+  open: number,
+  close: number,
+  duration: number,
+  interval: number,
+): number[] {
+  const starts: number[] = [];
+  for (let s = open; s + duration <= close; s += interval) starts.push(s);
+  return starts;
 }
 
-/** Holds + confirmed Filmings on this date+Slot have reached Capacity. */
-const isCapacityFull = (
+/** Two windows overlap when each starts before the other ends. Touching ≠ overlap. */
+export function overlaps(aStart: number, aDur: number, bStart: number, bDur: number): boolean {
+  return aStart < bStart + bDur && bStart < aStart + aDur;
+}
+
+/** How many existing bookings on this date overlap the proposed window. */
+export function concurrentAt(
   date: string,
-  slotId: string,
+  start: number,
+  duration: number,
+  bookings: Booking[],
+): number {
+  return bookings.filter((b) => b.date === date && overlaps(start, duration, b.start, b.duration))
+    .length;
+}
+
+export function isCapacityFree(
+  date: string,
+  start: number,
+  duration: number,
   capacity: number,
   bookings: Booking[],
-): boolean => bookings.filter((b) => b.date === date && b.slot_id === slotId).length >= capacity;
+): boolean {
+  return concurrentAt(date, start, duration, bookings) < capacity;
+}
 
-/**
- * Would booking this date+Slot stay within the Client's monthly Allowance?
- * Under 'days', a Slot on a date the Client already uses this month costs no
- * extra day; under 'slots', a pair the Client already holds costs no extra slot.
- */
-const isWithinAllowance = (
-  date: string,
-  slotId: string,
-  allowance: Allowance,
-  monthUsage: Booking[],
-): boolean => {
-  if (allowance.unit === 'days') {
-    const usedDates = new Set(monthUsage.map((u) => u.date));
-    const cost = usedDates.has(date) ? 0 : 1;
-    return usedDates.size + cost <= allowance.count;
-  }
-  const alreadyHeld = monthUsage.some((u) => u.date === date && u.slot_id === slotId);
-  const cost = alreadyHeld ? 0 : 1;
-  return monthUsage.length + cost <= allowance.count;
+/** Allowance already consumed this month, in the Package unit. */
+const usedInUnit = (allowance: Allowance, monthUsage: Booking[]): number => {
+  if (allowance.unit === 'days') return new Set(monthUsage.map((u) => u.date)).size;
+  if (allowance.unit === 'slots') return monthUsage.length;
+  return monthUsage.reduce((sum, u) => sum + u.duration, 0) / 60; // hours
 };
 
-export function computeAvailability(input: AvailabilityInput): AvailabilityResult {
-  const { dates, slots, capacity, bookings, allowance, clientUsage, month } = input;
+export function remainingAllowance(allowance: Allowance, monthUsage: Booking[]): number {
+  return Math.max(0, allowance.count - usedInUnit(allowance, monthUsage));
+}
 
-  // No active Agreement → no booking surface at all.
-  if (!allowance) {
-    return { dates: [], remaining_allowance: 0 };
+/** Cost of a new booking in the Package unit. */
+const costInUnit = (
+  date: string,
+  duration: number,
+  allowance: Allowance,
+  monthUsage: Booking[],
+): number => {
+  if (allowance.unit === 'days') {
+    return new Set(monthUsage.map((u) => u.date)).has(date) ? 0 : 1;
   }
+  if (allowance.unit === 'slots') return 1;
+  return duration / 60; // hours
+};
+
+export function wouldFitAllowance(
+  date: string,
+  duration: number,
+  allowance: Allowance,
+  monthUsage: Booking[],
+): boolean {
+  const used = usedInUnit(allowance, monthUsage);
+  const cost = costInUnit(date, duration, allowance, monthUsage);
+  return used + cost <= allowance.count + 1e-9; // epsilon guards float hours
+}
+
+export function computeAvailability(input: AvailabilityInput): AvailabilityResult {
+  const { openDays, durations, interval, capacity, bookings, allowance, clientUsage, month } =
+    input;
+
+  if (!allowance) return { days: [], remaining_allowance: 0 };
 
   const monthUsage = usageInMonth(clientUsage, month);
 
-  const dateAvailability: DateAvailability[] = dates.map((date) => ({
-    date,
-    slots: slots.map((slot) => {
-      let reason: SlotUnavailableReason = 'available';
-      if (isCapacityFull(date, slot.id, capacity, bookings)) {
-        reason = 'capacity_full';
-      } else if (!isWithinAllowance(date, slot.id, allowance, monthUsage)) {
-        reason = 'allowance_exhausted';
-      }
-      return {
-        slot_id: slot.id,
-        slot_name: slot.name,
-        available: reason === 'available',
-        reason,
-      };
-    }),
+  const days: DayAvailability[] = openDays.map((day) => ({
+    date: day.date,
+    open: day.open,
+    close: day.close,
+    durations: durations.map((duration) => ({
+      duration,
+      starts: candidateStarts(day.open, day.close, duration, interval).map((start) => {
+        let reason: Reason = 'available';
+        if (day.date === input.today && start < input.nowMinutes) {
+          reason = 'past';
+        } else if (!isCapacityFree(day.date, start, duration, capacity, bookings)) {
+          reason = 'capacity_full';
+        } else if (!wouldFitAllowance(day.date, duration, allowance, monthUsage)) {
+          reason = 'allowance_exhausted';
+        }
+        return { start, available: reason === 'available', reason };
+      }),
+    })),
   }));
 
-  return {
-    dates: dateAvailability,
-    remaining_allowance: remainingAllowance(allowance, monthUsage),
-  };
+  return { days, remaining_allowance: remainingAllowance(allowance, monthUsage) };
 }
