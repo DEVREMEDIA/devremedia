@@ -90,3 +90,15 @@ _Avoid_: Paid revenue, income, "money in" (as the canonical term)
 **Collections (Εισπράξεις)**:
 The cash actually received in a period — the sum of `paid` invoices attributed to the month they were _paid_ (`paid_at`).
 _Avoid_: Revenue, τζίρος (these mean the accrual figure, not cash received)
+
+**RF Payment Code (Κωδικός Πληρωμής RF)**:
+The bank-issued creditor reference (ISO 11649, prefixed `RF`) a Client uses to pay an Invoice through their own e-banking. The company does not generate it — it is copied in from the bank or accounting software. Optional per Invoice. When present, it is the preferred way shown to the Client for paying.
+_Avoid_: confusing it with the Invoice number; treating a self-generated code as a valid RF (it must be bank-linked).
+
+**Bank Details (Στοιχεία τραπέζης)**:
+The company's bank account information (beneficiary, IBAN, bank name) shown to a Client so they can pay an Invoice by plain transfer. A single company-wide set, kept with company settings. The fallback shown when an Invoice has no RF Payment Code.
+_Avoid_: storing it per Invoice or per Client; calling it a "payment method" (it is payment instructions, not a recorded method).
+
+**Pay (a Client paying an Invoice)**:
+The Client settles an Invoice through their own bank — using the RF Payment Code if the Invoice has one, otherwise the company Bank Details. The DMS only _displays the instructions_; it does not process the payment. Marking an Invoice `paid` is a separate admin action (recording a received payment), not something the Client does in the app.
+_Avoid_: "checkout", "card payment" (the in-app card flow was removed); implying the app moves money.
