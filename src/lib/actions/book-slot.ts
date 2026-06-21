@@ -49,13 +49,20 @@ export async function bookFilming(input: unknown): Promise<ActionResult<{ id: st
     revalidatePath('/client/book');
     revalidatePath('/admin/filming-requests');
 
-    const adminIds = await getAdminUserIds();
-    await createNotificationForMany(adminIds, {
-      type: NOTIFICATION_TYPES.BOOKING_SUBMITTED,
-      title: 'New booking request submitted',
-      body: `${parsed.date} ${parsed.start_time}`,
-      actionUrl: '/admin/filming-requests',
-    });
+    // Best-effort: the Hold already exists at this point. A notification failure
+    // must NOT surface as a booking error to the client (they would re-book and
+    // burn allowance/capacity a second time).
+    try {
+      const adminIds = await getAdminUserIds();
+      await createNotificationForMany(adminIds, {
+        type: NOTIFICATION_TYPES.BOOKING_SUBMITTED,
+        title: 'New booking request submitted',
+        body: `${parsed.date} ${parsed.start_time}`,
+        actionUrl: '/admin/filming-requests',
+      });
+    } catch {
+      // swallow — notification is non-critical
+    }
 
     return { data: { id }, error: null };
   } catch (err: unknown) {
