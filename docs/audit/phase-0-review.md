@@ -28,9 +28,14 @@ Everything here is additive: policies are dropped and recreated, no table, colum
 
 The fix reinstates them:
 
-- **SELECT** — admin (`is_admin()`), the project's client (`clients.user_id`), or the assigned
-  employee (`projects.assigned_to`); plus the channel split, so `team` messages stay hidden from the
-  client. This is the `00026` policy verbatim, with `(select auth.uid())` wrapping.
+- **SELECT** — admin (`is_admin()`), the project's client (`clients.user_id`), or an assigned
+  employee; plus the channel split, so `team` messages stay hidden from the client. This is the
+  `00026` policy with `(select auth.uid())` wrapping and **one deliberate extension**: "assigned
+  employee" now also covers employees assigned via tasks (`tasks.assigned_to`, multi-member
+  assignment from PRs #86/#88), not only the single `projects.assigned_to` owner. `00026` predates
+  multi-member assignment — restoring it verbatim would have cut task-assigned employees off from
+  their project's messages. The same task-based clause is applied to INSERT and UPDATE below,
+  matching what the `annotation_seen` policy in this migration already does.
 - **UPDATE** — the `00017` policy (you may only update rows you may read).
 - **INSERT** — **this goes one step beyond the literal audit text.** §2.1 names SELECT and UPDATE,
   but the same migration also widened INSERT to "any authenticated user, any project", which lets

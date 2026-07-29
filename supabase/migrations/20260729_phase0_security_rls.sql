@@ -15,6 +15,12 @@
 --    Restores the logic of 00026_messages_channel.sql (SELECT, channel-aware)
 --    and 00017_fix_rls_security.sql (UPDATE), which 20240209 overrode with
 --    "the project exists" / USING (true) WITH CHECK (true).
+--
+--    One deliberate extension over 00026: employees assigned via tasks
+--    (multi-member assignment, PRs #86/#88 — tasks.assigned_to) count as team
+--    members too, not just the single projects.assigned_to owner. 00026
+--    predates multi-member assignment; restoring it verbatim would cut
+--    task-assigned employees off from their project's messages.
 -- ============================================================================
 
 -- SELECT: admin, the project's client, or the assigned employee.
@@ -37,6 +43,11 @@ USING (
         AND c.user_id = (select auth.uid())
       )
       OR p.assigned_to = (select auth.uid())
+      OR EXISTS (
+        SELECT 1 FROM public.tasks t
+        WHERE t.project_id = p.id
+        AND t.assigned_to = (select auth.uid())
+      )
     )
   )
   AND (
@@ -49,6 +60,11 @@ USING (
           SELECT 1 FROM public.projects p2
           WHERE p2.id = messages.project_id
           AND p2.assigned_to = (select auth.uid())
+        )
+        OR EXISTS (
+          SELECT 1 FROM public.tasks t2
+          WHERE t2.project_id = messages.project_id
+          AND t2.assigned_to = (select auth.uid())
         )
       )
     )
@@ -79,6 +95,11 @@ WITH CHECK (
         )
       )
       OR p.assigned_to = (select auth.uid())
+      OR EXISTS (
+        SELECT 1 FROM public.tasks t
+        WHERE t.project_id = p.id
+        AND t.assigned_to = (select auth.uid())
+      )
     )
   )
 );
@@ -101,6 +122,11 @@ USING (
         AND c.user_id = (select auth.uid())
       )
       OR p.assigned_to = (select auth.uid())
+      OR EXISTS (
+        SELECT 1 FROM public.tasks t
+        WHERE t.project_id = p.id
+        AND t.assigned_to = (select auth.uid())
+      )
     )
   )
 )
@@ -116,6 +142,11 @@ WITH CHECK (
         AND c.user_id = (select auth.uid())
       )
       OR p.assigned_to = (select auth.uid())
+      OR EXISTS (
+        SELECT 1 FROM public.tasks t
+        WHERE t.project_id = p.id
+        AND t.assigned_to = (select auth.uid())
+      )
     )
   )
 );
