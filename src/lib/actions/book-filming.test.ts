@@ -4,7 +4,7 @@ const rpc = vi.fn();
 vi.mock('@/lib/auth-helpers', () => ({
   requireUser: vi.fn(async () => ({ supabase: { rpc }, user: { id: 'u1' }, error: null })),
 }));
-vi.mock('@/lib/actions/notifications', () => ({
+vi.mock('@/lib/notification-helpers', () => ({
   getAdminUserIds: vi.fn(async () => []),
   createNotificationForMany: vi.fn(async () => {}),
 }));

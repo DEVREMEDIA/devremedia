@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createAdminClient } from '@/lib/supabase/admin';
 import { fetchChangedEvents } from '@/lib/google-calendar';
-import { createNotificationForMany, getAdminUserIds } from '@/lib/actions/notifications';
+import { createNotificationForMany, getAdminUserIds } from '@/lib/notification-helpers';
 import { NOTIFICATION_TYPES } from '@/lib/notification-types';
 import type { calendar_v3 } from '@googleapis/calendar';
 

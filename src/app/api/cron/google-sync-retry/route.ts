@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createAdminClient } from '@/lib/supabase/admin';
-import { createNotificationForMany, getAdminUserIds } from '@/lib/actions/notifications';
+import { createNotificationForMany, getAdminUserIds } from '@/lib/notification-helpers';
 import { NOTIFICATION_TYPES } from '@/lib/notification-types';
 
 export async function POST(request: NextRequest) {

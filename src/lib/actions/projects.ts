@@ -8,7 +8,7 @@ import type { ActionResult, ProjectWithClient, Project } from '@/types/index';
 import type { ProjectStatus, Priority } from '@/lib/constants';
 import { revalidatePath } from 'next/cache';
 import { escapePostgrestFilter } from '@/lib/utils';
-import { createNotification } from '@/lib/actions/notifications';
+import { createNotification } from '@/lib/notification-helpers';
 import { NOTIFICATION_TYPES } from '@/lib/notification-types';
 import { syncEntityToGoogle } from '@/lib/google-sync-helper';
 import { getGoogleColorId } from '@/lib/google-calendar';

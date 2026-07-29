@@ -4,7 +4,7 @@ import {
   getClientUserIdFromProject,
   getClientUserIdFromClientId,
   getAdminUserIds,
-} from '@/lib/actions/notifications';
+} from '@/lib/notification-helpers';
 import { triggerInvoiceSentEmail } from '@/lib/email/triggers/invoice-sent';
 import { triggerProjectDeliveredEmail } from '@/lib/email/triggers/project-delivered';
 import { syncProjectFilmingToCalendar } from '@/lib/actions/sync-project-filming';

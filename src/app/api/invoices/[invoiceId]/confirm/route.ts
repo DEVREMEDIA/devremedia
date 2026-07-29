@@ -7,7 +7,7 @@ import {
   createNotificationForMany,
   getClientUserIdFromClientId,
   getAdminUserIds,
-} from '@/lib/actions/notifications';
+} from '@/lib/notification-helpers';
 import { NOTIFICATION_TYPES } from '@/lib/notification-types';
 
 export const dynamic = 'force-dynamic';

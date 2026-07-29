@@ -5,7 +5,7 @@ import { createTaskSchema, updateTaskSchema } from '@/lib/schemas/task';
 import type { ActionResult, Task } from '@/types/index';
 import type { TaskStatus } from '@/lib/constants';
 import { revalidatePath } from 'next/cache';
-import { createNotification } from '@/lib/actions/notifications';
+import { createNotification } from '@/lib/notification-helpers';
 import { applyStatusChange } from '@/lib/apply-status-change';
 import { NOTIFICATION_TYPES } from '@/lib/notification-types';
 import { syncEntityToGoogle } from '@/lib/google-sync-helper';

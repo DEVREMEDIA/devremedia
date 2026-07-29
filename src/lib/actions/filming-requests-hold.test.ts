@@ -5,14 +5,14 @@ vi.mock('@/lib/auth-helpers', () => ({
 }));
 vi.mock('@/lib/supabase/admin', () => ({ createAdminClient: vi.fn() }));
 vi.mock('next/cache', () => ({ revalidatePath: vi.fn() }));
-vi.mock('@/lib/actions/notifications', () => ({
+vi.mock('@/lib/notification-helpers', () => ({
   createNotification: vi.fn(() => Promise.resolve()),
   getClientUserIdFromClientId: vi.fn(() => Promise.resolve('client-user-1')),
 }));
 
 import type { SupabaseClient, User } from '@supabase/supabase-js';
 import { requireAdmin } from '@/lib/auth-helpers';
-import { createNotification, getClientUserIdFromClientId } from '@/lib/actions/notifications';
+import { createNotification, getClientUserIdFromClientId } from '@/lib/notification-helpers';
 import { approveHold, rejectHold } from './filming-requests';
 
 const mockRequireAdmin = vi.mocked(requireAdmin);

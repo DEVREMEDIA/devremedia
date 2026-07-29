@@ -14,7 +14,7 @@ import {
   createNotificationForMany,
   getClientUserIdFromClientId,
   getAdminUserIds,
-} from '@/lib/actions/notifications';
+} from '@/lib/notification-helpers';
 import { NOTIFICATION_TYPES } from '@/lib/notification-types';
 import { requireUser, requireAdmin } from '@/lib/auth-helpers';
 import { syncEntityToGoogle } from '@/lib/google-sync-helper';

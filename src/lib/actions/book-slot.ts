@@ -3,7 +3,7 @@
 import { z } from 'zod';
 import { requireUser } from '@/lib/auth-helpers';
 import { bookFilmingSchema } from '@/lib/schemas/booking';
-import { getAdminUserIds, createNotificationForMany } from '@/lib/actions/notifications';
+import { getAdminUserIds, createNotificationForMany } from '@/lib/notification-helpers';
 import { NOTIFICATION_TYPES } from '@/lib/notification-types';
 import type { ActionResult } from '@/types';
 import { revalidatePath } from 'next/cache';
