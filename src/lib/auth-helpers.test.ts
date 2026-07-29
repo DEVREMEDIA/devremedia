@@ -28,7 +28,7 @@ beforeEach(() => {
   vi.clearAllMocks();
 });
 
-import { requireAdmin } from './auth-helpers';
+import { requireAdmin, requireRole } from './auth-helpers';
 
 describe('requireUser', () => {
   it('returns error Unauthorized when no session exists', async () => {
@@ -107,5 +107,57 @@ describe('requireAdmin', () => {
 
     expect(result.error).toBeNull();
     expect(result.user).toEqual(user);
+  });
+});
+
+describe('requireRole', () => {
+  it('returns error Unauthorized when no session exists', async () => {
+    mockCreateClient.mockResolvedValue(makeSupabase(null) as never);
+
+    const result = await requireRole(['salesman']);
+
+    expect(result.error).toBe('Unauthorized');
+    expect(result.user).toBeNull();
+  });
+
+  it('returns Forbidden when the role is not in the allowed list', async () => {
+    const user = { id: 'user-7', email: 'cli@b.com' };
+    mockCreateClient.mockResolvedValue(makeSupabase(user, { role: 'client' }) as never);
+
+    const result = await requireRole(['salesman']);
+
+    expect(result.error).toBe('Forbidden: insufficient permissions');
+    expect(result.user).toBeNull();
+  });
+
+  it('returns Forbidden when no profile row exists', async () => {
+    const user = { id: 'user-8', email: 'x@b.com' };
+    mockCreateClient.mockResolvedValue(makeSupabase(user, null) as never);
+
+    const result = await requireRole(['salesman']);
+
+    expect(result.error).toBe('Forbidden: insufficient permissions');
+  });
+
+  it('returns the user when the role is allowed', async () => {
+    const user = { id: 'user-9', email: 'sales@b.com' };
+    mockCreateClient.mockResolvedValue(makeSupabase(user, { role: 'salesman' }) as never);
+
+    const result = await requireRole(['salesman']);
+
+    expect(result.error).toBeNull();
+    expect(result.user).toEqual(user);
+  });
+
+  it('always allows admin and super_admin without listing them', async () => {
+    for (const role of ['admin', 'super_admin']) {
+      const user = { id: `user-${role}`, email: `${role}@b.com` };
+      mockCreateClient.mockResolvedValue(makeSupabase(user, { role }) as never);
+
+      const result = await requireRole(['salesman']);
+
+      expect(result.error).toBeNull();
+      expect(result.user).toEqual(user);
+    }
   });
 });

@@ -1,6 +1,6 @@
 'use server';
 
-import { requireUser } from '@/lib/auth-helpers';
+import { requireRole, requireUser } from '@/lib/auth-helpers';
 import { createLeadSchema, updateLeadSchema } from '@/lib/schemas/lead';
 import type { ActionResult, LeadFilters, Lead, Client } from '@/types';
 import { LEAD_STAGES } from '@/lib/constants';
@@ -89,7 +89,7 @@ export async function getLead(id: string): Promise<ActionResult<Lead>> {
 export async function createLead(input: unknown): Promise<ActionResult<Lead>> {
   try {
     const validated = createLeadSchema.parse(input);
-    const { supabase, user, error: authError } = await requireUser();
+    const { supabase, user, error: authError } = await requireRole(['salesman']);
     if (authError) return { data: null, error: authError };
 
     const { data, error } = await supabase
@@ -117,7 +117,7 @@ export async function createLead(input: unknown): Promise<ActionResult<Lead>> {
 export async function updateLead(id: string, input: unknown): Promise<ActionResult<Lead>> {
   try {
     const validated = updateLeadSchema.parse(input);
-    const { supabase, error: authError } = await requireUser();
+    const { supabase, error: authError } = await requireRole(['salesman']);
     if (authError) return { data: null, error: authError };
 
     const { data, error } = await supabase
@@ -147,7 +147,7 @@ export async function updateLeadStage(id: string, stage: string): Promise<Action
     if (!LEAD_STAGES.includes(stage as (typeof LEAD_STAGES)[number])) {
       return { data: null, error: `Invalid stage: ${stage}` };
     }
-    const { supabase, user, error: authError } = await requireUser();
+    const { supabase, user, error: authError } = await requireRole(['salesman']);
     if (authError) return { data: null, error: authError };
 
     const { data, error } = await supabase
@@ -180,7 +180,7 @@ export async function updateLeadStage(id: string, stage: string): Promise<Action
 
 export async function deleteLead(id: string): Promise<ActionResult<void>> {
   try {
-    const { supabase, error: authError } = await requireUser();
+    const { supabase, error: authError } = await requireRole(['salesman']);
     if (authError) return { data: null, error: authError };
     const { error } = await supabase.from('leads').delete().eq('id', id);
 
@@ -196,7 +196,7 @@ export async function deleteLead(id: string): Promise<ActionResult<void>> {
 
 export async function convertLeadToClient(id: string): Promise<ActionResult<Client>> {
   try {
-    const { supabase, user, error: authError } = await requireUser();
+    const { supabase, user, error: authError } = await requireRole(['salesman']);
     if (authError) return { data: null, error: authError };
 
     // Fetch the lead
