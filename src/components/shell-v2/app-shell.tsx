@@ -1,5 +1,6 @@
 import { ShellSidebar } from './sidebar';
 import { ShellBottomNav } from './bottom-nav';
+import { KeepInShell } from './keep-in-shell';
 import { NotificationBell } from '@/components/shared/notification-bell';
 import { ThemeToggle } from '@/components/theme-toggle';
 import type { NavItem } from './types';
@@ -9,6 +10,8 @@ interface AppShellProps {
   settingsItem: NavItem;
   /** Τα items που χωράνε στην κάτω μπάρα — το πολύ 5. */
   mobileItems: NavItem[];
+  /** Το παλιό prefix του ρόλου, π.χ. `client`, για να κρατάμε τα κλικ στο κέλυφος. */
+  rolePrefix: string;
   /** Το μενού χρήστη διαφέρει ανά ρόλο, οπότε το περνάει ο καλών. */
   userNav: React.ReactNode;
   children: React.ReactNode;
@@ -18,9 +21,17 @@ interface AppShellProps {
  * Το κοινό κέλυφος του νέου μοντέλου: λίγοι προορισμοί στο πλάι, καρτέλες μέσα
  * στη σελίδα. Ίδιος σκελετός για κάθε ρόλο ώστε η πλοήγηση να μαθαίνεται μία φορά.
  */
-export function AppShell({ items, settingsItem, mobileItems, userNav, children }: AppShellProps) {
+export function AppShell({
+  items,
+  settingsItem,
+  mobileItems,
+  rolePrefix,
+  userNav,
+  children,
+}: AppShellProps) {
   return (
     <div className="fixed inset-0 flex flex-col">
+      <KeepInShell prefix={rolePrefix} />
       <header className="flex h-14 shrink-0 items-center gap-3 border-b border-border bg-card px-4">
         <span
           className="h-6 w-6 shrink-0 rounded-md bg-linear-to-br from-primary to-chart-2 md:hidden"

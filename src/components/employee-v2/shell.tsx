@@ -15,6 +15,8 @@ export function EmployeeV2Shell({ children }: { children: React.ReactNode }) {
       items={NAV_ITEMS}
       settingsItem={SETTINGS_ITEM}
       mobileItems={MOBILE_NAV_ITEMS}
+      rolePrefix="employee"
+
       userNav={<UserNav />}
     >
       {children}
