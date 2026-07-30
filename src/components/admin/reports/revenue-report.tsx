@@ -17,27 +17,26 @@ import {
 } from 'recharts';
 import type { MonthlyRevenue, PaymentMethodBreakdown } from '@/lib/queries/reports';
 import { formatEurInt as formatCurrency } from '@/lib/format';
+import {
+  CHART_SERIES,
+  CHART_TOOLTIP_STYLE,
+  CHART_TOOLTIP_LABEL_STYLE,
+  CHART_TOOLTIP_ITEM_STYLE,
+  CHART_AXIS_TICK,
+  CHART_GRID_STROKE,
+  seriesColor,
+} from '@/lib/chart-colors';
 
 type RevenueReportProps = {
   monthlyData: MonthlyRevenue[];
   paymentMethodData: PaymentMethodBreakdown[];
 };
 
-const PAYMENT_COLORS = [
-  'hsl(var(--primary))',
-  'hsl(142 76% 36%)',
-  'hsl(25 95% 53%)',
-  'hsl(280 70% 50%)',
-  'hsl(210 100% 50%)',
-];
-
 export function RevenueReport({ monthlyData, paymentMethodData }: RevenueReportProps) {
   const t = useTranslations('reports');
 
-  const formatMonth = (month: string) => {
-    const date = new Date(month + '-01');
-    return date.toLocaleDateString('en-US', { month: 'short', year: '2-digit' });
-  };
+  const formatMonth = (month: string) =>
+    new Date(`${month}-01`).toLocaleDateString('el-GR', { month: 'short', year: '2-digit' });
 
   const monthlyChartData = monthlyData.map((item) => ({
     name: formatMonth(item.month),
@@ -59,48 +58,44 @@ export function RevenueReport({ monthlyData, paymentMethodData }: RevenueReportP
         </CardHeader>
         <CardContent>
           {monthlyChartData.length === 0 ? (
-            <p className="text-sm text-muted-foreground text-center py-8">
-              No revenue data available
+            <p className="py-8 text-center text-sm text-muted-foreground">
+              Δεν υπάρχουν δεδομένα εσόδων
             </p>
           ) : (
             <ResponsiveContainer width="100%" height={300}>
-              <BarChart data={monthlyChartData}>
-                <CartesianGrid strokeDasharray="3 3" className="stroke-muted" />
-                <XAxis
-                  dataKey="name"
-                  className="text-xs"
-                  tick={{ fill: 'hsl(var(--muted-foreground))' }}
-                />
+              <BarChart data={monthlyChartData} barGap={2}>
+                <CartesianGrid strokeDasharray="3 3" stroke={CHART_GRID_STROKE} vertical={false} />
+                <XAxis dataKey="name" tickLine={false} axisLine={false} tick={CHART_AXIS_TICK} />
                 <YAxis
-                  className="text-xs"
-                  tick={{ fill: 'hsl(var(--muted-foreground))' }}
+                  tickLine={false}
+                  axisLine={false}
+                  tick={CHART_AXIS_TICK}
                   tickFormatter={formatCurrency}
+                  width={70}
                 />
                 <Tooltip
+                  cursor={{ fill: 'var(--accent)', opacity: 0.4 }}
                   formatter={(value: unknown) =>
                     formatCurrency(typeof value === 'number' ? value : 0)
                   }
-                  contentStyle={{
-                    backgroundColor: 'hsl(var(--card))',
-                    border: '1px solid hsl(var(--border))',
-                    borderRadius: '8px',
-                    color: 'hsl(var(--foreground))',
-                  }}
-                  labelStyle={{ color: 'hsl(var(--muted-foreground))' }}
-                  itemStyle={{ color: 'hsl(var(--foreground))' }}
+                  contentStyle={CHART_TOOLTIP_STYLE}
+                  labelStyle={CHART_TOOLTIP_LABEL_STYLE}
+                  itemStyle={CHART_TOOLTIP_ITEM_STYLE}
                 />
-                <Legend />
+                <Legend iconType="circle" iconSize={8} />
                 <Bar
                   dataKey="revenue"
                   name={t('revenueTurnover')}
-                  fill="hsl(var(--primary))"
+                  fill={CHART_SERIES[0]}
                   radius={[4, 4, 0, 0]}
+                  maxBarSize={34}
                 />
                 <Bar
                   dataKey="collections"
                   name={t('collections')}
-                  fill="hsl(142 76% 36%)"
+                  fill={CHART_SERIES[1]}
                   radius={[4, 4, 0, 0]}
+                  maxBarSize={34}
                 />
               </BarChart>
             </ResponsiveContainer>
@@ -110,13 +105,13 @@ export function RevenueReport({ monthlyData, paymentMethodData }: RevenueReportP
 
       <Card>
         <CardHeader>
-          <CardTitle>Payment Methods</CardTitle>
-          <CardDescription>Revenue by payment method</CardDescription>
+          <CardTitle>Τρόποι πληρωμής</CardTitle>
+          <CardDescription>Έσοδα ανά τρόπο πληρωμής</CardDescription>
         </CardHeader>
         <CardContent>
           {paymentChartData.length === 0 ? (
-            <p className="text-sm text-muted-foreground text-center py-8">
-              No payment data available
+            <p className="py-8 text-center text-sm text-muted-foreground">
+              Δεν υπάρχουν δεδομένα πληρωμών
             </p>
           ) : (
             <ResponsiveContainer width="100%" height={300}>
@@ -125,35 +120,30 @@ export function RevenueReport({ monthlyData, paymentMethodData }: RevenueReportP
                   data={paymentChartData}
                   cx="50%"
                   cy="50%"
+                  innerRadius={52}
+                  outerRadius={88}
+                  paddingAngle={2}
+                  stroke="var(--card)"
+                  strokeWidth={2}
                   labelLine={false}
-                  label={({ name, percent }: { name?: string; percent?: number }) =>
-                    `${name ?? ''}: ${((percent ?? 0) * 100).toFixed(0)}%`
+                  label={({ percent }: { percent?: number }) =>
+                    (percent ?? 0) >= 0.06 ? `${((percent ?? 0) * 100).toFixed(0)}%` : ''
                   }
-                  outerRadius={80}
-                  fill="#8884d8"
                   dataKey="value"
                 >
                   {paymentChartData.map((entry, index) => (
-                    <Cell
-                      key={`cell-${index}`}
-                      fill={PAYMENT_COLORS[index % PAYMENT_COLORS.length]}
-                    />
+                    <Cell key={entry.name} fill={seriesColor(index)} />
                   ))}
                 </Pie>
                 <Tooltip
                   formatter={(value: unknown) =>
                     formatCurrency(typeof value === 'number' ? value : 0)
                   }
-                  contentStyle={{
-                    backgroundColor: 'hsl(var(--card))',
-                    border: '1px solid hsl(var(--border))',
-                    borderRadius: '8px',
-                    color: 'hsl(var(--foreground))',
-                  }}
-                  labelStyle={{ color: 'hsl(var(--muted-foreground))' }}
-                  itemStyle={{ color: 'hsl(var(--foreground))' }}
+                  contentStyle={CHART_TOOLTIP_STYLE}
+                  labelStyle={CHART_TOOLTIP_LABEL_STYLE}
+                  itemStyle={CHART_TOOLTIP_ITEM_STYLE}
                 />
-                <Legend />
+                <Legend iconType="circle" iconSize={8} />
               </PieChart>
             </ResponsiveContainer>
           )}

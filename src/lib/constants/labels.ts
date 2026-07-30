@@ -161,8 +161,8 @@ export const KB_ARTICLE_STATUS_LABELS: Record<KbArticleStatus, string> = {
 export const CALENDAR_EVENT_COLORS: Record<CalendarEventType, string> = {
   meeting: 'hsl(262 83% 58%)',
   reminder: 'hsl(199 89% 48%)',
-  filming: 'hsl(var(--primary))',
-  deadline: 'hsl(var(--destructive))',
+  filming: 'var(--primary)',
+  deadline: 'var(--destructive)',
   custom: 'hsl(280 60% 55%)',
 };
 

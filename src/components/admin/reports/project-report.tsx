@@ -6,6 +6,13 @@ import { PieChart, Pie, Cell, ResponsiveContainer, Legend, Tooltip } from 'recha
 import type { ProjectTypeBreakdown } from '@/lib/queries/reports';
 import { PROJECT_TYPE_LABELS, PROJECT_STATUS_LABELS } from '@/lib/constants';
 import type { ProjectStatus } from '@/lib/constants';
+import {
+  CHART_SERIES,
+  CHART_TOOLTIP_STYLE,
+  CHART_TOOLTIP_LABEL_STYLE,
+  CHART_TOOLTIP_ITEM_STYLE,
+  seriesColor,
+} from '@/lib/chart-colors';
 
 type ProjectReportProps = {
   projectsByStatus: Record<ProjectStatus, number>;
@@ -13,26 +20,36 @@ type ProjectReportProps = {
   averageDuration: number;
 };
 
-const STATUS_COLORS = {
-  briefing: 'hsl(210 100% 50%)',
-  pre_production: 'hsl(45 100% 50%)',
-  filming: 'hsl(25 95% 53%)',
-  editing: 'hsl(280 70% 50%)',
-  review: 'hsl(142 76% 36%)',
-  revisions: 'hsl(350 90% 60%)',
-  delivered: 'hsl(142 71% 45%)',
-  archived: 'hsl(215 14% 34%)',
+/**
+ * Το χρώμα ακολουθεί το στάδιο, όχι τη σειρά κατάταξης — ένα φίλτρο που αλλάζει
+ * το πλήθος των σταδίων δεν πρέπει να ξαναβάφει όσα απομένουν.
+ */
+const STATUS_COLORS: Record<ProjectStatus, string> = {
+  briefing: CHART_SERIES[1],
+  pre_production: CHART_SERIES[7],
+  filming: CHART_SERIES[0],
+  editing: CHART_SERIES[4],
+  review: CHART_SERIES[5],
+  revisions: CHART_SERIES[6],
+  delivered: CHART_SERIES[3],
+  archived: CHART_SERIES[2],
 };
 
-const TYPE_COLORS = [
-  'hsl(var(--primary))',
-  'hsl(142 76% 36%)',
-  'hsl(25 95% 53%)',
-  'hsl(280 70% 50%)',
-  'hsl(210 100% 50%)',
-  'hsl(45 100% 50%)',
-  'hsl(350 90% 60%)',
-];
+const PIE_SHARED = {
+  cx: '50%',
+  cy: '50%',
+  innerRadius: 42,
+  outerRadius: 68,
+  paddingAngle: 2,
+  stroke: 'var(--card)',
+  strokeWidth: 2,
+  labelLine: false,
+  dataKey: 'value',
+} as const;
+
+/** Ετικέτα μόνο σε φέτες που χωράνε — όχι νούμερο σε κάθε σημείο. */
+const sliceLabel = ({ percent }: { percent?: number }) =>
+  (percent ?? 0) >= 0.08 ? `${((percent ?? 0) * 100).toFixed(0)}%` : '';
 
 export function ProjectReport({
   projectsByStatus,
@@ -52,7 +69,7 @@ export function ProjectReport({
   const typeChartData = projectsByType.map((item, index) => ({
     name: PROJECT_TYPE_LABELS[item.type],
     value: item.count,
-    color: TYPE_COLORS[index % TYPE_COLORS.length],
+    color: seriesColor(index),
   }));
 
   return (
@@ -60,38 +77,31 @@ export function ProjectReport({
       <Card>
         <CardHeader>
           <CardTitle>{t('projectsByStatus')}</CardTitle>
-          <CardDescription>Current project distribution</CardDescription>
+          <CardDescription>Κατανομή στα τρέχοντα στάδια</CardDescription>
         </CardHeader>
         <CardContent>
           {statusChartData.length === 0 ? (
-            <p className="text-sm text-muted-foreground text-center py-8">
-              No project data available
-            </p>
+            <p className="py-8 text-center text-sm text-muted-foreground">Δεν υπάρχουν παραγωγές</p>
           ) : (
             <ResponsiveContainer width="100%" height={250}>
               <PieChart>
-                <Pie
-                  data={statusChartData}
-                  cx="50%"
-                  cy="50%"
-                  labelLine={false}
-                  label={({ percent }: { percent?: number }) => `${((percent ?? 0) * 100).toFixed(0)}%`}
-                  outerRadius={60}
-                  fill="#8884d8"
-                  dataKey="value"
-                >
-                  {statusChartData.map((entry, index) => (
-                    <Cell key={`cell-${index}`} fill={entry.color} />
+                <Pie data={statusChartData} label={sliceLabel} {...PIE_SHARED}>
+                  {statusChartData.map((entry) => (
+                    <Cell key={entry.name} fill={entry.color} />
                   ))}
                 </Pie>
                 <Tooltip
-                  contentStyle={{
-                    backgroundColor: 'hsl(var(--card))',
-                    border: '1px solid hsl(var(--border))',
-                    borderRadius: '8px',
-                  }}
+                  contentStyle={CHART_TOOLTIP_STYLE}
+                  labelStyle={CHART_TOOLTIP_LABEL_STYLE}
+                  itemStyle={CHART_TOOLTIP_ITEM_STYLE}
                 />
-                <Legend layout="horizontal" verticalAlign="bottom" align="center" />
+                <Legend
+                  layout="horizontal"
+                  verticalAlign="bottom"
+                  align="center"
+                  iconType="circle"
+                  iconSize={8}
+                />
               </PieChart>
             </ResponsiveContainer>
           )}
@@ -100,39 +110,32 @@ export function ProjectReport({
 
       <Card>
         <CardHeader>
-          <CardTitle>Projects by Type</CardTitle>
-          <CardDescription>Distribution by project type</CardDescription>
+          <CardTitle>Παραγωγές ανά είδος</CardTitle>
+          <CardDescription>Κατανομή ανά τύπο έργου</CardDescription>
         </CardHeader>
         <CardContent>
           {typeChartData.length === 0 ? (
-            <p className="text-sm text-muted-foreground text-center py-8">
-              No project data available
-            </p>
+            <p className="py-8 text-center text-sm text-muted-foreground">Δεν υπάρχουν παραγωγές</p>
           ) : (
             <ResponsiveContainer width="100%" height={250}>
               <PieChart>
-                <Pie
-                  data={typeChartData}
-                  cx="50%"
-                  cy="50%"
-                  labelLine={false}
-                  label={({ percent }: { percent?: number }) => `${((percent ?? 0) * 100).toFixed(0)}%`}
-                  outerRadius={60}
-                  fill="#8884d8"
-                  dataKey="value"
-                >
-                  {typeChartData.map((entry, index) => (
-                    <Cell key={`cell-${index}`} fill={entry.color} />
+                <Pie data={typeChartData} label={sliceLabel} {...PIE_SHARED}>
+                  {typeChartData.map((entry) => (
+                    <Cell key={entry.name} fill={entry.color} />
                   ))}
                 </Pie>
                 <Tooltip
-                  contentStyle={{
-                    backgroundColor: 'hsl(var(--card))',
-                    border: '1px solid hsl(var(--border))',
-                    borderRadius: '8px',
-                  }}
+                  contentStyle={CHART_TOOLTIP_STYLE}
+                  labelStyle={CHART_TOOLTIP_LABEL_STYLE}
+                  itemStyle={CHART_TOOLTIP_ITEM_STYLE}
                 />
-                <Legend layout="horizontal" verticalAlign="bottom" align="center" />
+                <Legend
+                  layout="horizontal"
+                  verticalAlign="bottom"
+                  align="center"
+                  iconType="circle"
+                  iconSize={8}
+                />
               </PieChart>
             </ResponsiveContainer>
           )}
@@ -141,15 +144,17 @@ export function ProjectReport({
 
       <Card>
         <CardHeader>
-          <CardTitle>Average Duration</CardTitle>
-          <CardDescription>Average project completion time</CardDescription>
+          <CardTitle>Μέση διάρκεια</CardTitle>
+          <CardDescription>Μέσος χρόνος ολοκλήρωσης παραγωγής</CardDescription>
         </CardHeader>
         <CardContent>
           <div className="flex flex-col items-center justify-center py-12">
-            <div className="text-5xl font-bold text-primary">{averageDuration}</div>
-            <p className="text-sm text-muted-foreground mt-2">Days</p>
-            <p className="text-xs text-muted-foreground mt-4 text-center">
-              Based on completed projects
+            <div className="text-5xl font-bold tabular-nums text-foreground">
+              {Number.isFinite(averageDuration) ? Math.round(averageDuration) : '—'}
+            </div>
+            <p className="mt-2 text-sm text-muted-foreground">ημέρες</p>
+            <p className="mt-4 text-center text-xs text-muted-foreground">
+              Με βάση τις ολοκληρωμένες παραγωγές
             </p>
           </div>
         </CardContent>

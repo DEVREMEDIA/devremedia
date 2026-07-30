@@ -13,7 +13,7 @@ interface UpcomingEventsProps {
 }
 
 const TYPE_COLORS: Record<string, string> = {
-  project: 'hsl(var(--primary))',
+  project: 'var(--primary)',
   task: 'hsl(142 76% 36%)',
   invoice: 'hsl(25 95% 53%)',
   custom: 'hsl(280 70% 50%)',
