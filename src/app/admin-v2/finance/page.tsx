@@ -1,6 +1,6 @@
 import type { ComponentProps } from 'react';
 import type { Metadata } from 'next';
-import { SectionTabs, type SectionTab } from '@/components/admin-v2/section-tabs';
+import { SectionTabs, type SectionTab } from '@/components/shell-v2/section-tabs';
 
 // Τα υπάρχοντα κομμάτια μπαίνουν αυτούσια — μετακομίζουν, δεν ξαναγράφονται.
 import { InvoicesContent } from '@/app/admin/invoices/invoices-content';

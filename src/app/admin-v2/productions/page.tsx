@@ -1,5 +1,5 @@
 import type { Metadata } from 'next';
-import { SectionTabs, type SectionTab } from '@/components/admin-v2/section-tabs';
+import { SectionTabs, type SectionTab } from '@/components/shell-v2/section-tabs';
 
 import { ProjectsContent } from '@/app/admin/projects/projects-content';
 import AdminFilmingRequestsPage from '@/app/admin/filming-requests/page';

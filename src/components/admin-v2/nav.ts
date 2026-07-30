@@ -1,21 +1,5 @@
-import {
-  Sun,
-  Users,
-  Clapperboard,
-  CalendarDays,
-  Euro,
-  BookOpen,
-  Settings,
-  type LucideIcon,
-} from 'lucide-react';
-
-export interface NavItem {
-  href: string;
-  label: string;
-  icon: LucideIcon;
-  /** Short label for the mobile bottom bar */
-  short: string;
-}
+import { Sun, Users, Clapperboard, CalendarDays, Euro, BookOpen, Settings } from 'lucide-react';
+import type { NavItem } from '@/components/shell-v2/types';
 
 /**
  * Οι 6 προορισμοί του νέου μοντέλου, με τη σειρά του κύκλου ζωής της δουλειάς.

@@ -3,7 +3,7 @@
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { cn } from '@/lib/utils';
-import { NAV_ITEMS, SETTINGS_ITEM, type NavItem } from './nav';
+import type { NavItem } from './types';
 
 function isActive(pathname: string, href: string) {
   return pathname === href || pathname.startsWith(`${href}/`);
@@ -19,7 +19,7 @@ function SidebarLink({ item, active }: { item: NavItem; active: boolean }) {
       aria-current={active ? 'page' : undefined}
       className={cn(
         'relative flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm transition-colors',
-        'lg:justify-start justify-center',
+        'justify-center lg:justify-start',
         active
           ? 'bg-accent font-semibold text-foreground'
           : 'text-muted-foreground hover:bg-accent hover:text-foreground',
@@ -37,7 +37,13 @@ function SidebarLink({ item, active }: { item: NavItem; active: boolean }) {
   );
 }
 
-export function AdminV2Sidebar() {
+interface ShellSidebarProps {
+  items: NavItem[];
+  settingsItem: NavItem;
+}
+
+/** Ράγα εικονιδίων από md, πλήρεις ετικέτες από lg. */
+export function ShellSidebar({ items, settingsItem }: ShellSidebarProps) {
   const pathname = usePathname() ?? '';
 
   return (
@@ -51,13 +57,13 @@ export function AdminV2Sidebar() {
       </div>
 
       <nav className="flex flex-1 flex-col gap-0.5 p-2.5" aria-label="Κύριο μενού">
-        {NAV_ITEMS.map((item) => (
+        {items.map((item) => (
           <SidebarLink key={item.href} item={item} active={isActive(pathname, item.href)} />
         ))}
       </nav>
 
       <div className="border-t border-border p-2.5">
-        <SidebarLink item={SETTINGS_ITEM} active={isActive(pathname, SETTINGS_ITEM.href)} />
+        <SidebarLink item={settingsItem} active={isActive(pathname, settingsItem.href)} />
       </div>
     </aside>
   );

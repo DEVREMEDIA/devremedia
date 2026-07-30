@@ -3,18 +3,19 @@
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { cn } from '@/lib/utils';
-import { MOBILE_NAV_ITEMS } from './nav';
+import type { NavItem } from './types';
 
 /** Στο κινητό το πλαϊνό μενού γίνεται μπάρα στο κάτω μέρος. */
-export function AdminV2BottomNav() {
+export function ShellBottomNav({ items }: { items: NavItem[] }) {
   const pathname = usePathname() ?? '';
 
   return (
     <nav
-      className="grid shrink-0 grid-cols-5 border-t border-border bg-card md:hidden"
+      className="grid shrink-0 border-t border-border bg-card md:hidden"
+      style={{ gridTemplateColumns: `repeat(${items.length}, minmax(0, 1fr))` }}
       aria-label="Μενού κινητού"
     >
-      {MOBILE_NAV_ITEMS.map((item) => {
+      {items.map((item) => {
         const active = pathname === item.href || pathname.startsWith(`${item.href}/`);
         const Icon = item.icon;
 

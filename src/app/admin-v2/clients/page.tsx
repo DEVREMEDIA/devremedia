@@ -1,6 +1,6 @@
 import type { ComponentProps } from 'react';
 import type { Metadata } from 'next';
-import { SectionTabs, type SectionTab } from '@/components/admin-v2/section-tabs';
+import { SectionTabs, type SectionTab } from '@/components/shell-v2/section-tabs';
 
 import { ClientsContent } from '@/app/admin/clients/clients-content';
 import { ProposalsList } from '@/app/admin/proposals/proposals-list';

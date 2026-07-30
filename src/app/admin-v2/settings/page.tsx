@@ -1,5 +1,5 @@
 import type { Metadata } from 'next';
-import { SectionTabs, type SectionTab } from '@/components/admin-v2/section-tabs';
+import { SectionTabs, type SectionTab } from '@/components/shell-v2/section-tabs';
 
 // Οι υπάρχουσες σελίδες μπαίνουν αυτούσιες ως καρτέλες — καμία αντιγραφή λογικής.
 import AdminSettingsPage from '@/app/admin/settings/page';
