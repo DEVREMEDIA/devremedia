@@ -22,7 +22,7 @@ import type { DateClickArg } from '@fullcalendar/interaction';
 type FilterType = 'project' | 'task' | 'invoice' | 'custom';
 
 const FILTER_COLORS: Record<FilterType, string> = {
-  project: 'hsl(var(--primary))',
+  project: 'var(--primary)',
   task: 'hsl(142 76% 36%)',
   invoice: 'hsl(25 95% 53%)',
   custom: 'hsl(280 60% 55%)',
