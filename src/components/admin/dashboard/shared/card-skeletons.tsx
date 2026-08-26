@@ -1,21 +1,23 @@
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
+import { StatGrid } from '@/components/shared/stat-grid';
 
+/**
+ * Το ίδιο το πλέγμα δανείζεται από το κοινό component — αν αλλάξει εκεί η
+ * γεωμετρία, ο σκελετός ακολουθεί μόνος του. Μένει μόνο το πλακίδιο γραμμένο
+ * στο χέρι, γιατί δεν υπάρχει τίποτα να δείξει ακόμα.
+ */
 export function KpiStripSkeleton() {
   return (
-    <div className="grid grid-cols-2 gap-3 sm:gap-4 md:grid-cols-3 lg:grid-cols-7">
+    <StatGrid columns={7}>
       {Array.from({ length: 7 }).map((_, i) => (
-        <Card key={i}>
-          <CardHeader className="pb-2">
-            <Skeleton className="h-4 w-24" />
-          </CardHeader>
-          <CardContent>
-            <Skeleton className="h-8 w-20" />
-            <Skeleton className="mt-2 h-3 w-16" />
-          </CardContent>
-        </Card>
+        <div key={i} className="flex flex-col bg-card p-4">
+          <Skeleton className="h-3 w-20" />
+          <Skeleton className="mt-2 h-8 w-16" />
+          <Skeleton className="mt-2 h-8 w-full" />
+        </div>
       ))}
-    </div>
+    </StatGrid>
   );
 }
 

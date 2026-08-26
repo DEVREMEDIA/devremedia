@@ -3,6 +3,8 @@ import type { Metadata } from 'next';
 import Link from 'next/link';
 import { getTranslations } from 'next-intl/server';
 import { PageHeading } from '@/components/shared/page-heading';
+import { StatGrid } from '@/components/shared/stat-grid';
+import { StatCard } from '@/components/shared/stat-card';
 import { RiskItem } from '@/components/admin/dashboard/risk/risk-item';
 import { KpiStrip } from '@/components/admin/dashboard/hero/kpi-strip';
 import { TodayAgenda } from '@/components/admin/dashboard/today/today-agenda';
@@ -50,24 +52,19 @@ async function RiskRadar() {
         <h2 className="mb-2.5 border-b border-border pb-2 font-mono text-[10px] uppercase tracking-[0.18em] text-muted-foreground">
           {t('sectionAtRisk')}
         </h2>
-        <div className="grid grid-cols-2 gap-px border border-border bg-border sm:grid-cols-3 lg:grid-cols-6">
+        <StatGrid columns={6}>
           {RISK_GROUPS.map((group) => {
             const count = items.filter((i) => i.type === group.type).length;
-
             return (
-              <div key={group.type} className="bg-card p-3">
-                <div
-                  className={`font-display text-3xl leading-tight tabular-nums ${count > 0 ? 'text-tone-critical' : 'text-muted-foreground'}`}
-                >
-                  {count}
-                </div>
-                <p className="mt-1 text-[11px] leading-tight text-muted-foreground">
-                  {group.label}
-                </p>
-              </div>
+              <StatCard
+                key={group.type}
+                label={group.label}
+                value={count}
+                tone={count > 0 ? 'critical' : 'neutral'}
+              />
             );
           })}
-        </div>
+        </StatGrid>
       </section>
 
       {/* Οι ίδιες οι εκκρεμότητες, ομαδοποιημένες */}
