@@ -1,3 +1,4 @@
+import { useTranslations } from 'next-intl';
 import { ShellSidebar } from './sidebar';
 import { ShellBottomNav } from './bottom-nav';
 import { KeepInShell } from './keep-in-shell';
@@ -30,6 +31,8 @@ export function AppShell({
   userNav,
   children,
 }: AppShellProps) {
+  const t = useTranslations('shellV2');
+
   return (
     <div className="fixed inset-0 flex flex-col">
       <KeepInShell prefix={rolePrefix} />
@@ -39,7 +42,7 @@ export function AppShell({
           aria-hidden
         />
         <span className="rounded-md bg-primary/15 px-2 py-0.5 text-[11px] font-semibold text-primary">
-          Προεπισκόπηση v2
+          {t('previewBadge')}
         </span>
         <div className="flex-1" />
         <LanguageSwitcher />

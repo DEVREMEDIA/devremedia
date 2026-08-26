@@ -8,16 +8,36 @@ import type { NavItem } from '@/components/shell-v2/types';
  * εμφανίζεται καν στην πλοήγηση.
  */
 export const NAV_ITEMS: NavItem[] = [
-  { href: '/employee-v2/today', label: 'Σήμερα', short: 'Σήμερα', icon: Sun },
-  { href: '/employee-v2/work', label: 'Η δουλειά μου', short: 'Δουλειά', icon: ListChecks },
-  { href: '/employee-v2/productions', label: 'Παραγωγές', short: 'Έργα', icon: Clapperboard },
-  { href: '/employee-v2/knowledge', label: 'Γνώση', short: 'Γνώση', icon: BookOpen },
+  {
+    href: '/employee-v2/today',
+    label: 'nav.employee.today',
+    short: 'nav.employee.todayShort',
+    icon: Sun,
+  },
+  {
+    href: '/employee-v2/work',
+    label: 'nav.employee.work',
+    short: 'nav.employee.workShort',
+    icon: ListChecks,
+  },
+  {
+    href: '/employee-v2/productions',
+    label: 'nav.employee.productions',
+    short: 'nav.employee.productionsShort',
+    icon: Clapperboard,
+  },
+  {
+    href: '/employee-v2/knowledge',
+    label: 'nav.employee.knowledge',
+    short: 'nav.employee.knowledgeShort',
+    icon: BookOpen,
+  },
 ];
 
 export const SETTINGS_ITEM: NavItem = {
   href: '/employee-v2/settings',
-  label: 'Ρυθμίσεις',
-  short: 'Ρυθμ.',
+  label: 'nav.settings',
+  short: 'nav.settingsShort',
   icon: Settings,
 };
 

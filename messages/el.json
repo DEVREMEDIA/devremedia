@@ -2597,5 +2597,40 @@
     "closed": "Κλειστά",
     "applyTemplate": "Εφαρμογή template στον μήνα",
     "templateApplied": "Template εφαρμόστηκε ({count} μέρες)"
+  },
+
+  "shellV2": {
+    "previewBadge": "Προεπισκόπηση v2",
+    "mainMenu": "Κύριο μενού",
+    "mobileMenu": "Μενού κινητού",
+    "nav": {
+      "settings": "Ρυθμίσεις",
+      "settingsShort": "Ρυθμ.",
+      "admin": {
+        "today": "Σήμερα", "todayShort": "Σήμερα",
+        "clients": "Πελάτες", "clientsShort": "Πελάτες",
+        "productions": "Παραγωγές", "productionsShort": "Έργα",
+        "calendar": "Ημερολόγιο", "calendarShort": "Ημερ.",
+        "finance": "Οικονομικά", "financeShort": "Οικον.",
+        "knowledge": "Γνώση", "knowledgeShort": "Γνώση"
+      },
+      "client": {
+        "home": "Αρχική", "homeShort": "Αρχική",
+        "productions": "Οι παραγωγές μου", "productionsShort": "Έργα",
+        "documents": "Τα χαρτιά μου", "documentsShort": "Χαρτιά",
+        "book": "Κλείσε γύρισμα", "bookShort": "Κράτηση"
+      },
+      "employee": {
+        "today": "Σήμερα", "todayShort": "Σήμερα",
+        "work": "Η δουλειά μου", "workShort": "Δουλειά",
+        "productions": "Παραγωγές", "productionsShort": "Έργα",
+        "knowledge": "Γνώση", "knowledgeShort": "Γνώση"
+      },
+      "salesman": {
+        "today": "Σήμερα", "todayShort": "Σήμερα",
+        "leads": "Ευκαιρίες", "leadsShort": "Ευκαιρ.",
+        "library": "Υλικό", "libraryShort": "Υλικό"
+      }
+    }
   }
 }

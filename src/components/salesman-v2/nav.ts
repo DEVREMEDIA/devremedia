@@ -7,15 +7,30 @@ import type { NavItem } from '@/components/shell-v2/types';
  * μπαίνουν σε καρτέλες κάτω από το «Υλικό», όχι σε δύο ξεχωριστά μενού.
  */
 export const NAV_ITEMS: NavItem[] = [
-  { href: '/salesman-v2/today', label: 'Σήμερα', short: 'Σήμερα', icon: Sun },
-  { href: '/salesman-v2/leads', label: 'Ευκαιρίες', short: 'Ευκαιρ.', icon: Target },
-  { href: '/salesman-v2/library', label: 'Υλικό', short: 'Υλικό', icon: FolderOpen },
+  {
+    href: '/salesman-v2/today',
+    label: 'nav.salesman.today',
+    short: 'nav.salesman.todayShort',
+    icon: Sun,
+  },
+  {
+    href: '/salesman-v2/leads',
+    label: 'nav.salesman.leads',
+    short: 'nav.salesman.leadsShort',
+    icon: Target,
+  },
+  {
+    href: '/salesman-v2/library',
+    label: 'nav.salesman.library',
+    short: 'nav.salesman.libraryShort',
+    icon: FolderOpen,
+  },
 ];
 
 export const SETTINGS_ITEM: NavItem = {
   href: '/salesman-v2/settings',
-  label: 'Ρυθμίσεις',
-  short: 'Ρυθμ.',
+  label: 'nav.settings',
+  short: 'nav.settingsShort',
   icon: Settings,
 };
 

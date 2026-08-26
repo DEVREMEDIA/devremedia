@@ -2597,5 +2597,39 @@
     "closed": "Closed",
     "applyTemplate": "Apply template to month",
     "templateApplied": "Template applied ({count} days written)"
+  },
+
+  "shellV2": {
+    "previewBadge": "v2 preview",
+    "mainMenu": "Main menu",
+    "mobileMenu": "Mobile menu",
+    "nav": {
+      "settings": "Settings", "settingsShort": "Settings",
+      "admin": {
+        "today": "Today", "todayShort": "Today",
+        "clients": "Clients", "clientsShort": "Clients",
+        "productions": "Productions", "productionsShort": "Work",
+        "calendar": "Calendar", "calendarShort": "Cal.",
+        "finance": "Finance", "financeShort": "Finance",
+        "knowledge": "Knowledge", "knowledgeShort": "Know."
+      },
+      "client": {
+        "home": "Home", "homeShort": "Home",
+        "productions": "My productions", "productionsShort": "Work",
+        "documents": "My documents", "documentsShort": "Docs",
+        "book": "Book a shoot", "bookShort": "Book"
+      },
+      "employee": {
+        "today": "Today", "todayShort": "Today",
+        "work": "My work", "workShort": "Work",
+        "productions": "Productions", "productionsShort": "Work",
+        "knowledge": "Knowledge", "knowledgeShort": "Know."
+      },
+      "salesman": {
+        "today": "Today", "todayShort": "Today",
+        "leads": "Opportunities", "leadsShort": "Leads",
+        "library": "Library", "libraryShort": "Library"
+      }
+    }
   }
 }
