@@ -53,6 +53,10 @@ jobs:
           NEXT_PUBLIC_SUPABASE_ANON_KEY: ${{ secrets.NEXT_PUBLIC_SUPABASE_ANON_KEY || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZS1kZW1vIiwicm9sZSI6ImFub24iLCJleHAiOjE5ODM4MTI5OTZ9.CRXP1A7WOeoJeXxjNni43kdQwgnWNReilDMblYTn_I0' }}
           NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY: ${{ secrets.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY || 'pk_test_placeholder' }}
           NEXT_PUBLIC_APP_URL: ${{ secrets.NEXT_PUBLIC_APP_URL || 'http://localhost:3000' }}
+          # Ο πελάτης του Resend φτιάχνεται σε module scope, οπότε το `next build`
+          # τον αρχικοποιεί όταν μαζεύει τα δεδομένα των API routes — χωρίς τιμή
+          # ρίχνει το build, ακόμα κι όταν κανένα mail δεν φεύγει.
+          RESEND_API_KEY: ${{ secrets.RESEND_API_KEY || 're_placeholder' }}
 
   # Optional: Add Playwright tests when Supabase is configured
   # Uncomment when ready to run E2E tests
