@@ -1,3 +1,4 @@
+import { cache } from 'react';
 import { createClient } from '@/lib/supabase/server';
 import type { SupabaseClient, User } from '@supabase/supabase-js';
 
@@ -50,19 +51,21 @@ export async function requireAdmin(): Promise<AuthOk | AuthErr> {
 }
 
 /** Ρόλος του τρέχοντος admin — για UI gating (super_admin βλέπει τα οικονομικά widgets). */
-export async function getAdminRole(): Promise<'super_admin' | 'admin' | null> {
+export const getAdminRole = cache(async (): Promise<'super_admin' | 'admin' | null> => {
   const supabase = await createClient();
   const {
     data: { user },
   } = await supabase.auth.getUser();
   if (!user) return null;
 
-  const { data } = await supabase
+  const { data, error } = await supabase
     .from('user_profiles')
     .select('role')
     .eq('id', user.id)
     .maybeSingle();
 
+  if (error) console.error('[getAdminRole]', error);
+
   if (data?.role === 'super_admin' || data?.role === 'admin') return data.role;
   return null;
-}
+});

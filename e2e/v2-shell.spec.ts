@@ -54,5 +54,11 @@ test.describe('V2 shell', () => {
     await expect(
       page.getByText(/Φόρτος συνεργείου \(14η\)|Crew load \(14d\)/i).first(),
     ).toBeVisible();
+    await expect(
+      page
+        .locator('[data-slot="card-title"]')
+        .filter({ hasText: /Deadlines/i })
+        .first(),
+    ).toBeVisible();
   });
 });

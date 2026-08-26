@@ -107,8 +107,10 @@ async function RiskRadar() {
  * Τα γραφήματα ζουν στα Οικονομικά, όπου τα ψάχνεις όταν τα θέλεις.
  */
 export default async function TodayPage() {
-  const t = await getTranslations('shellV2.pages.adminToday');
-  const role = await getAdminRole();
+  const [t, role] = await Promise.all([
+    getTranslations('shellV2.pages.adminToday'),
+    getAdminRole(),
+  ]);
   const isSuper = role === 'super_admin';
 
   return (
