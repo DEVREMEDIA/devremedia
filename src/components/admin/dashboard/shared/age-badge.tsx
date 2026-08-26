@@ -1,24 +1,26 @@
-import { cn } from '@/lib/utils';
+import { ToneChip } from '@/components/shared/tone-chip';
+import type { Tone } from '@/lib/status-tone';
 
 type Props = { days: number; className?: string };
 
+/**
+ * Τέσσερις ζώνες ηλικίας πάνω στη ράμπα τόνων: πρόσφατο (positive) →
+ * ήπια εκκρεμότητα (neutral) → προσοχή (caution, ≥14d) → κρίσιμο (critical, ≥30d).
+ * Πριν αυτό υπήρχαν τέσσερις ζώνες με ωμά χρώματα (red/orange/yellow/slate);
+ * εδώ η ίδια διαβάθμιση εκφράζεται μόνο με τα tokens της ράμπας.
+ */
+function ageTone(days: number): Tone {
+  if (days >= 30) return 'critical';
+  if (days >= 14) return 'caution';
+  if (days >= 7) return 'neutral';
+  return 'positive';
+}
+
 export function AgeBadge({ days, className }: Props) {
   const label = days < 1 ? '<1d' : `${days}d`;
-  const tone =
-    days >= 30
-      ? 'bg-tone-critical-bg text-tone-critical'
-      : days >= 7
-        ? 'bg-tone-caution-bg text-tone-caution'
-        : 'bg-tone-neutral-bg text-tone-neutral';
   return (
-    <span
-      className={cn(
-        'inline-flex shrink-0 items-center rounded-sm px-1.5 py-0.5 font-mono text-[10px] uppercase tracking-[0.1em] tabular-nums',
-        tone,
-        className,
-      )}
-    >
+    <ToneChip tone={ageTone(days)} className={className}>
       {label}
-    </span>
+    </ToneChip>
   );
 }
