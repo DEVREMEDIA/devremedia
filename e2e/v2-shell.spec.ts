@@ -33,4 +33,21 @@ test.describe('V2 shell', () => {
     // Το shell header είναι το πρώτο <header> στο DOM — η σελίδα έχει δικό της.
     await expect(page.locator('header').first()).toContainText(/Προεπισκόπηση v2|v2 preview/);
   });
+
+  test('today page bridges agenda and activity', async ({ page }) => {
+    test.skip(!process.env.E2E_TEST_USERS_READY, 'Test users not configured in database');
+    await loginAsAdmin(page);
+    await page.goto('/admin-v2/today');
+    await expect(page.getByText(/Σήμερα|Today/i).first()).toBeVisible();
+    await expect(page.getByText(/Πρόσφατη Δραστηριότητα|Recent Activity/i).first()).toBeVisible();
+  });
+
+  test('productions overview tab shows crew load', async ({ page }) => {
+    test.skip(!process.env.E2E_TEST_USERS_READY, 'Test users not configured in database');
+    await loginAsAdmin(page);
+    await page.goto('/admin-v2/productions?tab=overview');
+    await expect(
+      page.getByText(/Φόρτος συνεργείου \(14η\)|Crew load \(14d\)/i).first(),
+    ).toBeVisible();
+  });
 });
