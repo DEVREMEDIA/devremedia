@@ -2630,6 +2630,110 @@
         "leads": "Opportunities", "leadsShort": "Leads",
         "library": "Library", "libraryShort": "Library"
       }
+    },
+    "pages": {
+      "adminToday": {
+        "title": "Today",
+        "subtitle": "{count, plural, =0 {Nothing pending — clear day.} one {# thing needs you} other {# things need you}}",
+        "sectionAtRisk": "At risk",
+        "emptyState": "Nothing is pending right now.",
+        "footerPrefix": "Charts and reports live in",
+        "footerLink": "Finance",
+        "riskOverdueInvoice": "Overdue invoices",
+        "riskFilmingNoCrew": "Shoots without a crew",
+        "riskDeadlineRisk": "Deadlines at risk",
+        "riskStaleDeliverable": "Stalled deliverables",
+        "riskUnsignedContract": "Unsigned contracts",
+        "riskStaleLead": "Forgotten leads"
+      },
+      "adminClients": {
+        "title": "Clients",
+        "subtitle": "From first interest to active collaboration — one list, not two",
+        "tabList": "Clients", "tabInterest": "Interest", "tabProposals": "Proposals",
+        "tabContracts": "Contracts", "tabChat": "Conversations"
+      },
+      "adminProductions": {
+        "title": "Productions",
+        "subtitle": "All projects for all clients · shoot prep lives inside each project",
+        "tabAll": "All", "tabRequests": "Requests & bookings",
+        "error": "Error: {message}"
+      },
+      "adminCalendar": {
+        "title": "Calendar",
+        "subtitle": "Shoots, bookings and deadlines in one place"
+      },
+      "adminFinance": {
+        "title": "Finance",
+        "subtitle": "Invoices, expenses, reports, costing and pricing health — one place",
+        "tabInvoices": "Invoices", "tabExpenses": "Expenses", "tabReports": "Reports",
+        "tabCost": "Costing", "tabHealth": "Pricing health",
+        "error": "Error: {message}",
+        "sectionRevenue": "Revenue", "sectionProjects": "Productions",
+        "sectionClients": "Clients", "sectionExpenses": "Expenses & margin"
+      },
+      "adminKnowledge": {
+        "title": "Knowledge",
+        "subtitle": "One content system with an audience tag, instead of three separate ones",
+        "tabTeam": "Production team", "tabSales": "Sales"
+      },
+      "adminSettings": {
+        "title": "Settings",
+        "subtitle": "What you set up once and it just works",
+        "tabGeneral": "General", "tabUsers": "Users & roles",
+        "tabPackages": "Packages & pricing", "tabTemplates": "Templates"
+      },
+      "clientHome": {
+        "title": "Home"
+      },
+      "clientProductions": {
+        "title": "My productions"
+      },
+      "clientDocuments": {
+        "title": "My documents",
+        "subtitle": "What you've signed and what you've paid — one place",
+        "tabContracts": "Contracts", "tabInvoices": "Invoices"
+      },
+      "clientBook": {
+        "title": "Book a shoot"
+      },
+      "clientSettings": {
+        "title": "Settings"
+      },
+      "employeeToday": {
+        "title": "Today"
+      },
+      "employeeWork": {
+        "title": "My work",
+        "subtitle": "What's been assigned to you and what you need to upload",
+        "tabTasks": "Tasks", "tabDeliverables": "Deliverables",
+        "emptyTitle": "No productions yet",
+        "emptyDescription": "Once you're assigned to a production, its deliverables will show up here.",
+        "deliverableCount": "{count, plural, =0 {No deliverables yet} one {# deliverable} other {# deliverables}}",
+        "needsWorkCount": "{count, plural, one {# needs revision} other {# need revision}}"
+      },
+      "employeeProductions": {
+        "title": "Productions"
+      },
+      "employeeKnowledge": {
+        "title": "Knowledge"
+      },
+      "employeeSettings": {
+        "title": "Settings"
+      },
+      "salesmanToday": {
+        "title": "Today"
+      },
+      "salesmanLeads": {
+        "title": "Opportunities"
+      },
+      "salesmanLibrary": {
+        "title": "Library",
+        "subtitle": "What you send prospects and what you need to say it right",
+        "tabResources": "Files", "tabHandbook": "Handbook"
+      },
+      "salesmanSettings": {
+        "title": "Settings"
+      }
     }
   }
 }

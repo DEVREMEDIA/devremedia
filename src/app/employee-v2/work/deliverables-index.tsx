@@ -1,6 +1,7 @@
 import Link from 'next/link';
 import { redirect } from 'next/navigation';
 import { ChevronRight, Video } from 'lucide-react';
+import { getTranslations } from 'next-intl/server';
 import { createClient } from '@/lib/supabase/server';
 import { getMyProjects } from '@/lib/queries/employee-dashboard';
 import { Card, CardContent } from '@/components/ui/card';
@@ -13,6 +14,7 @@ import { EmptyState } from '@/components/shared/empty-state';
  * του εργαζομένου με το πλήθος παραδοτέων και όσα ζητούν διόρθωση.
  */
 export async function DeliverablesIndex() {
+  const t = await getTranslations('shellV2.pages.employeeWork');
   const supabase = await createClient();
   const {
     data: { user },
@@ -22,13 +24,7 @@ export async function DeliverablesIndex() {
   const projects = await getMyProjects(user.id);
 
   if (projects.length === 0) {
-    return (
-      <EmptyState
-        icon={Video}
-        title="Καμία παραγωγή ακόμα"
-        description="Μόλις σου ανατεθεί εργασία σε μια παραγωγή, τα παραδοτέα της θα εμφανιστούν εδώ."
-      />
-    );
+    return <EmptyState icon={Video} title={t('emptyTitle')} description={t('emptyDescription')} />;
   }
 
   const { data: deliverables } = await supabase
@@ -59,13 +55,11 @@ export async function DeliverablesIndex() {
                 <div className="min-w-0 flex-1">
                   <p className="truncate font-medium">{project.title}</p>
                   <p className="mt-1 text-sm text-muted-foreground">
-                    {total === 0
-                      ? 'Κανένα παραδοτέο ακόμα'
-                      : `${total} ${total === 1 ? 'παραδοτέο' : 'παραδοτέα'}`}
+                    {t('deliverableCount', { count: total })}
                   </p>
                   {needsWork > 0 && (
                     <span className="mt-2 inline-block rounded-md bg-destructive/15 px-2 py-0.5 text-xs font-semibold text-destructive">
-                      {needsWork} {needsWork === 1 ? 'ζητά διόρθωση' : 'ζητούν διόρθωση'}
+                      {t('needsWorkCount', { count: needsWork })}
                     </span>
                   )}
                 </div>
