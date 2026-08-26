@@ -1,6 +1,6 @@
 import { createClient } from '@/lib/supabase/server';
 import { redirect } from 'next/navigation';
-import { PageHeader } from '@/components/shared/page-header';
+import { PageHeading } from '@/components/shared/page-heading';
 import { ProfileForm } from '@/components/client/settings/profile-form';
 import { NotificationPreferences } from '@/components/client/settings/notification-preferences';
 import { ChangePassword } from '@/components/client/settings/change-password';
@@ -11,7 +11,9 @@ import { getTranslations } from 'next-intl/server';
 export default async function ClientSettingsPage() {
   const t = await getTranslations('client.settings');
   const supabase = await createClient();
-  const { data: { user } } = await supabase.auth.getUser();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
 
   if (!user) {
     redirect('/login');
@@ -26,10 +28,7 @@ export default async function ClientSettingsPage() {
 
   return (
     <div className="container mx-auto px-4 py-6 sm:px-6 space-y-6">
-      <PageHeader
-        title={t('title')}
-        description={t('description')}
-      />
+      <PageHeading title={t('title')} subtitle={t('description')} />
 
       <Tabs defaultValue="profile" className="space-y-6">
         <div className="overflow-x-auto -mx-4 px-4 sm:mx-0 sm:px-0">

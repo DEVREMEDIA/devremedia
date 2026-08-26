@@ -1,7 +1,7 @@
 import { getProject } from '@/lib/actions/projects';
 import { getClients } from '@/lib/actions/clients';
 import { ProjectWithClient, Client } from '@/types';
-import { PageHeader } from '@/components/shared/page-header';
+import { PageHeading } from '@/components/shared/page-heading';
 import { ProjectForm } from '@/components/admin/projects/project-form';
 import { Card, CardContent } from '@/components/ui/card';
 import { notFound, redirect } from 'next/navigation';
@@ -28,10 +28,7 @@ export default async function EditProjectPage({ params }: EditProjectPageProps) 
   const { projectId } = await params;
   const t = await getTranslations('projects');
 
-  const [projectResult, clientsResult] = await Promise.all([
-    getProject(projectId),
-    getClients(),
-  ]);
+  const [projectResult, clientsResult] = await Promise.all([getProject(projectId), getClients()]);
 
   if (projectResult.error) {
     notFound();
@@ -46,10 +43,7 @@ export default async function EditProjectPage({ params }: EditProjectPageProps) 
 
   return (
     <div className="space-y-6">
-      <PageHeader
-        title={`${t('editProject')}: ${project.title}`}
-        description={t('description')}
-      />
+      <PageHeading title={`${t('editProject')}: ${project.title}`} subtitle={t('description')} />
 
       <Card>
         <CardContent className="pt-6">

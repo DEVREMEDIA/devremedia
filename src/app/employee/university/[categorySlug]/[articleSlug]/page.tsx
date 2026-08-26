@@ -1,7 +1,7 @@
 import { notFound } from 'next/navigation';
 import Link from 'next/link';
 import { ChevronRight } from 'lucide-react';
-import { PageHeader } from '@/components/shared/page-header';
+import { PageHeading } from '@/components/shared/page-heading';
 import { ArticleContent } from '@/components/shared/article-content';
 import { getKbCategoryBySlug } from '@/lib/actions/kb-categories';
 import { getKbArticleBySlug } from '@/lib/actions/kb-articles';
@@ -57,7 +57,7 @@ export default async function ArticlePage({ params }: ArticlePageProps) {
         <span className="text-foreground">{article.title}</span>
       </div>
 
-      <PageHeader title={article.title} description={article.summary ?? undefined} />
+      <PageHeading title={article.title} subtitle={article.summary ?? undefined} />
 
       <ArticleContent content={article.content} videoUrls={article.video_urls} />
     </div>

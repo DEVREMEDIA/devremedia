@@ -3,7 +3,7 @@ import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import { ChevronRight, FileText } from 'lucide-react';
 import { getTranslations } from 'next-intl/server';
-import { PageHeader } from '@/components/shared/page-header';
+import { PageHeading } from '@/components/shared/page-heading';
 import { EmptyState } from '@/components/shared/empty-state';
 import { LoadingSpinner } from '@/components/shared/loading-spinner';
 import { Card, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -75,7 +75,7 @@ export default async function CategoryPage({ params }: CategoryPageProps) {
         <span className="text-foreground">{category.title}</span>
       </div>
 
-      <PageHeader title={category.title} description={category.description ?? undefined} />
+      <PageHeading title={category.title} subtitle={category.description ?? undefined} />
 
       <Suspense
         fallback={

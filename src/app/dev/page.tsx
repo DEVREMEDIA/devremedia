@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react';
 import { createClient } from '@/lib/supabase/client';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { PageHeader } from '@/components/shared/page-header';
+import { PageHeading } from '@/components/shared/page-heading';
 
 interface TableCount {
   table: string;
@@ -73,7 +73,7 @@ export default function DevPage() {
 
   return (
     <div className="container mx-auto py-8 px-4 max-w-4xl">
-      <PageHeader title="Dev Tools" description="Database status and development helpers" />
+      <PageHeading title="Dev Tools" subtitle="Database status and development helpers" />
 
       {error && (
         <Card className="mb-6 border-destructive">

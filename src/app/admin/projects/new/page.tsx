@@ -1,6 +1,6 @@
 import { getClients } from '@/lib/actions/clients';
 import { Client } from '@/types';
-import { PageHeader } from '@/components/shared/page-header';
+import { PageHeading } from '@/components/shared/page-heading';
 import { ProjectForm } from '@/components/admin/projects/project-form';
 import { Card, CardContent } from '@/components/ui/card';
 import { redirect } from 'next/navigation';
@@ -25,10 +25,7 @@ export default async function NewProjectPage() {
 
   return (
     <div className="space-y-6">
-      <PageHeader
-        title={t('addProject')}
-        description={t('description')}
-      />
+      <PageHeading title={t('addProject')} subtitle={t('description')} />
 
       <Card>
         <CardContent className="pt-6">

@@ -3,7 +3,7 @@ import { notFound } from 'next/navigation';
 import { getTranslations } from 'next-intl/server';
 import { getClient } from '@/lib/actions/clients';
 import { Client } from '@/types/index';
-import { PageHeader } from '@/components/shared/page-header';
+import { PageHeading } from '@/components/shared/page-heading';
 import { ClientForm } from '@/components/admin/clients/client-form';
 import { Button } from '@/components/ui/button';
 import { ArrowLeft } from 'lucide-react';
@@ -36,17 +36,14 @@ export default async function EditClientPage({ params }: EditClientPageProps) {
 
   return (
     <div className="space-y-6">
-      <PageHeader
-        title={t('editClient')}
-        description={`${tc('edit')} ${client.contact_name}`}
-      >
+      <PageHeading title={t('editClient')} subtitle={`${tc('edit')} ${client.contact_name}`}>
         <Button variant="outline" asChild>
           <Link href={`/admin/clients/${clientId}`}>
             <ArrowLeft className="mr-2 h-4 w-4" />
             {tc('back')}
           </Link>
         </Button>
-      </PageHeader>
+      </PageHeading>
 
       <ClientForm client={client} />
     </div>

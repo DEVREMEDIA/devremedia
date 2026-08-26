@@ -1,4 +1,4 @@
-import { PageHeader } from '@/components/shared/page-header';
+import { PageHeading } from '@/components/shared/page-heading';
 import { ArticleForm } from '@/components/admin/university/article-form';
 import { getKbCategories } from '@/lib/actions/kb-categories';
 import { redirect } from 'next/navigation';
@@ -18,7 +18,7 @@ export default async function NewArticlePage() {
 
   return (
     <div className="flex flex-col gap-6">
-      <PageHeader title="New Article" description="Create a new knowledge base article" />
+      <PageHeading title="New Article" subtitle="Create a new knowledge base article" />
 
       <ArticleForm categories={categories} />
     </div>

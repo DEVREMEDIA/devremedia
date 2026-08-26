@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation';
 import { useTranslations } from 'next-intl';
 import { formatDistanceToNow } from 'date-fns';
 import { Bell, Check } from 'lucide-react';
-import { PageHeader } from '@/components/shared/page-header';
+import { PageHeading } from '@/components/shared/page-heading';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -97,14 +97,14 @@ export function NotificationsLog() {
 
   return (
     <div className="container mx-auto max-w-3xl px-4 py-6 space-y-6">
-      <PageHeader title={t('title')}>
+      <PageHeading title={t('title')}>
         {hasUnread && (
           <Button variant="outline" size="sm" onClick={handleMarkAllRead}>
             <Check className="h-4 w-4 mr-1.5" />
             {t('markAllRead')}
           </Button>
         )}
-      </PageHeader>
+      </PageHeading>
 
       <Tabs value={filter} onValueChange={(v) => setFilter(v as Filter)}>
         <TabsList>

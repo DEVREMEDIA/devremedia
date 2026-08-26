@@ -4,7 +4,7 @@ import { useState, useTransition } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { useTranslations } from 'next-intl';
-import { PageHeader } from '@/components/shared/page-header';
+import { PageHeading } from '@/components/shared/page-heading';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -115,11 +115,11 @@ export function ProposalDetail({ proposal, packages }: Props) {
           <ArrowLeft className="h-4 w-4" />
           {t('title')}
         </Link>
-        <PageHeader title={proposal.client_name}>
+        <PageHeading title={proposal.client_name}>
           <Badge variant="outline" className={`${statusStyles[proposal.status]}`}>
             {ts(proposal.status)}
           </Badge>
-        </PageHeader>
+        </PageHeading>
       </div>
 
       <div className="grid gap-6 lg:grid-cols-[minmax(0,2fr)_minmax(0,1fr)]">

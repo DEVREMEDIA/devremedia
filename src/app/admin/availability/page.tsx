@@ -1,5 +1,5 @@
 import { getTranslations } from 'next-intl/server';
-import { PageHeader } from '@/components/shared/page-header';
+import { PageHeading } from '@/components/shared/page-heading';
 import { AvailabilityEditor } from '@/components/admin/availability/availability-editor';
 
 export default async function AvailabilityPage() {
@@ -8,7 +8,7 @@ export default async function AvailabilityPage() {
 
   return (
     <div className="space-y-6">
-      <PageHeader title={t('title')} description={t('description')} />
+      <PageHeading title={t('title')} subtitle={t('description')} />
       <AvailabilityEditor initialMonth={month} />
     </div>
   );

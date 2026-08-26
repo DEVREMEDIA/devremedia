@@ -1,7 +1,7 @@
 import { createClient } from '@/lib/supabase/server';
 import { redirect, notFound } from 'next/navigation';
 import { getTranslations } from 'next-intl/server';
-import { PageHeader } from '@/components/shared/page-header';
+import { PageHeading } from '@/components/shared/page-heading';
 import { EmployeeDeliverables } from '@/components/employee/deliverables/deliverable-list';
 
 export default async function EmployeeDeliverablesPage({
@@ -49,7 +49,7 @@ export default async function EmployeeDeliverablesPage({
 
   return (
     <div className="space-y-6">
-      <PageHeader title={projectName ?? t('title')} description={clientName ?? t('description')} />
+      <PageHeading title={projectName ?? t('title')} subtitle={clientName ?? t('description')} />
       <EmployeeDeliverables
         projectId={projectId}
         deliverables={deliverables ?? []}

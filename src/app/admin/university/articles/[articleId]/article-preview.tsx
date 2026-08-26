@@ -6,7 +6,7 @@ import { ArrowLeft, Pencil, Trash2, Eye, EyeOff, Calendar, FolderOpen, Hash } fr
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { PageHeader } from '@/components/shared/page-header';
+import { PageHeading } from '@/components/shared/page-heading';
 import { ConfirmDialog } from '@/components/shared/confirm-dialog';
 import { ArticleContent } from '@/components/shared/article-content';
 import { deleteKbArticle } from '@/lib/actions/kb-articles';
@@ -42,7 +42,7 @@ export function ArticlePreview({ article }: ArticlePreviewProps) {
 
   return (
     <div className="flex flex-col gap-6">
-      <PageHeader title={article.title} description={t('articlePreview')}>
+      <PageHeading title={article.title} subtitle={t('articlePreview')}>
         <Button variant="outline" onClick={() => router.push('/admin/university')}>
           <ArrowLeft className="mr-2 h-4 w-4" />
           {tc('back')}
@@ -58,7 +58,7 @@ export function ArticlePreview({ article }: ArticlePreviewProps) {
           <Trash2 className="mr-2 h-4 w-4" />
           {tc('delete')}
         </Button>
-      </PageHeader>
+      </PageHeading>
 
       {/* Metadata */}
       <Card>

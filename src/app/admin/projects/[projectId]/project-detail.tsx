@@ -3,7 +3,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { format } from 'date-fns';
 import { ProjectWithClient, Contract } from '@/types';
-import { PageHeader } from '@/components/shared/page-header';
+import { PageHeading } from '@/components/shared/page-heading';
 import { StatusBadge } from '@/components/shared/status-badge';
 import { ConfirmDialog } from '@/components/shared/confirm-dialog';
 import { EmptyState } from '@/components/shared/empty-state';
@@ -114,7 +114,7 @@ export function ProjectDetail({ project, contracts }: ProjectDetailProps) {
 
   return (
     <div className="space-y-6">
-      <PageHeader title={project.title}>
+      <PageHeading title={project.title}>
         <div className="flex items-center gap-3">
           <Button variant="outline" size="sm" asChild>
             <Link href="/admin/projects">
@@ -138,7 +138,7 @@ export function ProjectDetail({ project, contracts }: ProjectDetailProps) {
             {tc('delete')}
           </Button>
         </div>
-      </PageHeader>
+      </PageHeading>
 
       <div className="flex items-center gap-4 flex-wrap">
         <Link
