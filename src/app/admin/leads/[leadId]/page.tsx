@@ -1,5 +1,5 @@
 import { notFound } from 'next/navigation';
-import { PageHeader } from '@/components/shared/page-header';
+import { PageHeading } from '@/components/shared/page-heading';
 import { AdminLeadDetail } from '@/components/admin/leads/lead-detail';
 import { getLead } from '@/lib/actions/leads';
 import { getLeadActivities } from '@/lib/actions/lead-activities';
@@ -35,7 +35,7 @@ export default async function AdminLeadDetailPage({
 
   return (
     <div className="space-y-6">
-      <PageHeader title={lead.contact_name} description={lead.company_name ?? lead.email} />
+      <PageHeading title={lead.contact_name} subtitle={lead.company_name ?? lead.email} />
       <AdminLeadDetail
         lead={lead as unknown as ComponentProps<typeof AdminLeadDetail>['lead']}
         activities={activities as unknown as ComponentProps<typeof AdminLeadDetail>['activities']}

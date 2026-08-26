@@ -1,6 +1,7 @@
 import type { Metadata } from 'next';
 import { getTranslations } from 'next-intl/server';
 import { SectionTabs, type SectionTab } from '@/components/shell-v2/section-tabs';
+import { PageHeading } from '@/components/shared/page-heading';
 
 // Μετακομίζουν αυτούσιες οι δύο υπάρχουσες σελίδες, κάτω από μία στέγη.
 import ClientContractsPage from '../contracts/contracts-page';
@@ -28,10 +29,7 @@ export default async function ClientV2DocumentsPage({
 
   return (
     <div className="space-y-5">
-      <header>
-        <h1 className="text-2xl font-semibold tracking-tight">{t('title')}</h1>
-        <p className="mt-1 text-sm text-muted-foreground">{t('subtitle')}</p>
-      </header>
+      <PageHeading title={t('title')} subtitle={t('subtitle')} />
 
       <SectionTabs basePath="/client/documents" tabs={TABS} active={active} />
 

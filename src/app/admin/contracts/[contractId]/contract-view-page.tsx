@@ -7,7 +7,7 @@ import { useState } from 'react';
 import { toast } from 'sonner';
 import { useTranslations } from 'next-intl';
 import { Button } from '@/components/ui/button';
-import { PageHeader } from '@/components/shared/page-header';
+import { PageHeading } from '@/components/shared/page-heading';
 import { ContractView } from '@/components/shared/contract-view';
 import { ConfirmDialog } from '@/components/shared/confirm-dialog';
 import { deleteContract, sendContract, reviewSignedContract } from '@/lib/actions/contracts';
@@ -109,7 +109,7 @@ export function ContractViewPage({ contract }: ContractViewPageProps) {
 
   return (
     <div className="max-w-4xl mx-auto">
-      <PageHeader title={contract.title}>
+      <PageHeading title={contract.title}>
         <div className="flex items-center gap-2">
           <Button variant="outline" size="sm" asChild>
             <Link href={`/admin/projects/${contract.project_id}`}>
@@ -149,7 +149,7 @@ export function ContractViewPage({ contract }: ContractViewPageProps) {
             {t('delete')}
           </Button>
         </div>
-      </PageHeader>
+      </PageHeading>
 
       <div className="mt-6">
         <ContractView contract={contract} />

@@ -1,6 +1,6 @@
 import { getTranslations } from 'next-intl/server';
 import { getClients } from '@/lib/actions/clients';
-import { PageHeader } from '@/components/shared/page-header';
+import { PageHeading } from '@/components/shared/page-heading';
 import { NewContractForm } from './new-contract-form';
 
 export default async function NewContractPage({
@@ -15,7 +15,7 @@ export default async function NewContractPage({
 
   return (
     <div className="space-y-6">
-      <PageHeader title={t('newContract')} description={t('newContractDescription')} />
+      <PageHeading title={t('newContract')} subtitle={t('newContractDescription')} />
       <div className="max-w-2xl">
         <NewContractForm clients={clients} preselectedClientId={params.clientId} />
       </div>

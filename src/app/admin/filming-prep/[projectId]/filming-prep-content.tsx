@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import { useTranslations } from 'next-intl';
-import { PageHeader } from '@/components/shared/page-header';
+import { PageHeading } from '@/components/shared/page-heading';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import {
   Select,
@@ -50,9 +50,9 @@ export function FilmingPrepContent({
 
   return (
     <div className="space-y-6">
-      <PageHeader
+      <PageHeading
         title={t('filmingPreparation')}
-        description={t('manageFor', { project: projectTitle })}
+        subtitle={t('manageFor', { project: projectTitle })}
       />
 
       {teamMembers.length > 0 && (

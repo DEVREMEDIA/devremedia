@@ -1,5 +1,5 @@
 import { getProjects } from '@/lib/actions/projects';
-import { PageHeader } from '@/components/shared/page-header';
+import { PageHeading } from '@/components/shared/page-heading';
 import { ProjectPrepList } from '@/components/admin/filming-prep/project-prep-list';
 import { getTranslations } from 'next-intl/server';
 import type { Metadata } from 'next';
@@ -22,7 +22,7 @@ export default async function FilmingPrepIndexPage() {
 
   return (
     <div className="space-y-6">
-      <PageHeader title={t('title')} description={t('description')} />
+      <PageHeading title={t('title')} subtitle={t('description')} />
       <ProjectPrepList projects={projects as ProjectWithClient[]} />
     </div>
   );

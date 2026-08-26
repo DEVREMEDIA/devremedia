@@ -1,50 +1,47 @@
-import { createClient } from '@/lib/supabase/server'
-import { redirect, notFound } from 'next/navigation'
-import { getLead } from '@/lib/actions/leads'
-import { PageHeader } from '@/components/shared/page-header'
-import { Card, CardContent } from '@/components/ui/card'
-import { LeadForm } from '@/components/salesman/leads/lead-form'
-import { Button } from '@/components/ui/button'
-import Link from 'next/link'
-import { ArrowLeft } from 'lucide-react'
+import { createClient } from '@/lib/supabase/server';
+import { redirect, notFound } from 'next/navigation';
+import { getLead } from '@/lib/actions/leads';
+import { PageHeading } from '@/components/shared/page-heading';
+import { Card, CardContent } from '@/components/ui/card';
+import { LeadForm } from '@/components/salesman/leads/lead-form';
+import { Button } from '@/components/ui/button';
+import Link from 'next/link';
+import { ArrowLeft } from 'lucide-react';
 
 type PageProps = {
-  params: Promise<{ leadId: string }>
-}
+  params: Promise<{ leadId: string }>;
+};
 
 export default async function EditLeadPage({ params }: PageProps) {
-  const supabase = await createClient()
+  const supabase = await createClient();
   const {
     data: { user },
-  } = await supabase.auth.getUser()
+  } = await supabase.auth.getUser();
 
   if (!user) {
-    redirect('/login')
+    redirect('/login');
   }
 
-  const { leadId } = await params
+  const { leadId } = await params;
 
-  const result = await getLead(leadId)
+  const result = await getLead(leadId);
 
   if (result.error || !result.data) {
-    notFound()
+    notFound();
   }
 
-  const lead = result.data as import('@/types').Lead
+  const lead = result.data as import('@/types').Lead;
 
   return (
     <div className="space-y-6">
-      <PageHeader
-        title="Edit Lead"
-        description={`Edit details for ${lead.contact_name}`}
-      >
+      <PageHeading title="Edit Lead" subtitle={`Edit details for ${lead.contact_name}`}>
         <Button variant="outline" asChild>
           <Link href={`/salesman/leads/${leadId}`}>
             <ArrowLeft className="mr-2 h-4 w-4" />
             Back to Lead
           </Link>
         </Button>
-      </PageHeader>
+      </PageHeading>
 
       <Card>
         <CardContent className="pt-6">
@@ -52,5 +49,5 @@ export default async function EditLeadPage({ params }: PageProps) {
         </CardContent>
       </Card>
     </div>
-  )
+  );
 }

@@ -1,7 +1,7 @@
 import { createClient } from '@/lib/supabase/server';
 import { redirect } from 'next/navigation';
 import { getTranslations } from 'next-intl/server';
-import { PageHeader } from '@/components/shared/page-header';
+import { PageHeading } from '@/components/shared/page-heading';
 import { TodayTasks } from '@/components/employee/dashboard/today-tasks';
 import { OverdueTasks } from '@/components/employee/dashboard/overdue-tasks';
 import { UpcomingTasks } from '@/components/employee/dashboard/upcoming-tasks';
@@ -34,7 +34,7 @@ export default async function EmployeeDashboardPage() {
 
   return (
     <div className="space-y-6">
-      <PageHeader title={t('title')} description={t('description')} />
+      <PageHeading title={t('title')} subtitle={t('description')} />
       <TaskStats stats={taskStats} />
       <div className="grid gap-6 md:grid-cols-2">
         <TodayTasks tasks={todayTasks} />

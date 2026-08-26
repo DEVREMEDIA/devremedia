@@ -1,7 +1,7 @@
 import { createClient } from '@/lib/supabase/server';
 import { redirect, notFound } from 'next/navigation';
 import { getTranslations } from 'next-intl/server';
-import { PageHeader } from '@/components/shared/page-header';
+import { PageHeading } from '@/components/shared/page-heading';
 import { ProjectDetail } from '@/components/employee/projects/project-detail';
 
 export default async function EmployeeProjectDetailPage({
@@ -64,7 +64,7 @@ export default async function EmployeeProjectDetailPage({
 
   return (
     <div className="space-y-6">
-      <PageHeader title={projectResult.data.title} description={t('description')} />
+      <PageHeading title={projectResult.data.title} subtitle={t('description')} />
       <ProjectDetail
         project={projectResult.data}
         tasks={tasksResult.data ?? []}

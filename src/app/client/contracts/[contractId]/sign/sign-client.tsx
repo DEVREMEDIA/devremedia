@@ -6,6 +6,7 @@ import { toast } from 'sonner';
 import { useTranslations } from 'next-intl';
 import { CheckCircle } from 'lucide-react';
 import { ContractView } from '@/components/shared/contract-view';
+import { PageHeading } from '@/components/shared/page-heading';
 import { SignaturePad } from '@/components/shared/signature-pad';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Alert, AlertDescription } from '@/components/ui/alert';
@@ -56,10 +57,7 @@ export function SignContractClient({ contract }: SignContractClientProps) {
 
   return (
     <div className="space-y-8">
-      <div>
-        <h1 className="text-3xl font-bold mb-2">{t('reviewAndSign')}</h1>
-        <p className="text-muted-foreground">{t('reviewBeforeSigning')}</p>
-      </div>
+      <PageHeading title={t('reviewAndSign')} subtitle={t('reviewBeforeSigning')} />
 
       <Alert>
         <AlertDescription>{t('signatureBindingNotice')}</AlertDescription>

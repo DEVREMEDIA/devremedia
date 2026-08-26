@@ -4,7 +4,6 @@ import { useState } from 'react';
 import { Plus } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { Button } from '@/components/ui/button';
-import { PageHeader } from '@/components/shared/page-header';
 import { TemplateList } from '@/components/admin/contracts/template-list';
 import { TemplateForm } from '@/components/admin/contracts/template-form';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
@@ -46,12 +45,12 @@ export function TemplatesContent({ templates: initialTemplates }: TemplatesConte
 
   return (
     <>
-      <PageHeader title={t('contractTemplates')} description={t('templatesDescription')}>
+      <div className="flex items-center justify-end gap-2">
         <Button onClick={handleCreate}>
           <Plus className="h-4 w-4 mr-2" />
           {t('addTemplate')}
         </Button>
-      </PageHeader>
+      </div>
 
       <div className="mt-6">
         <TemplateList templates={templates} onEdit={handleEdit} onDelete={handleDelete} />

@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation';
 import { useTranslations } from 'next-intl';
 import { Client } from '@/types/index';
 import type { ClientDrawerMode, ProjectWithClient, InvoiceWithRelations } from '@/types/relations';
-import { PageHeader } from '@/components/shared/page-header';
+import { PageHeading } from '@/components/shared/page-heading';
 import { StatusBadge } from '@/components/shared/status-badge';
 import { UserAvatar } from '@/components/shared/user-avatar';
 import { ConfirmDialog } from '@/components/shared/confirm-dialog';
@@ -105,10 +105,7 @@ export function ClientDetail({
   return (
     <div className="space-y-6">
       {/* Header */}
-      <PageHeader
-        title={client.contact_name}
-        description={client.company_name || t('clientDetails')}
-      >
+      <PageHeading title={client.contact_name} subtitle={client.company_name || t('clientDetails')}>
         <Button variant="outline" asChild>
           <Link href="/admin/clients">
             <ArrowLeft className="mr-2 h-4 w-4" />
@@ -135,7 +132,7 @@ export function ClientDetail({
           <Trash className="mr-2 h-4 w-4" />
           {tc('delete')}
         </Button>
-      </PageHeader>
+      </PageHeading>
 
       {/* Profile Card */}
       <Card>

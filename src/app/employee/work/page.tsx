@@ -1,6 +1,7 @@
 import type { Metadata } from 'next';
 import { getTranslations } from 'next-intl/server';
 import { SectionTabs, type SectionTab } from '@/components/shell-v2/section-tabs';
+import { PageHeading } from '@/components/shared/page-heading';
 
 import EmployeeTasksPage from '@/app/employee/tasks/tasks-page';
 import { DeliverablesIndex } from './deliverables-index';
@@ -23,10 +24,7 @@ export default async function EmployeeV2WorkPage({ searchParams }: { searchParam
 
   return (
     <div className="space-y-5">
-      <header>
-        <h1 className="text-2xl font-semibold tracking-tight">{t('title')}</h1>
-        <p className="mt-1 text-sm text-muted-foreground">{t('subtitle')}</p>
-      </header>
+      <PageHeading title={t('title')} subtitle={t('subtitle')} />
 
       <SectionTabs basePath="/employee/work" tabs={TABS} active={active} />
 

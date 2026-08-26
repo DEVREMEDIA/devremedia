@@ -124,6 +124,54 @@ test.describe('design identity — page heading', () => {
     await expect(page.locator('[data-slot="page-heading"]')).toHaveCount(1);
     await expect(page.locator('[data-slot="page-heading-title"]')).toHaveCount(1);
   });
+
+  /**
+   * Κάθε hub ζωγράφιζε τη δική του επικεφαλίδα και μετά το σώμα της καρτέλας μία
+   * δεύτερη από κάτω, σε άλλη κλίμακα — οι ίδιες λέξεις δύο φορές στην ίδια οθόνη.
+   * Οι μη προεπιλεγμένες καρτέλες είναι εδώ επίτηδες: το σφάλμα ζούσε στα σώματα
+   * των καρτελών, οπότε έλεγχος μόνο της πρώτης καρτέλας θα έχανε τα περισσότερα.
+   *
+   * Η λίστα καλύπτει και τα 17 σώματα καρτελών που έδωσαν τον τίτλο τους — το
+   * σχόλιο δίπλα σε κάθε διαδρομή λέει ποιο. Αν μια επόμενη φέτα μετακινήσει ένα
+   * σώμα σε άλλη καρτέλα, η αντιστοίχιση εδώ πρέπει να ακολουθήσει, αλλιώς ο
+   * έλεγχος θα δοκιμάζει δύο φορές την ίδια οθόνη χωρίς να το πει.
+   */
+  const HUB_ROUTES = [
+    '/admin/clients', // clients-content
+    '/admin/clients?tab=proposals', // proposals-list
+    '/admin/finance', // invoices-content
+    '/admin/finance?tab=expenses', // expenses-content
+    '/admin/finance?tab=cost', // cost-model-content
+    '/admin/finance?tab=health', // pricing-health-content
+    '/admin/knowledge',
+    '/admin/productions', // projects-content
+    '/admin/productions?tab=requests', // requests-page
+    '/admin/settings', // settings-page
+    '/admin/settings?tab=users', // users-page
+    '/admin/settings?tab=packages', // packages-content
+    '/admin/settings?tab=templates', // templates-content
+    '/client/documents', // client contracts-page
+    '/client/documents?tab=invoices', // client invoices-page
+    '/employee/work', // employee tasks-page
+    '/salesman/library', // salesman resources-page
+    '/salesman/library?tab=handbook', // sales-handbook
+  ];
+
+  // Ο middleware αφήνει τον admin να μπει και στα /client/*, /employee/*,
+  // /salesman/* — μία admin session αρκεί για όλα τα hubs και τους 4 ρόλους.
+  for (const route of HUB_ROUTES) {
+    test(`exactly one page heading on ${route}`, async ({ page }) => {
+      test.skip(!process.env.E2E_TEST_USERS_READY, 'Test users not configured in database');
+      await loginAsAdmin(page);
+      await page.goto(route);
+
+      // Χωρίς αυτό, μια ανακατεύθυνση στο /login θα έδινε μηδέν επικεφαλίδες και
+      // ο έλεγχος θα «αποτύγχανε σωστά» για εντελώς λάθος λόγο.
+      await expect(page).toHaveURL(new RegExp(route.split('?')[0].replace(/\//g, '\\/')));
+
+      await expect(page.locator('[data-slot="page-heading-title"]')).toHaveCount(1);
+    });
+  }
 });
 
 test.describe('design identity — typefaces', () => {

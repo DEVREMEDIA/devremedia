@@ -1,6 +1,7 @@
 import type { Metadata } from 'next';
 import { getTranslations } from 'next-intl/server';
 import { CalendarViewWrapper } from '@/components/admin/calendar/calendar-view-wrapper';
+import { PageHeading } from '@/components/shared/page-heading';
 import { getCalendarEvents } from '@/lib/queries/calendar';
 
 export async function generateMetadata(): Promise<Metadata> {
@@ -14,10 +15,7 @@ export default async function CalendarPage() {
 
   return (
     <div className="space-y-5">
-      <header>
-        <h1 className="text-2xl font-semibold tracking-tight">{t('title')}</h1>
-        <p className="mt-1 text-sm text-muted-foreground">{t('subtitle')}</p>
-      </header>
+      <PageHeading title={t('title')} subtitle={t('subtitle')} />
 
       <CalendarViewWrapper events={events} />
     </div>

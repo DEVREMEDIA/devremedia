@@ -1,4 +1,4 @@
-import { PageHeader } from '@/components/shared/page-header';
+import { PageHeading } from '@/components/shared/page-heading';
 import { AvailabilityView } from '@/components/client/book/availability-view';
 import { getMyAvailability } from '@/lib/actions/booking-availability';
 import { Card, CardContent } from '@/components/ui/card';
@@ -13,7 +13,7 @@ export default async function ClientBookingPage() {
 
   return (
     <div className="container mx-auto space-y-6 px-4 py-6 sm:px-6">
-      <PageHeader title={t('title')} description={t('description')} />
+      <PageHeading title={t('title')} subtitle={t('description')} />
 
       {availability ? (
         <AvailabilityView availability={availability} />

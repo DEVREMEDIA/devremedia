@@ -2,7 +2,7 @@
 // κανένα component δεν γράφει χρώμα στο χέρι — όλα από τα σύμβολα.
 // Τρέχει από τη ρίζα: node scripts/check-design.mjs
 import { readdirSync, readFileSync, statSync } from 'node:fs';
-import { join } from 'node:path';
+import { dirname, join } from 'node:path';
 
 // Περιοχές που έχουν μεταναστεύσει. Σαρώνονται ολόκληρες — ένα νέο component
 // σε καλυμμένο φάκελο φυλάσσεται αυτόματα, χωρίς να χρειάζεται να προστεθεί
@@ -74,11 +74,151 @@ for (const file of files) {
   });
 }
 
-if (violations.length > 0) {
-  console.error(`check:design — ${violations.length} raw colour(s) outside the token layer:\n`);
-  for (const v of violations) console.error(`  ${v}`);
-  console.error('\nUse a token (bg-card, text-muted-foreground, text-tone-critical, …) instead.');
+// Ένας τίτλος ανά σελίδα: ο μόνος που γράφει <h1> είναι το κοινό PageHeading.
+const HEADING_EXEMPT = [
+  'src/components/shared/page-heading.tsx', // εδώ ζει ο ένας και μοναδικός <h1>
+  'src/components/landing/', // άλλο επίπεδο, εκτός σκοπού μόνιμα
+];
+
+// Οθόνες που κρατούν προσωρινά τον δικό τους τίτλο, με ρητό λόγο και ρητό
+// σημείο επιστροφής. Κάθε επόμενη φέτα αφαιρεί από εδώ — η λίστα μόνο μικραίνει.
+const HEADING_PENDING = [
+  'src/app/book/page.tsx', // δημόσια σελίδα με δικό της κέλυφος
+  'src/app/admin/invoices/[invoiceId]/invoice-detail.tsx', // → #109
+  'src/app/client/projects/[projectId]/client-project-detail.tsx', // → #106
+  'src/components/admin/filming-requests/filming-request-detail.tsx', // → #109
+  'src/components/client/invoices/invoice-detail.tsx', // → #109
+];
+
+const HEADING_IMPORT = /['"][^'"]*\/shared\/page-header['"]/;
+const HEADING_TAG = /<h1\b/;
+
+const headingExemptPrefixes = HEADING_EXEMPT.filter((e) => e.endsWith('/')).map((e) =>
+  e.replaceAll('\\', '/'),
+);
+const headingExemptFiles = new Set(
+  HEADING_EXEMPT.filter((e) => !e.endsWith('/')).map((e) => e.replaceAll('\\', '/')),
+);
+const headingPendingSet = new Set(HEADING_PENDING.map((p) => p.replaceAll('\\', '/')));
+
+function isHeadingExempt(file) {
+  return headingExemptFiles.has(file) || headingExemptPrefixes.some((p) => file.startsWith(p));
+}
+
+const allTsxFiles = walk('src')
+  .map((f) => f.replaceAll('\\', '/'))
+  .filter((f) => f.endsWith('.tsx'));
+
+const headingViolations = [];
+const pendingWithH1 = new Set();
+
+for (const file of allTsxFiles) {
+  const lines = readFileSync(file, 'utf8').split('\n');
+  lines.forEach((line, i) => {
+    const stripped = stripComments(line);
+    if (HEADING_IMPORT.test(stripped)) {
+      headingViolations.push(`${file}:${i + 1}  ${line.trim()}`);
+    }
+    if (HEADING_TAG.test(stripped)) {
+      if (headingPendingSet.has(file)) {
+        pendingWithH1.add(file);
+      } else if (!isHeadingExempt(file)) {
+        headingViolations.push(`${file}:${i + 1}  ${line.trim()}`);
+      }
+    }
+  });
+}
+
+const stalePending = HEADING_PENDING.map((p) => p.replaceAll('\\', '/')).filter(
+  (p) => !pendingWithH1.has(p),
+);
+
+// Ο έλεγχος <h1> πιάνει μόνο χειροποίητους τίτλους. ΔΕΝ πιάνει την ίδια τη βλάβη
+// που έφτιαξε αυτή η φέτα: ένα hub και το σώμα της καρτέλας του να ζωγραφίζουν
+// το καθένα το δικό του <PageHeading> — δύο τίτλοι στην ίδια οθόνη, με το μόνο
+// <h1> να ζει μέσα στο εξαιρεμένο page-heading.tsx, άρα αόρατο στο grep.
+// Εδώ ακολουθούμε τις εισαγωγές κάθε hub και απαιτούμε ότι τίτλο γράφει μόνο
+// το ίδιο το hub. ΠΡΟΣΟΧΗ: και οι δύο μορφές εισαγωγής μετράνε — πέντε σώματα
+// καρτελών μπαίνουν με σχετική διαδρομή (`./settings-page`), και μια απογραφή
+// που κοιτούσε μόνο το `@/` alias τα είχε χάσει ολόκληρα.
+const sourceOf = new Map(allTsxFiles.map((f) => [f, readFileSync(f, 'utf8')]));
+const strippedOf = (f) => sourceOf.get(f).split('\n').map(stripComments).join('\n');
+
+const IMPORT_SPEC = /from\s+'(@\/[^']+|\.[^']*)'/g;
+const RENDERS_HEADING = /<PageHeading[\s/>]/;
+
+function resolveImport(spec, fromFile) {
+  const base = spec.startsWith('@/')
+    ? `src/${spec.slice(2)}`
+    : join(dirname(fromFile), spec).replaceAll('\\', '/');
+  for (const candidate of [`${base}.tsx`, `${base}/index.tsx`]) {
+    if (sourceOf.has(candidate)) return candidate;
+  }
+  return null;
+}
+
+const hubs = allTsxFiles.filter(
+  (f) => f.endsWith('/page.tsx') && sourceOf.get(f).includes('SectionTabs'),
+);
+
+const doubleTitles = new Map();
+for (const hub of hubs) {
+  const seen = new Set();
+  const queue = [...strippedOf(hub).matchAll(IMPORT_SPEC)]
+    .map((m) => resolveImport(m[1], hub))
+    .filter(Boolean);
+
+  while (queue.length > 0) {
+    const file = queue.pop();
+    if (seen.has(file)) continue;
+    seen.add(file);
+
+    if (RENDERS_HEADING.test(strippedOf(file))) {
+      if (!doubleTitles.has(file)) doubleTitles.set(file, new Set());
+      doubleTitles.get(file).add(hub);
+    }
+    for (const match of strippedOf(file).matchAll(IMPORT_SPEC)) {
+      const resolved = resolveImport(match[1], file);
+      if (resolved && !seen.has(resolved)) queue.push(resolved);
+    }
+  }
+}
+
+if (
+  violations.length > 0 ||
+  headingViolations.length > 0 ||
+  stalePending.length > 0 ||
+  doubleTitles.size > 0
+) {
+  if (violations.length > 0) {
+    console.error(`check:design — ${violations.length} raw colour(s) outside the token layer:\n`);
+    for (const v of violations) console.error(`  ${v}`);
+    console.error('\nUse a token (bg-card, text-muted-foreground, text-tone-critical, …) instead.');
+  }
+  if (headingViolations.length > 0) {
+    console.error(`\ncheck:design — ${headingViolations.length} heading violation(s):\n`);
+    for (const v of headingViolations) console.error(`  ${v}`);
+    console.error('\nUse the shared PageHeading component for page titles.');
+  }
+  if (stalePending.length > 0) {
+    console.error(
+      `\ncheck:design — ${stalePending.length} stale HEADING_PENDING entr${stalePending.length === 1 ? 'y' : 'ies'} — no <h1> found, remove from the list:\n`,
+    );
+    for (const p of stalePending) console.error(`  ${p}`);
+  }
+  if (doubleTitles.size > 0) {
+    console.error(
+      `\ncheck:design — ${doubleTitles.size} file(s) render a second page title inside a hub:\n`,
+    );
+    for (const [file, insideHubs] of doubleTitles) {
+      console.error(`  ${file}\n      mounted by ${[...insideHubs].join(', ')}`);
+    }
+    console.error('\nThe hub owns the page title. A tab body must not render its own PageHeading.');
+  }
   process.exit(1);
 }
 
-console.log(`ok — ${files.size} file(s) covered, no raw colours`);
+console.log(
+  `ok — ${files.size} file(s) covered, no raw colours; one title per page ` +
+    `(${headingPendingSet.size} pending, ${hubs.length} hubs checked for double titles)`,
+);

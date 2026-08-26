@@ -7,7 +7,7 @@ import { toast } from 'sonner';
 import { useTranslations } from 'next-intl';
 import { Button } from '@/components/ui/button';
 import { ContractView } from '@/components/shared/contract-view';
-import { PageHeader } from '@/components/shared/page-header';
+import { PageHeading } from '@/components/shared/page-heading';
 import type { ContractWithRelations } from '@/types';
 
 interface ContractViewClientProps {
@@ -68,7 +68,7 @@ export function ContractViewClient({ contract }: ContractViewClientProps) {
 
   return (
     <>
-      <PageHeader title={contract.title}>
+      <PageHeading title={contract.title}>
         <div className="flex items-center gap-2">
           {['sent', 'viewed', 'signed', 'pending_review'].includes(contract.status) && (
             <Button variant="outline" onClick={handleDownloadPDF}>
@@ -100,7 +100,7 @@ export function ContractViewClient({ contract }: ContractViewClientProps) {
             </>
           )}
         </div>
-      </PageHeader>
+      </PageHeading>
 
       <div className="mt-6">
         <ContractView contract={contract} />

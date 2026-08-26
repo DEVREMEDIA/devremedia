@@ -1,7 +1,6 @@
 'use client';
 
 import * as React from 'react';
-import { PageHeader } from '@/components/shared/page-header';
 import { DataTable } from '@/components/shared/data-table';
 import { Button } from '@/components/ui/button';
 import {
@@ -157,7 +156,7 @@ export function ExpensesContent({ expenses: initialExpenses, projects }: Expense
   return (
     <>
       <div className="space-y-6">
-        <PageHeader title={t('expenses')}>
+        <div className="flex items-center justify-end gap-2">
           <Button variant="outline" onClick={() => setExportDialogOpen(true)}>
             <FileDown className="mr-2 h-4 w-4" />
             {t('quarterlyExport')}
@@ -166,7 +165,7 @@ export function ExpensesContent({ expenses: initialExpenses, projects }: Expense
             <Plus className="mr-2 h-4 w-4" />
             {t('addExpense')}
           </Button>
-        </PageHeader>
+        </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:flex lg:flex-wrap items-end gap-3">
           <Select value={categoryFilter} onValueChange={setCategoryFilter}>

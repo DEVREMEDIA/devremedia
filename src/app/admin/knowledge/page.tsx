@@ -2,6 +2,7 @@ import type { ComponentProps } from 'react';
 import type { Metadata } from 'next';
 import { getTranslations } from 'next-intl/server';
 import { SectionTabs, type SectionTab } from '@/components/shell-v2/section-tabs';
+import { PageHeading } from '@/components/shared/page-heading';
 
 import { UniversityOverview } from '@/components/admin/university/university-overview';
 import { SalesResourcesOverview } from '@/components/admin/sales-resources/sales-resources-overview';
@@ -58,10 +59,7 @@ export default async function KnowledgePage({ searchParams }: { searchParams: Se
 
   return (
     <div className="space-y-5">
-      <header>
-        <h1 className="text-2xl font-semibold tracking-tight">{t('title')}</h1>
-        <p className="mt-1 text-sm text-muted-foreground">{t('subtitle')}</p>
-      </header>
+      <PageHeading title={t('title')} subtitle={t('subtitle')} />
 
       <SectionTabs basePath="/admin/knowledge" tabs={TABS} active={active} />
 

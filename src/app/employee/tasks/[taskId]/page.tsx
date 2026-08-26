@@ -1,6 +1,6 @@
 import { createClient } from '@/lib/supabase/server';
 import { redirect, notFound } from 'next/navigation';
-import { PageHeader } from '@/components/shared/page-header';
+import { PageHeading } from '@/components/shared/page-heading';
 import { TaskDetail } from '@/components/employee/tasks/task-detail';
 
 export default async function EmployeeTaskDetailPage({
@@ -10,7 +10,9 @@ export default async function EmployeeTaskDetailPage({
 }) {
   const { taskId } = await params;
   const supabase = await createClient();
-  const { data: { user } } = await supabase.auth.getUser();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
 
   if (!user) redirect('/login');
 
@@ -25,9 +27,9 @@ export default async function EmployeeTaskDetailPage({
 
   return (
     <div className="space-y-6">
-      <PageHeader
+      <PageHeading
         title={task.title}
-        description={`Project: ${(task.project as { title: string } | null)?.title ?? 'Unknown'}`}
+        subtitle={`Project: ${(task.project as { title: string } | null)?.title ?? 'Unknown'}`}
       />
       <TaskDetail task={task} />
     </div>

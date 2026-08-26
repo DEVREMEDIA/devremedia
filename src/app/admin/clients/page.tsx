@@ -3,6 +3,7 @@ import type { Metadata } from 'next';
 import Link from 'next/link';
 import { getTranslations } from 'next-intl/server';
 import { SectionTabs, type SectionTab } from '@/components/shell-v2/section-tabs';
+import { PageHeading } from '@/components/shared/page-heading';
 import { Button } from '@/components/ui/button';
 
 import { ClientsContent } from '@/app/admin/clients/clients-content';
@@ -106,10 +107,7 @@ export default async function ClientsPage({ searchParams }: { searchParams: Sear
 
   return (
     <div className="space-y-5">
-      <header>
-        <h1 className="text-2xl font-semibold tracking-tight">{t('title')}</h1>
-        <p className="mt-1 text-sm text-muted-foreground">{t('subtitle')}</p>
-      </header>
+      <PageHeading title={t('title')} subtitle={t('subtitle')} />
 
       <SectionTabs basePath="/admin/clients" tabs={TABS} active={active} />
 

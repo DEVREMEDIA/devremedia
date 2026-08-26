@@ -1,7 +1,7 @@
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import { ArrowLeft } from 'lucide-react';
-import { PageHeader } from '@/components/shared/page-header';
+import { PageHeading } from '@/components/shared/page-heading';
 import { Button } from '@/components/ui/button';
 import { ConversationDetail } from '@/components/admin/chatbot/conversation-detail';
 import { getChatConversation } from '@/lib/queries/chatbot';
@@ -21,9 +21,9 @@ export default async function ConversationDetailPage({
 
   return (
     <div className="space-y-6">
-      <PageHeader
+      <PageHeading
         title="Conversation Detail"
-        description={`Session: ${conversation.session_id.slice(0, 12)}...`}
+        subtitle={`Session: ${conversation.session_id.slice(0, 12)}...`}
       >
         <Link href="/admin/chatbot">
           <Button variant="outline" size="sm">
@@ -31,7 +31,7 @@ export default async function ConversationDetailPage({
             Back
           </Button>
         </Link>
-      </PageHeader>
+      </PageHeading>
 
       <ConversationDetail conversation={conversation as ChatConversationWithMessages} />
     </div>

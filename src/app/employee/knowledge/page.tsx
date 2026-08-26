@@ -1,6 +1,6 @@
 import { Suspense } from 'react';
 import { BookOpen } from 'lucide-react';
-import { PageHeader } from '@/components/shared/page-header';
+import { PageHeading } from '@/components/shared/page-heading';
 import { EmptyState } from '@/components/shared/empty-state';
 import { LoadingSpinner } from '@/components/shared/loading-spinner';
 import { getKbCategories } from '@/lib/actions/kb-categories';
@@ -26,9 +26,9 @@ async function UniversityContent() {
 export default function EmployeeUniversityPage() {
   return (
     <div className="flex flex-col gap-6">
-      <PageHeader
+      <PageHeading
         title="DMS University"
-        description="Browse knowledge base articles and learn about DMS"
+        subtitle="Browse knowledge base articles and learn about DMS"
       />
 
       <Suspense

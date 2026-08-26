@@ -1,4 +1,4 @@
-import { PageHeader } from '@/components/shared/page-header';
+import { PageHeading } from '@/components/shared/page-heading';
 import { ArticleForm } from '@/components/admin/university/article-form';
 import { getKbCategories } from '@/lib/actions/kb-categories';
 import { getKbArticle } from '@/lib/actions/kb-articles';
@@ -34,7 +34,7 @@ export default async function EditArticlePage({ params }: EditArticlePageProps) 
 
   return (
     <div className="flex flex-col gap-6">
-      <PageHeader title="Edit Article" description="Update knowledge base article" />
+      <PageHeading title="Edit Article" subtitle="Update knowledge base article" />
 
       <ArticleForm article={article} categories={categories as ArticleFormProps['categories']} />
     </div>

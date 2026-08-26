@@ -3,7 +3,6 @@
 import { useMemo, useState } from 'react';
 import { useTranslations } from 'next-intl';
 import Link from 'next/link';
-import { PageHeader } from '@/components/shared/page-header';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -69,7 +68,6 @@ export function PricingHealthContent({
   if (error) {
     return (
       <div className="space-y-4">
-        <PageHeader title={t('title')} description={t('description')} />
         <Card>
           <CardContent className="py-12 text-center">
             <AlertCircle className="h-8 w-8 text-destructive mx-auto mb-2" />
@@ -80,18 +78,16 @@ export function PricingHealthContent({
     );
   }
 
+  // Χωρίς σύνοψη δεν υπάρχει τίποτα να δείξουμε. Πριν, αυτός ο κλάδος τύπωνε
+  // μόνο τον διπλό τίτλο· τώρα που ο τίτλος ανήκει στο hub, μένει κενός.
+  // Το άδειο <div> με space-y θα άφηνε φάντασμα κενού ανάμεσα στα αδέρφια του.
+  // Η κανονική κενή κατάσταση των Οικονομικών ανήκει στη φέτα #104.
   if (!summary) {
-    return (
-      <div className="space-y-4">
-        <PageHeader title={t('title')} description={t('description')} />
-      </div>
-    );
+    return null;
   }
 
   return (
     <div className="space-y-6">
-      <PageHeader title={t('title')} description={t('description')} />
-
       {/* KPIs */}
       <div className="grid gap-3 grid-cols-2 md:grid-cols-3 lg:grid-cols-6">
         <KpiCard label={t('kpis.totalProjects')} value={String(summary.total_projects)} />

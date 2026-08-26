@@ -32,7 +32,6 @@ import {
   AccordionTrigger,
 } from '@/components/ui/accordion';
 import { Separator } from '@/components/ui/separator';
-import { PageHeader } from '@/components/shared/page-header';
 import { toast } from 'sonner';
 import { useTranslations } from 'next-intl';
 
@@ -1405,8 +1404,6 @@ function ChecklistTab() {
 export function SalesHandbook() {
   return (
     <div className="space-y-6">
-      <PageHeader title="Εγχειρίδιο Πωλήσεων" description="Sales Manual & Tools — Devre Media v1" />
-
       <Tabs defaultValue="pitch" className="w-full">
         <div className="overflow-x-auto pb-2 rounded-xl border bg-card p-1.5">
           <TabsList className="inline-flex w-auto min-w-full sm:min-w-0 bg-transparent">
