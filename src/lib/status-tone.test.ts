@@ -100,4 +100,19 @@ describe('statusTone', () => {
       expect(statusTone(status)).toBe('neutral');
     }
   });
+
+  it('resolves the keywords the status badge used to colour by hand', () => {
+    expect(statusTone('success')).toBe('positive');
+    expect(statusTone('warning')).toBe('caution');
+    expect(statusTone('viewed')).toBe('caution');
+    expect(statusTone('danger')).toBe('critical');
+  });
+
+  it('gives in-flight states no alarm tone', () => {
+    // Ήταν μπλε στον παλιό χάρτη. Το μπλε δεν ήταν ποτέ ένας από τους τέσσερις
+    // τόνους — μια κατάσταση σε εξέλιξη δεν είναι συναγερμός.
+    expect(statusTone('briefing')).toBe('neutral');
+    expect(statusTone('filming')).toBe('neutral');
+    expect(statusTone('todo')).toBe('neutral');
+  });
 });
