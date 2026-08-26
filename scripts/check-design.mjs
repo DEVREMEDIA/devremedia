@@ -2,7 +2,7 @@
 // κανένα component δεν γράφει χρώμα στο χέρι — όλα από τα σύμβολα.
 // Τρέχει από τη ρίζα: node scripts/check-design.mjs
 import { readdirSync, readFileSync, statSync } from 'node:fs';
-import { join } from 'node:path';
+import { dirname, join } from 'node:path';
 
 // Περιοχές που έχουν μεταναστεύσει. Σαρώνονται ολόκληρες — ένα νέο component
 // σε καλυμμένο φάκελο φυλάσσεται αυτόματα, χωρίς να χρειάζεται να προστεθεί
@@ -133,7 +133,63 @@ const stalePending = HEADING_PENDING.map((p) => p.replaceAll('\\', '/')).filter(
   (p) => !pendingWithH1.has(p),
 );
 
-if (violations.length > 0 || headingViolations.length > 0 || stalePending.length > 0) {
+// Ο έλεγχος <h1> πιάνει μόνο χειροποίητους τίτλους. ΔΕΝ πιάνει την ίδια τη βλάβη
+// που έφτιαξε αυτή η φέτα: ένα hub και το σώμα της καρτέλας του να ζωγραφίζουν
+// το καθένα το δικό του <PageHeading> — δύο τίτλοι στην ίδια οθόνη, με το μόνο
+// <h1> να ζει μέσα στο εξαιρεμένο page-heading.tsx, άρα αόρατο στο grep.
+// Εδώ ακολουθούμε τις εισαγωγές κάθε hub και απαιτούμε ότι τίτλο γράφει μόνο
+// το ίδιο το hub. ΠΡΟΣΟΧΗ: και οι δύο μορφές εισαγωγής μετράνε — πέντε σώματα
+// καρτελών μπαίνουν με σχετική διαδρομή (`./settings-page`), και μια απογραφή
+// που κοιτούσε μόνο το `@/` alias τα είχε χάσει ολόκληρα.
+const sourceOf = new Map(allTsxFiles.map((f) => [f, readFileSync(f, 'utf8')]));
+const strippedOf = (f) => sourceOf.get(f).split('\n').map(stripComments).join('\n');
+
+const IMPORT_SPEC = /from\s+'(@\/[^']+|\.[^']*)'/g;
+const RENDERS_HEADING = /<PageHeading[\s/>]/;
+
+function resolveImport(spec, fromFile) {
+  const base = spec.startsWith('@/')
+    ? `src/${spec.slice(2)}`
+    : join(dirname(fromFile), spec).replaceAll('\\', '/');
+  for (const candidate of [`${base}.tsx`, `${base}/index.tsx`]) {
+    if (sourceOf.has(candidate)) return candidate;
+  }
+  return null;
+}
+
+const hubs = allTsxFiles.filter(
+  (f) => f.endsWith('/page.tsx') && sourceOf.get(f).includes('SectionTabs'),
+);
+
+const doubleTitles = new Map();
+for (const hub of hubs) {
+  const seen = new Set();
+  const queue = [...strippedOf(hub).matchAll(IMPORT_SPEC)]
+    .map((m) => resolveImport(m[1], hub))
+    .filter(Boolean);
+
+  while (queue.length > 0) {
+    const file = queue.pop();
+    if (seen.has(file)) continue;
+    seen.add(file);
+
+    if (RENDERS_HEADING.test(strippedOf(file))) {
+      if (!doubleTitles.has(file)) doubleTitles.set(file, new Set());
+      doubleTitles.get(file).add(hub);
+    }
+    for (const match of strippedOf(file).matchAll(IMPORT_SPEC)) {
+      const resolved = resolveImport(match[1], file);
+      if (resolved && !seen.has(resolved)) queue.push(resolved);
+    }
+  }
+}
+
+if (
+  violations.length > 0 ||
+  headingViolations.length > 0 ||
+  stalePending.length > 0 ||
+  doubleTitles.size > 0
+) {
   if (violations.length > 0) {
     console.error(`check:design — ${violations.length} raw colour(s) outside the token layer:\n`);
     for (const v of violations) console.error(`  ${v}`);
@@ -150,9 +206,19 @@ if (violations.length > 0 || headingViolations.length > 0 || stalePending.length
     );
     for (const p of stalePending) console.error(`  ${p}`);
   }
+  if (doubleTitles.size > 0) {
+    console.error(
+      `\ncheck:design — ${doubleTitles.size} file(s) render a second page title inside a hub:\n`,
+    );
+    for (const [file, insideHubs] of doubleTitles) {
+      console.error(`  ${file}\n      mounted by ${[...insideHubs].join(', ')}`);
+    }
+    console.error('\nThe hub owns the page title. A tab body must not render its own PageHeading.');
+  }
   process.exit(1);
 }
 
 console.log(
-  `ok — ${files.size} file(s) covered, no raw colours; one title per page (${headingPendingSet.size} pending)`,
+  `ok — ${files.size} file(s) covered, no raw colours; one title per page ` +
+    `(${headingPendingSet.size} pending, ${hubs.length} hubs checked for double titles)`,
 );
