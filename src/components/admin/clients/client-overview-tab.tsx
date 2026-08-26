@@ -7,6 +7,8 @@ import { Client } from '@/types/index';
 import type { ActivityLogWithUser } from '@/types/relations';
 import { getActivityByClient } from '@/lib/actions/activity';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { StatGrid } from '@/components/shared/stat-grid';
+import { StatCard } from '@/components/shared/stat-card';
 import { Separator } from '@/components/ui/separator';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Button } from '@/components/ui/button';
@@ -57,7 +59,7 @@ export function ClientOverviewTab({ client, stats, onViewAllActivity }: ClientOv
   return (
     <div className="space-y-6">
       {/* Stats Row */}
-      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+      <StatGrid columns={4}>
         <StatCard
           label={t('stats.totalProjects')}
           value={stats.totalProjects.toString()}
@@ -77,9 +79,9 @@ export function ClientOverviewTab({ client, stats, onViewAllActivity }: ClientOv
           label={t('stats.unpaidBalance')}
           value={formatCurrency(unpaidBalance)}
           icon={AlertCircle}
-          highlight={unpaidBalance > 0}
+          tone={unpaidBalance > 0 ? 'critical' : undefined}
         />
-      </div>
+      </StatGrid>
 
       {/* Two-column layout */}
       <div className="grid gap-6 md:grid-cols-2">
@@ -173,32 +175,6 @@ export function ClientOverviewTab({ client, stats, onViewAllActivity }: ClientOv
         </Card>
       </div>
     </div>
-  );
-}
-
-function StatCard({
-  label,
-  value,
-  icon: Icon,
-  highlight,
-}: {
-  label: string;
-  value: string;
-  icon: React.ComponentType<{ className?: string }>;
-  highlight?: boolean;
-}) {
-  return (
-    <Card>
-      <CardContent className="pt-6">
-        <div className="flex items-center gap-3">
-          <Icon className="h-5 w-5 text-muted-foreground" />
-          <div>
-            <p className="text-sm text-muted-foreground">{label}</p>
-            <p className={`text-2xl font-bold ${highlight ? 'text-destructive' : ''}`}>{value}</p>
-          </div>
-        </div>
-      </CardContent>
-    </Card>
   );
 }
 

@@ -184,7 +184,10 @@ test.describe('design identity — shared stat grid', () => {
     // Το KPI strip είναι μόνο για super_admin, οπότε το ραντάρ κινδύνου δίνει
     // πάτωμα, όχι ακριβή μέτρηση.
     { route: '/admin/today', count: { atLeast: 6 } },
-    { route: '/admin/clients', count: 4 },
+    // ΠΡΟΣΟΧΗ στην καρτέλα: το hub των Πελατών ανοίγει στο `list`, και τα
+    // στατιστικά του chatbot ζωγραφίζονται ΜΟΝΟ κάτω από το `?tab=chat`.
+    // Χωρίς την παράμετρο ο έλεγχος μετρά κάρτες σε οθόνη που δεν έχει καμία.
+    { route: '/admin/clients?tab=chat', count: 4 },
     { route: '/employee/today', count: 4 },
     { route: '/client/home', count: 3 },
     { route: '/salesman/today', count: 2 },
