@@ -6,7 +6,7 @@ import { SectionTabs, type SectionTab } from '@/components/shell-v2/section-tabs
 import { Button } from '@/components/ui/button';
 
 import { ProjectsContent } from '@/app/admin/projects/projects-content';
-import AdminFilmingRequestsPage from '@/app/admin/filming-requests/page';
+import AdminFilmingRequestsPage from '@/app/admin/filming-requests/requests-page';
 import { CrewLoadHeatmap } from '@/components/admin/dashboard/production/crew-load-heatmap';
 import { UpcomingDeadlinesGrouped } from '@/components/admin/dashboard/production/upcoming-deadlines-grouped';
 import { CardSkeleton } from '@/components/admin/dashboard/shared/card-skeletons';
@@ -68,15 +68,15 @@ export default async function ProductionsPage({ searchParams }: { searchParams: 
         </div>
         <div className="flex items-center gap-2">
           <Button asChild variant="outline" size="sm">
-            <Link href="/admin-v2/availability">{t('linkAvailability')}</Link>
+            <Link href="/admin/availability">{t('linkAvailability')}</Link>
           </Button>
           <Button asChild variant="outline" size="sm">
-            <Link href="/admin-v2/filming-prep">{t('linkFilmingPrep')}</Link>
+            <Link href="/admin/filming-prep">{t('linkFilmingPrep')}</Link>
           </Button>
         </div>
       </header>
 
-      <SectionTabs basePath="/admin-v2/productions" tabs={TABS} active={active} />
+      <SectionTabs basePath="/admin/productions" tabs={TABS} active={active} />
 
       {active === 'all' && <AllTab />}
       {active === 'requests' && <RequestsTab />}

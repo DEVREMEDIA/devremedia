@@ -1,102 +1,44 @@
-import { PageHeader } from '@/components/shared/page-header';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { TeamManagement } from '@/components/admin/settings/team-management';
-import { CompanyProfile } from '@/components/admin/settings/company-profile';
-import { BrandingSettings } from '@/components/admin/settings/branding-settings';
-import { StripeConfig } from '@/components/admin/settings/stripe-config';
-import { NotificationSettingsComponent } from '@/components/admin/settings/notification-settings';
-import { BookingSettings } from '@/components/admin/settings/booking-settings';
-import { getTeamMembers } from '@/lib/actions/team';
-import { getCompanySettings, getNotificationSettings } from '@/lib/actions/settings';
-import { getBookingConfig, getWeeklyTemplate } from '@/lib/actions/booking-config';
-import { createClient } from '@/lib/supabase/server';
+import type { Metadata } from 'next';
 import { getTranslations } from 'next-intl/server';
+import { SectionTabs, type SectionTab } from '@/components/shell-v2/section-tabs';
 
-export default async function SettingsPage() {
-  const t = await getTranslations('settings');
-  const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+// Οι υπάρχουσες σελίδες μπαίνουν αυτούσιες ως καρτέλες — καμία αντιγραφή λογικής.
+import AdminSettingsPage from './settings-page';
+import AdminUsersPage from '@/app/admin/users/users-page';
+import ProposalPackagesPage from '@/app/admin/proposal-packages/packages-page';
+import ContractTemplatesPage from '@/app/admin/contracts/templates/templates-page';
 
-  const [
-    teamMembersResult,
-    companySettingsResult,
-    notificationSettingsResult,
-    bookingConfigResult,
-    weeklyTemplateResult,
-  ] = await Promise.all([
-    getTeamMembers(),
-    getCompanySettings(),
-    user ? getNotificationSettings(user.id) : null,
-    getBookingConfig(),
-    getWeeklyTemplate(),
-  ]);
+export async function generateMetadata(): Promise<Metadata> {
+  const t = await getTranslations('shellV2.pages.adminSettings');
+  return { title: t('title') };
+}
 
-  const teamMembers = teamMembersResult.data ?? [];
-  const companySettings = companySettingsResult.data ?? {
-    company_name: 'ΝΤΕΒΡΕΝΤΛΗΣ ΑΓΓΕΛΟΣ ΝΙΚΟΛΑΟΣ',
-    logo_url: null,
-    address: 'ΣΟΦΟΥΛΗ ΘΕΜΙΣΤΟΚΛΗ 88, ΚΑΛΑΜΑΡΙΑ',
-    phone: null,
-    email: null,
-    vat_number: '160594763',
-    tax_office: 'ΚΑΛΑΜΑΡΙΑΣ',
-    profession: 'ΥΠΗΡΕΣΙΕΣ ΦΩΤΟΓΡΑΦΙΣΗΣ ΚΑΙ ΒΙΝΤΕΟΣΚΟΠΗΣΗΣ',
-    primary_color: null,
-  };
-  const bookingConfig = bookingConfigResult.data ?? { durations: [], capacity: 1, interval: 30 };
-  const weeklyTemplate = weeklyTemplateResult.data ?? [];
-  const notificationSettings = notificationSettingsResult?.data ?? {
-    email_new_project: true,
-    email_project_deadline: true,
-    email_invoice_paid: true,
-    email_new_message: true,
-    email_deliverable_feedback: true,
-  };
+type SearchParams = Promise<{ tab?: string }>;
+
+export default async function SettingsPage({ searchParams }: { searchParams: SearchParams }) {
+  const t = await getTranslations('shellV2.pages.adminSettings');
+  const TABS: SectionTab[] = [
+    { key: 'general', label: t('tabGeneral') },
+    { key: 'users', label: t('tabUsers') },
+    { key: 'packages', label: t('tabPackages') },
+    { key: 'templates', label: t('tabTemplates') },
+  ];
+  const params = await searchParams;
+  const active = TABS.some((tab) => tab.key === params.tab) ? (params.tab as string) : 'general';
 
   return (
-    <div className="space-y-6">
-      <PageHeader title={t('title')} description={t('description')} />
+    <div className="space-y-5">
+      <header>
+        <h1 className="text-2xl font-semibold tracking-tight">{t('title')}</h1>
+        <p className="mt-1 text-sm text-muted-foreground">{t('subtitle')}</p>
+      </header>
 
-      <Tabs defaultValue="company" className="space-y-6">
-        <div className="overflow-x-auto -mx-4 px-4 md:mx-0 md:px-0">
-          <TabsList className="inline-flex w-auto min-w-full sm:min-w-0">
-            <TabsTrigger value="company">{t('company')}</TabsTrigger>
-            <TabsTrigger value="team">{t('team')}</TabsTrigger>
-            <TabsTrigger value="branding">{t('branding')}</TabsTrigger>
-            <TabsTrigger value="integrations">{t('integrations')}</TabsTrigger>
-            <TabsTrigger value="booking">{t('booking')}</TabsTrigger>
-            <TabsTrigger value="notifications">{t('notificationPreferences')}</TabsTrigger>
-          </TabsList>
-        </div>
+      <SectionTabs basePath="/admin/settings" tabs={TABS} active={active} />
 
-        <TabsContent value="company" className="space-y-6">
-          <CompanyProfile settings={companySettings} />
-        </TabsContent>
-
-        <TabsContent value="team" className="space-y-6">
-          <TeamManagement members={teamMembers} />
-        </TabsContent>
-
-        <TabsContent value="branding" className="space-y-6">
-          <BrandingSettings settings={companySettings} />
-        </TabsContent>
-
-        <TabsContent value="integrations" className="space-y-6">
-          <StripeConfig />
-        </TabsContent>
-
-        <TabsContent value="booking" className="space-y-6">
-          <BookingSettings config={bookingConfig} weeklyTemplate={weeklyTemplate} />
-        </TabsContent>
-
-        <TabsContent value="notifications" className="space-y-6">
-          {user && (
-            <NotificationSettingsComponent userId={user.id} settings={notificationSettings} />
-          )}
-        </TabsContent>
-      </Tabs>
+      {active === 'general' && <AdminSettingsPage />}
+      {active === 'users' && <AdminUsersPage />}
+      {active === 'packages' && <ProposalPackagesPage />}
+      {active === 'templates' && <ContractTemplatesPage />}
     </div>
   );
 }

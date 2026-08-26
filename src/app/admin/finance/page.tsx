@@ -202,7 +202,7 @@ export default async function FinancePage({ searchParams }: { searchParams: Sear
         <p className="mt-1 text-sm text-muted-foreground">{t('subtitle')}</p>
       </header>
 
-      <SectionTabs basePath="/admin-v2/finance" tabs={TABS} active={active} />
+      <SectionTabs basePath="/admin/finance" tabs={TABS} active={active} />
 
       {active === 'invoices' && <InvoicesTab />}
       {active === 'expenses' && <ExpensesTab />}

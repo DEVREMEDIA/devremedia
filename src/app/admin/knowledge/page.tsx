@@ -63,7 +63,7 @@ export default async function KnowledgePage({ searchParams }: { searchParams: Se
         <p className="mt-1 text-sm text-muted-foreground">{t('subtitle')}</p>
       </header>
 
-      <SectionTabs basePath="/admin-v2/knowledge" tabs={TABS} active={active} />
+      <SectionTabs basePath="/admin/knowledge" tabs={TABS} active={active} />
 
       {active === 'team' && <TeamTab />}
       {active === 'sales' && <SalesTab />}

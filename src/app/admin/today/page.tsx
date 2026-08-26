@@ -147,7 +147,7 @@ export default async function TodayPage() {
 
       <p className="text-xs text-muted-foreground">
         {t('footerPrefix')}{' '}
-        <Link href="/admin-v2/finance?tab=reports" className="text-primary underline">
+        <Link href="/admin/finance?tab=reports" className="text-primary underline">
           {t('footerLink')}
         </Link>
         .
