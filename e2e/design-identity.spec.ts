@@ -124,6 +124,45 @@ test.describe('design identity — page heading', () => {
     await expect(page.locator('[data-slot="page-heading"]')).toHaveCount(1);
     await expect(page.locator('[data-slot="page-heading-title"]')).toHaveCount(1);
   });
+
+  /**
+   * Κάθε hub ζωγράφιζε τη δική του επικεφαλίδα και μετά το σώμα της καρτέλας μία
+   * δεύτερη από κάτω, σε άλλη κλίμακα — οι ίδιες λέξεις δύο φορές στην ίδια οθόνη.
+   * Οι μη προεπιλεγμένες καρτέλες είναι εδώ επίτηδες: το σφάλμα ζούσε στα σώματα
+   * των καρτελών, οπότε έλεγχος μόνο της πρώτης καρτέλας θα έχανε τα περισσότερα.
+   */
+  const HUB_ROUTES = [
+    '/admin/clients',
+    '/admin/clients?tab=proposals',
+    '/admin/finance',
+    '/admin/finance?tab=expenses',
+    '/admin/finance?tab=cost',
+    '/admin/finance?tab=health',
+    '/admin/knowledge',
+    '/admin/productions',
+    '/admin/settings',
+    '/admin/settings?tab=users',
+    '/admin/settings?tab=templates',
+    '/client/documents',
+    '/employee/work',
+    '/salesman/library',
+  ];
+
+  // Ο middleware αφήνει τον admin να μπει και στα /client/*, /employee/*,
+  // /salesman/* — μία admin session αρκεί για όλα τα hubs και τους 4 ρόλους.
+  for (const route of HUB_ROUTES) {
+    test(`exactly one page heading on ${route}`, async ({ page }) => {
+      test.skip(!process.env.E2E_TEST_USERS_READY, 'Test users not configured in database');
+      await loginAsAdmin(page);
+      await page.goto(route);
+
+      // Χωρίς αυτό, μια ανακατεύθυνση στο /login θα έδινε μηδέν επικεφαλίδες και
+      // ο έλεγχος θα «αποτύγχανε σωστά» για εντελώς λάθος λόγο.
+      await expect(page).toHaveURL(new RegExp(route.split('?')[0].replace(/\//g, '\\/')));
+
+      await expect(page.locator('[data-slot="page-heading-title"]')).toHaveCount(1);
+    });
+  }
 });
 
 test.describe('design identity — typefaces', () => {
