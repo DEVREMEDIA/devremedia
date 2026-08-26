@@ -63,17 +63,21 @@ export function InvoicesTableView({ invoices }: InvoicesTableViewProps) {
 
   const handleBulkDelete = async () => {
     if (!pendingDelete || pendingDelete.invoices.length === 0) return;
-    const ids = pendingDelete.invoices.map((invoice) => invoice.id);
+    // Κρατιέται τοπικά: ο διάλογος κλείνει πριν διαβαστεί το αποτέλεσμα, οπότε
+    // το `pendingDelete` έχει ήδη μηδενιστεί όταν χρειαστεί το clearSelection.
+    const { invoices: toDelete, clearSelection } = pendingDelete;
     setLoading(true);
-    const result = await bulkDeleteInvoices(ids);
+    const result = await bulkDeleteInvoices(toDelete.map((invoice) => invoice.id));
     setLoading(false);
+    // Ο διάλογος κλείνει και στα δύο μονοπάτια, όπως έκανε και πριν — σε σφάλμα
+    // ο χρήστης βλέπει το toast, όχι έναν διάλογο που έμεινε ανοιχτός.
+    setPendingDelete(null);
 
     if (result.error) {
       toast.error(result.error);
     } else if (result.data) {
       toast.success(t('bulkDeleted', { count: result.data.succeeded }));
-      pendingDelete.clearSelection();
-      setPendingDelete(null);
+      clearSelection();
       router.refresh();
     }
   };
