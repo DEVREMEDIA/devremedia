@@ -1,20 +1,38 @@
+import { Suspense } from 'react';
 import type { Metadata } from 'next';
 import Link from 'next/link';
 import { getTranslations } from 'next-intl/server';
 import { RiskItem } from '@/components/admin/dashboard/risk/risk-item';
+import { KpiStrip } from '@/components/admin/dashboard/hero/kpi-strip';
+import { TodayAgenda } from '@/components/admin/dashboard/today/today-agenda';
+import { ActivityFeed } from '@/components/admin/dashboard/activity-feed';
+import { BusinessVelocity } from '@/components/admin/dashboard/velocity/business-velocity';
+import { CardSkeleton, KpiStripSkeleton } from '@/components/admin/dashboard/shared/card-skeletons';
 import { getRiskItems } from '@/lib/queries/dashboard/risk';
+import { getRecentActivity } from '@/lib/queries';
+import { getAdminRole } from '@/lib/auth-helpers';
 import type { RiskType } from '@/types/dashboard';
+import type { ActivityLogWithUser } from '@/types';
 
 export async function generateMetadata(): Promise<Metadata> {
   const t = await getTranslations('shellV2.pages.adminToday');
   return { title: t('title') };
 }
 
-/**
- * Η αρχική δεν είναι αναφορά — είναι λίστα εκκρεμοτήτων.
- * Τα γραφήματα ζουν στα Οικονομικά, όπου τα ψάχνεις όταν τα θέλεις.
- */
-export default async function TodayPage() {
+async function Subtitle() {
+  const t = await getTranslations('shellV2.pages.adminToday');
+  const items = await getRiskItems();
+  return (
+    <p className="mt-1 text-sm text-muted-foreground">{t('subtitle', { count: items.length })}</p>
+  );
+}
+
+async function ActivityFeedSection() {
+  const recentActivity = await getRecentActivity(10);
+  return <ActivityFeed activities={recentActivity as ActivityLogWithUser[]} />;
+}
+
+async function RiskRadar() {
   const t = await getTranslations('shellV2.pages.adminToday');
   const RISK_GROUPS: { type: RiskType; label: string }[] = [
     { type: 'overdue_invoice', label: t('riskOverdueInvoice') },
@@ -27,14 +45,7 @@ export default async function TodayPage() {
   const items = await getRiskItems();
 
   return (
-    <div className="space-y-6">
-      <header>
-        <h1 className="text-2xl font-semibold tracking-tight">{t('title')}</h1>
-        <p className="mt-1 text-sm text-muted-foreground">
-          {t('subtitle', { count: items.length })}
-        </p>
-      </header>
-
+    <>
       {/* Ραντάρ: μία ματιά σε ό,τι σαπίζει σιωπηλά */}
       <section>
         <h2 className="mb-2.5 text-xs font-bold uppercase tracking-wider text-muted-foreground">
@@ -86,6 +97,52 @@ export default async function TodayPage() {
             </section>
           );
         })
+      )}
+    </>
+  );
+}
+
+/**
+ * Η αρχική δεν είναι αναφορά — είναι λίστα εκκρεμοτήτων.
+ * Τα γραφήματα ζουν στα Οικονομικά, όπου τα ψάχνεις όταν τα θέλεις.
+ */
+export default async function TodayPage() {
+  const t = await getTranslations('shellV2.pages.adminToday');
+  const role = await getAdminRole();
+  const isSuper = role === 'super_admin';
+
+  return (
+    <div className="space-y-6">
+      <header>
+        <h1 className="text-2xl font-semibold tracking-tight">{t('title')}</h1>
+        <Suspense fallback={<p className="mt-1 text-sm text-muted-foreground">&nbsp;</p>}>
+          <Subtitle />
+        </Suspense>
+      </header>
+
+      {isSuper && (
+        <Suspense fallback={<KpiStripSkeleton />}>
+          <KpiStrip />
+        </Suspense>
+      )}
+
+      <div className="grid gap-6 md:grid-cols-2">
+        <Suspense fallback={<CardSkeleton rows={6} />}>
+          <TodayAgenda />
+        </Suspense>
+        <Suspense fallback={<CardSkeleton rows={5} />}>
+          <ActivityFeedSection />
+        </Suspense>
+      </div>
+
+      <Suspense fallback={<CardSkeleton rows={6} />}>
+        <RiskRadar />
+      </Suspense>
+
+      {isSuper && (
+        <Suspense fallback={<CardSkeleton rows={4} />}>
+          <BusinessVelocity />
+        </Suspense>
       )}
 
       <p className="text-xs text-muted-foreground">

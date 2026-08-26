@@ -1,4 +1,4 @@
-import type { ComponentProps } from 'react';
+import { Suspense, type ComponentProps } from 'react';
 import type { Metadata } from 'next';
 import { getTranslations } from 'next-intl/server';
 import { SectionTabs, type SectionTab } from '@/components/shell-v2/section-tabs';
@@ -13,11 +13,15 @@ import { RevenueReport } from '@/components/admin/reports/revenue-report';
 import { ProjectReport } from '@/components/admin/reports/project-report';
 import { ClientReport } from '@/components/admin/reports/client-report';
 import { ExpenseReport } from '@/components/admin/reports/expense-report';
+import { CostHealthCard } from '@/components/admin/dashboard/finance/cost-health-card';
+import { ProjectProfitabilityCard } from '@/components/admin/dashboard/finance/project-profitability-card';
+import { CardSkeleton } from '@/components/admin/dashboard/shared/card-skeletons';
 
 import { getInvoices } from '@/lib/actions/invoices';
 import { getExpenses } from '@/lib/actions/expenses';
 import { getProjects } from '@/lib/actions/projects';
 import { getPricingHealth } from '@/lib/actions/pricing-health';
+import { getAdminRole } from '@/lib/auth-helpers';
 import {
   getCostCategories,
   getCostItems,
@@ -124,37 +128,56 @@ async function ReportsTab({ dateRange }: { dateRange?: DateRange }) {
 }
 
 async function CostModelTab() {
-  const [categories, items, settings, summary, breakdowns] = await Promise.all([
+  const [categories, items, settings, summary, breakdowns, role] = await Promise.all([
     getCostCategories(),
     getCostItems({ include_inactive: true }),
     getCostSettings(),
     getCostSummary(),
     getCostItemBreakdowns({ include_inactive: true }),
+    getAdminRole(),
   ]);
 
   return (
-    <CostModelContent
-      initialCategories={categories.data ?? []}
-      initialItems={items.data ?? []}
-      initialSettings={settings.data}
-      initialSummary={summary.data}
-      initialBreakdowns={breakdowns.data ?? []}
-    />
+    <div className="space-y-6">
+      {role === 'super_admin' && (
+        <Suspense fallback={<CardSkeleton rows={5} />}>
+          <CostHealthCard />
+        </Suspense>
+      )}
+      <CostModelContent
+        initialCategories={categories.data ?? []}
+        initialItems={items.data ?? []}
+        initialSettings={settings.data}
+        initialSummary={summary.data}
+        initialBreakdowns={breakdowns.data ?? []}
+      />
+    </div>
   );
 }
 
 async function PricingHealthTab() {
-  const [healthRes, settingsRes] = await Promise.all([getPricingHealth(), getCostSettings()]);
+  const [healthRes, settingsRes, role] = await Promise.all([
+    getPricingHealth(),
+    getCostSettings(),
+    getAdminRole(),
+  ]);
   const settings = settingsRes.data;
 
   return (
-    <PricingHealthContent
-      summary={healthRes.data}
-      error={healthRes.error}
-      minMultiplier={Number(settings?.price_min_multiplier ?? 1.3)}
-      targetMultiplier={Number(settings?.price_target_multiplier ?? 1.6)}
-      maxMultiplier={Number(settings?.price_max_multiplier ?? 2.0)}
-    />
+    <div className="space-y-6">
+      {role === 'super_admin' && (
+        <Suspense fallback={<CardSkeleton rows={5} />}>
+          <ProjectProfitabilityCard />
+        </Suspense>
+      )}
+      <PricingHealthContent
+        summary={healthRes.data}
+        error={healthRes.error}
+        minMultiplier={Number(settings?.price_min_multiplier ?? 1.3)}
+        targetMultiplier={Number(settings?.price_target_multiplier ?? 1.6)}
+        maxMultiplier={Number(settings?.price_max_multiplier ?? 2.0)}
+      />
+    </div>
   );
 }
 

@@ -2656,7 +2656,7 @@
       "adminProductions": {
         "title": "Productions",
         "subtitle": "All projects for all clients · shoot prep lives inside each project",
-        "tabAll": "All", "tabRequests": "Requests & bookings",
+        "tabAll": "All", "tabRequests": "Requests & bookings", "tabOverview": "Load & deadlines",
         "error": "Error: {message}",
         "linkAvailability": "Availability", "linkFilmingPrep": "Filming prep"
       },

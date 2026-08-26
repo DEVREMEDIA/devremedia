@@ -48,3 +48,21 @@ export async function requireAdmin(): Promise<AuthOk | AuthErr> {
 
   return { supabase, user, error: null };
 }
+
+/** Ρόλος του τρέχοντος admin — για UI gating (super_admin βλέπει τα οικονομικά widgets). */
+export async function getAdminRole(): Promise<'super_admin' | 'admin' | null> {
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user) return null;
+
+  const { data } = await supabase
+    .from('user_profiles')
+    .select('role')
+    .eq('id', user.id)
+    .maybeSingle();
+
+  if (data?.role === 'super_admin' || data?.role === 'admin') return data.role;
+  return null;
+}

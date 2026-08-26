@@ -2657,7 +2657,7 @@
       "adminProductions": {
         "title": "Παραγωγές",
         "subtitle": "Όλα τα έργα όλων των πελατών · η προετοιμασία γυρίσματος ζει μέσα στο κάθε έργο",
-        "tabAll": "Όλες", "tabRequests": "Αιτήματα & κρατήσεις",
+        "tabAll": "Όλες", "tabRequests": "Αιτήματα & κρατήσεις", "tabOverview": "Φόρτος & προθεσμίες",
         "error": "Σφάλμα: {message}",
         "linkAvailability": "Διαθεσιμότητα", "linkFilmingPrep": "Προετοιμασία γυρισμάτων"
       },

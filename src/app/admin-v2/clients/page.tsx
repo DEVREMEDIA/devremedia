@@ -1,4 +1,4 @@
-import type { ComponentProps } from 'react';
+import { Suspense, type ComponentProps } from 'react';
 import type { Metadata } from 'next';
 import Link from 'next/link';
 import { getTranslations } from 'next-intl/server';
@@ -11,12 +11,16 @@ import { ContractsListPage } from '@/app/admin/contracts/contracts-list-page';
 import { AllLeadsTable } from '@/components/admin/leads/all-leads-table';
 import { ChatbotStats } from '@/components/admin/chatbot/chatbot-stats';
 import { ConversationsTable } from '@/components/admin/chatbot/conversations-table';
+import { SalesFunnelCard } from '@/components/admin/dashboard/sales/sales-funnel-card';
+import { RevenueForecastCard } from '@/components/admin/dashboard/sales/revenue-forecast-card';
+import { CardSkeleton } from '@/components/admin/dashboard/shared/card-skeletons';
 
 import { getClients } from '@/lib/actions/clients';
 import { getProposals } from '@/lib/actions/proposals';
 import { getAllContracts } from '@/lib/actions/contracts';
 import { getLeads } from '@/lib/actions/leads';
 import { getChatConversations, getChatStats } from '@/lib/queries/chatbot';
+import { getAdminRole } from '@/lib/auth-helpers';
 import type { Client, ChatConversation } from '@/types/index';
 
 export async function generateMetadata(): Promise<Metadata> {
@@ -32,9 +36,23 @@ async function ListTab() {
 }
 
 async function InterestTab() {
-  const result = await getLeads();
+  const [result, role] = await Promise.all([getLeads(), getAdminRole()]);
   const leads = (result.data ?? []) as unknown as ComponentProps<typeof AllLeadsTable>['leads'];
-  return <AllLeadsTable leads={leads} />;
+  return (
+    <div className="space-y-6">
+      {role === 'super_admin' && (
+        <div className="grid gap-6 md:grid-cols-2">
+          <Suspense fallback={<CardSkeleton rows={5} />}>
+            <SalesFunnelCard />
+          </Suspense>
+          <Suspense fallback={<CardSkeleton rows={5} />}>
+            <RevenueForecastCard />
+          </Suspense>
+        </div>
+      )}
+      <AllLeadsTable leads={leads} />
+    </div>
+  );
 }
 
 async function ProposalsTab() {
