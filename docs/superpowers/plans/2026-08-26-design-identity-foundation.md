@@ -60,7 +60,9 @@ The current declarations load `subsets: ['latin']` only, while the app's default
 import { EB_Garamond, Inter, Noto_Sans_Mono } from 'next/font/google';
 
 const displaySerif = EB_Garamond({
-  variable: '--font-display',
+  // ΠΡΟΣΟΧΗ: όχι `--font-display` — αυτό είναι το κλειδί του Tailwind theme
+  // και θα γινόταν κυκλική αναφορά στο `@theme inline`.
+  variable: '--font-display-serif',
   subsets: ['latin', 'greek'],
   weight: ['400', '500', '600'],
   style: ['normal', 'italic'],
@@ -96,12 +98,16 @@ In `src/app/globals.css`, inside the `@theme inline` block, replace the two font
 ```css
   --font-sans: var(--font-sans-ui);
   --font-mono: var(--font-data);
-  --font-display: var(--font-display);
+  --font-display: var(--font-display-serif);
 ```
+
+The theme key and the `next/font` variable must never share a name, or the declaration becomes circular and the face silently never applies.
 
 - [ ] **Step 4: Write the dark edition tokens**
 
-The dark edition is the native one. In `src/app/globals.css`, replace the body of the `.dark` block with the values below. Leave every `--chart-*` line in that block exactly as it is — the chart palette is colour-vision-safe by an earlier decision and is out of scope. Leave the `--sidebar-*` lines present but retune them to the values shown.
+The dark edition is the native one. In `src/app/globals.css`, set the `.dark` block to the values below.
+
+**This block is the set of declarations to change or add — not a wholesale replacement of the block.** The five `--chart-*` declarations already in `.dark` are colour-vision-safe by an earlier decision, are out of scope, and **must survive verbatim**. Keep them exactly where they are. Everything else in the block is replaced by what follows.
 
 ```css
 .dark {
@@ -145,7 +151,7 @@ The dark edition is the native one. In `src/app/globals.css`, replace the body o
 
 - [ ] **Step 5: Write the light edition tokens**
 
-Replace the body of the `:root` block the same way. Keep `--radius: 0.625rem` and keep every `--chart-*` line unchanged.
+Set the `:root` block the same way, under the same rule: **the five `--chart-*` declarations already there must survive verbatim**, and `--radius: 0.625rem` stays. Everything else is replaced by what follows.
 
 ```css
 :root {
@@ -608,6 +614,8 @@ Four invariants. Each one exists because a real defect was found:
 Create `e2e/design-identity.spec.ts`. Use `document.fonts.check` with a Greek string for the font assertion — it is the only reliable way to prove the glyphs actually loaded rather than silently fell back:
 
 ```ts
+import { expect, test, type Page } from '@playwright/test';
+
 const GREEK = 'Σήμερα';
 
 async function fontLoaded(page: Page, family: string) {
