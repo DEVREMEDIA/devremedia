@@ -3,7 +3,6 @@
 import { useState, useTransition } from 'react';
 import { useRouter } from 'next/navigation';
 import { useTranslations } from 'next-intl';
-import { PageHeader } from '@/components/shared/page-header';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -166,12 +165,12 @@ export function PackagesContent({ packages }: Props) {
 
   return (
     <div className="space-y-6">
-      <PageHeader title={t('title')} description={t('description')}>
+      <div className="flex items-center justify-end gap-2">
         <Button onClick={openNew} size="sm">
           <Plus className="h-4 w-4 mr-1" />
           {t('addPackage')}
         </Button>
-      </PageHeader>
+      </div>
 
       {packages.length === 0 ? (
         <Card>

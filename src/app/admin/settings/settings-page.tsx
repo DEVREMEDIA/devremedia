@@ -1,4 +1,3 @@
-import { PageHeader } from '@/components/shared/page-header';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { TeamManagement } from '@/components/admin/settings/team-management';
 import { CompanyProfile } from '@/components/admin/settings/company-profile';
@@ -57,8 +56,6 @@ export default async function SettingsPage() {
 
   return (
     <div className="space-y-6">
-      <PageHeader title={t('title')} description={t('description')} />
-
       <Tabs defaultValue="company" className="space-y-6">
         <div className="overflow-x-auto -mx-4 px-4 md:mx-0 md:px-0">
           <TabsList className="inline-flex w-auto min-w-full sm:min-w-0">

@@ -3,7 +3,6 @@
 import { useState, useMemo } from 'react';
 import { useTranslations } from 'next-intl';
 import { Client } from '@/types/index';
-import { PageHeader } from '@/components/shared/page-header';
 import { DataTable } from '@/components/shared/data-table';
 import { SearchInput } from '@/components/shared/search-input';
 import { Button } from '@/components/ui/button';
@@ -81,25 +80,23 @@ export function ClientsContent({ clients }: ClientsContentProps) {
 
   return (
     <div className="space-y-6">
-      <PageHeader title={t('title')} description={t('description')}>
-        <div className="flex items-center gap-2">
-          {orphanedCount > 0 && (
-            <Button variant="outline" onClick={() => setCleanupDialogOpen(true)}>
-              <ShieldOff className="mr-2 h-4 w-4" />
-              {t('cleanup')}
-              <Badge variant="secondary" className="ml-2">
-                {orphanedCount}
-              </Badge>
-            </Button>
-          )}
-          <Button asChild>
-            <Link href="/admin/clients/new">
-              <Plus className="mr-2 h-4 w-4" />
-              {t('addClient')}
-            </Link>
+      <div className="flex items-center justify-end gap-2">
+        {orphanedCount > 0 && (
+          <Button variant="outline" onClick={() => setCleanupDialogOpen(true)}>
+            <ShieldOff className="mr-2 h-4 w-4" />
+            {t('cleanup')}
+            <Badge variant="secondary" className="ml-2">
+              {orphanedCount}
+            </Badge>
           </Button>
-        </div>
-      </PageHeader>
+        )}
+        <Button asChild>
+          <Link href="/admin/clients/new">
+            <Plus className="mr-2 h-4 w-4" />
+            {t('addClient')}
+          </Link>
+        </Button>
+      </div>
 
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div className="flex flex-col sm:flex-row flex-1 gap-3">

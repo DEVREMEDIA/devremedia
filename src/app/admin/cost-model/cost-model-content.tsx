@@ -2,7 +2,6 @@
 
 import { useTranslations } from 'next-intl';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { PageHeader } from '@/components/shared/page-header';
 import type {
   CostCategory,
   CostItemBreakdown,
@@ -34,8 +33,6 @@ export function CostModelContent({
 
   return (
     <div className="space-y-6">
-      <PageHeader title={t('title')} description={t('description')} />
-
       <Tabs defaultValue="summary" className="w-full">
         <TabsList className="grid w-full grid-cols-2 md:w-auto md:inline-grid md:grid-cols-4">
           <TabsTrigger value="summary">{t('tabs.summary')}</TabsTrigger>

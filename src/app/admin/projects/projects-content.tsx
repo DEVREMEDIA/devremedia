@@ -3,7 +3,6 @@
 import { useState, useEffect } from 'react';
 import { ProjectWithClient } from '@/types';
 import type { UserProfile } from '@/types/index';
-import { PageHeader } from '@/components/shared/page-header';
 import { ViewToggle } from '@/components/admin/projects/view-toggle';
 import { ProjectBoard } from '@/components/admin/projects/project-board';
 import { ProjectList } from '@/components/admin/projects/project-list';
@@ -44,17 +43,15 @@ export function ProjectsContent({ projects }: ProjectsContentProps) {
 
   return (
     <div className="space-y-6">
-      <PageHeader title={t('title')} description={t('description')}>
-        <div className="flex items-center gap-3">
-          <ViewToggle view={view} onViewChange={handleViewChange} />
-          <Button asChild>
-            <Link href="/admin/projects/new">
-              <Plus className="h-4 w-4 mr-2" />
-              {t('addProject')}
-            </Link>
-          </Button>
-        </div>
-      </PageHeader>
+      <div className="flex items-center justify-end gap-3">
+        <ViewToggle view={view} onViewChange={handleViewChange} />
+        <Button asChild>
+          <Link href="/admin/projects/new">
+            <Plus className="h-4 w-4 mr-2" />
+            {t('addProject')}
+          </Link>
+        </Button>
+      </div>
 
       {mounted &&
         (view === 'kanban' ? (

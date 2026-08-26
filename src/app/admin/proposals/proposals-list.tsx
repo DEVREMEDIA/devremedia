@@ -3,7 +3,6 @@
 import { useMemo, useState } from 'react';
 import Link from 'next/link';
 import { useTranslations } from 'next-intl';
-import { PageHeader } from '@/components/shared/page-header';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -53,7 +52,7 @@ export function ProposalsList({ proposals }: Props) {
 
   return (
     <div className="space-y-6">
-      <PageHeader title={t('title')} description={t('description')}>
+      <div className="flex items-center justify-end gap-2">
         <Link href="/admin/proposal-packages">
           <Button variant="outline" size="sm">
             <FileText className="h-4 w-4 mr-1" />
@@ -66,7 +65,7 @@ export function ProposalsList({ proposals }: Props) {
             {t('list.addProposal')}
           </Button>
         </Link>
-      </PageHeader>
+      </div>
 
       <Card>
         <CardContent className="pt-6">

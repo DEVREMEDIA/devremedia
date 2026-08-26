@@ -14,7 +14,6 @@ import {
   LayoutGrid,
   TableIcon,
 } from 'lucide-react';
-import { PageHeader } from '@/components/shared/page-header';
 import { Button } from '@/components/ui/button';
 import { InvoicesTableView } from '@/components/admin/invoices/invoices-table-view';
 import { StatusBadge } from '@/components/shared/status-badge';
@@ -140,7 +139,7 @@ export function InvoicesContent({ invoices: initialInvoices }: InvoicesContentPr
 
   return (
     <div className="space-y-6">
-      <PageHeader title={t('title')} description={t('description')}>
+      <div className="flex items-center justify-end gap-2">
         <div className="flex items-center gap-1 rounded-lg border p-1">
           <Button
             variant={viewMode === 'cards' ? 'secondary' : 'ghost'}
@@ -157,7 +156,7 @@ export function InvoicesContent({ invoices: initialInvoices }: InvoicesContentPr
             <TableIcon className="h-4 w-4" />
           </Button>
         </div>
-      </PageHeader>
+      </div>
 
       {viewMode === 'table' ? (
         <InvoicesTableView invoices={initialInvoices} />

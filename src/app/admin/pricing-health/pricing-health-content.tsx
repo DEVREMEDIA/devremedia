@@ -3,7 +3,6 @@
 import { useMemo, useState } from 'react';
 import { useTranslations } from 'next-intl';
 import Link from 'next/link';
-import { PageHeader } from '@/components/shared/page-header';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -69,7 +68,6 @@ export function PricingHealthContent({
   if (error) {
     return (
       <div className="space-y-4">
-        <PageHeader title={t('title')} description={t('description')} />
         <Card>
           <CardContent className="py-12 text-center">
             <AlertCircle className="h-8 w-8 text-destructive mx-auto mb-2" />
@@ -81,17 +79,11 @@ export function PricingHealthContent({
   }
 
   if (!summary) {
-    return (
-      <div className="space-y-4">
-        <PageHeader title={t('title')} description={t('description')} />
-      </div>
-    );
+    return <div className="space-y-4" />;
   }
 
   return (
     <div className="space-y-6">
-      <PageHeader title={t('title')} description={t('description')} />
-
       {/* KPIs */}
       <div className="grid gap-3 grid-cols-2 md:grid-cols-3 lg:grid-cols-6">
         <KpiCard label={t('kpis.totalProjects')} value={String(summary.total_projects)} />
