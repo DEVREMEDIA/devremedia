@@ -3,6 +3,8 @@
 import { useTranslations } from 'next-intl';
 import { TrendingUp, DollarSign } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { StatGrid } from '@/components/shared/stat-grid';
+import { StatCard } from '@/components/shared/stat-card';
 
 interface PipelineSummaryProps {
   summary: {
@@ -38,49 +40,20 @@ export function PipelineSummary({ summary, pipelineValue }: PipelineSummaryProps
   return (
     <div className="space-y-4">
       {/* Top stat cards */}
-      <div className="grid gap-4 md:grid-cols-2">
-        <div
-          className={cn(
-            'rounded-xl border bg-card p-5 transition-all duration-300',
-            'hover:shadow-[0_8px_30px_-4px_rgba(234,179,8,0.15)] hover:-translate-y-0.5',
-          )}
-        >
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-sm text-muted-foreground">{t('pipelineSummary')}</p>
-              <p className="text-3xl font-bold mt-1">
-                {pipelineValue.total.toLocaleString('el-GR')}&euro;
-              </p>
-              <p className="text-xs text-muted-foreground mt-1">
-                Weighted: {pipelineValue.weighted.toLocaleString('el-GR')}&euro;
-              </p>
-            </div>
-            <div className="p-3 rounded-xl bg-emerald-500/10">
-              <DollarSign className="h-6 w-6 text-emerald-500" />
-            </div>
-          </div>
-        </div>
-
-        <div
-          className={cn(
-            'rounded-xl border bg-card p-5 transition-all duration-300',
-            'hover:shadow-[0_8px_30px_-4px_rgba(234,179,8,0.15)] hover:-translate-y-0.5',
-          )}
-        >
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-sm text-muted-foreground">{t('activeLeads')}</p>
-              <p className="text-3xl font-bold mt-1">{activeLeads}</p>
-              <p className="text-xs text-muted-foreground mt-1">
-                {summary.won} {tStatus('won')}, {summary.lost} {tStatus('lost')}
-              </p>
-            </div>
-            <div className="p-3 rounded-xl bg-amber-500/10">
-              <TrendingUp className="h-6 w-6 text-amber-500" />
-            </div>
-          </div>
-        </div>
-      </div>
+      <StatGrid columns={2}>
+        <StatCard
+          label={t('pipelineSummary')}
+          value={`${pipelineValue.total.toLocaleString('el-GR')}€`}
+          icon={DollarSign}
+          caption={`Weighted: ${pipelineValue.weighted.toLocaleString('el-GR')}€`}
+        />
+        <StatCard
+          label={t('activeLeads')}
+          value={activeLeads}
+          icon={TrendingUp}
+          caption={`${summary.won} ${tStatus('won')}, ${summary.lost} ${tStatus('lost')}`}
+        />
+      </StatGrid>
 
       {/* Pipeline by Stage */}
       <div className="rounded-xl border bg-card">

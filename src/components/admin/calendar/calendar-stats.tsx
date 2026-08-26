@@ -2,10 +2,12 @@
 
 import { useMemo } from 'react';
 import { useTranslations } from 'next-intl';
-import { Card, CardContent } from '@/components/ui/card';
+import { StatGrid } from '@/components/shared/stat-grid';
+import { StatCard } from '@/components/shared/stat-card';
 import { CalendarDays, AlertTriangle, FileText, FolderOpen } from 'lucide-react';
+import type { LucideIcon } from 'lucide-react';
 import type { CalendarEvent } from '@/lib/queries/calendar';
-import type { ComponentType } from 'react';
+import type { Tone } from '@/lib/status-tone';
 
 interface CalendarStatsProps {
   events: CalendarEvent[];
@@ -43,53 +45,34 @@ export function CalendarStats({ events }: CalendarStatsProps) {
     return { thisMonthEvents, upcomingDeadlines, overdueInvoices, activeProjects };
   }, [events]);
 
-  const cards: {
-    label: string;
-    value: number;
-    icon: ComponentType<{ className?: string }>;
-    color: string;
-  }[] = [
-    {
-      label: t('thisMonthEvents'),
-      value: stats.thisMonthEvents,
-      icon: CalendarDays,
-      color: 'text-primary',
-    },
+  const cards: { label: string; value: number; icon: LucideIcon; tone?: Tone }[] = [
+    { label: t('thisMonthEvents'), value: stats.thisMonthEvents, icon: CalendarDays },
     {
       label: t('upcomingDeadlines'),
       value: stats.upcomingDeadlines,
       icon: AlertTriangle,
-      color: 'text-amber-500',
+      tone: stats.upcomingDeadlines > 0 ? 'caution' : undefined,
     },
     {
       label: t('overdueInvoices'),
       value: stats.overdueInvoices,
       icon: FileText,
-      color: 'text-destructive',
+      tone: stats.overdueInvoices > 0 ? 'critical' : undefined,
     },
-    {
-      label: t('activeProjects'),
-      value: stats.activeProjects,
-      icon: FolderOpen,
-      color: 'text-emerald-500',
-    },
+    { label: t('activeProjects'), value: stats.activeProjects, icon: FolderOpen },
   ];
 
   return (
-    <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
+    <StatGrid columns={4}>
       {cards.map((card) => (
-        <Card key={card.label}>
-          <CardContent className="flex items-center gap-4 p-4">
-            <div className={`rounded-lg bg-muted p-2.5 ${card.color}`}>
-              <card.icon className="h-5 w-5" />
-            </div>
-            <div>
-              <p className="text-2xl font-bold">{card.value}</p>
-              <p className="text-xs text-muted-foreground">{card.label}</p>
-            </div>
-          </CardContent>
-        </Card>
+        <StatCard
+          key={card.label}
+          label={card.label}
+          value={card.value}
+          icon={card.icon}
+          tone={card.tone}
+        />
       ))}
-    </div>
+    </StatGrid>
   );
 }
