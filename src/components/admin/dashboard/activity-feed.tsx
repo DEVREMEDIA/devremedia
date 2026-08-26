@@ -41,7 +41,9 @@ export function ActivityFeed({ activities }: ActivityFeedProps) {
     return (
       <Card>
         <CardHeader>
-          <CardTitle>{t('recentActivity')}</CardTitle>
+          <CardTitle className="font-mono text-[11px] uppercase tracking-[0.18em] text-foreground">
+            {t('recentActivity')}
+          </CardTitle>
           <CardDescription>{t('latestActionsDesc')}</CardDescription>
         </CardHeader>
         <CardContent>
@@ -54,7 +56,9 @@ export function ActivityFeed({ activities }: ActivityFeedProps) {
   return (
     <Card>
       <CardHeader>
-        <CardTitle>{t('recentActivity')}</CardTitle>
+        <CardTitle className="font-mono text-[11px] uppercase tracking-[0.18em] text-foreground">
+          {t('recentActivity')}
+        </CardTitle>
         <CardDescription>{t('latestActionsDesc')}</CardDescription>
       </CardHeader>
       <CardContent>

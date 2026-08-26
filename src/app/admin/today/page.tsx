@@ -85,7 +85,7 @@ async function RiskRadar() {
               <h2 className="mb-2.5 border-b border-border pb-2 font-mono text-[10px] uppercase tracking-[0.18em] text-muted-foreground">
                 {group.label} ({groupItems.length})
               </h2>
-              <div className="space-y-2">
+              <div>
                 {groupItems.map((item) => (
                   <RiskItem key={`${item.type}-${item.id}`} item={item} label={group.label} />
                 ))}

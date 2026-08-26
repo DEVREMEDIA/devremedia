@@ -49,7 +49,9 @@ export async function BusinessVelocity() {
     <Card>
       <CardHeader className="flex flex-row items-center gap-2">
         <Activity className="h-5 w-5 text-muted-foreground" />
-        <CardTitle className="text-lg">{t('title')}</CardTitle>
+        <CardTitle className="font-mono text-[11px] uppercase tracking-[0.18em] text-foreground">
+          {t('title')}
+        </CardTitle>
       </CardHeader>
       <CardContent>
         <VelocityRow label={t('projectsCreated')} c={v.projectsCreated} />
