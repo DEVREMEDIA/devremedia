@@ -39,6 +39,51 @@ async function primaryFontFamily(page: Page, cssVariable: string): Promise<strin
   );
 }
 
+const GREEK_UNICODE_START = 0x370;
+const GREEK_UNICODE_END = 0x3ff;
+
+/**
+ * `document.fonts.check()` returns TRUE when the sample string has no glyph
+ * in ANY unicode-range subset of the family — there is nothing to load, so
+ * there is nothing to fail. A family that ships zero Greek coverage (the
+ * pre-branch Geist faces: latin, latin-ext, cyrillic, cyrillic-ext,
+ * vietnamese — nothing in U+0370–03FF) passes `check()` with a Greek sample
+ * just as happily as one that actually covers Greek. This checks the
+ * declaration itself instead: does at least one `@font-face` entry the
+ * browser has registered for this family declare a unicode-range that
+ * intersects the Greek block? That is sensitive to "this family has no Greek
+ * glyphs" even when nothing was ever fetched.
+ */
+function unicodeRangeCoversGreek(unicodeRange: string): boolean {
+  return unicodeRange
+    .split(',')
+    .map((token) => token.trim())
+    .some((token) => {
+      const match = token.match(/^U\+([0-9A-Fa-f?]+)(?:-([0-9A-Fa-f]+))?$/);
+      if (!match) return false;
+      const [, from, to] = match;
+      const start = parseInt(from.replace(/\?/g, '0'), 16);
+      const end = to ? parseInt(to, 16) : parseInt(from.replace(/\?/g, 'F'), 16);
+      return start <= GREEK_UNICODE_END && end >= GREEK_UNICODE_START;
+    });
+}
+
+/**
+ * Declared `@font-face` entries are registered into `document.fonts` as soon
+ * as the stylesheet is parsed — independent of whether any of their bytes
+ * have been fetched. Filtering on fetch status would reintroduce the same
+ * vacuity this check exists to close: rendered Latin text only ever forces
+ * the Latin-range face to load, so a status-based filter would silently
+ * exclude the very face we need to inspect.
+ */
+async function declaredUnicodeRanges(page: Page, family: string): Promise<string[]> {
+  return page.evaluate((f) => {
+    return Array.from(document.fonts)
+      .filter((face) => face.family.replace(/^["']|["']$/g, '') === f)
+      .map((face) => face.unicodeRange);
+  }, family);
+}
+
 async function hasThemeClass(page: Page, theme: 'light' | 'dark'): Promise<boolean> {
   return page.evaluate((t) => document.documentElement.classList.contains(t), theme);
 }
@@ -99,6 +144,34 @@ test.describe('design identity — typefaces', () => {
     expect(await fontLoaded(page, serifFamily)).toBe(true);
     expect(await fontLoaded(page, sansFamily)).toBe(true);
     expect(await fontLoaded(page, monoFamily)).toBe(true);
+  });
+
+  test('each typeface actually declares a unicode-range that covers Greek', async ({ page }) => {
+    await page.goto('/login');
+
+    for (const [cssVariable, label] of [
+      ['--font-display-serif', 'display serif'],
+      ['--font-sans-ui', 'body sans'],
+      ['--font-data', 'data mono'],
+    ] as const) {
+      const family = await primaryFontFamily(page, cssVariable);
+      expect(family, `${label} family should resolve to a real generated name`).not.toBe('');
+
+      const ranges = await declaredUnicodeRanges(page, family);
+      expect(
+        ranges.length,
+        `${label} (${family}) has no declared @font-face entries`,
+      ).toBeGreaterThan(0);
+
+      // Το κρίσιμο σημείο: μια οικογένεια χωρίς κανένα ελληνικό unicode-range
+      // (π.χ. το προηγούμενο Geist) περνάει το `document.fonts.check()` πάνω
+      // σε ελληνικό δείγμα κενά — δεν έχει τι να φορτώσει, άρα δεν αποτυγχάνει
+      // ποτέ. Αυτός ο έλεγχος κοιτάζει τη δήλωση, όχι το fetch.
+      expect(
+        ranges.some(unicodeRangeCoversGreek),
+        `${label} (${family}): no declared unicode-range covers U+0370–03FF (Greek). Declared ranges: ${ranges.join(' | ')}`,
+      ).toBe(true);
+    }
   });
 });
 
