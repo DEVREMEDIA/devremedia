@@ -58,6 +58,7 @@
     "copyToClipboard": "Copy to clipboard",
     "copied": "Copied!",
     "selectAll": "Select all",
+    "selectRow": "Select row",
     "deselectAll": "Deselect all",
     "add": "Add",
     "remove": "Remove",

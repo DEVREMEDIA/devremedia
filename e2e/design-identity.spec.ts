@@ -302,6 +302,80 @@ test.describe('design identity — painted background', () => {
   });
 });
 
+test.describe('design identity — shared table', () => {
+  /**
+   * Το hub των Οικονομικών ανοίγει στην καρτέλα `invoices` — κάθε άλλη
+   * καρτέλα θέλει ρητά το δικό της `?tab=`. Μια προηγούμενη φέτα έστειλε ένα
+   * test που δεν μπορούσε ποτέ να περάσει επειδή πήγαινε στη γυμνή διεύθυνση
+   * του hub και έλεγχε περιεχόμενο που ζει σε άλλη καρτέλα — και κανείς δεν
+   * το πρόσεξε, γιατί τα specs είναι skipped.
+   */
+
+  test('/admin/finance — invoices tab renders and the table view scrolls inside its own container', async ({
+    page,
+  }) => {
+    test.skip(!process.env.E2E_TEST_USERS_READY, 'Test users not configured in database');
+    await loginAsAdmin(page);
+    await page.goto('/admin/finance');
+    await expect(page).toHaveURL(/\/admin\/finance/);
+
+    // Η προεπιλογή είναι η προβολή καρτών· το toggle φέρνει τον κοινό πίνακα.
+    const viewToggle = page.locator('div.rounded-lg.border.p-1 button').nth(1);
+    await viewToggle.click();
+
+    const tableContainer = page.locator('[data-slot="table-container"]').first();
+    await expect(tableContainer.locator('table')).toBeVisible();
+
+    // Το κρίσιμο σημείο: ένας φαρδύς πίνακας σε κινητό κυλά μέσα στο δικό
+    // του container, όχι ολόκληρη τη σελίδα πλάγια.
+    await page.setViewportSize({ width: 390, height: 844 });
+    const bodyFitsWithoutSidewaysScroll = await page.evaluate(
+      () => document.documentElement.scrollWidth <= document.documentElement.clientWidth,
+    );
+    expect(bodyFitsWithoutSidewaysScroll).toBe(true);
+  });
+
+  test('/admin/finance?tab=expenses — searching narrows the row count', async ({ page }) => {
+    test.skip(!process.env.E2E_TEST_USERS_READY, 'Test users not configured in database');
+    await loginAsAdmin(page);
+    await page.goto('/admin/finance?tab=expenses');
+    // Η καρτέλα καρφιτσώνεται ρητά. Χωρίς την παράμετρο στον έλεγχο, ένα
+    // μετονομασμένο κλειδί ρίχνει το hub σιωπηλά πίσω στα τιμολόγια — που
+    // έχουν κι αυτά πεδίο «Αναζήτηση», οπότε ο έλεγχος θα περνούσε αλλού.
+    await expect(page).toHaveURL(/\/admin\/finance\?tab=expenses/);
+
+    // Το κενό-αποτέλεσμα γράφει τη δική του γραμμή χωρίς `data-state` — μόνο
+    // οι πραγματικές γραμμές δεδομένων το έχουν, οπότε μετράει σωστά και τις
+    // δύο περιπτώσεις.
+    const rows = page.locator('table tbody tr[data-state]');
+    const rowsBefore = await rows.count();
+    expect(rowsBefore).toBeGreaterThan(0);
+
+    await page.getByPlaceholder(/Αναζήτηση/i).fill('zzzzzznonexistentzzzzzz');
+
+    await expect.poll(() => rows.count()).toBeLessThan(rowsBefore);
+  });
+
+  test('/admin/finance?tab=reports — top-clients table renders without pagination controls', async ({
+    page,
+  }) => {
+    test.skip(!process.env.E2E_TEST_USERS_READY, 'Test users not configured in database');
+    await loginAsAdmin(page);
+    await page.goto('/admin/finance?tab=reports');
+    await expect(page).toHaveURL(/\/admin\/finance\?tab=reports/);
+
+    const clientReportCard = page
+      .locator('[data-slot="card"]')
+      .filter({ hasText: 'Κορυφαίοι Πελάτες' })
+      .first();
+    await expect(clientReportCard.locator('table')).toBeVisible();
+
+    // Δέκα γραμμές χωράνε σε μία σελίδα — η μπάρα σελιδοποίησης δεν
+    // αποδίδεται καθόλου (Task 1, Step 9).
+    await expect(page.getByText(/Σελίδα \d+ από \d+/)).toHaveCount(0);
+  });
+});
+
 test.describe('design identity — explicit theme beats OS preference', () => {
   test.describe('OS prefers dark, user explicitly chose light', () => {
     test.use({ colorScheme: 'dark' });
