@@ -2,8 +2,8 @@ import type { Metadata } from 'next';
 import { getTranslations } from 'next-intl/server';
 import { SectionTabs, type SectionTab } from '@/components/shell-v2/section-tabs';
 
-import SalesmanResourcesPage from '@/app/salesman/resources/page';
-import HandbookPage from '@/app/salesman/handbook/page';
+import SalesmanResourcesPage from '@/app/salesman/resources/resources-page';
+import HandbookPage from '@/app/salesman/handbook/handbook-page';
 
 export async function generateMetadata(): Promise<Metadata> {
   const t = await getTranslations('shellV2.pages.salesmanLibrary');
@@ -32,7 +32,7 @@ export default async function SalesmanV2LibraryPage({
         <p className="mt-1 text-sm text-muted-foreground">{t('subtitle')}</p>
       </header>
 
-      <SectionTabs basePath="/salesman-v2/library" tabs={TABS} active={active} />
+      <SectionTabs basePath="/salesman/library" tabs={TABS} active={active} />
 
       {active === 'resources' ? <SalesmanResourcesPage /> : <HandbookPage />}
     </div>
