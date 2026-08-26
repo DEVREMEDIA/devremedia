@@ -1,16 +1,5 @@
-import { ClientNavbar } from '@/components/client/navbar';
+import { ClientV2Shell } from '@/components/client-v2/shell';
 
-export default function ClientLayout({
-  children,
-}: {
-  children: React.ReactNode;
-}) {
-  return (
-    <div className="min-h-screen flex flex-col">
-      <ClientNavbar />
-      <main className="flex-1 overflow-y-auto">
-        {children}
-      </main>
-    </div>
-  );
+export default function ClientLayout({ children }: { children: React.ReactNode }) {
+  return <ClientV2Shell>{children}</ClientV2Shell>;
 }

@@ -3,8 +3,8 @@ import { getTranslations } from 'next-intl/server';
 import { SectionTabs, type SectionTab } from '@/components/shell-v2/section-tabs';
 
 // Μετακομίζουν αυτούσιες οι δύο υπάρχουσες σελίδες, κάτω από μία στέγη.
-import ClientContractsPage from '@/app/client/contracts/page';
-import ClientInvoicesPage from '@/app/client/invoices/page';
+import ClientContractsPage from '../contracts/contracts-page';
+import ClientInvoicesPage from '../invoices/invoices-page';
 
 export async function generateMetadata(): Promise<Metadata> {
   const t = await getTranslations('shellV2.pages.clientDocuments');
@@ -33,7 +33,7 @@ export default async function ClientV2DocumentsPage({
         <p className="mt-1 text-sm text-muted-foreground">{t('subtitle')}</p>
       </header>
 
-      <SectionTabs basePath="/client-v2/documents" tabs={TABS} active={active} />
+      <SectionTabs basePath="/client/documents" tabs={TABS} active={active} />
 
       {active === 'contracts' ? <ClientContractsPage /> : <ClientInvoicesPage />}
     </div>
