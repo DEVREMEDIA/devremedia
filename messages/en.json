@@ -1005,6 +1005,7 @@
     "noContractsListDescription": "Contracts are created from production pages. Go to a production to create a contract.",
     "status": "Status",
     "client": "Client",
+    "project": "Project",
     "amount": "Amount",
     "deadline": "Deadline",
     "approveContract": "Approve",
