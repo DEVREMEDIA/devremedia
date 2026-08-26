@@ -2,6 +2,11 @@
  * Καταστάσεις είναι δεδομένα, όχι enum: ο πίνακας από κάτω είναι
  * λέξεις-κλειδιά, ώστε μια νέα κατάσταση να μη χρειάζεται κώδικα.
  * Ό,τι δεν ταιριάζει πουθενά παίρνει ουδέτερο τόνο αντί να σπάσει.
+ *
+ * This resolver expects a raw database status value, never a translated
+ * display label. The tokenizer strips every non-ASCII character, so any
+ * Greek string (e.g. the output of `t('...')`) silently returns 'neutral'
+ * with no error — pass it the underlying enum/status value, not i18n text.
  */
 export type Tone = 'critical' | 'caution' | 'positive' | 'neutral';
 
@@ -17,6 +22,7 @@ export const TONE_RULES: ReadonlyArray<{ tone: Tone; match: readonly string[] }>
       'canceled',
       'blocked',
       'expired',
+      'urgent',
     ],
   },
   {
@@ -33,6 +39,7 @@ export const TONE_RULES: ReadonlyArray<{ tone: Tone; match: readonly string[] }>
       'progress',
       'hold',
       'unsigned',
+      'high',
     ],
   },
   {

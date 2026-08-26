@@ -4,7 +4,7 @@
 
 **Goal:** Establish the Editorial Noir (work edition) identity — tokens, typefaces, status tones, the shared page heading — and prove it end-to-end on the admin Today screen, guarded by tests and a build check.
 
-**Architecture:** One theme-token layer in `src/app/globals.css` becomes the single source for colour in both a light and a dark edition. The root layout swaps its Latin-only typefaces for three faces loaded with Greek. A pure resolver turns a status string into one of five presentation tones. A shared page-heading component becomes the only heading a page renders. The admin Today screen is then dressed in that language without changing what it shows. A guard script and Playwright specs lock the invariants.
+**Architecture:** One theme-token layer in `src/app/globals.css` becomes the single source for colour in both a light and a dark edition. The root layout swaps its Latin-only typefaces for three faces loaded with Greek. A pure resolver turns a status string into one of four presentation tones. A shared page-heading component becomes the only heading a page renders. The admin Today screen is then dressed in that language without changing what it shows. A guard script and Playwright specs lock the invariants.
 
 **Tech Stack:** Next.js 16 App Router, React 19, Tailwind CSS 4 (`@theme inline`), next/font/google, next-intl, Vitest 3, Playwright 1.58.
 

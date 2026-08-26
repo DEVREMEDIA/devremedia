@@ -73,6 +73,18 @@ describe('statusTone', () => {
     expect(statusTone('published')).toBe('positive');
   });
 
+  it('maps an urgent priority to critical, matching StatusBadge', () => {
+    expect(statusTone('urgent')).toBe('critical');
+  });
+
+  it('maps a high priority to caution, matching StatusBadge', () => {
+    expect(statusTone('high')).toBe('caution');
+  });
+
+  it('keeps revision_requested on caution, a deliberate divergence from StatusBadge', () => {
+    expect(statusTone('revision_requested')).toBe('caution');
+  });
+
   it('leaves progress-stage and inert statuses neutral on purpose', () => {
     const deliberatelyNeutral = [
       'archived',
