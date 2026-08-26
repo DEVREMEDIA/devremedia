@@ -30,7 +30,7 @@ test.describe('V2 shell', () => {
     test.skip(!process.env.E2E_TEST_USERS_READY, 'Test users not configured in database');
     await loginAsAdmin(page);
     await page.goto('/admin-v2/today');
-    // Ο switcher υπάρχει στο header (δες language-switcher.tsx για τον ρόλο/aria του trigger)
-    await expect(page.locator('header')).toContainText(/Προεπισκόπηση v2|v2 preview/);
+    // Το shell header είναι το πρώτο <header> στο DOM — η σελίδα έχει δικό της.
+    await expect(page.locator('header').first()).toContainText(/Προεπισκόπηση v2|v2 preview/);
   });
 });
