@@ -41,7 +41,9 @@ export function ActivityFeed({ activities }: ActivityFeedProps) {
     return (
       <Card>
         <CardHeader>
-          <CardTitle>{t('recentActivity')}</CardTitle>
+          <CardTitle className="font-mono text-[11px] uppercase tracking-[0.18em] text-foreground">
+            {t('recentActivity')}
+          </CardTitle>
           <CardDescription>{t('latestActionsDesc')}</CardDescription>
         </CardHeader>
         <CardContent>
@@ -54,7 +56,9 @@ export function ActivityFeed({ activities }: ActivityFeedProps) {
   return (
     <Card>
       <CardHeader>
-        <CardTitle>{t('recentActivity')}</CardTitle>
+        <CardTitle className="font-mono text-[11px] uppercase tracking-[0.18em] text-foreground">
+          {t('recentActivity')}
+        </CardTitle>
         <CardDescription>{t('latestActionsDesc')}</CardDescription>
       </CardHeader>
       <CardContent>
@@ -73,7 +77,7 @@ export function ActivityFeed({ activities }: ActivityFeedProps) {
                     <p className="text-sm font-medium leading-none">
                       {user?.display_name ?? t('user')}
                     </p>
-                    <p className="text-xs text-muted-foreground">
+                    <p className="font-mono text-xs tabular-nums text-muted-foreground">
                       {formatDistanceToNow(new Date(activity.created_at), {
                         addSuffix: true,
                       })}

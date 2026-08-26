@@ -20,11 +20,11 @@ describe('decideStatusEffects — project', () => {
     expect(effects.email).toBeNull();
     expect(effects.calendarSync).toBe(false);
     expect(effects.revalidate).toEqual([
-      '/admin/projects',
+      '/admin/productions',
       '/admin/projects/p1',
-      '/client/projects',
+      '/client/productions',
       '/client/projects/p1',
-      '/client/dashboard',
+      '/client/home',
     ]);
   });
 
@@ -96,10 +96,10 @@ describe('decideStatusEffects — invoice', () => {
       },
     });
     expect(effects.revalidate).toEqual([
-      '/admin/invoices',
+      '/admin/finance',
       '/admin/invoices/inv1',
-      '/client/invoices',
-      '/client/dashboard',
+      '/client/documents',
+      '/client/home',
     ]);
   });
 
@@ -131,10 +131,10 @@ describe('decideStatusEffects — invoice', () => {
     ]);
     expect(effects.email).toBeNull();
     expect(effects.revalidate).toEqual([
-      '/admin/invoices',
+      '/admin/finance',
       '/admin/invoices/inv1',
-      '/client/invoices',
-      '/client/dashboard',
+      '/client/documents',
+      '/client/home',
     ]);
   });
 
@@ -148,10 +148,10 @@ describe('decideStatusEffects — invoice', () => {
     expect(effects.email).toBeNull();
     expect(effects.calendarSync).toBe(false);
     expect(effects.revalidate).toEqual([
-      '/admin/invoices',
+      '/admin/finance',
       '/admin/invoices/inv1',
-      '/client/invoices',
-      '/client/dashboard',
+      '/client/documents',
+      '/client/home',
     ]);
   });
 });
@@ -188,7 +188,7 @@ describe('decideStatusEffects — deliverable', () => {
     expect(effects.revalidate).toEqual([
       '/admin/projects/p1',
       '/client/projects/p1',
-      '/client/dashboard',
+      '/client/home',
       '/employee/deliverables/p1',
       '/employee/projects/p1',
     ]);
@@ -275,11 +275,7 @@ describe('decideStatusEffects — task', () => {
         actionUrl: '/employee/tasks/t1',
       },
     ]);
-    expect(effects.revalidate).toEqual([
-      '/admin/projects/p1',
-      '/employee/tasks',
-      '/employee/dashboard',
-    ]);
+    expect(effects.revalidate).toEqual(['/admin/projects/p1', '/employee/work', '/employee/today']);
   });
 
   it('notifies admins when the assignee changed their own task', () => {
@@ -318,11 +314,7 @@ describe('decideStatusEffects — task', () => {
       },
     });
     expect(effects.notifications).toEqual([]);
-    expect(effects.revalidate).toEqual([
-      '/admin/projects/p1',
-      '/employee/tasks',
-      '/employee/dashboard',
-    ]);
+    expect(effects.revalidate).toEqual(['/admin/projects/p1', '/employee/work', '/employee/today']);
   });
 
   it('omits the admin-project path when projectId is missing', () => {
@@ -337,6 +329,6 @@ describe('decideStatusEffects — task', () => {
         assignedTo: null,
       },
     });
-    expect(effects.revalidate).toEqual(['/employee/tasks', '/employee/dashboard']);
+    expect(effects.revalidate).toEqual(['/employee/work', '/employee/today']);
   });
 });

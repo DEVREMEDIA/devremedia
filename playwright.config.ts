@@ -23,10 +23,7 @@ export default defineConfig({
   workers: process.env.CI ? 1 : undefined,
 
   // Reporter to use
-  reporter: [
-    ['html'],
-    ['list'],
-  ],
+  reporter: [['html'], ['list']],
 
   // Shared settings for all the projects below
   use: {
@@ -76,7 +73,7 @@ export default defineConfig({
 
   // Run your local dev server before starting the tests
   webServer: {
-    command: 'npm run dev',
+    command: 'pnpm dev',
     url: 'http://localhost:3000',
     reuseExistingServer: !process.env.CI,
     timeout: 120 * 1000,

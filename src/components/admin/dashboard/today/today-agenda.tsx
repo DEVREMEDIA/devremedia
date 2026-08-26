@@ -30,9 +30,11 @@ export async function TodayAgenda() {
     <Card>
       <CardHeader className="flex flex-row items-center gap-2">
         <CalendarClock className="h-5 w-5 text-muted-foreground" />
-        <CardTitle className="text-lg">{t('title')}</CardTitle>
+        <CardTitle className="font-mono text-[11px] uppercase tracking-[0.18em] text-foreground">
+          {t('title')}
+        </CardTitle>
         {items.length > 0 && (
-          <Badge variant="secondary" className="ml-auto">
+          <Badge variant="secondary" className="ml-auto font-mono tabular-nums">
             {items.length}
           </Badge>
         )}
@@ -43,10 +45,10 @@ export async function TodayAgenda() {
         ) : (
           GROUP_ORDER.filter((kind) => grouped.has(kind)).map((kind) => (
             <div key={kind} className="space-y-2">
-              <h4 className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+              <h4 className="border-b border-border pb-2 font-mono text-[10px] uppercase tracking-[0.18em] text-muted-foreground">
                 {t(`groups.${kind}`)}
               </h4>
-              <div className="space-y-2">
+              <div>
                 {grouped.get(kind)!.map((item) => (
                   <TodayItem key={item.id} item={item} allDayLabel={t('allDay')} />
                 ))}

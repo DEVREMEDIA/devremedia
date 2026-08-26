@@ -3,8 +3,8 @@ import { Skeleton } from '@/components/ui/skeleton';
 
 export function KpiStripSkeleton() {
   return (
-    <div className="grid grid-cols-2 gap-3 sm:gap-4 md:grid-cols-3 lg:grid-cols-6">
-      {Array.from({ length: 6 }).map((_, i) => (
+    <div className="grid grid-cols-2 gap-3 sm:gap-4 md:grid-cols-3 lg:grid-cols-7">
+      {Array.from({ length: 7 }).map((_, i) => (
         <Card key={i}>
           <CardHeader className="pb-2">
             <Skeleton className="h-4 w-24" />

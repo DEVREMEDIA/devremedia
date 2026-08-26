@@ -1,5 +1,5 @@
 import type { Metadata, Viewport } from 'next';
-import { Geist, Geist_Mono } from 'next/font/google';
+import { EB_Garamond, Inter, Noto_Sans_Mono } from 'next/font/google';
 import { NextIntlClientProvider } from 'next-intl';
 import { getLocale, getMessages } from 'next-intl/server';
 import { Providers } from '@/components/providers';
@@ -22,15 +22,27 @@ function pickClientMessages(messages: Record<string, unknown>) {
   return picked;
 }
 
-const geistSans = Geist({
-  variable: '--font-geist-sans',
-  subsets: ['latin'],
+const displaySerif = EB_Garamond({
+  // ΠΡΟΣΟΧΗ: όχι `--font-display` — αυτό είναι το κλειδί του Tailwind theme
+  // και θα γινόταν κυκλική αναφορά στο `@theme inline`.
+  variable: '--font-display-serif',
+  subsets: ['latin', 'greek'],
+  weight: ['400', '500', '600'],
+  style: ['normal', 'italic'],
   display: 'swap',
 });
 
-const geistMono = Geist_Mono({
-  variable: '--font-geist-mono',
-  subsets: ['latin'],
+const bodySans = Inter({
+  variable: '--font-sans-ui',
+  subsets: ['latin', 'greek'],
+  weight: ['300', '400', '500', '600', '700'],
+  display: 'swap',
+});
+
+const dataMono = Noto_Sans_Mono({
+  variable: '--font-data',
+  subsets: ['latin', 'greek'],
+  weight: ['400', '500', '700'],
   display: 'swap',
 });
 
@@ -80,7 +92,7 @@ export default async function RootLayout({
         <link rel="dns-prefetch" href="https://img.youtube.com" />
       </head>
       <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased`}
+        className={`${displaySerif.variable} ${bodySans.variable} ${dataMono.variable} antialiased`}
         suppressHydrationWarning
         style={{ margin: 0, backgroundColor: 'var(--background, #09090b)' }}
       >

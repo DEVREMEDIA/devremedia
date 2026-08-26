@@ -28,7 +28,10 @@ export function KpiCard({
   return (
     <Link href={href}>
       <Card
-        className={cn('transition-colors hover:bg-accent', metric.exception && 'border-red-500')}
+        className={cn(
+          'transition-colors hover:bg-accent',
+          metric.exception && 'border-tone-critical',
+        )}
       >
         <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
           <div className="flex items-center gap-2">
@@ -39,7 +42,7 @@ export function KpiCard({
         </CardHeader>
         <CardContent className="space-y-2">
           <div className="flex items-baseline justify-between gap-2">
-            <span className="text-2xl font-bold tabular-nums">{display}</span>
+            <span className="font-mono text-2xl font-bold tabular-nums">{display}</span>
             <DeltaBadge deltaPct={metric.deltaPct} invertColors={invertDeltaColors} />
           </div>
           {metric.sparkline && metric.sparkline.length > 0 ? (

@@ -6,7 +6,7 @@ export function ExceptionBadge({ active, className }: Props) {
   if (!active) return null;
   return (
     <span
-      className={cn('inline-block h-2 w-2 rounded-full bg-red-500', className)}
+      className={cn('inline-block h-2 w-2 rounded-full bg-tone-critical', className)}
       aria-label="Exception"
     />
   );

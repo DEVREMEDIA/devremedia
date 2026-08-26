@@ -2,6 +2,7 @@ import { Suspense } from 'react';
 import type { Metadata } from 'next';
 import Link from 'next/link';
 import { getTranslations } from 'next-intl/server';
+import { PageHeading } from '@/components/shared/page-heading';
 import { RiskItem } from '@/components/admin/dashboard/risk/risk-item';
 import { KpiStrip } from '@/components/admin/dashboard/hero/kpi-strip';
 import { TodayAgenda } from '@/components/admin/dashboard/today/today-agenda';
@@ -22,9 +23,7 @@ export async function generateMetadata(): Promise<Metadata> {
 async function Subtitle() {
   const t = await getTranslations('shellV2.pages.adminToday');
   const items = await getRiskItems();
-  return (
-    <p className="mt-1 text-sm text-muted-foreground">{t('subtitle', { count: items.length })}</p>
-  );
+  return <span>{t('subtitle', { count: items.length })}</span>;
 }
 
 async function ActivityFeedSection() {
@@ -48,20 +47,17 @@ async function RiskRadar() {
     <>
       {/* Ραντάρ: μία ματιά σε ό,τι σαπίζει σιωπηλά */}
       <section>
-        <h2 className="mb-2.5 text-xs font-bold uppercase tracking-wider text-muted-foreground">
+        <h2 className="mb-2.5 border-b border-border pb-2 font-mono text-[10px] uppercase tracking-[0.18em] text-muted-foreground">
           {t('sectionAtRisk')}
         </h2>
-        <div className="grid grid-cols-2 gap-2.5 sm:grid-cols-3 lg:grid-cols-6">
+        <div className="grid grid-cols-2 gap-px border border-border bg-border sm:grid-cols-3 lg:grid-cols-6">
           {RISK_GROUPS.map((group) => {
             const count = items.filter((i) => i.type === group.type).length;
 
             return (
-              <div
-                key={group.type}
-                className={`rounded-xl border p-3 ${count > 0 ? 'border-destructive/50' : 'border-border'}`}
-              >
+              <div key={group.type} className="bg-card p-3">
                 <div
-                  className={`text-xl font-bold tabular-nums leading-tight ${count > 0 ? 'text-destructive' : ''}`}
+                  className={`font-display text-3xl leading-tight tabular-nums ${count > 0 ? 'text-tone-critical' : 'text-muted-foreground'}`}
                 >
                   {count}
                 </div>
@@ -76,7 +72,7 @@ async function RiskRadar() {
 
       {/* Οι ίδιες οι εκκρεμότητες, ομαδοποιημένες */}
       {items.length === 0 ? (
-        <div className="rounded-xl border border-dashed border-border p-10 text-center text-sm text-muted-foreground">
+        <div className="border border-dashed border-border p-10 text-center text-sm text-muted-foreground">
           {t('emptyState')}
         </div>
       ) : (
@@ -86,10 +82,10 @@ async function RiskRadar() {
 
           return (
             <section key={group.type}>
-              <h2 className="mb-2.5 text-xs font-bold uppercase tracking-wider text-muted-foreground">
+              <h2 className="mb-2.5 border-b border-border pb-2 font-mono text-[10px] uppercase tracking-[0.18em] text-muted-foreground">
                 {group.label} ({groupItems.length})
               </h2>
-              <div className="space-y-2">
+              <div>
                 {groupItems.map((item) => (
                   <RiskItem key={`${item.type}-${item.id}`} item={item} label={group.label} />
                 ))}
@@ -115,12 +111,14 @@ export default async function TodayPage() {
 
   return (
     <div className="space-y-6">
-      <header>
-        <h1 className="text-2xl font-semibold tracking-tight">{t('title')}</h1>
-        <Suspense fallback={<p className="mt-1 text-sm text-muted-foreground">&nbsp;</p>}>
-          <Subtitle />
-        </Suspense>
-      </header>
+      <PageHeading
+        title={t('title')}
+        subtitle={
+          <Suspense fallback={<span>&nbsp;</span>}>
+            <Subtitle />
+          </Suspense>
+        }
+      />
 
       {isSuper && (
         <Suspense fallback={<KpiStripSkeleton />}>

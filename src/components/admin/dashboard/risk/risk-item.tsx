@@ -17,10 +17,10 @@ export function RiskItem({ item, label }: { item: RiskItemType; label: string })
   return (
     <Link
       href={item.href}
-      className="flex items-center justify-between gap-3 rounded-lg border p-3 transition-colors hover:bg-accent"
+      className="flex items-center justify-between gap-3 border-b border-border py-3 transition-colors last:border-b-0 hover:bg-accent focus-visible:bg-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-inset"
     >
       <div className="flex min-w-0 items-start gap-3">
-        <Icon className="h-4 w-4 shrink-0 text-red-500" />
+        <Icon className="h-4 w-4 shrink-0 text-tone-critical" />
         <div className="min-w-0">
           <div className="text-sm font-medium truncate">{item.title}</div>
           <div className="text-xs text-muted-foreground truncate">
