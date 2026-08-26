@@ -50,12 +50,12 @@ async function RiskRadar() {
         <h2 className="mb-2.5 border-b border-border pb-2 font-mono text-[10px] uppercase tracking-[0.18em] text-muted-foreground">
           {t('sectionAtRisk')}
         </h2>
-        <div className="grid grid-cols-2 divide-x divide-border border border-border sm:grid-cols-3 lg:grid-cols-6">
+        <div className="grid grid-cols-2 gap-px border border-border bg-border sm:grid-cols-3 lg:grid-cols-6">
           {RISK_GROUPS.map((group) => {
             const count = items.filter((i) => i.type === group.type).length;
 
             return (
-              <div key={group.type} className="p-3">
+              <div key={group.type} className="bg-card p-3">
                 <div
                   className={`font-display text-3xl leading-tight tabular-nums ${count > 0 ? 'text-tone-critical' : 'text-muted-foreground'}`}
                 >
