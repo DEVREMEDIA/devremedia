@@ -130,22 +130,31 @@ test.describe('design identity — page heading', () => {
    * δεύτερη από κάτω, σε άλλη κλίμακα — οι ίδιες λέξεις δύο φορές στην ίδια οθόνη.
    * Οι μη προεπιλεγμένες καρτέλες είναι εδώ επίτηδες: το σφάλμα ζούσε στα σώματα
    * των καρτελών, οπότε έλεγχος μόνο της πρώτης καρτέλας θα έχανε τα περισσότερα.
+   *
+   * Η λίστα καλύπτει και τα 17 σώματα καρτελών που έδωσαν τον τίτλο τους — το
+   * σχόλιο δίπλα σε κάθε διαδρομή λέει ποιο. Αν μια επόμενη φέτα μετακινήσει ένα
+   * σώμα σε άλλη καρτέλα, η αντιστοίχιση εδώ πρέπει να ακολουθήσει, αλλιώς ο
+   * έλεγχος θα δοκιμάζει δύο φορές την ίδια οθόνη χωρίς να το πει.
    */
   const HUB_ROUTES = [
-    '/admin/clients',
-    '/admin/clients?tab=proposals',
-    '/admin/finance',
-    '/admin/finance?tab=expenses',
-    '/admin/finance?tab=cost',
-    '/admin/finance?tab=health',
+    '/admin/clients', // clients-content
+    '/admin/clients?tab=proposals', // proposals-list
+    '/admin/finance', // invoices-content
+    '/admin/finance?tab=expenses', // expenses-content
+    '/admin/finance?tab=cost', // cost-model-content
+    '/admin/finance?tab=health', // pricing-health-content
     '/admin/knowledge',
-    '/admin/productions',
-    '/admin/settings',
-    '/admin/settings?tab=users',
-    '/admin/settings?tab=templates',
-    '/client/documents',
-    '/employee/work',
-    '/salesman/library',
+    '/admin/productions', // projects-content
+    '/admin/productions?tab=requests', // requests-page
+    '/admin/settings', // settings-page
+    '/admin/settings?tab=users', // users-page
+    '/admin/settings?tab=packages', // packages-content
+    '/admin/settings?tab=templates', // templates-content
+    '/client/documents', // client contracts-page
+    '/client/documents?tab=invoices', // client invoices-page
+    '/employee/work', // employee tasks-page
+    '/salesman/library', // salesman resources-page
+    '/salesman/library?tab=handbook', // sales-handbook
   ];
 
   // Ο middleware αφήνει τον admin να μπει και στα /client/*, /employee/*,
