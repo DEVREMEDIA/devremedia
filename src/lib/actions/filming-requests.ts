@@ -355,7 +355,6 @@ export async function convertToProject(id: string): Promise<ActionResult<Project
     if (updateError) return { data: null, error: updateError.message };
 
     revalidatePath('/admin/productions');
-    revalidatePath('/admin/productions');
     revalidatePath('/admin/clients');
     revalidatePath('/admin/calendar');
     revalidatePath('/client/productions');
@@ -471,7 +470,6 @@ export async function approveHold(id: string): Promise<ActionResult<Project>> {
 
     revalidatePath('/admin/productions');
     revalidatePath(`/admin/filming-requests/${id}`);
-    revalidatePath('/admin/productions');
     revalidatePath('/admin/calendar');
     revalidatePath('/client/book');
     revalidatePath('/client/home');

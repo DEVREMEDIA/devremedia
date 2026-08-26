@@ -17,11 +17,11 @@ import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 
 const ROLE_DASHBOARDS: Record<string, string> = {
-  super_admin: '/admin/dashboard',
-  admin: '/admin/dashboard',
-  employee: '/employee/dashboard',
-  salesman: '/salesman/dashboard',
-  client: '/client/dashboard',
+  super_admin: '/admin/today',
+  admin: '/admin/today',
+  employee: '/employee/today',
+  salesman: '/salesman/today',
+  client: '/client/home',
 };
 
 interface ConfirmationDetails {

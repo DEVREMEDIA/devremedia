@@ -136,6 +136,7 @@ export async function createKbArticle(input: unknown): Promise<ActionResult<KbAr
     if (error) return { data: null, error: error.message };
 
     revalidatePath('/admin/knowledge');
+    // Τα άρθρα ζουν ακόμη κάτω από /employee/university/[categorySlug] — το 'layout' εδώ δεν τα καλύπτει· αποδεκτό (dynamic pages), βλ. PR Γ review.
     revalidatePath('/employee/knowledge', 'layout');
     return { data, error: null };
   } catch (error) {

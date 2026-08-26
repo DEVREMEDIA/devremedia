@@ -489,7 +489,7 @@ export async function createContractTemplate(input: {
 
     if (error) return { data: null, error: error.message };
 
-    revalidatePath('/admin/settings/contract-templates');
+    revalidatePath('/admin/settings');
     return { data, error: null };
   } catch (err: unknown) {
     return {
@@ -525,7 +525,7 @@ export async function updateContractTemplate(
 
     if (error) return { data: null, error: error.message };
 
-    revalidatePath('/admin/settings/contract-templates');
+    revalidatePath('/admin/settings');
     return { data, error: null };
   } catch (err: unknown) {
     return {
@@ -544,7 +544,7 @@ export async function deleteContractTemplate(id: string): Promise<ActionResult<v
 
     if (error) return { data: null, error: error.message };
 
-    revalidatePath('/admin/settings/contract-templates');
+    revalidatePath('/admin/settings');
     return { data: undefined, error: null };
   } catch (err: unknown) {
     return {

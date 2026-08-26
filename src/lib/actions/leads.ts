@@ -251,7 +251,6 @@ export async function convertLeadToClient(id: string): Promise<ActionResult<Clie
 
     revalidatePath('/salesman/leads');
     revalidatePath('/admin/clients');
-    revalidatePath('/admin/clients');
     return { data: client, error: null };
   } catch {
     return { data: null, error: 'Failed to convert lead to client' };

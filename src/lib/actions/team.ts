@@ -115,7 +115,6 @@ export async function inviteTeamMember(
     }
 
     revalidatePath('/admin/settings');
-    revalidatePath('/admin/settings');
     return { data: { email }, error: null };
   } catch (error) {
     console.error('Failed to invite team member:', error);
@@ -230,7 +229,6 @@ export async function deactivateTeamMember(
     }
 
     revalidatePath('/admin/settings');
-    revalidatePath('/admin/settings');
     return { data: { userId }, error: null };
   } catch (error) {
     console.error('Failed to deactivate team member:', error);
@@ -276,7 +274,6 @@ export async function reactivateTeamMember(
         .eq('id', userId);
     }
 
-    revalidatePath('/admin/settings');
     revalidatePath('/admin/settings');
     return { data: { userId }, error: null };
   } catch (error) {
