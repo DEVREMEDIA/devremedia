@@ -1,7 +1,7 @@
 import { getTranslations } from 'next-intl/server';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Activity } from 'lucide-react';
-import { DeltaBadge } from '../shared/delta-badge';
+import { DeltaBadge } from '@/components/shared/delta-badge';
 import { getBusinessVelocity } from '@/lib/queries/dashboard/velocity';
 import type { MoneyDelta, VelocityCounter } from '@/types/dashboard';
 import { formatEurInt as fmtEur } from '@/lib/format';

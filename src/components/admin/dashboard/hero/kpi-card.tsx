@@ -1,9 +1,9 @@
 import Link from 'next/link';
 import type { LucideIcon } from 'lucide-react';
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
-import { DeltaBadge } from '../shared/delta-badge';
+import { DeltaBadge } from '@/components/shared/delta-badge';
 import { ExceptionBadge } from '../shared/exception-badge';
-import { Sparkline } from '../shared/sparkline';
+import { Sparkline } from '@/components/shared/sparkline';
 import { cn } from '@/lib/utils';
 import type { KpiMetric } from '@/types/dashboard';
 
