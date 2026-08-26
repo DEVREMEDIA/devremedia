@@ -21,26 +21,38 @@ test.describe('Project Management', () => {
     // Wait for the page to load
     await page.waitForLoadState('networkidle');
 
-    // Check that we're on the projects page
-    await expect(page).toHaveURL(/\/admin\/projects$/);
+    // The old bare route is now a stub that redirects into the productions hub
+    await expect(page).toHaveURL(/\/admin\/productions\?tab=all/);
 
     // Check for page heading
     await expect(
-      page.locator('h1, h2').filter({ hasText: /projects/i }).first()
+      page
+        .locator('h1, h2')
+        .filter({ hasText: /productions/i })
+        .first(),
     ).toBeVisible();
 
     // Check for common elements: table, grid, or cards
-    const hasTable = await page.locator('table').isVisible().catch(() => false);
-    const hasGrid = await page.locator('[data-testid*="project"]').isVisible().catch(() => false);
+    const hasTable = await page
+      .locator('table')
+      .isVisible()
+      .catch(() => false);
+    const hasGrid = await page
+      .locator('[data-testid*="project"]')
+      .isVisible()
+      .catch(() => false);
 
     expect(hasTable || hasGrid).toBeTruthy();
   });
 
   test('projects list shows add new project button', async ({ page }) => {
-    await page.goto('/admin/projects');
+    await page.goto('/admin/productions?tab=all');
 
     // Look for "New Project" or "Add Project" button
-    const addButton = page.locator('a, button').filter({ hasText: /new project|add project|create project/i }).first();
+    const addButton = page
+      .locator('a, button')
+      .filter({ hasText: /new project|add project|create project/i })
+      .first();
     await expect(addButton).toBeVisible();
 
     // Verify it links to the new project page
@@ -51,10 +63,13 @@ test.describe('Project Management', () => {
   });
 
   test('admin can navigate to create new project page', async ({ page }) => {
-    await page.goto('/admin/projects');
+    await page.goto('/admin/productions?tab=all');
 
     // Click the new project button
-    const addButton = page.locator('a, button').filter({ hasText: /new project|add project|create project/i }).first();
+    const addButton = page
+      .locator('a, button')
+      .filter({ hasText: /new project|add project|create project/i })
+      .first();
     await addButton.click();
 
     // Should navigate to new project page
@@ -103,9 +118,9 @@ test.describe('Project Management', () => {
     await page.waitForURL(/\/admin\/projects(\/[\w-]+)?/, { timeout: 10000 });
 
     // Verify success message
-    await expect(
-      page.locator('text=/success|created|added/i').first()
-    ).toBeVisible({ timeout: 5000 });
+    await expect(page.locator('text=/success|created|added/i').first()).toBeVisible({
+      timeout: 5000,
+    });
   });
 
   test('admin can view project detail page', async ({ page }) => {
@@ -113,10 +128,12 @@ test.describe('Project Management', () => {
     test.skip(true, 'Requires database with at least one project record');
 
     // Navigate to projects list
-    await page.goto('/admin/projects');
+    await page.goto('/admin/productions?tab=all');
 
     // Click on first project
-    const firstProject = page.locator('tr td a, [data-testid*="project"] a, a[href*="/admin/projects/"]').first();
+    const firstProject = page
+      .locator('tr td a, [data-testid*="project"] a, a[href*="/admin/projects/"]')
+      .first();
     await firstProject.click();
 
     // Should be on project detail page
@@ -142,7 +159,10 @@ test.describe('Project Management', () => {
 
     let foundSections = 0;
     for (const pattern of sections) {
-      const hasSection = await page.locator(`text=${pattern}`).isVisible().catch(() => false);
+      const hasSection = await page
+        .locator(`text=${pattern}`)
+        .isVisible()
+        .catch(() => false);
       if (hasSection) foundSections++;
     }
 
@@ -204,10 +224,12 @@ test.describe('Project Management', () => {
   });
 
   test('projects list has filter by status functionality', async ({ page }) => {
-    await page.goto('/admin/projects');
+    await page.goto('/admin/productions?tab=all');
 
     // Look for status filter controls
-    const statusFilter = page.locator('[data-testid*="filter"], select[name*="status"], button:has-text("Filter")').first();
+    const statusFilter = page
+      .locator('[data-testid*="filter"], select[name*="status"], button:has-text("Filter")')
+      .first();
 
     // Check if filter exists (optional feature)
     const hasFilter = await statusFilter.isVisible().catch(() => false);
@@ -221,7 +243,7 @@ test.describe('Project Management', () => {
     // SKIP: Requires projects in database
     test.skip(true, 'Requires database with project records');
 
-    await page.goto('/admin/projects');
+    await page.goto('/admin/productions?tab=all');
 
     // Look for status indicators (badges, labels, etc.)
     const statusBadge = page.locator('[data-testid*="status"], .badge, .status').first();
@@ -242,7 +264,10 @@ test.describe('Project Management', () => {
     await page.goto('/admin/projects/test-project-id');
 
     // Look for filming prep link or button
-    const filmingPrepLink = page.locator('a, button').filter({ hasText: /filming prep|preparation/i }).first();
+    const filmingPrepLink = page
+      .locator('a, button')
+      .filter({ hasText: /filming prep|preparation/i })
+      .first();
 
     const hasFilmingPrep = await filmingPrepLink.isVisible().catch(() => false);
 
@@ -256,11 +281,11 @@ test.describe('Project Management', () => {
     // SKIP: Requires empty database or specific test state
     test.skip(true, 'Requires database with no projects (specific test state)');
 
-    await page.goto('/admin/projects');
+    await page.goto('/admin/productions?tab=all');
 
     // Look for empty state message
     await expect(
-      page.locator('text=/no projects|empty|get started|create your first/i').first()
+      page.locator('text=/no projects|empty|get started|create your first/i').first(),
     ).toBeVisible();
   });
 });

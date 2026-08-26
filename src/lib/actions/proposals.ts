@@ -146,7 +146,7 @@ export async function createProposal(input: unknown): Promise<ActionResult<Propo
       .single();
 
     if (error) return { data: null, error: error.message };
-    revalidatePath('/admin/proposals');
+    revalidatePath('/admin/clients');
     return { data: shape(data as Record<string, unknown>), error: null };
   } catch (err) {
     return {
@@ -170,7 +170,7 @@ export async function updateProposal(id: string, input: unknown): Promise<Action
       .single();
 
     if (error) return { data: null, error: error.message };
-    revalidatePath('/admin/proposals');
+    revalidatePath('/admin/clients');
     revalidatePath(`/admin/proposals/${id}`);
     return { data: shape(data as Record<string, unknown>), error: null };
   } catch (err) {
@@ -187,7 +187,7 @@ export async function deleteProposal(id: string): Promise<ActionResult<void>> {
     if (authErr) return { data: null, error: authErr };
     const { error } = await supabase.from('proposals').delete().eq('id', id);
     if (error) return { data: null, error: error.message };
-    revalidatePath('/admin/proposals');
+    revalidatePath('/admin/clients');
     return { data: undefined, error: null };
   } catch (err) {
     return {
@@ -208,7 +208,7 @@ export async function markProposalSent(id: string): Promise<ActionResult<Proposa
       .select('*')
       .single();
     if (error) return { data: null, error: error.message };
-    revalidatePath('/admin/proposals');
+    revalidatePath('/admin/clients');
     revalidatePath(`/admin/proposals/${id}`);
     return { data: shape(data as Record<string, unknown>), error: null };
   } catch (err) {
@@ -233,7 +233,7 @@ export async function setProposalResponse(
       .select('*')
       .single();
     if (error) return { data: null, error: error.message };
-    revalidatePath('/admin/proposals');
+    revalidatePath('/admin/clients');
     revalidatePath(`/admin/proposals/${id}`);
     return { data: shape(data as Record<string, unknown>), error: null };
   } catch (err) {

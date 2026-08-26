@@ -23,12 +23,21 @@ test.describe('Filming Requests - Client', () => {
 
     // Check for page heading
     await expect(
-      page.locator('h1, h2').filter({ hasText: /book|request|new project/i }).first()
+      page
+        .locator('h1, h2')
+        .filter({ hasText: /book|request|new project/i })
+        .first(),
     ).toBeVisible();
 
     // Check for form or wizard
-    const hasForm = await page.locator('form').isVisible().catch(() => false);
-    const hasWizard = await page.locator('[data-testid*="wizard"], [data-testid*="step"]').isVisible().catch(() => false);
+    const hasForm = await page
+      .locator('form')
+      .isVisible()
+      .catch(() => false);
+    const hasWizard = await page
+      .locator('[data-testid*="wizard"], [data-testid*="step"]')
+      .isVisible()
+      .catch(() => false);
 
     expect(hasForm || hasWizard).toBeTruthy();
   });
@@ -37,7 +46,9 @@ test.describe('Filming Requests - Client', () => {
     await page.goto('/client/book');
 
     // Look for step indicators
-    const stepIndicator = page.locator('[data-testid*="step"], .step-indicator, [role="progressbar"]').first();
+    const stepIndicator = page
+      .locator('[data-testid*="step"], .step-indicator, [role="progressbar"]')
+      .first();
 
     const hasSteps = await stepIndicator.isVisible().catch(() => false);
 
@@ -51,7 +62,9 @@ test.describe('Filming Requests - Client', () => {
     await page.goto('/client/book');
 
     // Look for event type field (select, radio buttons, or cards)
-    const eventTypeField = page.locator('select[name*="type"], [role="radiogroup"], [data-testid*="event-type"]').first();
+    const eventTypeField = page
+      .locator('select[name*="type"], [role="radiogroup"], [data-testid*="event-type"]')
+      .first();
 
     const hasEventType = await eventTypeField.isVisible().catch(() => false);
 
@@ -62,7 +75,9 @@ test.describe('Filming Requests - Client', () => {
     await page.goto('/client/book');
 
     // Look for date picker or date input
-    const dateField = page.locator('input[type="date"], [data-testid*="date"], button:has-text("Select date")').first();
+    const dateField = page
+      .locator('input[type="date"], [data-testid*="date"], button:has-text("Select date")')
+      .first();
 
     const hasDate = await dateField.isVisible().catch(() => false);
 
@@ -73,7 +88,9 @@ test.describe('Filming Requests - Client', () => {
     await page.goto('/client/book');
 
     // Look for location/venue field
-    const locationField = page.locator('input[name*="location"], input[name*="venue"], textarea[name*="location"]').first();
+    const locationField = page
+      .locator('input[name*="location"], input[name*="venue"], textarea[name*="location"]')
+      .first();
 
     const hasLocation = await locationField.isVisible().catch(() => false);
 
@@ -84,7 +101,9 @@ test.describe('Filming Requests - Client', () => {
     await page.goto('/client/book');
 
     // Look for description or details textarea
-    const descriptionField = page.locator('textarea[name*="description"], textarea[name*="details"]').first();
+    const descriptionField = page
+      .locator('textarea[name*="description"], textarea[name*="details"]')
+      .first();
 
     const hasDescription = await descriptionField.isVisible().catch(() => false);
 
@@ -127,16 +146,19 @@ test.describe('Filming Requests - Client', () => {
     await submitButton.click();
 
     // Should show success message or redirect
-    await expect(
-      page.locator('text=/success|submitted|received/i').first()
-    ).toBeVisible({ timeout: 10000 });
+    await expect(page.locator('text=/success|submitted|received/i').first()).toBeVisible({
+      timeout: 10000,
+    });
   });
 
   test('booking wizard shows navigation buttons', async ({ page }) => {
     await page.goto('/client/book');
 
     // Look for next/continue button
-    const nextButton = page.locator('button').filter({ hasText: /next|continue/i }).first();
+    const nextButton = page
+      .locator('button')
+      .filter({ hasText: /next|continue/i })
+      .first();
 
     const hasNext = await nextButton.isVisible().catch(() => false);
 
@@ -155,7 +177,10 @@ test.describe('Filming Requests - Client', () => {
 
     // Should show validation errors or prevent submission
     // This depends on form validation implementation
-    const hasError = await page.locator('text=/required|error|fill/i').isVisible({ timeout: 2000 }).catch(() => false);
+    const hasError = await page
+      .locator('text=/required|error|fill/i')
+      .isVisible({ timeout: 2000 })
+      .catch(() => false);
 
     // Validation is expected but implementation varies
     if (hasError) {
@@ -184,7 +209,10 @@ test.describe('Filming Requests - Client', () => {
     await page.goto('/client/book');
 
     // Look for save draft button
-    const saveDraftButton = page.locator('button').filter({ hasText: /save draft|save for later/i }).first();
+    const saveDraftButton = page
+      .locator('button')
+      .filter({ hasText: /save draft|save for later/i })
+      .first();
 
     const hasSaveDraft = await saveDraftButton.isVisible().catch(() => false);
 
@@ -206,12 +234,15 @@ test.describe('Filming Requests - Admin', () => {
   test('admin can view filming requests list page', async ({ page }) => {
     await page.goto('/admin/filming-requests');
 
-    // Check that we're on the filming requests page
-    await expect(page).toHaveURL(/\/admin\/filming-requests$/);
+    // The old bare route is now a stub that redirects into the productions hub
+    await expect(page).toHaveURL(/\/admin\/productions\?tab=requests/);
 
     // Check for page heading
     await expect(
-      page.locator('h1, h2').filter({ hasText: /filming request|booking|request/i }).first()
+      page
+        .locator('h1, h2')
+        .filter({ hasText: /filming request|booking|request/i })
+        .first(),
     ).toBeVisible();
   });
 
@@ -219,11 +250,17 @@ test.describe('Filming Requests - Admin', () => {
     // SKIP: Requires filming requests in database
     test.skip(true, 'Requires database with filming request records');
 
-    await page.goto('/admin/filming-requests');
+    await page.goto('/admin/productions?tab=requests');
 
     // Look for table or cards
-    const hasTable = await page.locator('table').isVisible().catch(() => false);
-    const hasCards = await page.locator('[data-testid*="request"]').isVisible().catch(() => false);
+    const hasTable = await page
+      .locator('table')
+      .isVisible()
+      .catch(() => false);
+    const hasCards = await page
+      .locator('[data-testid*="request"]')
+      .isVisible()
+      .catch(() => false);
 
     expect(hasTable || hasCards).toBeTruthy();
   });
@@ -232,10 +269,12 @@ test.describe('Filming Requests - Admin', () => {
     // SKIP: Requires filming request in database
     test.skip(true, 'Requires database with filming request record');
 
-    await page.goto('/admin/filming-requests');
+    await page.goto('/admin/productions?tab=requests');
 
     // Click on first request
-    const firstRequest = page.locator('tr td a, [data-testid*="request"] a, a[href*="/admin/filming-requests/"]').first();
+    const firstRequest = page
+      .locator('tr td a, [data-testid*="request"] a, a[href*="/admin/filming-requests/"]')
+      .first();
     await firstRequest.click();
 
     // Should be on request detail page
@@ -252,9 +291,7 @@ test.describe('Filming Requests - Admin', () => {
     await page.goto('/admin/filming-requests/test-request-id');
 
     // Look for client info
-    await expect(
-      page.locator('text=/client|requested by/i').first()
-    ).toBeVisible();
+    await expect(page.locator('text=/client|requested by/i').first()).toBeVisible();
   });
 
   test('filming request detail shows event details', async ({ page }) => {
@@ -268,7 +305,10 @@ test.describe('Filming Requests - Admin', () => {
 
     let foundDetails = 0;
     for (const pattern of details) {
-      const hasDetail = await page.locator(`text=${pattern}`).isVisible().catch(() => false);
+      const hasDetail = await page
+        .locator(`text=${pattern}`)
+        .isVisible()
+        .catch(() => false);
       if (hasDetail) foundDetails++;
     }
 
@@ -282,15 +322,16 @@ test.describe('Filming Requests - Admin', () => {
     await page.goto('/admin/filming-requests/test-request-id');
 
     // Look for approve button
-    const approveButton = page.locator('button').filter({ hasText: /approve|accept/i }).first();
+    const approveButton = page
+      .locator('button')
+      .filter({ hasText: /approve|accept/i })
+      .first();
     await expect(approveButton).toBeVisible();
 
     await approveButton.click();
 
     // Should show success message or status update
-    await expect(
-      page.locator('text=/approved|accepted/i').first()
-    ).toBeVisible({ timeout: 5000 });
+    await expect(page.locator('text=/approved|accepted/i').first()).toBeVisible({ timeout: 5000 });
   });
 
   test('admin can convert request to project', async ({ page }) => {
@@ -300,7 +341,10 @@ test.describe('Filming Requests - Admin', () => {
     await page.goto('/admin/filming-requests/test-request-id');
 
     // Look for convert to project button
-    const convertButton = page.locator('button, a').filter({ hasText: /convert|create project/i }).first();
+    const convertButton = page
+      .locator('button, a')
+      .filter({ hasText: /convert|create project/i })
+      .first();
 
     const hasConvert = await convertButton.isVisible().catch(() => false);
 
@@ -310,10 +354,12 @@ test.describe('Filming Requests - Admin', () => {
   });
 
   test('filming requests list shows status filters', async ({ page }) => {
-    await page.goto('/admin/filming-requests');
+    await page.goto('/admin/productions?tab=requests');
 
     // Look for status filter
-    const statusFilter = page.locator('[data-testid*="filter"], select[name*="status"], button:has-text("Filter")').first();
+    const statusFilter = page
+      .locator('[data-testid*="filter"], select[name*="status"], button:has-text("Filter")')
+      .first();
 
     const hasFilter = await statusFilter.isVisible().catch(() => false);
 
@@ -327,7 +373,7 @@ test.describe('Filming Requests - Admin', () => {
     // SKIP: Requires filming requests in database
     test.skip(true, 'Requires database with filming request records');
 
-    await page.goto('/admin/filming-requests');
+    await page.goto('/admin/productions?tab=requests');
 
     // Look for status badges
     const statusBadge = page.locator('[data-testid*="status"], .badge, .status').first();
@@ -360,11 +406,11 @@ test.describe('Filming Requests - Admin', () => {
     // SKIP: Requires empty database or specific test state
     test.skip(true, 'Requires database with no filming requests');
 
-    await page.goto('/admin/filming-requests');
+    await page.goto('/admin/productions?tab=requests');
 
     // Look for empty state message
     await expect(
-      page.locator('text=/no requests|empty|no filming requests/i').first()
+      page.locator('text=/no requests|empty|no filming requests/i').first(),
     ).toBeVisible();
   });
 });

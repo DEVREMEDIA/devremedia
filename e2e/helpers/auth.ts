@@ -66,8 +66,8 @@ export async function login(page: Page, email: string, password: string) {
   const submitButton = page.locator('button[type="submit"]').first();
   await submitButton.click();
 
-  // Wait for navigation to complete (either to dashboard or error)
-  await page.waitForURL(/\/(admin|client)\/dashboard/, { timeout: 10000 });
+  // Wait for navigation to complete (either to the new role landing or error)
+  await page.waitForURL(/\/(admin|employee|salesman)\/today|\/client\/home/, { timeout: 10000 });
 }
 
 /**
@@ -82,7 +82,7 @@ export async function setupAuthSession(
   page: Page,
   email: string,
   password: string,
-  storageStatePath: string
+  storageStatePath: string,
 ) {
   await login(page, email, password);
 
@@ -96,7 +96,9 @@ export async function setupAuthSession(
  */
 export async function logout(page: Page) {
   // Look for logout button/link (adjust selector based on your UI)
-  const logoutButton = page.locator('[data-testid="logout"], button:has-text("Logout"), a:has-text("Logout")').first();
+  const logoutButton = page
+    .locator('[data-testid="logout"], button:has-text("Logout"), a:has-text("Logout")')
+    .first();
 
   if (await logoutButton.isVisible({ timeout: 1000 }).catch(() => false)) {
     await logoutButton.click();
@@ -107,16 +109,6 @@ export async function logout(page: Page) {
 
   // Wait for redirect to login page
   await page.waitForURL('/login', { timeout: 5000 });
-}
-
-/**
- * Wait for authentication to complete
- * Useful when auth state is being checked/loaded
- * @param page - Playwright page instance
- */
-export async function waitForAuth(page: Page) {
-  // Wait for either dashboard or login page
-  await page.waitForURL(/\/(admin|client)\/dashboard|\/login/, { timeout: 10000 });
 }
 
 /**

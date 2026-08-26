@@ -63,20 +63,20 @@ export interface StatusChange {
 
 export function projectRevalidatePaths(id: string): string[] {
   return [
-    '/admin/projects',
+    '/admin/productions',
     `/admin/projects/${id}`,
-    '/client/projects',
+    '/client/productions',
     `/client/projects/${id}`,
-    '/client/dashboard',
+    '/client/home',
   ];
 }
 
 export function invoiceRevalidatePaths(id: string): string[] {
-  return ['/admin/invoices', `/admin/invoices/${id}`, '/client/invoices', '/client/dashboard'];
+  return ['/admin/finance', `/admin/invoices/${id}`, '/client/documents', '/client/home'];
 }
 
 export function taskRevalidatePaths(projectId: string | null): string[] {
-  const base = ['/employee/tasks', '/employee/dashboard'];
+  const base = ['/employee/work', '/employee/today'];
   return projectId ? [`/admin/projects/${projectId}`, ...base] : base;
 }
 
@@ -84,7 +84,7 @@ export function deliverableRevalidatePaths(projectId: string): string[] {
   return [
     `/admin/projects/${projectId}`,
     `/client/projects/${projectId}`,
-    '/client/dashboard',
+    '/client/home',
     `/employee/deliverables/${projectId}`,
     `/employee/projects/${projectId}`,
   ];
@@ -93,7 +93,7 @@ export function deliverableRevalidatePaths(projectId: string): string[] {
 // Contracts are not routed through the orchestrator, but their review approve/reject
 // branches share this exact revalidate set — the one safe DRY win (see #45).
 export function contractReviewRevalidatePaths(id: string): string[] {
-  return ['/admin/contracts', `/admin/contracts/${id}`, '/client/contracts'];
+  return ['/admin/clients', `/admin/contracts/${id}`, '/client/documents'];
 }
 
 // --- Per-entity decision functions ---

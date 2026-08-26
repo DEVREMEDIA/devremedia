@@ -47,7 +47,7 @@ export async function bookFilming(input: unknown): Promise<ActionResult<{ id: st
     const id = data as string;
 
     revalidatePath('/client/book');
-    revalidatePath('/admin/filming-requests');
+    revalidatePath('/admin/productions');
 
     // Best-effort: the Hold already exists at this point. A notification failure
     // must NOT surface as a booking error to the client (they would re-book and

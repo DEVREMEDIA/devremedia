@@ -6,33 +6,33 @@ import type { NavItem } from '@/components/shell-v2/types';
  * Τα label/short είναι κλειδιά του namespace `shellV2` — μεταφράζονται στο κέλυφος.
  */
 export const NAV_ITEMS: NavItem[] = [
-  { href: '/admin-v2/today', label: 'nav.admin.today', short: 'nav.admin.todayShort', icon: Sun },
+  { href: '/admin/today', label: 'nav.admin.today', short: 'nav.admin.todayShort', icon: Sun },
   {
-    href: '/admin-v2/clients',
+    href: '/admin/clients',
     label: 'nav.admin.clients',
     short: 'nav.admin.clientsShort',
     icon: Users,
   },
   {
-    href: '/admin-v2/productions',
+    href: '/admin/productions',
     label: 'nav.admin.productions',
     short: 'nav.admin.productionsShort',
     icon: Clapperboard,
   },
   {
-    href: '/admin-v2/calendar',
+    href: '/admin/calendar',
     label: 'nav.admin.calendar',
     short: 'nav.admin.calendarShort',
     icon: CalendarDays,
   },
   {
-    href: '/admin-v2/finance',
+    href: '/admin/finance',
     label: 'nav.admin.finance',
     short: 'nav.admin.financeShort',
     icon: Euro,
   },
   {
-    href: '/admin-v2/knowledge',
+    href: '/admin/knowledge',
     label: 'nav.admin.knowledge',
     short: 'nav.admin.knowledgeShort',
     icon: BookOpen,
@@ -40,7 +40,7 @@ export const NAV_ITEMS: NavItem[] = [
 ];
 
 export const SETTINGS_ITEM: NavItem = {
-  href: '/admin-v2/settings',
+  href: '/admin/settings',
   label: 'nav.settings',
   short: 'nav.settingsShort',
   icon: Settings,

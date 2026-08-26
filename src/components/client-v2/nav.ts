@@ -8,21 +8,21 @@ import type { NavItem } from '@/components/shell-v2/types';
  * κάτω από τα «Χαρτιά μου», όχι σε δύο ξεχωριστά μενού.
  */
 export const NAV_ITEMS: NavItem[] = [
-  { href: '/client-v2/home', label: 'nav.client.home', short: 'nav.client.homeShort', icon: Home },
+  { href: '/client/home', label: 'nav.client.home', short: 'nav.client.homeShort', icon: Home },
   {
-    href: '/client-v2/productions',
+    href: '/client/productions',
     label: 'nav.client.productions',
     short: 'nav.client.productionsShort',
     icon: Clapperboard,
   },
   {
-    href: '/client-v2/documents',
+    href: '/client/documents',
     label: 'nav.client.documents',
     short: 'nav.client.documentsShort',
     icon: FileText,
   },
   {
-    href: '/client-v2/book',
+    href: '/client/book',
     label: 'nav.client.book',
     short: 'nav.client.bookShort',
     icon: CalendarPlus,
@@ -30,7 +30,7 @@ export const NAV_ITEMS: NavItem[] = [
 ];
 
 export const SETTINGS_ITEM: NavItem = {
-  href: '/client-v2/settings',
+  href: '/client/settings',
   label: 'nav.settings',
   short: 'nav.settingsShort',
   icon: Settings,

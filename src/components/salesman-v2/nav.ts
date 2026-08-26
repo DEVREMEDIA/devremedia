@@ -8,19 +8,19 @@ import type { NavItem } from '@/components/shell-v2/types';
  */
 export const NAV_ITEMS: NavItem[] = [
   {
-    href: '/salesman-v2/today',
+    href: '/salesman/today',
     label: 'nav.salesman.today',
     short: 'nav.salesman.todayShort',
     icon: Sun,
   },
   {
-    href: '/salesman-v2/leads',
+    href: '/salesman/leads',
     label: 'nav.salesman.leads',
     short: 'nav.salesman.leadsShort',
     icon: Target,
   },
   {
-    href: '/salesman-v2/library',
+    href: '/salesman/library',
     label: 'nav.salesman.library',
     short: 'nav.salesman.libraryShort',
     icon: FolderOpen,
@@ -28,7 +28,7 @@ export const NAV_ITEMS: NavItem[] = [
 ];
 
 export const SETTINGS_ITEM: NavItem = {
-  href: '/salesman-v2/settings',
+  href: '/salesman/settings',
   label: 'nav.settings',
   short: 'nav.settingsShort',
   icon: Settings,

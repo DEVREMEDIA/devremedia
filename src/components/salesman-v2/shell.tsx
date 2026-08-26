@@ -15,8 +15,6 @@ export function SalesmanV2Shell({ children }: { children: React.ReactNode }) {
       items={NAV_ITEMS}
       settingsItem={SETTINGS_ITEM}
       mobileItems={MOBILE_NAV_ITEMS}
-      rolePrefix="salesman"
-
       userNav={<SalesmanUserNav />}
     >
       {children}

@@ -106,7 +106,7 @@ export async function createLead(input: unknown): Promise<ActionResult<Lead>> {
     if (error) return { data: null, error: error.message };
 
     revalidatePath('/salesman/leads');
-    revalidatePath('/admin/leads');
+    revalidatePath('/admin/clients');
     return { data, error: null };
   } catch (error) {
     if (error instanceof Error) return { data: null, error: error.message };
@@ -132,7 +132,7 @@ export async function updateLead(id: string, input: unknown): Promise<ActionResu
     if (error) return { data: null, error: error.message };
 
     revalidatePath('/salesman/leads');
-    revalidatePath('/admin/leads');
+    revalidatePath('/admin/clients');
     revalidatePath(`/salesman/leads/${id}`);
     revalidatePath(`/admin/leads/${id}`);
     return { data, error: null };
@@ -171,7 +171,7 @@ export async function updateLeadStage(id: string, stage: string): Promise<Action
     });
 
     revalidatePath('/salesman/leads');
-    revalidatePath('/admin/leads');
+    revalidatePath('/admin/clients');
     return { data, error: null };
   } catch {
     return { data: null, error: 'Failed to update lead stage' };
@@ -187,7 +187,7 @@ export async function deleteLead(id: string): Promise<ActionResult<void>> {
     if (error) return { data: null, error: error.message };
 
     revalidatePath('/salesman/leads');
-    revalidatePath('/admin/leads');
+    revalidatePath('/admin/clients');
     return { data: undefined, error: null };
   } catch {
     return { data: null, error: 'Failed to delete lead' };
@@ -250,7 +250,6 @@ export async function convertLeadToClient(id: string): Promise<ActionResult<Clie
     });
 
     revalidatePath('/salesman/leads');
-    revalidatePath('/admin/leads');
     revalidatePath('/admin/clients');
     return { data: client, error: null };
   } catch {

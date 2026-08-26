@@ -19,8 +19,8 @@ import type {
 import { revalidatePath } from 'next/cache';
 
 function revalidateCostModel() {
-  revalidatePath('/admin/cost-model');
-  revalidatePath('/admin/pricing-health');
+  revalidatePath('/admin/finance');
+  revalidatePath('/admin/finance');
 }
 
 // ---------------------------------------------------------------------

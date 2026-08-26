@@ -115,7 +115,6 @@ export async function inviteTeamMember(
     }
 
     revalidatePath('/admin/settings');
-    revalidatePath('/admin/users');
     return { data: { email }, error: null };
   } catch (error) {
     console.error('Failed to invite team member:', error);
@@ -185,7 +184,7 @@ export async function updateTeamMemberRole(
       }
     }
 
-    revalidatePath('/admin/users');
+    revalidatePath('/admin/settings');
     revalidatePath('/admin/clients');
     return { data: { userId, role }, error: null };
   } catch (error) {
@@ -230,7 +229,6 @@ export async function deactivateTeamMember(
     }
 
     revalidatePath('/admin/settings');
-    revalidatePath('/admin/users');
     return { data: { userId }, error: null };
   } catch (error) {
     console.error('Failed to deactivate team member:', error);
@@ -277,7 +275,6 @@ export async function reactivateTeamMember(
     }
 
     revalidatePath('/admin/settings');
-    revalidatePath('/admin/users');
     return { data: { userId }, error: null };
   } catch (error) {
     console.error('Failed to reactivate team member:', error);

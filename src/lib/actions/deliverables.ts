@@ -99,7 +99,7 @@ export async function createDeliverable(input: unknown): Promise<ActionResult<De
 
     revalidatePath(`/admin/projects/${validated.project_id}`);
     revalidatePath(`/client/projects/${validated.project_id}`);
-    revalidatePath('/client/dashboard');
+    revalidatePath('/client/home');
     revalidatePath(`/employee/deliverables/${validated.project_id}`);
     revalidatePath(`/employee/projects/${validated.project_id}`);
 
@@ -161,7 +161,7 @@ export async function updateDeliverable(
     if (data?.project_id) {
       revalidatePath(`/admin/projects/${data.project_id}`);
       revalidatePath(`/client/projects/${data.project_id}`);
-      revalidatePath('/client/dashboard');
+      revalidatePath('/client/home');
 
       // Notify client about updated deliverable
       if (validated.file_path) {

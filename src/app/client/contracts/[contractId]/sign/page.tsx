@@ -24,7 +24,7 @@ export default async function SignContractPage({ params }: SignContractPageProps
   const contract = result.data;
 
   if (!contract) {
-    redirect('/client/dashboard');
+    redirect('/client/home');
   }
 
   if (contract.status === 'signed') {

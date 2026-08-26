@@ -9,25 +9,25 @@ import type { NavItem } from '@/components/shell-v2/types';
  */
 export const NAV_ITEMS: NavItem[] = [
   {
-    href: '/employee-v2/today',
+    href: '/employee/today',
     label: 'nav.employee.today',
     short: 'nav.employee.todayShort',
     icon: Sun,
   },
   {
-    href: '/employee-v2/work',
+    href: '/employee/work',
     label: 'nav.employee.work',
     short: 'nav.employee.workShort',
     icon: ListChecks,
   },
   {
-    href: '/employee-v2/productions',
+    href: '/employee/productions',
     label: 'nav.employee.productions',
     short: 'nav.employee.productionsShort',
     icon: Clapperboard,
   },
   {
-    href: '/employee-v2/knowledge',
+    href: '/employee/knowledge',
     label: 'nav.employee.knowledge',
     short: 'nav.employee.knowledgeShort',
     icon: BookOpen,
@@ -35,7 +35,7 @@ export const NAV_ITEMS: NavItem[] = [
 ];
 
 export const SETTINGS_ITEM: NavItem = {
-  href: '/employee-v2/settings',
+  href: '/employee/settings',
   label: 'nav.settings',
   short: 'nav.settingsShort',
   icon: Settings,

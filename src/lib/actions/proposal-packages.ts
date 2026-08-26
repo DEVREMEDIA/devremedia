@@ -103,8 +103,8 @@ export async function createProposalPackage(
 
     if (error) return { data: null, error: error.message };
 
-    revalidatePath('/admin/proposal-packages');
-    revalidatePath('/admin/proposals');
+    revalidatePath('/admin/settings');
+    revalidatePath('/admin/clients');
     return { data: shape(data as Record<string, unknown>), error: null };
   } catch (err) {
     return {
@@ -132,8 +132,8 @@ export async function updateProposalPackage(
 
     if (error) return { data: null, error: error.message };
 
-    revalidatePath('/admin/proposal-packages');
-    revalidatePath('/admin/proposals');
+    revalidatePath('/admin/settings');
+    revalidatePath('/admin/clients');
     return { data: shape(data as Record<string, unknown>), error: null };
   } catch (err) {
     return {
@@ -151,8 +151,8 @@ export async function deleteProposalPackage(id: string): Promise<ActionResult<vo
     const { error } = await supabase.from('proposal_packages').delete().eq('id', id);
     if (error) return { data: null, error: error.message };
 
-    revalidatePath('/admin/proposal-packages');
-    revalidatePath('/admin/proposals');
+    revalidatePath('/admin/settings');
+    revalidatePath('/admin/clients');
     return { data: undefined, error: null };
   } catch (err) {
     return {

@@ -18,12 +18,15 @@ test.describe('Contracts - Admin', () => {
   test('admin can view contract templates page', async ({ page }) => {
     await page.goto('/admin/contracts/templates');
 
-    // Check that we're on the contract templates page
-    await expect(page).toHaveURL(/\/admin\/contracts\/templates/);
+    // The old templates route is now a stub that redirects into the settings hub
+    await expect(page).toHaveURL(/\/admin\/settings\?tab=templates/);
 
     // Check for page heading
     await expect(
-      page.locator('h1, h2').filter({ hasText: /contract|templates/i }).first()
+      page
+        .locator('h1, h2')
+        .filter({ hasText: /contract|templates/i })
+        .first(),
     ).toBeVisible();
   });
 
@@ -31,7 +34,7 @@ test.describe('Contracts - Admin', () => {
     // SKIP: Requires contract templates in database
     test.skip(true, 'Requires database with contract templates');
 
-    await page.goto('/admin/contracts/templates');
+    await page.goto('/admin/settings?tab=templates');
 
     // Look for template list or cards
     const templateList = page.locator('table, [data-testid*="template"], .template-card').first();
@@ -42,10 +45,13 @@ test.describe('Contracts - Admin', () => {
     // SKIP: Requires template creation functionality
     test.skip(true, 'Requires contract template creation implementation');
 
-    await page.goto('/admin/contracts/templates');
+    await page.goto('/admin/settings?tab=templates');
 
     // Look for new template button
-    const newButton = page.locator('button, a').filter({ hasText: /new template|create template/i }).first();
+    const newButton = page
+      .locator('button, a')
+      .filter({ hasText: /new template|create template/i })
+      .first();
     await expect(newButton).toBeVisible();
 
     await newButton.click();
@@ -65,7 +71,9 @@ test.describe('Contracts - Admin', () => {
     await expect(page.locator('h1, h2').first()).toBeVisible();
 
     // Check for contract body/content
-    const contractContent = page.locator('[data-testid*="contract-content"], .contract-body').first();
+    const contractContent = page
+      .locator('[data-testid*="contract-content"], .contract-body')
+      .first();
 
     const hasContent = await contractContent.isVisible().catch(() => false);
 
@@ -92,7 +100,9 @@ test.describe('Contracts - Admin', () => {
     await page.goto('/admin/contracts/test-contract-id');
 
     // Look for status indicator
-    const statusBadge = page.locator('[data-testid*="status"], .status, text=/draft|pending|signed|executed/i').first();
+    const statusBadge = page
+      .locator('[data-testid*="status"], .status, text=/draft|pending|signed|executed/i')
+      .first();
 
     const hasStatus = await statusBadge.isVisible().catch(() => false);
 
@@ -108,7 +118,10 @@ test.describe('Contracts - Admin', () => {
     await page.goto('/admin/contracts/test-contract-id');
 
     // Look for download button
-    const downloadButton = page.locator('button, a').filter({ hasText: /download|pdf|export/i }).first();
+    const downloadButton = page
+      .locator('button, a')
+      .filter({ hasText: /download|pdf|export/i })
+      .first();
 
     const hasDownload = await downloadButton.isVisible().catch(() => false);
 
@@ -124,7 +137,10 @@ test.describe('Contracts - Admin', () => {
     await page.goto('/admin/contracts/test-contract-id');
 
     // Look for send button
-    const sendButton = page.locator('button, a').filter({ hasText: /send|send for signature/i }).first();
+    const sendButton = page
+      .locator('button, a')
+      .filter({ hasText: /send|send for signature/i })
+      .first();
 
     const hasSend = await sendButton.isVisible().catch(() => false);
 
@@ -203,7 +219,10 @@ test.describe('Contracts - Client', () => {
     await page.goto('/client/contracts/test-contract-id');
 
     // Look for sign button
-    const signButton = page.locator('button, a').filter({ hasText: /sign|sign contract/i }).first();
+    const signButton = page
+      .locator('button, a')
+      .filter({ hasText: /sign|sign contract/i })
+      .first();
     await expect(signButton).toBeVisible();
 
     await signButton.click();
@@ -224,7 +243,7 @@ test.describe('Contracts - Client', () => {
 
     // Check for submit button
     await expect(
-      page.locator('button[type="submit"], button:has-text("Sign")').first()
+      page.locator('button[type="submit"], button:has-text("Sign")').first(),
     ).toBeVisible();
   });
 
@@ -250,9 +269,9 @@ test.describe('Contracts - Client', () => {
     await page.waitForURL(/\/client\/contracts\/[\w-]+/, { timeout: 10000 });
 
     // Verify success message
-    await expect(
-      page.locator('text=/success|signed|completed/i').first()
-    ).toBeVisible({ timeout: 5000 });
+    await expect(page.locator('text=/success|signed|completed/i').first()).toBeVisible({
+      timeout: 5000,
+    });
   });
 
   test('contract signing page has clear button', async ({ page }) => {
@@ -262,7 +281,10 @@ test.describe('Contracts - Client', () => {
     await page.goto('/client/contracts/test-contract-id/sign');
 
     // Look for clear/reset button
-    const clearButton = page.locator('button').filter({ hasText: /clear|reset/i }).first();
+    const clearButton = page
+      .locator('button')
+      .filter({ hasText: /clear|reset/i })
+      .first();
 
     const hasClear = await clearButton.isVisible().catch(() => false);
 
@@ -278,7 +300,10 @@ test.describe('Contracts - Client', () => {
     await page.goto('/client/contracts/test-contract-id');
 
     // Look for download button
-    const downloadButton = page.locator('button, a').filter({ hasText: /download|pdf/i }).first();
+    const downloadButton = page
+      .locator('button, a')
+      .filter({ hasText: /download|pdf/i })
+      .first();
 
     const hasDownload = await downloadButton.isVisible().catch(() => false);
 
@@ -294,9 +319,7 @@ test.describe('Contracts - Client', () => {
     await page.goto('/client/contracts/test-contract-id');
 
     // Look for signature section
-    await expect(
-      page.locator('text=/signed|signature|signed on/i').first()
-    ).toBeVisible();
+    await expect(page.locator('text=/signed|signature|signed on/i').first()).toBeVisible();
   });
 
   test('client cannot sign already signed contract', async ({ page }) => {
@@ -306,7 +329,10 @@ test.describe('Contracts - Client', () => {
     await page.goto('/client/contracts/test-contract-id');
 
     // Sign button should not be visible
-    const signButton = page.locator('button, a').filter({ hasText: /sign|sign contract/i }).first();
+    const signButton = page
+      .locator('button, a')
+      .filter({ hasText: /sign|sign contract/i })
+      .first();
 
     const hasSignButton = await signButton.isVisible().catch(() => false);
 
@@ -317,10 +343,12 @@ test.describe('Contracts - Client', () => {
     // SKIP: Requires client with pending contracts
     test.skip(true, 'Requires database with client contracts');
 
-    await page.goto('/client/dashboard');
+    await page.goto('/client/home');
 
     // Look for contracts section or notification
-    const contractsNotice = page.locator('text=/contract|pending signature|awaiting signature/i').first();
+    const contractsNotice = page
+      .locator('text=/contract|pending signature|awaiting signature/i')
+      .first();
 
     const hasNotice = await contractsNotice.isVisible().catch(() => false);
 

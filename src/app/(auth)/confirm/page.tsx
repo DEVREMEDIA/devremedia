@@ -3,11 +3,11 @@ import { createClient } from '@/lib/supabase/server';
 import { ConfirmationForm } from '@/components/auth/confirmation-form';
 
 const ROLE_DASHBOARDS: Record<string, string> = {
-  super_admin: '/admin/dashboard',
-  admin: '/admin/dashboard',
-  employee: '/employee/dashboard',
-  salesman: '/salesman/dashboard',
-  client: '/client/dashboard',
+  super_admin: '/admin/today',
+  admin: '/admin/today',
+  employee: '/employee/today',
+  salesman: '/salesman/today',
+  client: '/client/home',
 };
 
 /**

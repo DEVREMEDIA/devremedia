@@ -67,8 +67,8 @@ export async function createTask(input: unknown): Promise<ActionResult<Task>> {
     if (error) return { data: null, error: error.message };
 
     revalidatePath(`/admin/projects/${validated.project_id}`);
-    revalidatePath('/employee/tasks');
-    revalidatePath('/employee/dashboard');
+    revalidatePath('/employee/work');
+    revalidatePath('/employee/today');
 
     if (validated.assigned_to) {
       createNotification({
@@ -130,8 +130,8 @@ export async function updateTask(id: string, input: unknown): Promise<ActionResu
     if (data?.project_id) {
       revalidatePath(`/admin/projects/${data.project_id}`);
     }
-    revalidatePath('/employee/tasks');
-    revalidatePath('/employee/dashboard');
+    revalidatePath('/employee/work');
+    revalidatePath('/employee/today');
 
     // Notify new assignee if assigned_to changed
     if (validated.assigned_to && validated.assigned_to !== oldTask?.assigned_to) {
@@ -227,8 +227,8 @@ export async function deleteTask(id: string): Promise<ActionResult<void>> {
     if (task?.project_id) {
       revalidatePath(`/admin/projects/${task.project_id}`);
     }
-    revalidatePath('/employee/tasks');
-    revalidatePath('/employee/dashboard');
+    revalidatePath('/employee/work');
+    revalidatePath('/employee/today');
     await syncEntityToGoogle({
       entityType: 'task',
       entityId: id,

@@ -150,9 +150,9 @@ export async function createFilmingRequest(input: unknown): Promise<ActionResult
 
     if (error) return { data: null, error: error.message };
 
-    revalidatePath('/admin/filming-requests');
-    revalidatePath('/client/projects');
-    revalidatePath('/client/dashboard');
+    revalidatePath('/admin/productions');
+    revalidatePath('/client/productions');
+    revalidatePath('/client/home');
 
     // Notify all admins about new booking request
     const adminIds = await getAdminUserIds();
@@ -197,10 +197,10 @@ export async function reviewFilmingRequest(
 
     if (error) return { data: null, error: error.message };
 
-    revalidatePath('/admin/filming-requests');
+    revalidatePath('/admin/productions');
     revalidatePath(`/admin/filming-requests/${id}`);
-    revalidatePath('/client/projects');
-    revalidatePath('/client/dashboard');
+    revalidatePath('/client/productions');
+    revalidatePath('/client/home');
 
     // Notify client if they have an account
     if (data.client_id) {
@@ -354,12 +354,11 @@ export async function convertToProject(id: string): Promise<ActionResult<Project
 
     if (updateError) return { data: null, error: updateError.message };
 
-    revalidatePath('/admin/filming-requests');
-    revalidatePath('/admin/projects');
+    revalidatePath('/admin/productions');
     revalidatePath('/admin/clients');
     revalidatePath('/admin/calendar');
-    revalidatePath('/client/projects');
-    revalidatePath('/client/dashboard');
+    revalidatePath('/client/productions');
+    revalidatePath('/client/home');
     return { data: project, error: null };
   } catch (err: unknown) {
     return {
@@ -469,12 +468,11 @@ export async function approveHold(id: string): Promise<ActionResult<Project>> {
 
     if (updateError) return { data: null, error: updateError.message };
 
-    revalidatePath('/admin/filming-requests');
+    revalidatePath('/admin/productions');
     revalidatePath(`/admin/filming-requests/${id}`);
-    revalidatePath('/admin/projects');
     revalidatePath('/admin/calendar');
     revalidatePath('/client/book');
-    revalidatePath('/client/dashboard');
+    revalidatePath('/client/home');
 
     await notifyClientOfHoldOutcome(hold.client_id as string | null, hold.title as string, true);
 
@@ -518,10 +516,10 @@ export async function rejectHold(id: string): Promise<ActionResult<FilmingReques
 
     if (updateError) return { data: null, error: updateError.message };
 
-    revalidatePath('/admin/filming-requests');
+    revalidatePath('/admin/productions');
     revalidatePath(`/admin/filming-requests/${id}`);
     revalidatePath('/client/book');
-    revalidatePath('/client/dashboard');
+    revalidatePath('/client/home');
 
     await notifyClientOfHoldOutcome(hold.client_id as string | null, hold.title as string, false);
 
@@ -598,7 +596,7 @@ export async function createPublicFilmingRequest(
       actionUrl: '/admin/leads',
     });
 
-    revalidatePath('/admin/leads');
+    revalidatePath('/admin/clients');
     revalidatePath('/salesman/leads');
     return { data, error: null };
   } catch (error) {

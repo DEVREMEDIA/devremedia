@@ -114,7 +114,7 @@ export async function deleteChatConversation(id: string): Promise<ActionResult<n
     const { error } = await admin.from('chat_conversations').delete().eq('id', id);
 
     if (error) return { data: null, error: error.message };
-    revalidatePath('/admin/chatbot');
+    revalidatePath('/admin/clients');
     return { data: null, error: null };
   } catch {
     return { data: null, error: 'Failed to delete conversation' };

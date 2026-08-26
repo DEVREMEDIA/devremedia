@@ -1,5 +1,6 @@
-import { SalesHandbook } from '@/components/salesman/handbook/sales-handbook';
+import { redirect } from 'next/navigation';
 
-export default function HandbookPage() {
-  return <SalesHandbook />;
+/** Άλλαξε σπίτι στο νέο μοντέλο — ο σύνδεσμος μένει ζωντανός. */
+export default function SalesmanHandbookPage() {
+  redirect('/salesman/library?tab=handbook');
 }
