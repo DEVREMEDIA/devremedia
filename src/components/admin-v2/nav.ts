@@ -21,5 +21,5 @@ export const SETTINGS_ITEM: NavItem = {
   icon: Settings,
 };
 
-/** Τα 5 items που χωράνε στην κάτω μπάρα του κινητού. */
-export const MOBILE_NAV_ITEMS: NavItem[] = NAV_ITEMS.slice(0, 5);
+/** Στο κινητό χωράνε και τα 6 — το grid της μπάρας προσαρμόζεται στο πλήθος. */
+export const MOBILE_NAV_ITEMS: NavItem[] = NAV_ITEMS;

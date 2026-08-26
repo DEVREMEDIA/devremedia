@@ -3,6 +3,7 @@ import { ShellBottomNav } from './bottom-nav';
 import { KeepInShell } from './keep-in-shell';
 import { NotificationBell } from '@/components/shared/notification-bell';
 import { ThemeToggle } from '@/components/theme-toggle';
+import { LanguageSwitcher } from '@/components/shared/language-switcher';
 import type { NavItem } from './types';
 
 interface AppShellProps {
@@ -41,6 +42,7 @@ export function AppShell({
           Προεπισκόπηση v2
         </span>
         <div className="flex-1" />
+        <LanguageSwitcher />
         <ThemeToggle />
         <NotificationBell />
         {userNav}
