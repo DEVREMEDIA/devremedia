@@ -14,6 +14,20 @@ const COVERED = [
   // Εδώ ζει ΟΛΟΣ ο χάρτης τόνου→κλάσης. Αν ξεφύγει αυτό, ξεβάφει κάθε
   // πλακίδιο της μεταναστευμένης οθόνης — πρέπει να φυλάσσεται.
   'src/components/shared/tone-chip.tsx',
+  // Το κοινό πλέγμα αριθμών και το πλακίδιό του — η βάση όλης αυτής της φέτας.
+  'src/components/shared/stat-grid.tsx',
+  'src/components/shared/stat-card.tsx',
+  'src/components/shared/delta-badge.tsx',
+  'src/components/shared/sparkline.tsx',
+  // Οι οθόνες που πέρασαν στο κοινό πλέγμα. Ήταν φτιαγμένες από ωμά χρώματα·
+  // αν ξαναγίνουν, ο κανόνας χτυπά αμέσως.
+  // Εξαίρεση: src/components/salesman/dashboard/pipeline-summary.tsx μένει
+  // εκτός — το panel «Pipeline by Stage» κρατά ακόμα ωμά χρώματα, οφειλόμενο
+  // σε επόμενη φέτα.
+  'src/components/admin/chatbot/chatbot-stats.tsx',
+  'src/components/admin/calendar/calendar-stats.tsx',
+  'src/components/employee/dashboard/task-stats.tsx',
+  'src/components/client/dashboard/dashboard-stats.tsx',
 ];
 
 // Αρχεία μέσα σε καλυμμένους φακέλους που όντως γράφουν ακόμα ωμό χρώμα.

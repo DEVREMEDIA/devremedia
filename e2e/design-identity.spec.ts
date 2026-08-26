@@ -174,6 +174,47 @@ test.describe('design identity — page heading', () => {
   }
 });
 
+test.describe('design identity — shared stat grid', () => {
+  /**
+   * Επτά αυτοσχέδια πλέγματα αριθμών ενοποιήθηκαν σε ένα κοινό StatGrid/StatCard
+   * (#103). Εδώ επιβεβαιώνεται ότι η κάθε οθόνη όντως το χρησιμοποιεί — όχι μόνο
+   * ότι ο κώδικας δεν έχει ωμό χρώμα (αυτό το πιάνει ήδη ο check:design guard).
+   */
+  const ROUTES: { route: string; count: number | { atLeast: number } }[] = [
+    // Το KPI strip είναι μόνο για super_admin, οπότε το ραντάρ κινδύνου δίνει
+    // πάτωμα, όχι ακριβή μέτρηση.
+    { route: '/admin/today', count: { atLeast: 6 } },
+    { route: '/admin/clients', count: 4 },
+    { route: '/employee/today', count: 4 },
+    { route: '/client/home', count: 3 },
+    { route: '/salesman/today', count: 2 },
+  ];
+
+  // Ο middleware αφήνει τον admin να μπει και στα /client/*, /employee/*,
+  // /salesman/* — μία admin session αρκεί και για τους 4 ρόλους.
+  for (const { route, count } of ROUTES) {
+    test(`${route} renders stat cards through the shared grid`, async ({ page }) => {
+      test.skip(!process.env.E2E_TEST_USERS_READY, 'Test users not configured in database');
+      await loginAsAdmin(page);
+      await page.goto(route);
+
+      // Χωρίς αυτό, μια ανακατεύθυνση στο /login θα έδινε μηδέν κάρτες και
+      // ο έλεγχος θα «αποτύγχανε σωστά» για εντελώς λάθος λόγο.
+      await expect(page).toHaveURL(new RegExp(route.split('?')[0].replace(/\//g, '\\/')));
+
+      await expect(page.locator('[data-slot="stat-grid"]').first()).toBeVisible();
+
+      if (typeof count === 'number') {
+        await expect(page.locator('[data-slot="stat-card"]')).toHaveCount(count);
+      } else {
+        expect(await page.locator('[data-slot="stat-card"]').count()).toBeGreaterThanOrEqual(
+          count.atLeast,
+        );
+      }
+    });
+  }
+});
+
 test.describe('design identity — typefaces', () => {
   test('the three typefaces load with Greek glyphs on the login page', async ({ page }) => {
     await page.goto('/login');
