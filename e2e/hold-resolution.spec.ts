@@ -28,7 +28,7 @@ async function bookFirstAvailableSlot(page: import('@playwright/test').Page) {
 }
 
 async function openLatestHold(page: import('@playwright/test').Page) {
-  await page.goto('/admin/filming-requests');
+  await page.goto('/admin/productions?tab=requests');
   // The newest request (the Hold just created) is first.
   const firstRow = page
     .getByRole('link')

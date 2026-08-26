@@ -13,13 +13,13 @@ function getDashboardForRole(role: string): string {
   switch (role) {
     case 'super_admin':
     case 'admin':
-      return '/admin/dashboard';
+      return '/admin/today';
     case 'employee':
-      return '/employee/dashboard';
+      return '/employee/today';
     case 'salesman':
-      return '/salesman/dashboard';
+      return '/salesman/today';
     default:
-      return '/client/dashboard';
+      return '/client/home';
   }
 }
 
@@ -81,6 +81,14 @@ export async function middleware(request: NextRequest) {
   }
 
   const { pathname } = request.nextUrl;
+
+  // Τα -v2 URLs της περιόδου preview ζουν για πάντα ως redirects στα καθαρά.
+  const v2Match = pathname.match(/^\/(admin|client|employee|salesman)-v2(\/.*)?$/);
+  if (v2Match) {
+    const url = request.nextUrl.clone();
+    url.pathname = `/${v2Match[1]}${v2Match[2] ?? ''}`;
+    return NextResponse.redirect(url, 308);
+  }
 
   // If a Supabase auth code arrives on any route (e.g. fallback to site_url),
   // redirect to /auth/callback to exchange it for a session

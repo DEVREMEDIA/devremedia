@@ -27,11 +27,11 @@ test.describe('Authentication', () => {
 
     await loginAsAdmin(page);
 
-    // Should redirect to admin dashboard
-    await expect(page).toHaveURL(/\/admin\/dashboard/);
+    // Should redirect to the admin "today" hub
+    await expect(page).toHaveURL(/\/admin\/today/);
 
-    // Check for admin-specific elements
-    await expect(page.locator('text=/clients|projects|invoices/i')).toBeVisible();
+    // Check for admin-specific shell nav
+    await expect(page.locator('aside a[href="/admin/clients"]')).toBeVisible();
   });
 
   test('login with valid client credentials redirects to client dashboard', async ({ page }) => {
@@ -40,11 +40,11 @@ test.describe('Authentication', () => {
 
     await loginAsClient(page);
 
-    // Should redirect to client dashboard
-    await expect(page).toHaveURL(/\/client\/dashboard/);
+    // Should redirect to the client "home" hub
+    await expect(page).toHaveURL(/\/client\/home/);
 
-    // Check for client-specific elements
-    await expect(page.locator('text=/projects|invoices|book/i')).toBeVisible();
+    // Check for client-specific shell nav
+    await expect(page.locator('aside a[href="/client/productions"]')).toBeVisible();
   });
 
   test('login with invalid credentials shows error', async ({ page }) => {
@@ -127,7 +127,7 @@ test.describe('Authentication', () => {
     await loginAsAdmin(page);
 
     // Verify we're logged in
-    await expect(page).toHaveURL(/\/admin\/dashboard/);
+    await expect(page).toHaveURL(/\/admin\/today/);
 
     // Perform logout
     await logout(page);

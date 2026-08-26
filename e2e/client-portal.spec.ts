@@ -16,31 +16,28 @@ test.describe('Client Portal', () => {
   });
 
   test('client dashboard renders correctly', async ({ page }) => {
-    await page.goto('/client/dashboard');
+    await page.goto('/client/home');
 
-    // Check that we're on the client dashboard
-    await expect(page).toHaveURL(/\/client\/dashboard/);
+    // Check that we're on the client home hub
+    await expect(page).toHaveURL(/\/client\/home/);
 
     // Check for dashboard heading
     await expect(
-      page.locator('h1, h2').filter({ hasText: /dashboard|welcome/i }).first()
+      page
+        .locator('h1, h2')
+        .filter({ hasText: /dashboard|welcome/i })
+        .first(),
     ).toBeVisible();
   });
 
   test('client dashboard shows navigation menu', async ({ page }) => {
-    await page.goto('/client/dashboard');
+    await page.goto('/client/home');
 
-    // Check for main navigation items
-    const navItems = ['projects', 'invoices', 'book'];
+    // Check for the shell's main destinations
+    const navHrefs = ['/client/home', '/client/productions', '/client/documents', '/client/book'];
 
-    for (const item of navItems) {
-      const navLink = page.locator(`nav a, [role="navigation"] a`).filter({ hasText: new RegExp(item, 'i') });
-      const hasLink = await navLink.first().isVisible().catch(() => false);
-
-      // At least some nav items should be present
-      if (hasLink) {
-        await expect(navLink.first()).toBeVisible();
-      }
+    for (const href of navHrefs) {
+      await expect(page.locator(`aside a[href="${href}"]`)).toBeVisible();
     }
   });
 
@@ -48,7 +45,7 @@ test.describe('Client Portal', () => {
     // SKIP: Requires client with projects in database
     test.skip(true, 'Requires database with client projects');
 
-    await page.goto('/client/dashboard');
+    await page.goto('/client/home');
 
     // Look for project cards or list
     const projectCard = page.locator('[data-testid*="project"], .project-card').first();
@@ -56,7 +53,7 @@ test.describe('Client Portal', () => {
   });
 
   test('client dashboard shows recent activity or updates', async ({ page }) => {
-    await page.goto('/client/dashboard');
+    await page.goto('/client/home');
 
     // Look for activity feed, updates section, or notifications
     const activitySection = page.locator('text=/recent|activity|updates|notifications/i').first();
@@ -70,25 +67,27 @@ test.describe('Client Portal', () => {
   });
 
   test('client can navigate to projects list', async ({ page }) => {
-    await page.goto('/client/dashboard');
+    await page.goto('/client/home');
 
-    // Click on projects link in navigation
-    const projectsLink = page.locator('nav a, a').filter({ hasText: /projects/i }).first();
-    await projectsLink.click();
+    // Click the productions destination in the shell nav
+    await page.locator('aside a[href="/client/productions"]').click();
 
-    // Should navigate to projects page
-    await expect(page).toHaveURL(/\/client\/projects/);
+    // Should navigate to the productions hub
+    await expect(page).toHaveURL(/\/client\/productions/);
   });
 
   test('client projects page renders correctly', async ({ page }) => {
-    await page.goto('/client/projects');
+    await page.goto('/client/productions');
 
-    // Check that we're on the projects page
-    await expect(page).toHaveURL(/\/client\/projects$/);
+    // Check that we're on the productions page
+    await expect(page).toHaveURL(/\/client\/productions$/);
 
     // Check for page heading
     await expect(
-      page.locator('h1, h2').filter({ hasText: /projects/i }).first()
+      page
+        .locator('h1, h2')
+        .filter({ hasText: /productions/i })
+        .first(),
     ).toBeVisible();
   });
 
@@ -96,7 +95,7 @@ test.describe('Client Portal', () => {
     // SKIP: Requires client with at least one project in database
     test.skip(true, 'Requires database with client project');
 
-    await page.goto('/client/projects');
+    await page.goto('/client/productions');
 
     // Click on first project
     const firstProject = page.locator('a[href*="/client/projects/"]').first();
@@ -121,25 +120,25 @@ test.describe('Client Portal', () => {
   });
 
   test('client can navigate to invoices list', async ({ page }) => {
-    await page.goto('/client/dashboard');
+    await page.goto('/client/home');
 
-    // Click on invoices link in navigation
-    const invoicesLink = page.locator('nav a, a').filter({ hasText: /invoices/i }).first();
-    await invoicesLink.click();
-
-    // Should navigate to invoices page
-    await expect(page).toHaveURL(/\/client\/invoices/);
+    // Invoices now live under the documents hub's "Invoices" tab
+    await page.locator('aside a[href="/client/documents"]').click();
+    await expect(page).toHaveURL(/\/client\/documents/);
   });
 
   test('client invoices page renders correctly', async ({ page }) => {
-    await page.goto('/client/invoices');
+    await page.goto('/client/documents?tab=invoices');
 
-    // Check that we're on the invoices page
-    await expect(page).toHaveURL(/\/client\/invoices$/);
+    // Check that we're on the documents hub, invoices tab
+    await expect(page).toHaveURL(/\/client\/documents\?tab=invoices/);
 
     // Check for page heading
     await expect(
-      page.locator('h1, h2').filter({ hasText: /invoices/i }).first()
+      page
+        .locator('h1, h2')
+        .filter({ hasText: /invoices/i })
+        .first(),
     ).toBeVisible();
   });
 
@@ -147,7 +146,7 @@ test.describe('Client Portal', () => {
     // SKIP: Requires client with at least one invoice in database
     test.skip(true, 'Requires database with client invoice');
 
-    await page.goto('/client/invoices');
+    await page.goto('/client/documents?tab=invoices');
 
     // Click on first invoice
     const firstInvoice = page.locator('a[href*="/client/invoices/"]').first();
@@ -167,7 +166,10 @@ test.describe('Client Portal', () => {
     await page.goto('/client/invoices/test-invoice-id');
 
     // Look for payment button
-    const payButton = page.locator('button, a').filter({ hasText: /pay|pay now|make payment/i }).first();
+    const payButton = page
+      .locator('button, a')
+      .filter({ hasText: /pay|pay now|make payment/i })
+      .first();
     await expect(payButton).toBeVisible();
   });
 
@@ -178,7 +180,10 @@ test.describe('Client Portal', () => {
     await page.goto('/client/invoices/test-invoice-id');
 
     // Look for download button
-    const downloadButton = page.locator('a, button').filter({ hasText: /download|pdf/i }).first();
+    const downloadButton = page
+      .locator('a, button')
+      .filter({ hasText: /download|pdf/i })
+      .first();
 
     const hasDownload = await downloadButton.isVisible().catch(() => false);
 
@@ -188,10 +193,13 @@ test.describe('Client Portal', () => {
   });
 
   test('client can access booking wizard', async ({ page }) => {
-    await page.goto('/client/dashboard');
+    await page.goto('/client/home');
 
     // Look for book/request filming link
-    const bookLink = page.locator('nav a, a').filter({ hasText: /book|request|new project/i }).first();
+    const bookLink = page
+      .locator('nav a, a')
+      .filter({ hasText: /book|request|new project/i })
+      .first();
 
     const hasBookLink = await bookLink.isVisible().catch(() => false);
 
@@ -213,7 +221,10 @@ test.describe('Client Portal', () => {
 
     // Check for page heading
     await expect(
-      page.locator('h1, h2').filter({ hasText: /settings|profile/i }).first()
+      page
+        .locator('h1, h2')
+        .filter({ hasText: /settings|profile/i })
+        .first(),
     ).toBeVisible();
   });
 
@@ -229,31 +240,29 @@ test.describe('Client Portal', () => {
     // SKIP: Requires client with no projects in database
     test.skip(true, 'Requires database with client having no projects');
 
-    await page.goto('/client/projects');
+    await page.goto('/client/productions');
 
     // Look for empty state message
-    await expect(
-      page.locator('text=/no projects|empty|get started/i').first()
-    ).toBeVisible();
+    await expect(page.locator('text=/no projects|empty|get started/i').first()).toBeVisible();
   });
 
   test('empty invoices list shows appropriate message', async ({ page }) => {
     // SKIP: Requires client with no invoices in database
     test.skip(true, 'Requires database with client having no invoices');
 
-    await page.goto('/client/invoices');
+    await page.goto('/client/documents?tab=invoices');
 
     // Look for empty state message
-    await expect(
-      page.locator('text=/no invoices|empty/i').first()
-    ).toBeVisible();
+    await expect(page.locator('text=/no invoices|empty/i').first()).toBeVisible();
   });
 
   test('client dashboard shows quick stats or summary', async ({ page }) => {
-    await page.goto('/client/dashboard');
+    await page.goto('/client/home');
 
     // Look for stats cards or summary information
-    const statsSection = page.locator('[data-testid*="stat"], .stat-card, [class*="metric"]').first();
+    const statsSection = page
+      .locator('[data-testid*="stat"], .stat-card, [class*="metric"]')
+      .first();
 
     const hasStats = await statsSection.isVisible().catch(() => false);
 

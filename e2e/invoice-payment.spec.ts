@@ -21,26 +21,38 @@ test.describe('Invoice Management', () => {
     // Wait for the page to load
     await page.waitForLoadState('networkidle');
 
-    // Check that we're on the invoices page
-    await expect(page).toHaveURL(/\/admin\/invoices$/);
+    // The old bare route is now a stub that redirects into the finance hub
+    await expect(page).toHaveURL(/\/admin\/finance\?tab=invoices/);
 
     // Check for page heading
     await expect(
-      page.locator('h1, h2').filter({ hasText: /invoices/i }).first()
+      page
+        .locator('h1, h2')
+        .filter({ hasText: /invoices/i })
+        .first(),
     ).toBeVisible();
 
     // Check for table or list
-    const hasTable = await page.locator('table').isVisible().catch(() => false);
-    const hasList = await page.locator('[data-testid*="invoice"]').isVisible().catch(() => false);
+    const hasTable = await page
+      .locator('table')
+      .isVisible()
+      .catch(() => false);
+    const hasList = await page
+      .locator('[data-testid*="invoice"]')
+      .isVisible()
+      .catch(() => false);
 
     expect(hasTable || hasList).toBeTruthy();
   });
 
   test('invoices list shows add new invoice button', async ({ page }) => {
-    await page.goto('/admin/invoices');
+    await page.goto('/admin/finance?tab=invoices');
 
     // Look for "New Invoice" or "Create Invoice" button
-    const addButton = page.locator('a, button').filter({ hasText: /new invoice|create invoice|add invoice/i }).first();
+    const addButton = page
+      .locator('a, button')
+      .filter({ hasText: /new invoice|create invoice|add invoice/i })
+      .first();
     await expect(addButton).toBeVisible();
 
     // Verify it links to the new invoice page
@@ -51,10 +63,13 @@ test.describe('Invoice Management', () => {
   });
 
   test('admin can navigate to create new invoice page', async ({ page }) => {
-    await page.goto('/admin/invoices');
+    await page.goto('/admin/finance?tab=invoices');
 
     // Click the new invoice button
-    const addButton = page.locator('a, button').filter({ hasText: /new invoice|create invoice/i }).first();
+    const addButton = page
+      .locator('a, button')
+      .filter({ hasText: /new invoice|create invoice/i })
+      .first();
     await addButton.click();
 
     // Should navigate to new invoice page
@@ -99,9 +114,9 @@ test.describe('Invoice Management', () => {
     await page.waitForURL(/\/admin\/invoices(\/[\w-]+)?/, { timeout: 10000 });
 
     // Verify success message
-    await expect(
-      page.locator('text=/success|created|invoice created/i').first()
-    ).toBeVisible({ timeout: 5000 });
+    await expect(page.locator('text=/success|created|invoice created/i').first()).toBeVisible({
+      timeout: 5000,
+    });
   });
 
   test('admin can view invoice detail page', async ({ page }) => {
@@ -109,10 +124,12 @@ test.describe('Invoice Management', () => {
     test.skip(true, 'Requires database with at least one invoice record');
 
     // Navigate to invoices list
-    await page.goto('/admin/invoices');
+    await page.goto('/admin/finance?tab=invoices');
 
     // Click on first invoice
-    const firstInvoice = page.locator('tr td a, [data-testid*="invoice"] a, a[href*="/admin/invoices/"]').first();
+    const firstInvoice = page
+      .locator('tr td a, [data-testid*="invoice"] a, a[href*="/admin/invoices/"]')
+      .first();
     await firstInvoice.click();
 
     // Should be on invoice detail page
@@ -129,19 +146,13 @@ test.describe('Invoice Management', () => {
     await page.goto('/admin/invoices/test-invoice-id');
 
     // Check for invoice number or ID
-    await expect(
-      page.locator('text=/invoice #|invoice number/i').first()
-    ).toBeVisible();
+    await expect(page.locator('text=/invoice #|invoice number/i').first()).toBeVisible();
 
     // Check for amount or total
-    await expect(
-      page.locator('text=/total|amount|subtotal/i').first()
-    ).toBeVisible();
+    await expect(page.locator('text=/total|amount|subtotal/i').first()).toBeVisible();
 
     // Check for status
-    await expect(
-      page.locator('text=/status|paid|unpaid|pending/i').first()
-    ).toBeVisible();
+    await expect(page.locator('text=/status|paid|unpaid|pending/i').first()).toBeVisible();
   });
 
   test('invoice detail page shows line items', async ({ page }) => {
@@ -190,7 +201,7 @@ test.describe('Invoice Management', () => {
   });
 
   test('invoices list shows status filters', async ({ page }) => {
-    await page.goto('/admin/invoices');
+    await page.goto('/admin/finance?tab=invoices');
 
     // Look for status filter controls
     const statusFilter = page.locator('[data-testid*="filter"], button:has-text("Filter")').first();
@@ -207,7 +218,7 @@ test.describe('Invoice Management', () => {
     // SKIP: Requires invoices in database
     test.skip(true, 'Requires database with invoice records');
 
-    await page.goto('/admin/invoices');
+    await page.goto('/admin/finance?tab=invoices');
 
     // Look for status indicators
     const statusBadge = page.locator('[data-testid*="status"], .badge, .status').first();
@@ -226,7 +237,10 @@ test.describe('Invoice Management', () => {
     await page.goto('/admin/invoices/test-invoice-id');
 
     // Look for download or print button
-    const downloadButton = page.locator('a, button').filter({ hasText: /download|print|pdf/i }).first();
+    const downloadButton = page
+      .locator('a, button')
+      .filter({ hasText: /download|print|pdf/i })
+      .first();
 
     const hasDownload = await downloadButton.isVisible().catch(() => false);
 
@@ -243,20 +257,21 @@ test.describe('Invoice Management', () => {
     await page.goto('/admin/invoices/test-invoice-id');
 
     // Look for client/bill to section
-    await expect(
-      page.locator('text=/bill to|client|customer/i').first()
-    ).toBeVisible();
+    await expect(page.locator('text=/bill to|client|customer/i').first()).toBeVisible();
   });
 
   test('admin can access expenses page', async ({ page }) => {
     await page.goto('/admin/invoices/expenses');
 
-    // Check that we're on the expenses page
-    await expect(page).toHaveURL(/\/admin\/invoices\/expenses/);
+    // The old bare route is now a stub that redirects into the finance hub
+    await expect(page).toHaveURL(/\/admin\/finance\?tab=expenses/);
 
     // Check for page heading
     await expect(
-      page.locator('h1, h2').filter({ hasText: /expenses/i }).first()
+      page
+        .locator('h1, h2')
+        .filter({ hasText: /expenses/i })
+        .first(),
     ).toBeVisible();
   });
 
@@ -264,11 +279,9 @@ test.describe('Invoice Management', () => {
     // SKIP: Requires empty database or specific test state
     test.skip(true, 'Requires database with no invoices (specific test state)');
 
-    await page.goto('/admin/invoices');
+    await page.goto('/admin/finance?tab=invoices');
 
     // Look for empty state message
-    await expect(
-      page.locator('text=/no invoices|empty|create your first/i').first()
-    ).toBeVisible();
+    await expect(page.locator('text=/no invoices|empty|create your first/i').first()).toBeVisible();
   });
 });
