@@ -6,22 +6,11 @@ import type { CostSummary } from '@/types/index';
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip } from 'recharts';
 import { Calculator, Clock, Euro } from 'lucide-react';
 import { formatEur as fmtEUR } from '@/lib/format';
+import { seriesColor, CHART_TOOLTIP_STYLE } from '@/lib/chart-colors';
 
 interface Props {
   initialSummary: CostSummary | null;
 }
-
-// Palette tuned for dark backgrounds — good contrast, distinct hues
-const COLORS = [
-  '#60a5fa', // blue
-  '#34d399', // emerald
-  '#fb923c', // orange
-  '#c084fc', // purple
-  '#f87171', // red
-  '#22d3ee', // cyan
-  '#facc15', // amber
-  '#f472b6', // pink
-];
 
 export function CostSummaryTab({ initialSummary }: Props) {
   const t = useTranslations('costModel.summary');
@@ -100,16 +89,12 @@ export function CostSummaryTab({ initialSummary }: Props) {
                     {summary.by_category
                       .filter((c) => c.total > 0)
                       .map((_, idx) => (
-                        <Cell key={idx} fill={COLORS[idx % COLORS.length]} />
+                        <Cell key={idx} fill={seriesColor(idx)} />
                       ))}
                   </Pie>
                   <Tooltip
                     formatter={(v) => fmtEUR(Number(v))}
-                    contentStyle={{
-                      background: 'rgb(24 24 27 / 0.95)',
-                      border: '1px solid rgb(63 63 70)',
-                      borderRadius: 6,
-                    }}
+                    contentStyle={CHART_TOOLTIP_STYLE}
                   />
                 </PieChart>
               </ResponsiveContainer>
@@ -134,7 +119,7 @@ export function CostSummaryTab({ initialSummary }: Props) {
                   <div className="flex items-center gap-2 min-w-0">
                     <div
                       className="h-3 w-3 rounded-full flex-shrink-0"
-                      style={{ backgroundColor: COLORS[idx % COLORS.length] }}
+                      style={{ backgroundColor: seriesColor(idx) }}
                     />
                     <span className="truncate font-medium">{c.category_name}</span>
                   </div>

@@ -23,6 +23,8 @@ import { HealthStatusBadge } from '@/components/admin/pricing-health/health-stat
 import { PricingEditDialog } from '@/components/admin/pricing-health/pricing-edit-dialog';
 import { Pencil, TrendingDown, TrendingUp, Euro, AlertCircle } from 'lucide-react';
 import { formatEurInt as fmtEUR } from '@/lib/format';
+import { StatGrid } from '@/components/shared/stat-grid';
+import { StatCard } from '@/components/shared/stat-card';
 
 interface Props {
   summary: PricingHealthSummary | null;
@@ -89,34 +91,30 @@ export function PricingHealthContent({
   return (
     <div className="space-y-6">
       {/* KPIs */}
-      <div className="grid gap-3 grid-cols-2 md:grid-cols-3 lg:grid-cols-6">
-        <KpiCard label={t('kpis.totalProjects')} value={String(summary.total_projects)} />
-        <KpiCard
+      <StatGrid columns={6}>
+        <StatCard label={t('kpis.totalProjects')} value={String(summary.total_projects)} />
+        <StatCard
           label={t('kpis.analysed')}
           value={`${summary.analysed} / ${summary.total_projects}`}
         />
-        <KpiCard
-          icon={<Euro className="h-4 w-4" />}
-          label={t('kpis.totalQuoted')}
-          value={fmtEUR(summary.total_quoted)}
-        />
-        <KpiCard
-          icon={<TrendingDown className="h-4 w-4" />}
+        <StatCard icon={Euro} label={t('kpis.totalQuoted')} value={fmtEUR(summary.total_quoted)} />
+        <StatCard
+          icon={TrendingDown}
           label={t('kpis.totalCost')}
           value={fmtEUR(summary.total_cost)}
         />
-        <KpiCard
-          icon={<TrendingUp className="h-4 w-4" />}
+        <StatCard
+          icon={TrendingUp}
           label={t('kpis.totalProfit')}
           value={fmtEUR(summary.total_profit)}
-          tone={summary.total_profit >= 0 ? 'positive' : 'negative'}
+          tone={summary.total_profit >= 0 ? 'positive' : 'critical'}
         />
-        <KpiCard
+        <StatCard
           label={t('kpis.leftOnTable')}
           value={fmtEUR(summary.total_left_on_table)}
-          tone={summary.total_left_on_table > 0 ? 'warning' : undefined}
+          tone={summary.total_left_on_table > 0 ? 'caution' : undefined}
         />
-      </div>
+      </StatGrid>
 
       {/* Status breakdown */}
       <Card>
@@ -193,40 +191,6 @@ export function PricingHealthContent({
 
 // ---------------------------------------------------------------------
 
-function KpiCard({
-  label,
-  value,
-  icon,
-  tone,
-}: {
-  label: string;
-  value: string;
-  icon?: React.ReactNode;
-  tone?: 'positive' | 'negative' | 'warning';
-}) {
-  const toneCls =
-    tone === 'positive'
-      ? 'text-emerald-400'
-      : tone === 'negative'
-        ? 'text-red-400'
-        : tone === 'warning'
-          ? 'text-amber-400'
-          : 'text-foreground';
-  return (
-    <Card>
-      <CardContent className="p-4">
-        <div className="flex items-center justify-between gap-2 mb-1">
-          <span className="text-[11px] uppercase tracking-wider text-muted-foreground truncate">
-            {label}
-          </span>
-          {icon && <span className="text-muted-foreground flex-shrink-0">{icon}</span>}
-        </div>
-        <div className={`text-xl font-bold tabular-nums ${toneCls}`}>{value}</div>
-      </CardContent>
-    </Card>
-  );
-}
-
 function ProjectRow({
   project: p,
   onEdit,
@@ -290,7 +254,7 @@ function MetaCell({
   tone?: 'positive' | 'negative';
 }) {
   const toneCls =
-    tone === 'positive' ? 'text-emerald-400' : tone === 'negative' ? 'text-red-400' : '';
+    tone === 'positive' ? 'text-tone-positive' : tone === 'negative' ? 'text-tone-critical' : '';
   return (
     <div>
       <div className="text-[10px] uppercase tracking-wider text-muted-foreground">{label}</div>
