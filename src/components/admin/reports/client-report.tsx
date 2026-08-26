@@ -23,7 +23,7 @@ export function ClientReport({ topClients }: ClientReportProps) {
       id: 'rank',
       header: '#',
       cell: ({ row }) => <span className="text-muted-foreground">{row.index + 1}</span>,
-      meta: { numeric: true, align: 'left' },
+      meta: { numeric: true, align: 'left', width: 'w-10' },
       enableSorting: false,
     },
     {
@@ -35,6 +35,9 @@ export function ClientReport({ topClients }: ClientReportProps) {
     {
       id: 'revenueShare',
       header: 'Μερίδιο τζίρου',
+      // Η μπάρα είναι `w-full` του κελιού της: χωρίς ρητό πλάτος στη στήλη, ο
+      // πίνακας τη στριμώχνει στο ελάχιστο και το γράφημα παύει να διαβάζεται.
+      meta: { width: 'w-[30%]' },
       cell: ({ row }) => (
         <span className="block h-1.5 w-full overflow-hidden rounded-full bg-muted">
           <span

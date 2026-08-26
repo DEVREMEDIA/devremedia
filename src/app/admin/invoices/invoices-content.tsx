@@ -297,66 +297,64 @@ export function InvoicesContent({ invoices: initialInvoices }: InvoicesContentPr
 
                     {isExpanded && (
                       <div className="border-t bg-muted/30">
-                        <div className="overflow-x-auto">
-                          <Table>
-                            <TableHeader>
-                              <TableRow>
-                                <TableHead>{t('invoiceNumber')}</TableHead>
-                                <TableHead className="hidden sm:table-cell">
-                                  {t('issueDate')}
-                                </TableHead>
-                                <TableHead className="hidden sm:table-cell">
-                                  {t('dueDate')}
-                                </TableHead>
-                                <TableHead className="text-right">{t('lineTotal')}</TableHead>
-                                <TableHead className="text-center">{t('paymentStatus')}</TableHead>
-                              </TableRow>
-                            </TableHeader>
-                            <TableBody>
-                              {group.invoices.map((invoice) => {
-                                const isOverdue =
-                                  invoice.status !== 'paid' &&
-                                  invoice.status !== 'cancelled' &&
-                                  invoice.status !== 'draft' &&
-                                  isPast(new Date(invoice.due_date));
+                        {/* Το κοινό <Table> φέρνει το δικό του overflow-x-auto
+                            container, οπότε ο πίνακας κυλά μέσα του και η σελίδα
+                            δεν μετακινείται ποτέ πλάγια. Δεύτερος από πάνω δεν
+                            θα κυλούσε ποτέ, γι' αυτό δεν υπάρχει. */}
+                        <Table>
+                          <TableHeader>
+                            <TableRow>
+                              <TableHead>{t('invoiceNumber')}</TableHead>
+                              <TableHead className="hidden sm:table-cell">
+                                {t('issueDate')}
+                              </TableHead>
+                              <TableHead className="hidden sm:table-cell">{t('dueDate')}</TableHead>
+                              <TableHead className="text-right">{t('lineTotal')}</TableHead>
+                              <TableHead className="text-center">{t('paymentStatus')}</TableHead>
+                            </TableRow>
+                          </TableHeader>
+                          <TableBody>
+                            {group.invoices.map((invoice) => {
+                              const isOverdue =
+                                invoice.status !== 'paid' &&
+                                invoice.status !== 'cancelled' &&
+                                invoice.status !== 'draft' &&
+                                isPast(new Date(invoice.due_date));
 
-                                return (
-                                  <TableRow key={invoice.id}>
-                                    <TableCell>
-                                      <Link
-                                        href={`/admin/invoices/${invoice.id}`}
-                                        className="font-mono font-medium text-primary hover:underline"
-                                      >
-                                        {invoice.invoice_number}
-                                      </Link>
-                                      <div className="text-xs text-muted-foreground sm:hidden mt-0.5">
-                                        {format(new Date(invoice.issue_date), 'dd/MM/yy')}
-                                      </div>
-                                    </TableCell>
-                                    <TableCell className="hidden sm:table-cell">
-                                      {format(new Date(invoice.issue_date), 'dd/MM/yyyy')}
-                                    </TableCell>
-                                    <TableCell className="hidden sm:table-cell">
-                                      <span
-                                        className={isOverdue ? 'text-destructive font-medium' : ''}
-                                      >
-                                        {format(new Date(invoice.due_date), 'dd/MM/yyyy')}
-                                      </span>
-                                    </TableCell>
-                                    <TableCell className="text-right font-medium tabular-nums">
-                                      {formatCurrency(invoice.total)}
-                                    </TableCell>
-                                    <TableCell className="text-center">
-                                      <StatusBadge
-                                        status={isOverdue ? 'overdue' : invoice.status}
-                                      />
-                                    </TableCell>
-                                  </TableRow>
-                                );
-                              })}
-                            </TableBody>
-                          </Table>
-                        </div>
+                              return (
+                                <TableRow key={invoice.id}>
+                                  <TableCell>
+                                    <Link
+                                      href={`/admin/invoices/${invoice.id}`}
+                                      className="font-mono font-medium text-primary hover:underline"
+                                    >
+                                      {invoice.invoice_number}
+                                    </Link>
+                                    <div className="text-xs text-muted-foreground sm:hidden mt-0.5">
+                                      {format(new Date(invoice.issue_date), 'dd/MM/yy')}
+                                    </div>
+                                  </TableCell>
+                                  <TableCell className="hidden sm:table-cell">
+                                    {format(new Date(invoice.issue_date), 'dd/MM/yyyy')}
+                                  </TableCell>
+                                  <TableCell className="hidden sm:table-cell">
+                                    <span
+                                      className={isOverdue ? 'text-destructive font-medium' : ''}
+                                    >
+                                      {format(new Date(invoice.due_date), 'dd/MM/yyyy')}
+                                    </span>
+                                  </TableCell>
+                                  <TableCell className="text-right font-medium tabular-nums">
+                                    {formatCurrency(invoice.total)}
+                                  </TableCell>
+                                  <TableCell className="text-center">
+                                    <StatusBadge status={isOverdue ? 'overdue' : invoice.status} />
+                                  </TableCell>
+                                </TableRow>
+                              );
+                            })}
+                          </TableBody>
+                        </Table>
                       </div>
                     )}
                   </Card>

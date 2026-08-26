@@ -44,6 +44,12 @@ declare module '@tanstack/react-table' {
   interface ColumnMeta<TData extends RowData, TValue> {
     align?: 'left' | 'right' | 'center';
     numeric?: boolean;
+    /**
+     * Κλάση πλάτους του Tailwind για την κεφαλίδα της στήλης (π.χ. `w-10`,
+     * `w-[30%]`). Ο πίνακας μοιράζει αλλιώς το πλάτος στο περιεχόμενο, οπότε
+     * μια στήλη που κρατά γράφημα και όχι κείμενο ζαρώνει χωρίς αυτό.
+     */
+    width?: string;
   }
 }
 
@@ -213,7 +219,10 @@ export function DataTable<TData, TValue>({
                   return (
                     <TableHead
                       key={header.id}
-                      className={cellAlignment(header.column.columnDef.meta)}
+                      className={cn(
+                        cellAlignment(header.column.columnDef.meta),
+                        header.column.columnDef.meta?.width,
+                      )}
                     >
                       {header.isPlaceholder
                         ? null
