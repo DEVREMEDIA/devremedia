@@ -339,7 +339,10 @@ test.describe('design identity — shared table', () => {
     test.skip(!process.env.E2E_TEST_USERS_READY, 'Test users not configured in database');
     await loginAsAdmin(page);
     await page.goto('/admin/finance?tab=expenses');
-    await expect(page).toHaveURL(/\/admin\/finance/);
+    // Η καρτέλα καρφιτσώνεται ρητά. Χωρίς την παράμετρο στον έλεγχο, ένα
+    // μετονομασμένο κλειδί ρίχνει το hub σιωπηλά πίσω στα τιμολόγια — που
+    // έχουν κι αυτά πεδίο «Αναζήτηση», οπότε ο έλεγχος θα περνούσε αλλού.
+    await expect(page).toHaveURL(/\/admin\/finance\?tab=expenses/);
 
     // Το κενό-αποτέλεσμα γράφει τη δική του γραμμή χωρίς `data-state` — μόνο
     // οι πραγματικές γραμμές δεδομένων το έχουν, οπότε μετράει σωστά και τις
@@ -359,7 +362,7 @@ test.describe('design identity — shared table', () => {
     test.skip(!process.env.E2E_TEST_USERS_READY, 'Test users not configured in database');
     await loginAsAdmin(page);
     await page.goto('/admin/finance?tab=reports');
-    await expect(page).toHaveURL(/\/admin\/finance/);
+    await expect(page).toHaveURL(/\/admin\/finance\?tab=reports/);
 
     const clientReportCard = page
       .locator('[data-slot="card"]')

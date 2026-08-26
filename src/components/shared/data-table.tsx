@@ -33,7 +33,7 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { Checkbox } from '@/components/ui/checkbox';
-import { ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight } from 'lucide-react';
+import { ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight, Search } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { cn } from '@/lib/utils';
 
@@ -45,8 +45,9 @@ declare module '@tanstack/react-table' {
     align?: 'left' | 'right' | 'center';
     numeric?: boolean;
     /**
-     * Κλάση πλάτους του Tailwind για την κεφαλίδα της στήλης (π.χ. `w-10`,
-     * `w-[30%]`). Ο πίνακας μοιράζει αλλιώς το πλάτος στο περιεχόμενο, οπότε
+     * Κλάση πλάτους του Tailwind (π.χ. `w-10`, `w-[30%]`). Μπαίνει **μόνο στην
+     * κεφαλίδα** — αυτή ορίζει το πλάτος της στήλης σε έναν πίνακα, τα κελιά
+     * ακολουθούν. Ο πίνακας μοιράζει αλλιώς το πλάτος στο περιεχόμενο, οπότε
      * μια στήλη που κρατά γράφημα και όχι κείμενο ζαρώνει χωρίς αυτό.
      */
     width?: string;
@@ -65,7 +66,9 @@ function cellAlignment(
 }
 
 // Δύο πυκνότητες, όχι μια ρύθμιση ανά σελίδα. Η άνετη είναι η σημερινή
-// συμπεριφορά και μένει προεπιλογή, ώστε κανένας υπάρχων πίνακας να μη μετακινηθεί.
+// συμπεριφορά και μένει προεπιλογή, ώστε κανένας υπάρχων πίνακας να μη
+// μετακινηθεί. Εφαρμόζεται **μόνο στα κελιά του σώματος**: η κεφαλίδα κρατά
+// το ύψος της, ώστε δύο πίνακες δίπλα-δίπλα να ευθυγραμμίζονται στην κορυφή.
 const DENSITY_CELL = {
   comfortable: '',
   compact: 'py-1.5',
@@ -152,7 +155,6 @@ export function DataTable<TData, TValue>({
         />
       ),
       enableSorting: false,
-      size: 40,
     }),
     [t],
   );
@@ -190,27 +192,32 @@ export function DataTable<TData, TValue>({
     <div className="space-y-4">
       {(searchKey || globalSearch) && (
         <div className="flex items-center justify-between">
-          <Input
-            aria-label={searchPlaceholder ?? t('search')}
-            placeholder={searchPlaceholder ?? t('search')}
-            value={
-              globalSearch
-                ? globalFilterValue
-                : ((table.getColumn(searchKey!)?.getFilterValue() as string) ?? '')
-            }
-            onChange={(event) =>
-              globalSearch
-                ? setGlobalFilterValue(event.target.value)
-                : table.getColumn(searchKey!)?.setFilterValue(event.target.value)
-            }
-            className="max-w-sm"
-          />
+          <div className="relative w-full max-w-sm">
+            <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+            <Input
+              aria-label={searchPlaceholder ?? t('search')}
+              placeholder={searchPlaceholder ?? t('search')}
+              value={
+                globalSearch
+                  ? globalFilterValue
+                  : ((table.getColumn(searchKey!)?.getFilterValue() as string) ?? '')
+              }
+              onChange={(event) =>
+                globalSearch
+                  ? setGlobalFilterValue(event.target.value)
+                  : table.getColumn(searchKey!)?.setFilterValue(event.target.value)
+              }
+              className="pl-9"
+            />
+          </div>
         </div>
       )}
 
       {toolbar ? toolbar({ selected: selectedRows, clearSelection }) : null}
 
-      <div className="rounded-md border overflow-x-auto">
+      {/* Το <Table> φέρνει το δικό του overflow-x-auto container, οπότε εδώ
+          μένει μόνο το πλαίσιο — δεύτερος κύλισης δεν θα ενεργοποιούνταν ποτέ. */}
+      <div className="rounded-md border">
         <Table>
           <TableHeader>
             {table.getHeaderGroups().map((headerGroup) => (
@@ -252,7 +259,12 @@ export function DataTable<TData, TValue>({
               ))
             ) : (
               <TableRow>
-                <TableCell colSpan={effectiveColumns.length} className="h-24 text-center">
+                {/* Οι κρυμμένες σε κινητό στήλες δεν αποδίδονται καθόλου, οπότε
+                    το colSpan μετράει τις ΟΡΑΤΕΣ — αλλιώς η κενή γραμμή ξεχειλίζει. */}
+                <TableCell
+                  colSpan={table.getVisibleLeafColumns().length}
+                  className="h-24 text-center"
+                >
                   {emptyState ?? t('noResults')}
                 </TableCell>
               </TableRow>

@@ -222,6 +222,9 @@ const FINANCE_AREA = [
   'src/app/admin/pricing-health/',
   'src/components/admin/invoices/',
   'src/components/admin/reports/',
+  // Τις δύο κάρτες αυτού του φακέλου τις κρεμάει το hub των Οικονομικών, άρα
+  // ανήκουν στην περιοχή όσο και τα υπόλοιπα.
+  'src/components/admin/dashboard/finance/',
 ];
 
 // Λίστες λεπτομέρειας μέσα σε ήδη ανοιγμένη γραμμή. Δεν είναι το θέμα της
@@ -235,35 +238,64 @@ const TABLE_DETAIL_EXEMPT = [
   'src/app/admin/invoices/[invoiceId]/invoice-detail.tsx',
 ];
 
-const RAW_TABLE_IMPORT = /from\s+'@\/components\/ui\/table'/;
+// Πίνακες της περιοχής που ΔΕΝ έχουν μεταναστεύσει ακόμα, με ρητό λόγο και
+// ρητό σημείο επιστροφής. Ξεχωριστά από το EXEMPT: το EXEMPT λέει «αυτό δεν
+// πρέπει ποτέ να γίνει DataTable», αυτό εδώ λέει «δεν έγινε ακόμα».
+// Η λίστα μόνο μικραίνει, και ο αριθμός στο τέλος τους αφαιρεί — αλλιώς ο
+// φύλακας διαφημίζει κάλυψη που δεν έχει.
+const TABLE_PENDING = [
+  // Πλέγμα 12 στηλών με επεξεργασία μέσα στα κελιά, σε γραμμές μέσα σε
+  // γραμμές. Θέλει συμβόλαιο επεξεργάσιμου κελιού στον κοινό πίνακα, με έναν
+  // μόνο καταναλωτή — αναβλήθηκε συνειδητά. Ο κανόνας από κάτω κοιτάζει
+  // εισαγωγές και ωμή σήμανση· ένας πίνακας από CSS grid του είναι αόρατος,
+  // γι' αυτό γράφεται εδώ με το χέρι αντί να θεωρείται καλυμμένος.
+  'src/app/admin/cost-model/tabs/items-tab.tsx',
+];
+
+// Δύο μορφές, γιατί και οι δύο φτιάχνουν πίνακα στο χέρι: εισαγωγή των ωμών
+// primitives (με μονά ή διπλά εισαγωγικά, με alias ή σχετική διαδρομή), και
+// σκέτη <table> σήμανση — ακριβώς αυτό που μόλις έφυγε από τα τιμολόγια.
+const RAW_TABLE_IMPORT = /from\s+['"](?:@\/components\/ui\/table|\.[^'"]*\/table)['"]/;
+const RAW_TABLE_TAG = /<table[\s>]/;
+const buildsOwnTable = (source) => RAW_TABLE_IMPORT.test(source) || RAW_TABLE_TAG.test(source);
 
 const tableDetailExemptSet = new Set(TABLE_DETAIL_EXEMPT.map((p) => p.replaceAll('\\', '/')));
 const financeFiles = allTsxFiles.filter((f) =>
   FINANCE_AREA.some((prefix) => f.startsWith(prefix)),
 );
 
+const tablePendingSet = new Set(TABLE_PENDING.map((p) => p.replaceAll('\\', '/')));
+
 const handRolledTables = [];
 const staleTableExemptions = [];
 const financeFileSet = new Set(financeFiles);
 
 for (const file of financeFiles) {
-  const importsRawTable = RAW_TABLE_IMPORT.test(strippedOf(file));
+  if (tablePendingSet.has(file)) continue;
+  const ownTable = buildsOwnTable(strippedOf(file));
   if (tableDetailExemptSet.has(file)) {
-    // Μια εξαίρεση που δεν εισάγει πια τα ωμά primitives έχει ήδη μεταναστεύσει
+    // Μια εξαίρεση που δεν φτιάχνει πια δικό της πίνακα έχει ήδη μεταναστεύσει
     // — μένει εδώ μόνο ξεχασμένη, χωρίς πια να φυλάσσει τίποτα.
-    if (!importsRawTable) staleTableExemptions.push(file);
+    if (!ownTable) staleTableExemptions.push(file);
     continue;
   }
-  if (importsRawTable) handRolledTables.push(file);
+  if (ownTable) handRolledTables.push(file);
 }
 
 // Ο βρόχος από πάνω βλέπει μόνο αρχεία που ΥΠΑΡΧΟΥΝ μέσα στην περιοχή. Μια
 // εγγραφή που μετονομάστηκε, διαγράφηκε ή γράφτηκε με τυπογραφικό δεν θα
 // περνούσε ποτέ από εκεί — θα καθόταν σιωπηλή για πάντα, δίνοντας την
-// εντύπωση ότι κάτι φυλάσσεται. Εδώ πιάνεται.
+// εντύπωση ότι κάτι φυλάσσεται. Το ίδιο ισχύει και για τα εκκρεμή.
 for (const exempt of tableDetailExemptSet) {
   if (!financeFileSet.has(exempt)) staleTableExemptions.push(exempt);
 }
+for (const pending of tablePendingSet) {
+  if (!financeFileSet.has(pending)) staleTableExemptions.push(pending);
+}
+
+// Ο αριθμός που τυπώνεται πρέπει να λέει τι ΕΛΕΓΧΘΗΚΕ, όχι τι σαρώθηκε: ένα
+// εκκρεμές αρχείο περνάει από δίπλα χωρίς κανέναν έλεγχο.
+const financeChecked = financeFiles.length - tablePendingSet.size;
 
 if (
   violations.length > 0 ||
@@ -304,7 +336,7 @@ if (
     );
     for (const f of handRolledTables) console.error(`  ${f}`);
     console.error(
-      '\nUse the shared DataTable (src/components/shared/data-table.tsx) instead of the raw table primitives.',
+      '\nUse the shared DataTable (src/components/shared/data-table.tsx) instead of raw table markup or the raw primitives.',
     );
   }
   if (staleTableExemptions.length > 0) {
@@ -319,5 +351,6 @@ if (
 console.log(
   `ok — ${files.size} file(s) covered, no raw colours; one title per page ` +
     `(${headingPendingSet.size} pending, ${hubs.length} hubs checked for double titles), ` +
-    `${financeFiles.length} Finance file(s) checked for hand-rolled tables`,
+    `${financeChecked} Finance file(s) checked for hand-rolled tables ` +
+    `(${tablePendingSet.size} pending)`,
 );

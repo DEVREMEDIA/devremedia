@@ -91,7 +91,9 @@ export function ClientReport({ topClients }: ClientReportProps) {
           columns={columns}
           data={topClients}
           density="compact"
-          emptyState={<span>Δεν υπάρχουν δεδομένα πελατών</span>}
+          emptyState={
+            <span className="text-sm text-muted-foreground">Δεν υπάρχουν δεδομένα πελατών</span>
+          }
         />
       </CardContent>
     </Card>

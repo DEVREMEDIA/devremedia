@@ -95,6 +95,9 @@ export function InvoicesTableView({ invoices }: InvoicesTableViewProps) {
         header: t('client'),
         accessorFn: (row) => row.client?.company_name || row.client?.contact_name || '—',
       },
+      // Οι ημερομηνίες παίρνουν τη mono με ψηφία σταθερού πλάτους αλλά μένουν
+      // αριστερά: σε στήλη dd/MM/yyyy οι κάθετοι στοιχίζονται και η στήλη
+      // διαβάζεται σαρωτικά, κάτι που η αναλογική γραμματοσειρά δεν δίνει.
       {
         accessorKey: 'issue_date',
         header: t('issueDate'),
@@ -103,6 +106,7 @@ export function InvoicesTableView({ invoices }: InvoicesTableViewProps) {
             {format(new Date(row.getValue('issue_date')), 'dd/MM/yyyy')}
           </span>
         ),
+        meta: { numeric: true, align: 'left' },
       },
       {
         accessorKey: 'due_date',
@@ -112,6 +116,7 @@ export function InvoicesTableView({ invoices }: InvoicesTableViewProps) {
             {format(new Date(row.getValue('due_date')), 'dd/MM/yyyy')}
           </span>
         ),
+        meta: { numeric: true, align: 'left' },
       },
       {
         accessorKey: 'total',
