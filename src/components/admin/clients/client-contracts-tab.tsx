@@ -56,7 +56,7 @@ export function ClientContractsTab({ clientId, refreshKey }: ClientContractsTabP
             action={{
               label: t('contracts.addContract'),
               onClick: () => {
-                window.location.href = '/admin/contracts/new?clientId=${clientId}';
+                window.location.href = `/admin/contracts/new?clientId=${clientId}`;
               },
             }}
           />
