@@ -2,18 +2,20 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
+import { useTranslations } from 'next-intl';
 import { cn } from '@/lib/utils';
 import type { NavItem } from './types';
 
 /** Στο κινητό το πλαϊνό μενού γίνεται μπάρα στο κάτω μέρος. */
 export function ShellBottomNav({ items }: { items: NavItem[] }) {
   const pathname = usePathname() ?? '';
+  const t = useTranslations('shellV2');
 
   return (
     <nav
       className="grid shrink-0 border-t border-border bg-card md:hidden"
       style={{ gridTemplateColumns: `repeat(${items.length}, minmax(0, 1fr))` }}
-      aria-label="Μενού κινητού"
+      aria-label={t('mobileMenu')}
     >
       {items.map((item) => {
         const active = pathname === item.href || pathname.startsWith(`${item.href}/`);
@@ -30,7 +32,7 @@ export function ShellBottomNav({ items }: { items: NavItem[] }) {
             )}
           >
             <Icon className="h-[19px] w-[19px]" />
-            {item.short}
+            {t(item.short)}
           </Link>
         );
       })}

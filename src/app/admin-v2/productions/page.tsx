@@ -1,5 +1,8 @@
 import type { Metadata } from 'next';
+import Link from 'next/link';
+import { getTranslations } from 'next-intl/server';
 import { SectionTabs, type SectionTab } from '@/components/shell-v2/section-tabs';
+import { Button } from '@/components/ui/button';
 
 import { ProjectsContent } from '@/app/admin/projects/projects-content';
 import AdminFilmingRequestsPage from '@/app/admin/filming-requests/page';
@@ -7,20 +10,19 @@ import AdminFilmingRequestsPage from '@/app/admin/filming-requests/page';
 import { getProjects } from '@/lib/actions/projects';
 import type { ProjectWithClient } from '@/types';
 
-export const metadata: Metadata = { title: 'Παραγωγές' };
-
-const TABS: SectionTab[] = [
-  { key: 'all', label: 'Όλες' },
-  { key: 'requests', label: 'Αιτήματα & κρατήσεις' },
-];
+export async function generateMetadata(): Promise<Metadata> {
+  const t = await getTranslations('shellV2.pages.adminProductions');
+  return { title: t('title') };
+}
 
 type SearchParams = Promise<{ tab?: string }>;
 
 async function AllTab() {
+  const t = await getTranslations('shellV2.pages.adminProductions');
   const result = await getProjects();
 
   if (result.error) {
-    return <p className="text-sm text-destructive">Σφάλμα: {result.error}</p>;
+    return <p className="text-sm text-destructive">{t('error', { message: result.error })}</p>;
   }
 
   return <ProjectsContent projects={(result.data as ProjectWithClient[]) ?? []} />;
@@ -31,16 +33,29 @@ function RequestsTab() {
 }
 
 export default async function ProductionsPage({ searchParams }: { searchParams: SearchParams }) {
+  const t = await getTranslations('shellV2.pages.adminProductions');
+  const TABS: SectionTab[] = [
+    { key: 'all', label: t('tabAll') },
+    { key: 'requests', label: t('tabRequests') },
+  ];
   const params = await searchParams;
-  const active = TABS.some((t) => t.key === params.tab) ? (params.tab as string) : 'all';
+  const active = TABS.some((tab) => tab.key === params.tab) ? (params.tab as string) : 'all';
 
   return (
     <div className="space-y-5">
-      <header>
-        <h1 className="text-2xl font-semibold tracking-tight">Παραγωγές</h1>
-        <p className="mt-1 text-sm text-muted-foreground">
-          Όλα τα έργα όλων των πελατών · η προετοιμασία γυρίσματος ζει μέσα στο κάθε έργο
-        </p>
+      <header className="flex items-start justify-between gap-3">
+        <div>
+          <h1 className="text-2xl font-semibold tracking-tight">{t('title')}</h1>
+          <p className="mt-1 text-sm text-muted-foreground">{t('subtitle')}</p>
+        </div>
+        <div className="flex items-center gap-2">
+          <Button asChild variant="outline" size="sm">
+            <Link href="/admin-v2/availability">{t('linkAvailability')}</Link>
+          </Button>
+          <Button asChild variant="outline" size="sm">
+            <Link href="/admin-v2/filming-prep">{t('linkFilmingPrep')}</Link>
+          </Button>
+        </div>
       </header>
 
       <SectionTabs basePath="/admin-v2/productions" tabs={TABS} active={active} />

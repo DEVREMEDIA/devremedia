@@ -1,5 +1,6 @@
 import type { ComponentProps } from 'react';
 import type { Metadata } from 'next';
+import { getTranslations } from 'next-intl/server';
 import { SectionTabs, type SectionTab } from '@/components/shell-v2/section-tabs';
 
 // Τα υπάρχοντα κομμάτια μπαίνουν αυτούσια — μετακομίζουν, δεν ξαναγράφονται.
@@ -36,23 +37,19 @@ import {
 } from '@/lib/queries/reports';
 import { getProjectsByStatus } from '@/lib/queries';
 
-export const metadata: Metadata = { title: 'Οικονομικά' };
-
-const TABS: SectionTab[] = [
-  { key: 'invoices', label: 'Τιμολόγια' },
-  { key: 'expenses', label: 'Έξοδα' },
-  { key: 'reports', label: 'Αναφορές' },
-  { key: 'cost', label: 'Κοστολόγηση' },
-  { key: 'health', label: 'Υγεία τιμολόγησης' },
-];
+export async function generateMetadata(): Promise<Metadata> {
+  const t = await getTranslations('shellV2.pages.adminFinance');
+  return { title: t('title') };
+}
 
 type SearchParams = Promise<{ tab?: string; from?: string; to?: string }>;
 
 async function InvoicesTab() {
+  const t = await getTranslations('shellV2.pages.adminFinance');
   const result = await getInvoices();
 
   if (result.error) {
-    return <p className="text-sm text-destructive">Σφάλμα: {result.error}</p>;
+    return <p className="text-sm text-destructive">{t('error', { message: result.error })}</p>;
   }
 
   return (
@@ -63,10 +60,13 @@ async function InvoicesTab() {
 }
 
 async function ExpensesTab() {
+  const t = await getTranslations('shellV2.pages.adminFinance');
   const [expensesResult, projectsResult] = await Promise.all([getExpenses(), getProjects()]);
 
   if (expensesResult.error) {
-    return <p className="text-sm text-destructive">Σφάλμα: {expensesResult.error}</p>;
+    return (
+      <p className="text-sm text-destructive">{t('error', { message: expensesResult.error })}</p>
+    );
   }
 
   return (
@@ -75,6 +75,7 @@ async function ExpensesTab() {
 }
 
 async function ReportsTab({ dateRange }: { dateRange?: DateRange }) {
+  const t = await getTranslations('shellV2.pages.adminFinance');
   const [
     monthlyRevenue,
     paymentMethodData,
@@ -99,11 +100,11 @@ async function ReportsTab({ dateRange }: { dateRange?: DateRange }) {
     <div className="space-y-6">
       <DateRangeFilter />
       <section>
-        <h2 className="mb-4 text-lg font-semibold">Έσοδα</h2>
+        <h2 className="mb-4 text-lg font-semibold">{t('sectionRevenue')}</h2>
         <RevenueReport monthlyData={monthlyRevenue} paymentMethodData={paymentMethodData} />
       </section>
       <section>
-        <h2 className="mb-4 text-lg font-semibold">Παραγωγές</h2>
+        <h2 className="mb-4 text-lg font-semibold">{t('sectionProjects')}</h2>
         <ProjectReport
           projectsByStatus={projectsByStatus}
           projectsByType={projectsByType}
@@ -111,11 +112,11 @@ async function ReportsTab({ dateRange }: { dateRange?: DateRange }) {
         />
       </section>
       <section>
-        <h2 className="mb-4 text-lg font-semibold">Πελάτες</h2>
+        <h2 className="mb-4 text-lg font-semibold">{t('sectionClients')}</h2>
         <ClientReport topClients={topClients} />
       </section>
       <section>
-        <h2 className="mb-4 text-lg font-semibold">Έξοδα & περιθώριο</h2>
+        <h2 className="mb-4 text-lg font-semibold">{t('sectionExpenses')}</h2>
         <ExpenseReport expensesByCategory={expensesByCategory} profitData={profitData} />
       </section>
     </div>
@@ -158,18 +159,24 @@ async function PricingHealthTab() {
 }
 
 export default async function FinancePage({ searchParams }: { searchParams: SearchParams }) {
+  const t = await getTranslations('shellV2.pages.adminFinance');
+  const TABS: SectionTab[] = [
+    { key: 'invoices', label: t('tabInvoices') },
+    { key: 'expenses', label: t('tabExpenses') },
+    { key: 'reports', label: t('tabReports') },
+    { key: 'cost', label: t('tabCost') },
+    { key: 'health', label: t('tabHealth') },
+  ];
   const params = await searchParams;
-  const active = TABS.some((t) => t.key === params.tab) ? (params.tab as string) : 'invoices';
+  const active = TABS.some((tab) => tab.key === params.tab) ? (params.tab as string) : 'invoices';
   const dateRange: DateRange | undefined =
     params.from && params.to ? { from: params.from, to: params.to } : undefined;
 
   return (
     <div className="space-y-5">
       <header>
-        <h1 className="text-2xl font-semibold tracking-tight">Οικονομικά</h1>
-        <p className="mt-1 text-sm text-muted-foreground">
-          Τιμολόγια, έξοδα, αναφορές, κοστολόγηση και υγεία τιμολόγησης — ένα μέρος
-        </p>
+        <h1 className="text-2xl font-semibold tracking-tight">{t('title')}</h1>
+        <p className="mt-1 text-sm text-muted-foreground">{t('subtitle')}</p>
       </header>
 
       <SectionTabs basePath="/admin-v2/finance" tabs={TABS} active={active} />

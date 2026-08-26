@@ -2597,5 +2597,146 @@
     "closed": "Κλειστά",
     "applyTemplate": "Εφαρμογή template στον μήνα",
     "templateApplied": "Template εφαρμόστηκε ({count} μέρες)"
+  },
+
+  "shellV2": {
+    "previewBadge": "Προεπισκόπηση v2",
+    "mainMenu": "Κύριο μενού",
+    "mobileMenu": "Μενού κινητού",
+    "nav": {
+      "settings": "Ρυθμίσεις",
+      "settingsShort": "Ρυθμ.",
+      "admin": {
+        "today": "Σήμερα", "todayShort": "Σήμερα",
+        "clients": "Πελάτες", "clientsShort": "Πελάτες",
+        "productions": "Παραγωγές", "productionsShort": "Έργα",
+        "calendar": "Ημερολόγιο", "calendarShort": "Ημερ.",
+        "finance": "Οικονομικά", "financeShort": "Οικον.",
+        "knowledge": "Γνώση", "knowledgeShort": "Γνώση"
+      },
+      "client": {
+        "home": "Αρχική", "homeShort": "Αρχική",
+        "productions": "Οι παραγωγές μου", "productionsShort": "Έργα",
+        "documents": "Τα χαρτιά μου", "documentsShort": "Χαρτιά",
+        "book": "Κλείσε γύρισμα", "bookShort": "Κράτηση"
+      },
+      "employee": {
+        "today": "Σήμερα", "todayShort": "Σήμερα",
+        "work": "Η δουλειά μου", "workShort": "Δουλειά",
+        "productions": "Παραγωγές", "productionsShort": "Έργα",
+        "knowledge": "Γνώση", "knowledgeShort": "Γνώση"
+      },
+      "salesman": {
+        "today": "Σήμερα", "todayShort": "Σήμερα",
+        "leads": "Ευκαιρίες", "leadsShort": "Ευκαιρ.",
+        "library": "Υλικό", "libraryShort": "Υλικό"
+      }
+    },
+    "pages": {
+      "adminToday": {
+        "title": "Σήμερα",
+        "subtitle": "{count, plural, =0 {Τίποτα δεν εκκρεμεί — καθαρή μέρα.} one {# πράγμα χρειάζεται εσένα} other {# πράγματα χρειάζονται εσένα}}",
+        "sectionAtRisk": "Κινδυνεύουν",
+        "emptyState": "Δεν υπάρχει τίποτα σε εκκρεμότητα αυτή τη στιγμή.",
+        "footerPrefix": "Τα γραφήματα και οι αναφορές ζουν στα",
+        "footerLink": "Οικονομικά",
+        "riskOverdueInvoice": "Ληξιπρόθεσμα τιμολόγια",
+        "riskFilmingNoCrew": "Γυρίσματα χωρίς συνεργείο",
+        "riskDeadlineRisk": "Προθεσμίες σε κίνδυνο",
+        "riskStaleDeliverable": "Παραδοτέα σε στασιμότητα",
+        "riskUnsignedContract": "Ανυπόγραφα συμφωνητικά",
+        "riskStaleLead": "Ξεχασμένοι ενδιαφερόμενοι"
+      },
+      "adminClients": {
+        "title": "Πελάτες",
+        "subtitle": "Από το πρώτο ενδιαφέρον μέχρι την ενεργή συνεργασία — μία λίστα, όχι δύο",
+        "tabList": "Πελάτες", "tabInterest": "Ενδιαφέρον", "tabProposals": "Προτάσεις",
+        "tabContracts": "Συμφωνητικά", "tabChat": "Συνομιλίες",
+        "linkChatKnowledge": "Γνωσιακή βάση", "linkNewContract": "Νέο συμφωνητικό"
+      },
+      "adminProductions": {
+        "title": "Παραγωγές",
+        "subtitle": "Όλα τα έργα όλων των πελατών · η προετοιμασία γυρίσματος ζει μέσα στο κάθε έργο",
+        "tabAll": "Όλες", "tabRequests": "Αιτήματα & κρατήσεις",
+        "error": "Σφάλμα: {message}",
+        "linkAvailability": "Διαθεσιμότητα", "linkFilmingPrep": "Προετοιμασία γυρισμάτων"
+      },
+      "adminCalendar": {
+        "title": "Ημερολόγιο",
+        "subtitle": "Γυρίσματα, κρατήσεις και προθεσμίες σε ένα σημείο"
+      },
+      "adminFinance": {
+        "title": "Οικονομικά",
+        "subtitle": "Τιμολόγια, έξοδα, αναφορές, κοστολόγηση και υγεία τιμολόγησης — ένα μέρος",
+        "tabInvoices": "Τιμολόγια", "tabExpenses": "Έξοδα", "tabReports": "Αναφορές",
+        "tabCost": "Κοστολόγηση", "tabHealth": "Υγεία τιμολόγησης",
+        "error": "Σφάλμα: {message}",
+        "sectionRevenue": "Έσοδα", "sectionProjects": "Παραγωγές",
+        "sectionClients": "Πελάτες", "sectionExpenses": "Έξοδα & περιθώριο"
+      },
+      "adminKnowledge": {
+        "title": "Γνώση",
+        "subtitle": "Ένα σύστημα περιεχομένου με ετικέτα κοινού, αντί για τρία ξεχωριστά",
+        "tabTeam": "Ομάδα παραγωγής", "tabSales": "Πωλητές"
+      },
+      "adminSettings": {
+        "title": "Ρυθμίσεις",
+        "subtitle": "Ό,τι ρυθμίζεται μία φορά και μετά δουλεύει μόνο του",
+        "tabGeneral": "Γενικές", "tabUsers": "Χρήστες & ρόλοι",
+        "tabPackages": "Πακέτα & τιμές", "tabTemplates": "Πρότυπα"
+      },
+      "clientHome": {
+        "title": "Αρχική"
+      },
+      "clientProductions": {
+        "title": "Οι παραγωγές μου"
+      },
+      "clientDocuments": {
+        "title": "Τα χαρτιά μου",
+        "subtitle": "Ό,τι έχεις υπογράψει και ό,τι έχεις πληρώσει — ένα μέρος",
+        "tabContracts": "Συμφωνητικά", "tabInvoices": "Τιμολόγια"
+      },
+      "clientBook": {
+        "title": "Κλείσε γύρισμα"
+      },
+      "clientSettings": {
+        "title": "Ρυθμίσεις"
+      },
+      "employeeToday": {
+        "title": "Σήμερα"
+      },
+      "employeeWork": {
+        "title": "Η δουλειά μου",
+        "subtitle": "Ό,τι σου έχει ανατεθεί και ό,τι έχεις να ανεβάσεις",
+        "tabTasks": "Εργασίες", "tabDeliverables": "Παραδοτέα",
+        "emptyTitle": "Καμία παραγωγή ακόμα",
+        "emptyDescription": "Μόλις σου ανατεθεί εργασία σε μια παραγωγή, τα παραδοτέα της θα εμφανιστούν εδώ.",
+        "deliverableCount": "{count, plural, =0 {Κανένα παραδοτέο ακόμα} one {# παραδοτέο} other {# παραδοτέα}}",
+        "needsWorkCount": "{count, plural, one {# ζητά διόρθωση} other {# ζητούν διόρθωση}}"
+      },
+      "employeeProductions": {
+        "title": "Παραγωγές"
+      },
+      "employeeKnowledge": {
+        "title": "Γνώση"
+      },
+      "employeeSettings": {
+        "title": "Ρυθμίσεις"
+      },
+      "salesmanToday": {
+        "title": "Σήμερα"
+      },
+      "salesmanLeads": {
+        "title": "Ευκαιρίες"
+      },
+      "salesmanLibrary": {
+        "title": "Υλικό",
+        "subtitle": "Ό,τι στέλνεις στον υποψήφιο και ό,τι χρειάζεσαι για να το πεις σωστά",
+        "tabResources": "Αρχεία", "tabHandbook": "Εγχειρίδιο"
+      },
+      "salesmanSettings": {
+        "title": "Ρυθμίσεις"
+      }
+    }
   }
 }

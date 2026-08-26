@@ -1,29 +1,28 @@
 import type { ComponentProps } from 'react';
 import type { Metadata } from 'next';
+import Link from 'next/link';
+import { getTranslations } from 'next-intl/server';
 import { SectionTabs, type SectionTab } from '@/components/shell-v2/section-tabs';
+import { Button } from '@/components/ui/button';
 
 import { ClientsContent } from '@/app/admin/clients/clients-content';
 import { ProposalsList } from '@/app/admin/proposals/proposals-list';
 import { ContractsListPage } from '@/app/admin/contracts/contracts-list-page';
 import { AllLeadsTable } from '@/components/admin/leads/all-leads-table';
+import { ChatbotStats } from '@/components/admin/chatbot/chatbot-stats';
 import { ConversationsTable } from '@/components/admin/chatbot/conversations-table';
 
 import { getClients } from '@/lib/actions/clients';
 import { getProposals } from '@/lib/actions/proposals';
 import { getAllContracts } from '@/lib/actions/contracts';
 import { getLeads } from '@/lib/actions/leads';
-import { getChatConversations } from '@/lib/queries/chatbot';
+import { getChatConversations, getChatStats } from '@/lib/queries/chatbot';
 import type { Client, ChatConversation } from '@/types/index';
 
-export const metadata: Metadata = { title: 'Πελάτες' };
-
-const TABS: SectionTab[] = [
-  { key: 'list', label: 'Πελάτες' },
-  { key: 'interest', label: 'Ενδιαφέρον' },
-  { key: 'proposals', label: 'Προτάσεις' },
-  { key: 'contracts', label: 'Συμφωνητικά' },
-  { key: 'chat', label: 'Συνομιλίες' },
-];
+export async function generateMetadata(): Promise<Metadata> {
+  const t = await getTranslations('shellV2.pages.adminClients');
+  return { title: t('title') };
+}
 
 type SearchParams = Promise<{ tab?: string }>;
 
@@ -44,27 +43,54 @@ async function ProposalsTab() {
 }
 
 async function ContractsTab() {
+  const t = await getTranslations('shellV2.pages.adminClients');
   const result = await getAllContracts();
   const contracts = (result.data ?? []) as ComponentProps<typeof ContractsListPage>['contracts'];
-  return <ContractsListPage contracts={contracts} />;
+  return (
+    <div className="space-y-4">
+      <div className="flex justify-end">
+        <Button asChild size="sm">
+          <Link href="/admin-v2/contracts/new">{t('linkNewContract')}</Link>
+        </Button>
+      </div>
+      <ContractsListPage contracts={contracts} />
+    </div>
+  );
 }
 
 async function ChatTab() {
-  const conversations = await getChatConversations();
-  return <ConversationsTable conversations={conversations as ChatConversation[]} />;
+  const t = await getTranslations('shellV2.pages.adminClients');
+  const [conversations, stats] = await Promise.all([getChatConversations(), getChatStats()]);
+  return (
+    <div className="space-y-4">
+      <div className="flex justify-end">
+        <Button asChild variant="outline" size="sm">
+          <Link href="/admin-v2/chatbot/knowledge">{t('linkChatKnowledge')}</Link>
+        </Button>
+      </div>
+      <ChatbotStats {...stats} />
+      <ConversationsTable conversations={conversations as ChatConversation[]} />
+    </div>
+  );
 }
 
 export default async function ClientsPage({ searchParams }: { searchParams: SearchParams }) {
+  const t = await getTranslations('shellV2.pages.adminClients');
+  const TABS: SectionTab[] = [
+    { key: 'list', label: t('tabList') },
+    { key: 'interest', label: t('tabInterest') },
+    { key: 'proposals', label: t('tabProposals') },
+    { key: 'contracts', label: t('tabContracts') },
+    { key: 'chat', label: t('tabChat') },
+  ];
   const params = await searchParams;
-  const active = TABS.some((t) => t.key === params.tab) ? (params.tab as string) : 'list';
+  const active = TABS.some((tab) => tab.key === params.tab) ? (params.tab as string) : 'list';
 
   return (
     <div className="space-y-5">
       <header>
-        <h1 className="text-2xl font-semibold tracking-tight">Πελάτες</h1>
-        <p className="mt-1 text-sm text-muted-foreground">
-          Από το πρώτο ενδιαφέρον μέχρι την ενεργή συνεργασία — μία λίστα, όχι δύο
-        </p>
+        <h1 className="text-2xl font-semibold tracking-tight">{t('title')}</h1>
+        <p className="mt-1 text-sm text-muted-foreground">{t('subtitle')}</p>
       </header>
 
       <SectionTabs basePath="/admin-v2/clients" tabs={TABS} active={active} />

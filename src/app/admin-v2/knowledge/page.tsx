@@ -1,5 +1,6 @@
 import type { ComponentProps } from 'react';
 import type { Metadata } from 'next';
+import { getTranslations } from 'next-intl/server';
 import { SectionTabs, type SectionTab } from '@/components/shell-v2/section-tabs';
 
 import { UniversityOverview } from '@/components/admin/university/university-overview';
@@ -9,12 +10,10 @@ import { getKbCategories } from '@/lib/actions/kb-categories';
 import { getKbArticles } from '@/lib/actions/kb-articles';
 import { getSalesResourceCategories, getSalesResources } from '@/lib/actions/sales-resources';
 
-export const metadata: Metadata = { title: 'Γνώση' };
-
-const TABS: SectionTab[] = [
-  { key: 'team', label: 'Ομάδα παραγωγής' },
-  { key: 'sales', label: 'Πωλητές' },
-];
+export async function generateMetadata(): Promise<Metadata> {
+  const t = await getTranslations('shellV2.pages.adminKnowledge');
+  return { title: t('title') };
+}
 
 type SearchParams = Promise<{ tab?: string }>;
 type UniProps = ComponentProps<typeof UniversityOverview>;
@@ -49,16 +48,19 @@ async function SalesTab() {
 }
 
 export default async function KnowledgePage({ searchParams }: { searchParams: SearchParams }) {
+  const t = await getTranslations('shellV2.pages.adminKnowledge');
+  const TABS: SectionTab[] = [
+    { key: 'team', label: t('tabTeam') },
+    { key: 'sales', label: t('tabSales') },
+  ];
   const params = await searchParams;
-  const active = TABS.some((t) => t.key === params.tab) ? (params.tab as string) : 'team';
+  const active = TABS.some((tab) => tab.key === params.tab) ? (params.tab as string) : 'team';
 
   return (
     <div className="space-y-5">
       <header>
-        <h1 className="text-2xl font-semibold tracking-tight">Γνώση</h1>
-        <p className="mt-1 text-sm text-muted-foreground">
-          Ένα σύστημα περιεχομένου με ετικέτα κοινού, αντί για τρία ξεχωριστά
-        </p>
+        <h1 className="text-2xl font-semibold tracking-tight">{t('title')}</h1>
+        <p className="mt-1 text-sm text-muted-foreground">{t('subtitle')}</p>
       </header>
 
       <SectionTabs basePath="/admin-v2/knowledge" tabs={TABS} active={active} />

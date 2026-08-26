@@ -1,42 +1,44 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
+import { getTranslations } from 'next-intl/server';
 import { RiskItem } from '@/components/admin/dashboard/risk/risk-item';
 import { getRiskItems } from '@/lib/queries/dashboard/risk';
 import type { RiskType } from '@/types/dashboard';
 
-export const metadata: Metadata = { title: 'Σήμερα' };
+export async function generateMetadata(): Promise<Metadata> {
+  const t = await getTranslations('shellV2.pages.adminToday');
+  return { title: t('title') };
+}
 
 /**
  * Η αρχική δεν είναι αναφορά — είναι λίστα εκκρεμοτήτων.
  * Τα γραφήματα ζουν στα Οικονομικά, όπου τα ψάχνεις όταν τα θέλεις.
  */
-const RISK_GROUPS: { type: RiskType; label: string }[] = [
-  { type: 'overdue_invoice', label: 'Ληξιπρόθεσμα τιμολόγια' },
-  { type: 'filming_no_crew', label: 'Γυρίσματα χωρίς συνεργείο' },
-  { type: 'deadline_risk', label: 'Προθεσμίες σε κίνδυνο' },
-  { type: 'stale_deliverable', label: 'Παραδοτέα σε στασιμότητα' },
-  { type: 'unsigned_contract', label: 'Ανυπόγραφα συμφωνητικά' },
-  { type: 'stale_lead', label: 'Ξεχασμένοι ενδιαφερόμενοι' },
-];
-
 export default async function TodayPage() {
+  const t = await getTranslations('shellV2.pages.adminToday');
+  const RISK_GROUPS: { type: RiskType; label: string }[] = [
+    { type: 'overdue_invoice', label: t('riskOverdueInvoice') },
+    { type: 'filming_no_crew', label: t('riskFilmingNoCrew') },
+    { type: 'deadline_risk', label: t('riskDeadlineRisk') },
+    { type: 'stale_deliverable', label: t('riskStaleDeliverable') },
+    { type: 'unsigned_contract', label: t('riskUnsignedContract') },
+    { type: 'stale_lead', label: t('riskStaleLead') },
+  ];
   const items = await getRiskItems();
 
   return (
     <div className="space-y-6">
       <header>
-        <h1 className="text-2xl font-semibold tracking-tight">Σήμερα</h1>
+        <h1 className="text-2xl font-semibold tracking-tight">{t('title')}</h1>
         <p className="mt-1 text-sm text-muted-foreground">
-          {items.length === 0
-            ? 'Τίποτα δεν εκκρεμεί — καθαρή μέρα.'
-            : `${items.length} ${items.length === 1 ? 'πράγμα χρειάζεται' : 'πράγματα χρειάζονται'} εσένα`}
+          {t('subtitle', { count: items.length })}
         </p>
       </header>
 
       {/* Ραντάρ: μία ματιά σε ό,τι σαπίζει σιωπηλά */}
       <section>
         <h2 className="mb-2.5 text-xs font-bold uppercase tracking-wider text-muted-foreground">
-          Κινδυνεύουν
+          {t('sectionAtRisk')}
         </h2>
         <div className="grid grid-cols-2 gap-2.5 sm:grid-cols-3 lg:grid-cols-6">
           {RISK_GROUPS.map((group) => {
@@ -64,7 +66,7 @@ export default async function TodayPage() {
       {/* Οι ίδιες οι εκκρεμότητες, ομαδοποιημένες */}
       {items.length === 0 ? (
         <div className="rounded-xl border border-dashed border-border p-10 text-center text-sm text-muted-foreground">
-          Δεν υπάρχει τίποτα σε εκκρεμότητα αυτή τη στιγμή.
+          {t('emptyState')}
         </div>
       ) : (
         RISK_GROUPS.map((group) => {
@@ -87,9 +89,9 @@ export default async function TodayPage() {
       )}
 
       <p className="text-xs text-muted-foreground">
-        Τα γραφήματα και οι αναφορές ζουν στα{' '}
+        {t('footerPrefix')}{' '}
         <Link href="/admin-v2/finance?tab=reports" className="text-primary underline">
-          Οικονομικά
+          {t('footerLink')}
         </Link>
         .
       </p>

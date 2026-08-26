@@ -52,7 +52,7 @@ export function UserNav() {
         </DropdownMenuLabel>
         <DropdownMenuSeparator />
         <DropdownMenuItem asChild>
-          <Link href="/admin/profile" className="cursor-pointer">
+          <Link href="/admin/settings" className="cursor-pointer">
             <User className="mr-2 h-4 w-4" />
             {t('profile')}
           </Link>

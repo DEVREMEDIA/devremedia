@@ -1,14 +1,16 @@
+import { useTranslations } from 'next-intl';
 import { ShellSidebar } from './sidebar';
 import { ShellBottomNav } from './bottom-nav';
 import { KeepInShell } from './keep-in-shell';
 import { NotificationBell } from '@/components/shared/notification-bell';
 import { ThemeToggle } from '@/components/theme-toggle';
+import { LanguageSwitcher } from '@/components/shared/language-switcher';
 import type { NavItem } from './types';
 
 interface AppShellProps {
   items: NavItem[];
   settingsItem: NavItem;
-  /** Τα items που χωράνε στην κάτω μπάρα — το πολύ 5. */
+  /** Τα items της κάτω μπάρας — το grid προσαρμόζεται στο πλήθος τους. */
   mobileItems: NavItem[];
   /** Το παλιό prefix του ρόλου, π.χ. `client`, για να κρατάμε τα κλικ στο κέλυφος. */
   rolePrefix: string;
@@ -29,6 +31,8 @@ export function AppShell({
   userNav,
   children,
 }: AppShellProps) {
+  const t = useTranslations('shellV2');
+
   return (
     <div className="fixed inset-0 flex flex-col">
       <KeepInShell prefix={rolePrefix} />
@@ -38,9 +42,10 @@ export function AppShell({
           aria-hidden
         />
         <span className="rounded-md bg-primary/15 px-2 py-0.5 text-[11px] font-semibold text-primary">
-          Προεπισκόπηση v2
+          {t('previewBadge')}
         </span>
         <div className="flex-1" />
+        <LanguageSwitcher />
         <ThemeToggle />
         <NotificationBell />
         {userNav}

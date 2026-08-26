@@ -2,6 +2,7 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
+import { useTranslations } from 'next-intl';
 import { cn } from '@/lib/utils';
 import type { NavItem } from './types';
 
@@ -9,13 +10,13 @@ function isActive(pathname: string, href: string) {
   return pathname === href || pathname.startsWith(`${href}/`);
 }
 
-function SidebarLink({ item, active }: { item: NavItem; active: boolean }) {
+function SidebarLink({ item, label, active }: { item: NavItem; label: string; active: boolean }) {
   const Icon = item.icon;
 
   return (
     <Link
       href={item.href}
-      title={item.label}
+      title={label}
       aria-current={active ? 'page' : undefined}
       className={cn(
         'relative flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm transition-colors',
@@ -32,7 +33,7 @@ function SidebarLink({ item, active }: { item: NavItem; active: boolean }) {
         />
       )}
       <Icon className={cn('h-[17px] w-[17px] shrink-0', active && 'text-primary')} />
-      <span className="hidden flex-1 lg:inline">{item.label}</span>
+      <span className="hidden flex-1 lg:inline">{label}</span>
     </Link>
   );
 }
@@ -45,6 +46,7 @@ interface ShellSidebarProps {
 /** Ράγα εικονιδίων από md, πλήρεις ετικέτες από lg. */
 export function ShellSidebar({ items, settingsItem }: ShellSidebarProps) {
   const pathname = usePathname() ?? '';
+  const t = useTranslations('shellV2');
 
   return (
     <aside className="hidden shrink-0 flex-col border-r border-border bg-card md:flex md:w-[68px] lg:w-60">
@@ -56,14 +58,23 @@ export function ShellSidebar({ items, settingsItem }: ShellSidebarProps) {
         <span className="hidden text-sm font-semibold tracking-tight lg:inline">Devre Media</span>
       </div>
 
-      <nav className="flex flex-1 flex-col gap-0.5 p-2.5" aria-label="Κύριο μενού">
+      <nav className="flex flex-1 flex-col gap-0.5 p-2.5" aria-label={t('mainMenu')}>
         {items.map((item) => (
-          <SidebarLink key={item.href} item={item} active={isActive(pathname, item.href)} />
+          <SidebarLink
+            key={item.href}
+            item={item}
+            label={t(item.label)}
+            active={isActive(pathname, item.href)}
+          />
         ))}
       </nav>
 
       <div className="border-t border-border p-2.5">
-        <SidebarLink item={settingsItem} active={isActive(pathname, settingsItem.href)} />
+        <SidebarLink
+          item={settingsItem}
+          label={t(settingsItem.label)}
+          active={isActive(pathname, settingsItem.href)}
+        />
       </div>
     </aside>
   );
