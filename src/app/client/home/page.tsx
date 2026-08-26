@@ -13,6 +13,7 @@ import { UpcomingFilmings } from '@/components/client/dashboard/upcoming-filming
 import { DashboardStats } from '@/components/client/dashboard/dashboard-stats';
 import { InvoicesSummary } from '@/components/client/dashboard/invoices-summary';
 import { CompletedProjects } from '@/components/client/dashboard/completed-projects';
+import { PageHeading } from '@/components/shared/page-heading';
 import { getTranslations } from 'next-intl/server';
 import type { DeliverableWithProject } from '@/types';
 
@@ -94,10 +95,7 @@ export default async function ClientDashboardPage() {
   return (
     <div className="container mx-auto px-4 py-6 sm:px-6 space-y-8">
       {/* Welcome Header */}
-      <div>
-        <h1 className="text-3xl font-bold tracking-tight">{t('title')}</h1>
-        <p className="text-muted-foreground mt-1">{t('description')}</p>
-      </div>
+      <PageHeading title={t('title')} subtitle={t('description')} />
 
       {/* Stat Cards */}
       <DashboardStats
