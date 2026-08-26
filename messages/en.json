@@ -1005,6 +1005,7 @@
     "noContractsListDescription": "Contracts are created from production pages. Go to a production to create a contract.",
     "status": "Status",
     "client": "Client",
+    "project": "Project",
     "amount": "Amount",
     "deadline": "Deadline",
     "approveContract": "Approve",
@@ -1623,7 +1624,17 @@
     "totalConversations": "Total Conversations",
     "today": "Today",
     "totalMessages": "Total Messages",
-    "avgMsgsPerConv": "Avg Msgs/Conv"
+    "avgMsgsPerConv": "Avg Msgs/Conv",
+    "table": {
+      "session": "Session",
+      "language": "Language",
+      "messages": "Messages",
+      "lastActive": "Last active",
+      "empty": "No conversations yet. The chatbot widget on the landing page will create conversations when visitors interact with it.",
+      "deleted": "Conversation deleted",
+      "deleteTitle": "Delete conversation?",
+      "deleteConfirm": "The conversation and its messages will be permanently deleted."
+    }
   },
 
   "salesResources": {
@@ -2451,7 +2462,13 @@
     "description": "Create and manage proposals for leads and clients.",
     "list": {
       "addProposal": "New Proposal",
-      "empty": "No proposals yet."
+      "empty": "No proposals yet.",
+      "client": "Client",
+      "linkedTo": "Linked to",
+      "status": "Status",
+      "packages": "Packages",
+      "created": "Created",
+      "validUntil": "Valid until"
     },
     "status": {
       "draft": "Draft",

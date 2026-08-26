@@ -376,6 +376,71 @@ test.describe('design identity — shared table', () => {
   });
 });
 
+test.describe('design identity — clients area', () => {
+  /**
+   * Το hub των Πελατών ανοίγει στην καρτέλα `list` — κάθε άλλη καρτέλα θέλει
+   * ρητά το δικό της `?tab=`. Ίδιο μάθημα με την περιοχή των Οικονομικών:
+   * χωρίς την παράμετρο ο έλεγχος δοκιμάζει λάθος οθόνη χωρίς να το προσέξει
+   * κανείς, γιατί τα specs είναι skipped.
+   */
+
+  test('/admin/clients?tab=interest — leads table renders through the shared table and searching narrows the row count', async ({
+    page,
+  }) => {
+    test.skip(!process.env.E2E_TEST_USERS_READY, 'Test users not configured in database');
+    await loginAsAdmin(page);
+    await page.goto('/admin/clients?tab=interest');
+    await expect(page).toHaveURL(/\/admin\/clients\?tab=interest/);
+
+    const tableContainer = page.locator('[data-slot="table-container"]').first();
+    await expect(tableContainer.locator('table')).toBeVisible();
+
+    const rows = page.locator('table tbody tr[data-state]');
+    const rowsBefore = await rows.count();
+    expect(rowsBefore).toBeGreaterThan(0);
+
+    // Το πεδίο αναζήτησης είναι αδερφός του επιλογέα σταδίου, όχι δικό του πίνακα.
+    await page.getByPlaceholder(/Αναζήτηση leads/i).fill('zzzzzznonexistentzzzzzz');
+
+    await expect.poll(() => rows.count()).toBeLessThan(rowsBefore);
+  });
+
+  test('/admin/clients?tab=proposals — proposals list renders as a real table', async ({
+    page,
+  }) => {
+    test.skip(!process.env.E2E_TEST_USERS_READY, 'Test users not configured in database');
+    await loginAsAdmin(page);
+    await page.goto('/admin/clients?tab=proposals');
+    await expect(page).toHaveURL(/\/admin\/clients\?tab=proposals/);
+
+    const table = page.locator('table').first();
+    await expect(table).toBeVisible();
+    await expect(table.locator('thead tr').first()).toBeVisible();
+  });
+
+  test('/admin/clients?tab=chat — deleting a conversation asks first', async ({ page }) => {
+    test.skip(!process.env.E2E_TEST_USERS_READY, 'Test users not configured in database');
+    await loginAsAdmin(page);
+    await page.goto('/admin/clients?tab=chat');
+    await expect(page).toHaveURL(/\/admin\/clients\?tab=chat/);
+
+    // Το μόνο test της σουίτας που θα έπιανε μια καταστροφική ενέργεια να
+    // χάνει την επιβεβαίωσή της ξανά.
+    const rows = page.locator('table tbody tr[data-state]');
+    const rowsBefore = await rows.count();
+    expect(rowsBefore).toBeGreaterThan(0);
+
+    await rows.first().getByRole('button').first().click();
+
+    const dialog = page.getByRole('alertdialog');
+    await expect(dialog).toBeVisible();
+
+    await page.keyboard.press('Escape');
+    await expect(dialog).not.toBeVisible();
+    await expect(rows).toHaveCount(rowsBefore);
+  });
+});
+
 test.describe('design identity — explicit theme beats OS preference', () => {
   test.describe('OS prefers dark, user explicitly chose light', () => {
     test.use({ colorScheme: 'dark' });

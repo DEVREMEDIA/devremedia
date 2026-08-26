@@ -1,6 +1,7 @@
 'use client';
 
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
+import { ColumnDef } from '@tanstack/react-table';
 import { FileText, Eye, Trash2 } from 'lucide-react';
 import Link from 'next/link';
 import { useTranslations } from 'next-intl';
@@ -8,6 +9,7 @@ import { Button } from '@/components/ui/button';
 import { StatusBadge } from '@/components/shared/status-badge';
 import { ConfirmDialog } from '@/components/shared/confirm-dialog';
 import { EmptyState } from '@/components/shared/empty-state';
+import { DataTable } from '@/components/shared/data-table';
 
 import { deleteContract } from '@/lib/actions/contracts';
 import { toast } from 'sonner';
@@ -53,6 +55,75 @@ export function ContractsListPage({ contracts: initialContracts }: ContractsList
     setIsDeleting(false);
   };
 
+  const columns: ColumnDef<ContractItem>[] = useMemo(
+    () => [
+      {
+        accessorKey: 'title',
+        header: t('contractTitle'),
+        cell: ({ row }) => (
+          <Link
+            href={`/admin/contracts/${row.original.id}`}
+            className="font-medium hover:underline"
+          >
+            {row.original.title}
+          </Link>
+        ),
+      },
+      {
+        accessorKey: 'status',
+        header: t('status'),
+        cell: ({ row }) => <StatusBadge status={row.original.status} />,
+      },
+      {
+        id: 'client',
+        header: t('client'),
+        accessorFn: (row) => row.client?.company_name || row.client?.contact_name || '-',
+      },
+      {
+        id: 'project',
+        header: t('project'),
+        accessorFn: (row) => row.project?.title || '-',
+      },
+      {
+        accessorKey: 'created_at',
+        header: t('created'),
+        cell: ({ row }) => (
+          <span>
+            {new Date(row.original.created_at).toLocaleDateString(undefined, {
+              year: 'numeric',
+              month: 'short',
+              day: 'numeric',
+            })}
+          </span>
+        ),
+        meta: { numeric: true, align: 'left' },
+      },
+      {
+        id: 'actions',
+        header: '',
+        cell: ({ row }) => (
+          <div className="flex items-center gap-2 flex-shrink-0">
+            <Button size="sm" variant="outline" asChild>
+              <Link href={`/admin/contracts/${row.original.id}`}>
+                <Eye className="h-4 w-4" />
+              </Link>
+            </Button>
+            <Button
+              size="sm"
+              variant="outline"
+              className="text-destructive hover:bg-destructive/10 hover:text-destructive"
+              onClick={() => setDeleteId(row.original.id)}
+            >
+              <Trash2 className="h-4 w-4" />
+            </Button>
+          </div>
+        ),
+        meta: { width: 'w-[110px]' },
+      },
+    ],
+    [t],
+  );
+
   if (contracts.length === 0) {
     return (
       <EmptyState
@@ -65,56 +136,7 @@ export function ContractsListPage({ contracts: initialContracts }: ContractsList
 
   return (
     <>
-      <div className="space-y-3">
-        {contracts.map((contract) => (
-          <div
-            key={contract.id}
-            className="border rounded-lg p-4 hover:shadow-md transition-shadow"
-          >
-            <div className="flex items-center justify-between gap-4">
-              <div className="flex-1 min-w-0 space-y-1">
-                <div className="flex items-center gap-3 flex-wrap">
-                  <Link
-                    href={`/admin/contracts/${contract.id}`}
-                    className="font-semibold text-sm hover:underline truncate"
-                  >
-                    {contract.title}
-                  </Link>
-                  <StatusBadge status={contract.status} />
-                </div>
-                <div className="flex items-center gap-3 text-xs text-muted-foreground flex-wrap">
-                  <span>
-                    {contract.client?.company_name || contract.client?.contact_name || '-'}
-                  </span>
-                  <span className="hidden sm:inline">{contract.project?.title || '-'}</span>
-                  <span>
-                    {new Date(contract.created_at).toLocaleDateString(undefined, {
-                      year: 'numeric',
-                      month: 'short',
-                      day: 'numeric',
-                    })}
-                  </span>
-                </div>
-              </div>
-              <div className="flex items-center gap-2 flex-shrink-0">
-                <Button size="sm" variant="outline" asChild>
-                  <Link href={`/admin/contracts/${contract.id}`}>
-                    <Eye className="h-4 w-4" />
-                  </Link>
-                </Button>
-                <Button
-                  size="sm"
-                  variant="outline"
-                  className="text-red-600 hover:text-red-700 hover:bg-red-50"
-                  onClick={() => setDeleteId(contract.id)}
-                >
-                  <Trash2 className="h-4 w-4" />
-                </Button>
-              </div>
-            </div>
-          </div>
-        ))}
-      </div>
+      <DataTable columns={columns} data={contracts} mobileHiddenColumns={['project']} />
 
       <ConfirmDialog
         open={!!deleteId}

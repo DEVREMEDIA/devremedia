@@ -1,15 +1,8 @@
 'use client';
 
-import { useState } from 'react';
+import * as React from 'react';
 import Link from 'next/link';
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from '@/components/ui/table';
+import { ColumnDef } from '@tanstack/react-table';
 import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
 import {
@@ -21,6 +14,7 @@ import {
 } from '@/components/ui/select';
 import { StatusBadge } from '@/components/shared/status-badge';
 import { EmptyState } from '@/components/shared/empty-state';
+import { DataTable } from '@/components/shared/data-table';
 import { UserPlus, Search } from 'lucide-react';
 import { LEAD_STAGES, LEAD_STAGE_LABELS, LEAD_SOURCE_LABELS } from '@/lib/constants';
 import { useTranslations } from 'next-intl';
@@ -45,8 +39,8 @@ type AllLeadsTableProps = {
 
 export function AllLeadsTable({ leads }: AllLeadsTableProps) {
   const t = useTranslations('leads');
-  const [search, setSearch] = useState('');
-  const [stageFilter, setStageFilter] = useState<string>('all');
+  const [search, setSearch] = React.useState('');
+  const [stageFilter, setStageFilter] = React.useState<string>('all');
 
   const filtered = leads.filter((lead) => {
     const matchesSearch =
@@ -59,6 +53,69 @@ export function AllLeadsTable({ leads }: AllLeadsTableProps) {
 
     return matchesSearch && matchesStage;
   });
+
+  const columns: ColumnDef<LeadRow>[] = React.useMemo(
+    () => [
+      {
+        accessorKey: 'contact_name',
+        header: t('contactName'),
+        cell: ({ row }) => (
+          <>
+            <Link href={`/admin/leads/${row.original.id}`} className="font-medium hover:underline">
+              {row.original.contact_name}
+            </Link>
+            <p className="text-xs text-muted-foreground">{row.original.email}</p>
+          </>
+        ),
+      },
+      {
+        accessorKey: 'company_name',
+        header: t('companyName'),
+        cell: ({ row }) => row.original.company_name ?? '-',
+      },
+      {
+        accessorKey: 'stage',
+        header: t('stage'),
+        cell: ({ row }) => <StatusBadge status={row.original.stage} />,
+      },
+      {
+        accessorKey: 'source',
+        header: t('source'),
+        cell: ({ row }) => (
+          <Badge variant="outline">
+            {LEAD_SOURCE_LABELS[row.original.source as keyof typeof LEAD_SOURCE_LABELS] ??
+              row.original.source}
+          </Badge>
+        ),
+      },
+      {
+        accessorKey: 'deal_value',
+        header: t('dealValue'),
+        cell: ({ row }) =>
+          row.original.deal_value != null ? `€${row.original.deal_value.toLocaleString()}` : '-',
+        meta: { numeric: true },
+      },
+      {
+        accessorKey: 'assigned_to',
+        header: t('assignedTo'),
+        cell: ({ row }) => row.original.assigned_user?.display_name ?? t('unassigned'),
+      },
+      {
+        accessorKey: 'last_contacted_at',
+        header: t('lastContact'),
+        cell: ({ row }) =>
+          row.original.last_contacted_at
+            ? new Date(row.original.last_contacted_at).toLocaleDateString(undefined, {
+                year: 'numeric',
+                month: 'short',
+                day: 'numeric',
+              })
+            : t('never'),
+        meta: { numeric: true, align: 'left' },
+      },
+    ],
+    [t],
+  );
 
   if (leads.length === 0) {
     return (
@@ -93,63 +150,11 @@ export function AllLeadsTable({ leads }: AllLeadsTableProps) {
         </Select>
       </div>
 
-      <div className="rounded-md border">
-        <Table>
-          <TableHeader>
-            <TableRow>
-              <TableHead>{t('contactName')}</TableHead>
-              <TableHead>{t('companyName')}</TableHead>
-              <TableHead>{t('stage')}</TableHead>
-              <TableHead>{t('source')}</TableHead>
-              <TableHead className="text-right">{t('dealValue')}</TableHead>
-              <TableHead>{t('assignedTo')}</TableHead>
-              <TableHead>{t('lastContact')}</TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {filtered.map((lead) => (
-              <TableRow key={lead.id}>
-                <TableCell>
-                  <Link href={`/admin/leads/${lead.id}`} className="font-medium hover:underline">
-                    {lead.contact_name}
-                  </Link>
-                  <p className="text-xs text-muted-foreground">{lead.email}</p>
-                </TableCell>
-                <TableCell>{lead.company_name ?? '-'}</TableCell>
-                <TableCell>
-                  <StatusBadge status={lead.stage} />
-                </TableCell>
-                <TableCell>
-                  <Badge variant="outline">
-                    {LEAD_SOURCE_LABELS[lead.source as keyof typeof LEAD_SOURCE_LABELS] ??
-                      lead.source}
-                  </Badge>
-                </TableCell>
-                <TableCell className="text-right">
-                  {lead.deal_value != null ? `€${lead.deal_value.toLocaleString()}` : '-'}
-                </TableCell>
-                <TableCell>{lead.assigned_user?.display_name ?? t('unassigned')}</TableCell>
-                <TableCell>
-                  {lead.last_contacted_at
-                    ? new Date(lead.last_contacted_at).toLocaleDateString(undefined, {
-                        year: 'numeric',
-                        month: 'short',
-                        day: 'numeric',
-                      })
-                    : t('never')}
-                </TableCell>
-              </TableRow>
-            ))}
-            {filtered.length === 0 && (
-              <TableRow>
-                <TableCell colSpan={7} className="text-center text-muted-foreground py-8">
-                  {t('noMatchingLeads')}
-                </TableCell>
-              </TableRow>
-            )}
-          </TableBody>
-        </Table>
-      </div>
+      <DataTable
+        columns={columns}
+        data={filtered}
+        emptyState={<span className="text-muted-foreground">{t('noMatchingLeads')}</span>}
+      />
     </div>
   );
 }

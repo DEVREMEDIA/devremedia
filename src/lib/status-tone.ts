@@ -23,6 +23,7 @@ export const TONE_RULES: ReadonlyArray<{ tone: Tone; match: readonly string[] }>
       'blocked',
       'expired',
       'urgent',
+      'danger',
     ],
   },
   {
@@ -40,6 +41,8 @@ export const TONE_RULES: ReadonlyArray<{ tone: Tone; match: readonly string[] }>
       'hold',
       'unsigned',
       'high',
+      'warning',
+      'viewed',
     ],
   },
   {
@@ -57,6 +60,7 @@ export const TONE_RULES: ReadonlyArray<{ tone: Tone; match: readonly string[] }>
       'converted',
       'final',
       'published',
+      'success',
     ],
   },
 ];
