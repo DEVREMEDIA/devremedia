@@ -12,6 +12,7 @@
     "format:check": "prettier --check .",
     "type-check": "tsc --noEmit",
     "check:routes": "node scripts/check-routes.mjs",
+    "check:design": "node scripts/check-design.mjs",
     "test": "vitest run",
     "test:unit": "vitest run",
     "test:watch": "vitest",
