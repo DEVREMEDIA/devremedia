@@ -8,15 +8,49 @@ export type Tone = 'critical' | 'caution' | 'positive' | 'neutral';
 export const TONE_RULES: ReadonlyArray<{ tone: Tone; match: readonly string[] }> = [
   {
     tone: 'critical',
-    match: ['overdue', 'failed', 'rejected', 'cancelled', 'canceled', 'blocked', 'expired'],
+    match: [
+      'overdue',
+      'failed',
+      'rejected',
+      'declined',
+      'cancelled',
+      'canceled',
+      'blocked',
+      'expired',
+    ],
   },
   {
     tone: 'caution',
-    match: ['pending', 'awaiting', 'review', 'draft', 'sent', 'progress', 'hold', 'unsigned'],
+    match: [
+      'pending',
+      'awaiting',
+      'review',
+      'reviewed',
+      'revision',
+      'revisions',
+      'draft',
+      'sent',
+      'progress',
+      'hold',
+      'unsigned',
+    ],
   },
   {
     tone: 'positive',
-    match: ['paid', 'signed', 'approved', 'completed', 'complete', 'delivered', 'active', 'done'],
+    match: [
+      'paid',
+      'signed',
+      'approved',
+      'accepted',
+      'completed',
+      'complete',
+      'delivered',
+      'active',
+      'done',
+      'converted',
+      'final',
+      'published',
+    ],
   },
 ];
 

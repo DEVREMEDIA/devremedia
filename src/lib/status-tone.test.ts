@@ -40,4 +40,52 @@ describe('statusTone', () => {
       expect(Array.isArray(rule.match)).toBe(true);
     }
   });
+
+  it('maps a declined status to critical', () => {
+    expect(statusTone('declined')).toBe('critical');
+  });
+
+  it('maps a revision_requested status to caution', () => {
+    expect(statusTone('revision_requested')).toBe('caution');
+  });
+
+  it('maps a revisions status to caution', () => {
+    expect(statusTone('revisions')).toBe('caution');
+  });
+
+  it('maps a reviewed status to caution', () => {
+    expect(statusTone('reviewed')).toBe('caution');
+  });
+
+  it('maps an accepted status to positive', () => {
+    expect(statusTone('accepted')).toBe('positive');
+  });
+
+  it('maps a converted status to positive', () => {
+    expect(statusTone('converted')).toBe('positive');
+  });
+
+  it('maps a final status to positive', () => {
+    expect(statusTone('final')).toBe('positive');
+  });
+
+  it('maps a published status to positive', () => {
+    expect(statusTone('published')).toBe('positive');
+  });
+
+  it('leaves progress-stage and inert statuses neutral on purpose', () => {
+    const deliberatelyNeutral = [
+      'archived',
+      'briefing',
+      'pre_production',
+      'filming',
+      'editing',
+      'todo',
+      'lead',
+      'inactive',
+    ];
+    for (const status of deliberatelyNeutral) {
+      expect(statusTone(status)).toBe('neutral');
+    }
+  });
 });
