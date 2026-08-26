@@ -2,7 +2,7 @@ import type { Metadata } from 'next';
 import { getTranslations } from 'next-intl/server';
 import { SectionTabs, type SectionTab } from '@/components/shell-v2/section-tabs';
 
-import EmployeeTasksPage from '@/app/employee/tasks/page';
+import EmployeeTasksPage from '@/app/employee/tasks/tasks-page';
 import { DeliverablesIndex } from './deliverables-index';
 
 export async function generateMetadata(): Promise<Metadata> {
@@ -28,7 +28,7 @@ export default async function EmployeeV2WorkPage({ searchParams }: { searchParam
         <p className="mt-1 text-sm text-muted-foreground">{t('subtitle')}</p>
       </header>
 
-      <SectionTabs basePath="/employee-v2/work" tabs={TABS} active={active} />
+      <SectionTabs basePath="/employee/work" tabs={TABS} active={active} />
 
       {active === 'tasks' ? <EmployeeTasksPage /> : <DeliverablesIndex />}
     </div>
