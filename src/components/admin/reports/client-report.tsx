@@ -1,15 +1,9 @@
 'use client';
 
+import type { ColumnDef } from '@tanstack/react-table';
 import { useTranslations } from 'next-intl';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from '@/components/ui/table';
+import { DataTable } from '@/components/shared/data-table';
 import type { ClientRevenue } from '@/lib/queries/reports';
 import { formatEur as formatCurrency } from '@/lib/format';
 import { CHART_PRIMARY } from '@/lib/chart-colors';
@@ -24,6 +18,65 @@ export function ClientReport({ topClients }: ClientReportProps) {
   // Το μέγεθος διαβάζεται με τη ματιά· ο αριθμός μένει για την ακρίβεια.
   const maxRevenue = Math.max(1, ...topClients.map((c) => c.total_revenue));
 
+  const columns: ColumnDef<ClientRevenue>[] = [
+    {
+      id: 'rank',
+      header: '#',
+      cell: ({ row }) => <span className="text-muted-foreground">{row.index + 1}</span>,
+      meta: { numeric: true, align: 'left' },
+      enableSorting: false,
+    },
+    {
+      accessorKey: 'client_name',
+      header: 'Πελάτης',
+      cell: ({ row }) => <span className="font-medium">{row.original.client_name}</span>,
+      enableSorting: false,
+    },
+    {
+      id: 'revenueShare',
+      header: 'Μερίδιο τζίρου',
+      cell: ({ row }) => (
+        <span className="block h-1.5 w-full overflow-hidden rounded-full bg-muted">
+          <span
+            className="block h-full rounded-full"
+            style={{
+              width: `${(row.original.total_revenue / maxRevenue) * 100}%`,
+              backgroundColor: CHART_PRIMARY,
+            }}
+          />
+        </span>
+      ),
+      enableSorting: false,
+    },
+    {
+      accessorKey: 'project_count',
+      header: 'Παραγωγές',
+      cell: ({ row }) => row.original.project_count,
+      meta: { numeric: true },
+      enableSorting: false,
+    },
+    {
+      accessorKey: 'total_revenue',
+      header: t('revenueTurnover'),
+      cell: ({ row }) => (
+        <span className="font-medium">{formatCurrency(row.original.total_revenue)}</span>
+      ),
+      meta: { numeric: true },
+      enableSorting: false,
+    },
+    {
+      accessorKey: 'total_collections',
+      header: t('collections'),
+      cell: ({ row }) => (
+        <span className="text-muted-foreground">
+          {formatCurrency(row.original.total_collections)}
+        </span>
+      ),
+      meta: { numeric: true },
+      enableSorting: false,
+    },
+  ];
+
   return (
     <Card>
       <CardHeader>
@@ -31,50 +84,12 @@ export function ClientReport({ topClients }: ClientReportProps) {
         <CardDescription>Οι πελάτες με τον μεγαλύτερο τζίρο</CardDescription>
       </CardHeader>
       <CardContent>
-        {topClients.length === 0 ? (
-          <p className="py-8 text-center text-sm text-muted-foreground">
-            Δεν υπάρχουν δεδομένα πελατών
-          </p>
-        ) : (
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead className="w-10">#</TableHead>
-                <TableHead>Πελάτης</TableHead>
-                <TableHead className="w-[30%]">Μερίδιο τζίρου</TableHead>
-                <TableHead className="text-right">Παραγωγές</TableHead>
-                <TableHead className="text-right">{t('revenueTurnover')}</TableHead>
-                <TableHead className="text-right">{t('collections')}</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {topClients.map((client, index) => (
-                <TableRow key={client.client_id}>
-                  <TableCell className="tabular-nums text-muted-foreground">{index + 1}</TableCell>
-                  <TableCell className="font-medium">{client.client_name}</TableCell>
-                  <TableCell>
-                    <span className="block h-1.5 w-full overflow-hidden rounded-full bg-muted">
-                      <span
-                        className="block h-full rounded-full"
-                        style={{
-                          width: `${(client.total_revenue / maxRevenue) * 100}%`,
-                          backgroundColor: CHART_PRIMARY,
-                        }}
-                      />
-                    </span>
-                  </TableCell>
-                  <TableCell className="text-right tabular-nums">{client.project_count}</TableCell>
-                  <TableCell className="text-right font-medium tabular-nums">
-                    {formatCurrency(client.total_revenue)}
-                  </TableCell>
-                  <TableCell className="text-right tabular-nums text-muted-foreground">
-                    {formatCurrency(client.total_collections)}
-                  </TableCell>
-                </TableRow>
-              ))}
-            </TableBody>
-          </Table>
-        )}
+        <DataTable
+          columns={columns}
+          data={topClients}
+          density="compact"
+          emptyState={<span>Δεν υπάρχουν δεδομένα πελατών</span>}
+        />
       </CardContent>
     </Card>
   );

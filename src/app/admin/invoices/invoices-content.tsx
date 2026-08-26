@@ -18,6 +18,14 @@ import { Button } from '@/components/ui/button';
 import { InvoicesTableView } from '@/components/admin/invoices/invoices-table-view';
 import { StatusBadge } from '@/components/shared/status-badge';
 import { Card, CardContent } from '@/components/ui/card';
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from '@/components/ui/table';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import {
@@ -290,25 +298,21 @@ export function InvoicesContent({ invoices: initialInvoices }: InvoicesContentPr
                     {isExpanded && (
                       <div className="border-t bg-muted/30">
                         <div className="overflow-x-auto">
-                          <table className="w-full text-sm">
-                            <thead>
-                              <tr className="border-b text-left text-muted-foreground">
-                                <th className="px-4 py-3 font-medium">{t('invoiceNumber')}</th>
-                                <th className="px-4 py-3 font-medium hidden sm:table-cell">
+                          <Table>
+                            <TableHeader>
+                              <TableRow>
+                                <TableHead>{t('invoiceNumber')}</TableHead>
+                                <TableHead className="hidden sm:table-cell">
                                   {t('issueDate')}
-                                </th>
-                                <th className="px-4 py-3 font-medium hidden sm:table-cell">
+                                </TableHead>
+                                <TableHead className="hidden sm:table-cell">
                                   {t('dueDate')}
-                                </th>
-                                <th className="px-4 py-3 font-medium text-right">
-                                  {t('lineTotal')}
-                                </th>
-                                <th className="px-4 py-3 font-medium text-center">
-                                  {t('paymentStatus')}
-                                </th>
-                              </tr>
-                            </thead>
-                            <tbody>
+                                </TableHead>
+                                <TableHead className="text-right">{t('lineTotal')}</TableHead>
+                                <TableHead className="text-center">{t('paymentStatus')}</TableHead>
+                              </TableRow>
+                            </TableHeader>
+                            <TableBody>
                               {group.invoices.map((invoice) => {
                                 const isOverdue =
                                   invoice.status !== 'paid' &&
@@ -317,44 +321,41 @@ export function InvoicesContent({ invoices: initialInvoices }: InvoicesContentPr
                                   isPast(new Date(invoice.due_date));
 
                                 return (
-                                  <tr
-                                    key={invoice.id}
-                                    className="border-b last:border-b-0 hover:bg-accent/30 transition-colors"
-                                  >
-                                    <td className="px-4 py-3">
+                                  <TableRow key={invoice.id}>
+                                    <TableCell>
                                       <Link
                                         href={`/admin/invoices/${invoice.id}`}
-                                        className="font-medium text-primary hover:underline"
+                                        className="font-mono font-medium text-primary hover:underline"
                                       >
                                         {invoice.invoice_number}
                                       </Link>
                                       <div className="text-xs text-muted-foreground sm:hidden mt-0.5">
                                         {format(new Date(invoice.issue_date), 'dd/MM/yy')}
                                       </div>
-                                    </td>
-                                    <td className="px-4 py-3 hidden sm:table-cell">
+                                    </TableCell>
+                                    <TableCell className="hidden sm:table-cell">
                                       {format(new Date(invoice.issue_date), 'dd/MM/yyyy')}
-                                    </td>
-                                    <td className="px-4 py-3 hidden sm:table-cell">
+                                    </TableCell>
+                                    <TableCell className="hidden sm:table-cell">
                                       <span
                                         className={isOverdue ? 'text-destructive font-medium' : ''}
                                       >
                                         {format(new Date(invoice.due_date), 'dd/MM/yyyy')}
                                       </span>
-                                    </td>
-                                    <td className="px-4 py-3 text-right font-medium">
+                                    </TableCell>
+                                    <TableCell className="text-right font-medium tabular-nums">
                                       {formatCurrency(invoice.total)}
-                                    </td>
-                                    <td className="px-4 py-3 text-center">
+                                    </TableCell>
+                                    <TableCell className="text-center">
                                       <StatusBadge
                                         status={isOverdue ? 'overdue' : invoice.status}
                                       />
-                                    </td>
-                                  </tr>
+                                    </TableCell>
+                                  </TableRow>
                                 );
                               })}
-                            </tbody>
-                          </table>
+                            </TableBody>
+                          </Table>
                         </div>
                       </div>
                     )}
