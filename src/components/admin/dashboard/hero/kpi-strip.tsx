@@ -8,7 +8,8 @@ import {
   TrendingUp,
   Wallet,
 } from 'lucide-react';
-import { KpiCard } from './kpi-card';
+import { StatGrid } from '@/components/shared/stat-grid';
+import { StatCard } from '@/components/shared/stat-card';
 import { getKpiHero } from '@/lib/queries/dashboard/kpi-hero';
 import { formatEurInt as fmtEur } from '@/lib/format';
 
@@ -20,58 +21,72 @@ export async function KpiStrip() {
   const hero = await getKpiHero();
 
   return (
-    <div className="grid grid-cols-2 gap-3 sm:gap-4 md:grid-cols-3 lg:grid-cols-7">
-      <KpiCard
+    <StatGrid columns={7}>
+      <StatCard
         label={t('revenueMtd')}
-        metric={hero.revenueMtd}
+        value={fmtEur(hero.revenueMtd.value)}
         href="/admin/reports"
         icon={Wallet}
-        formatValue={fmtEur}
+        deltaPct={hero.revenueMtd.deltaPct}
+        sparkline={hero.revenueMtd.sparkline ?? []}
+        exception={hero.revenueMtd.exception}
       />
-      <KpiCard
+      <StatCard
         label={t('collectionsMtd')}
-        metric={hero.collectionsMtd}
+        value={fmtEur(hero.collectionsMtd.value)}
         href="/admin/reports"
         icon={Banknote}
-        formatValue={fmtEur}
+        deltaPct={hero.collectionsMtd.deltaPct}
+        sparkline={hero.collectionsMtd.sparkline ?? []}
+        exception={hero.collectionsMtd.exception}
       />
-      <KpiCard
+      <StatCard
         label={t('pipeline')}
-        metric={hero.pipeline}
+        value={fmtEur(hero.pipeline.value)}
         href="/admin/leads"
         icon={TrendingUp}
-        formatValue={fmtEur}
+        deltaPct={hero.pipeline.deltaPct}
+        sparkline={hero.pipeline.sparkline ?? []}
+        exception={hero.pipeline.exception}
       />
-      <KpiCard
+      <StatCard
         label={t('activeProjects')}
-        metric={hero.activeProjects}
+        value={fmtInt(hero.activeProjects.value)}
         href="/admin/projects"
         icon={Briefcase}
-        formatValue={fmtInt}
+        deltaPct={hero.activeProjects.deltaPct}
+        sparkline={hero.activeProjects.sparkline ?? []}
+        exception={hero.activeProjects.exception}
       />
-      <KpiCard
+      <StatCard
         label={t('profitMargin')}
-        metric={hero.profitMargin}
+        value={fmtPct(hero.profitMargin.value)}
         href="/admin/reports"
         icon={Activity}
-        formatValue={fmtPct}
+        deltaPct={hero.profitMargin.deltaPct}
+        sparkline={hero.profitMargin.sparkline ?? []}
+        exception={hero.profitMargin.exception}
       />
-      <KpiCard
+      <StatCard
         label={t('cashOverdue')}
-        metric={hero.cashOverdue}
+        value={fmtEur(hero.cashOverdue.value)}
         href="/admin/invoices?status=overdue"
         icon={Coins}
-        formatValue={fmtEur}
-        invertDeltaColors
+        deltaPct={hero.cashOverdue.deltaPct}
+        sparkline={hero.cashOverdue.sparkline ?? []}
+        exception={hero.cashOverdue.exception}
+        invertDelta
       />
-      <KpiCard
+      <StatCard
         label={t('atRisk')}
-        metric={hero.atRiskCount}
+        value={fmtInt(hero.atRiskCount.value)}
         href="/admin/dashboard/risk"
         icon={AlertTriangle}
-        formatValue={fmtInt}
-        invertDeltaColors
+        deltaPct={hero.atRiskCount.deltaPct}
+        sparkline={hero.atRiskCount.sparkline ?? []}
+        exception={hero.atRiskCount.exception}
+        invertDelta
       />
-    </div>
+    </StatGrid>
   );
 }
