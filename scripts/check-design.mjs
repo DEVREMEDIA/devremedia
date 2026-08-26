@@ -34,6 +34,14 @@ const COVERED = [
   'src/components/admin/calendar/calendar-stats.tsx',
   'src/components/employee/dashboard/task-stats.tsx',
   'src/components/client/dashboard/dashboard-stats.tsx',
+  // Η περιοχή των Οικονομικών περνάει στον κοινό πίνακα (#104) — ο κόμβος
+  // του hub, το γράφημα κόστους, το KpiCard της υγείας τιμολόγησης, η
+  // αναφορά κορυφαίων πελατών και ο πίνακας τιμολογίων.
+  'src/app/admin/finance',
+  'src/app/admin/cost-model/tabs/summary-tab.tsx',
+  'src/app/admin/pricing-health/pricing-health-content.tsx',
+  'src/components/admin/reports/client-report.tsx',
+  'src/components/admin/invoices/invoices-table-view.tsx',
 ];
 
 // Αρχεία μέσα σε καλυμμένους φακέλους που όντως γράφουν ακόμα ωμό χρώμα.
@@ -204,11 +212,57 @@ for (const hub of hubs) {
   }
 }
 
+// Η περιοχή των Οικονομικών περνά από τον κοινό πίνακα. Ό,τι εισάγει απευθείας
+// τα ωμά primitives φτιάχνει δικό του πίνακα — αυτό ακριβώς που έφερε δεκαεπτά
+// ασύμβατες υλοποιήσεις στο προϊόν.
+const FINANCE_AREA = [
+  'src/app/admin/finance/',
+  'src/app/admin/invoices/',
+  'src/app/admin/cost-model/',
+  'src/app/admin/pricing-health/',
+  'src/components/admin/invoices/',
+  'src/components/admin/reports/',
+];
+
+// Λίστες λεπτομέρειας μέσα σε ήδη ανοιγμένη γραμμή. Δεν είναι το θέμα της
+// σελίδας — δεν έχουν δουλειά να αποκτήσουν δική τους μπάρα αναζήτησης και
+// σελιδοποίησης πάνω από αυτήν του γονιού τους. Κάθε εγγραφή θέλει λόγο.
+const TABLE_DETAIL_EXEMPT = [
+  'src/app/admin/invoices/invoices-content.tsx', // λίστα τιμολογίων μέσα σε ανοιγμένο πελάτη
+  // Οι γραμμές ενός παραστατικού είναι το ίδιο το περιεχόμενο του εγγράφου:
+  // λίγες, σταθερές, χωρίς νόημα να αναζητηθούν ή να σελιδοποιηθούν. Η οθόνη
+  // αυτή ανασχεδιάζεται ούτως ή άλλως στη #109.
+  'src/app/admin/invoices/[invoiceId]/invoice-detail.tsx',
+];
+
+const RAW_TABLE_IMPORT = /from\s+'@\/components\/ui\/table'/;
+
+const tableDetailExemptSet = new Set(TABLE_DETAIL_EXEMPT.map((p) => p.replaceAll('\\', '/')));
+const financeFiles = allTsxFiles.filter((f) =>
+  FINANCE_AREA.some((prefix) => f.startsWith(prefix)),
+);
+
+const handRolledTables = [];
+const staleTableExemptions = [];
+
+for (const file of financeFiles) {
+  const importsRawTable = RAW_TABLE_IMPORT.test(strippedOf(file));
+  if (tableDetailExemptSet.has(file)) {
+    // Μια εξαίρεση που δεν εισάγει πια τα ωμά primitives έχει ήδη μεταναστεύσει
+    // — μένει εδώ μόνο ξεχασμένη, χωρίς πια να φυλάσσει τίποτα.
+    if (!importsRawTable) staleTableExemptions.push(file);
+    continue;
+  }
+  if (importsRawTable) handRolledTables.push(file);
+}
+
 if (
   violations.length > 0 ||
   headingViolations.length > 0 ||
   stalePending.length > 0 ||
-  doubleTitles.size > 0
+  doubleTitles.size > 0 ||
+  handRolledTables.length > 0 ||
+  staleTableExemptions.length > 0
 ) {
   if (violations.length > 0) {
     console.error(`check:design — ${violations.length} raw colour(s) outside the token layer:\n`);
@@ -235,10 +289,26 @@ if (
     }
     console.error('\nThe hub owns the page title. A tab body must not render its own PageHeading.');
   }
+  if (handRolledTables.length > 0) {
+    console.error(
+      `\ncheck:design — ${handRolledTables.length} file(s) in the Finance area build their own table:\n`,
+    );
+    for (const f of handRolledTables) console.error(`  ${f}`);
+    console.error(
+      '\nUse the shared DataTable (src/components/shared/data-table.tsx) instead of the raw table primitives.',
+    );
+  }
+  if (staleTableExemptions.length > 0) {
+    console.error(
+      `\ncheck:design — ${staleTableExemptions.length} stale TABLE_DETAIL_EXEMPT entr${staleTableExemptions.length === 1 ? 'y' : 'ies'} — no longer imports the raw primitives, remove from the list:\n`,
+    );
+    for (const p of staleTableExemptions) console.error(`  ${p}`);
+  }
   process.exit(1);
 }
 
 console.log(
   `ok — ${files.size} file(s) covered, no raw colours; one title per page ` +
-    `(${headingPendingSet.size} pending, ${hubs.length} hubs checked for double titles)`,
+    `(${headingPendingSet.size} pending, ${hubs.length} hubs checked for double titles), ` +
+    `${financeFiles.length} Finance file(s) checked for hand-rolled tables`,
 );
