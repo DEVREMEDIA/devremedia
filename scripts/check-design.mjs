@@ -7,19 +7,22 @@ import { join } from 'node:path';
 // Περιοχές που έχουν μεταναστεύσει. Σαρώνονται ολόκληρες — ένα νέο component
 // σε καλυμμένο φάκελο φυλάσσεται αυτόματα, χωρίς να χρειάζεται να προστεθεί
 // ρητά εδώ. Ό,τι δεν έχει μεταναστεύσει ακόμα πάει στο PENDING από κάτω.
-const COVERED = ['src/app/admin/today', 'src/components/admin/dashboard', 'src/components/shared/page-heading.tsx'];
+const COVERED = [
+  'src/app/admin/today',
+  'src/components/admin/dashboard',
+  'src/components/shared/page-heading.tsx',
+  // Εδώ ζει ΟΛΟΣ ο χάρτης τόνου→κλάσης. Αν ξεφύγει αυτό, ξεβάφει κάθε
+  // πλακίδιο της μεταναστευμένης οθόνης — πρέπει να φυλάσσεται.
+  'src/components/shared/tone-chip.tsx',
+];
 
-// Αρχεία μέσα σε καλυμμένους φακέλους που δεν έχουν μεταναστεύσει ακόμα.
-// Κάθε επόμενη φέτα αφαιρεί από εδώ ό,τι μεταναστεύει.
+// Αρχεία μέσα σε καλυμμένους φακέλους που όντως γράφουν ακόμα ωμό χρώμα.
+// Κάθε επόμενη φέτα αφαιρεί από εδώ ό,τι μεταναστεύει. Μπαίνει εδώ μόνο
+// ό,τι πραγματικά παραβιάζει — ένα καθαρό αρχείο δεν έχει λόγο να εξαιρεθεί.
 const PENDING = [
-  'src/app/admin/today/loading.tsx',
-  'src/components/admin/dashboard/finance/cost-health-card.tsx',
-  'src/components/admin/dashboard/finance/project-profitability-card.tsx',
   'src/components/admin/dashboard/production/crew-load-heatmap.tsx',
-  'src/components/admin/dashboard/production/upcoming-deadlines-grouped.tsx',
   'src/components/admin/dashboard/risk/risk-panel.tsx',
   'src/components/admin/dashboard/sales/revenue-forecast-card.tsx',
-  'src/components/admin/dashboard/sales/sales-funnel-card.tsx',
 ];
 
 const RAW_COLOUR =
@@ -41,9 +44,15 @@ function walk(target, out = []) {
   return out;
 }
 
-/** Strips a trailing `// ...` line comment so issue refs like `// see #101` never look like a hex colour. */
-function stripLineComment(line) {
-  const i = line.indexOf('//');
+/**
+ * Βγάζει τα σχόλια, ώστε αναφορές σε issue («// see #101») να μη μοιάζουν με hex.
+ * Δύο παγίδες: το `//` του `https://` δεν είναι σχόλιο, και τα μπλοκ σχόλια
+ * (JSDoc) ξεκινούν με `*` — αυτό το repo τα χρησιμοποιεί παντού.
+ */
+function stripComments(line) {
+  const trimmed = line.trim();
+  if (trimmed.startsWith('*') || trimmed.startsWith('/*')) return '';
+  const i = line.search(/(?<!:)\/\//);
   return i === -1 ? line : line.slice(0, i);
 }
 
@@ -59,7 +68,7 @@ const violations = [];
 for (const file of files) {
   const lines = readFileSync(file, 'utf8').split('\n');
   lines.forEach((line, i) => {
-    if (RAW_COLOUR.test(stripLineComment(line))) {
+    if (RAW_COLOUR.test(stripComments(line))) {
       violations.push(`${file}:${i + 1}  ${line.trim()}`);
     }
   });
