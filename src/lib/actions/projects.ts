@@ -116,9 +116,9 @@ export async function createProject(input: unknown): Promise<ActionResult<Projec
 
     if (error) return { data: null, error: error.message };
 
-    revalidatePath('/admin/projects');
-    revalidatePath('/client/projects');
-    revalidatePath('/client/dashboard');
+    revalidatePath('/admin/productions');
+    revalidatePath('/client/productions');
+    revalidatePath('/client/home');
     if (data.start_date) {
       await syncEntityToGoogle({
         entityType: 'project',
@@ -174,11 +174,11 @@ export async function updateProject(
 
     if (error) return { data: null, error: error.message };
 
-    revalidatePath('/admin/projects');
+    revalidatePath('/admin/productions');
     revalidatePath(`/admin/projects/${id}`);
-    revalidatePath('/client/projects');
+    revalidatePath('/client/productions');
     revalidatePath(`/client/projects/${id}`);
-    revalidatePath('/client/dashboard');
+    revalidatePath('/client/home');
     if (data.start_date) {
       await syncEntityToGoogle({
         entityType: 'project',
@@ -262,9 +262,9 @@ export async function deleteProject(id: string): Promise<ActionResult<void>> {
 
     if (error) return { data: null, error: error.message };
 
-    revalidatePath('/admin/projects');
-    revalidatePath('/client/projects');
-    revalidatePath('/client/dashboard');
+    revalidatePath('/admin/productions');
+    revalidatePath('/client/productions');
+    revalidatePath('/client/home');
     await syncEntityToGoogle({
       entityType: 'project',
       entityId: id,
@@ -300,10 +300,10 @@ export async function assignProject(
 
     if (error) return { data: null, error: error.message };
 
-    revalidatePath('/admin/projects');
+    revalidatePath('/admin/productions');
     revalidatePath(`/admin/projects/${projectId}`);
-    revalidatePath('/employee/projects');
-    revalidatePath('/employee/dashboard');
+    revalidatePath('/employee/productions');
+    revalidatePath('/employee/today');
 
     // Notify the assigned employee
     if (userId) {

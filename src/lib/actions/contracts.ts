@@ -187,9 +187,9 @@ export async function createContract(input: unknown): Promise<ActionResult<Contr
       revalidatePath(`/client/projects/${validated.project_id}`);
     }
     revalidatePath(`/admin/clients/${validated.client_id}`);
-    revalidatePath('/admin/contracts');
-    revalidatePath('/client/contracts');
-    revalidatePath('/client/dashboard');
+    revalidatePath('/admin/clients');
+    revalidatePath('/client/documents');
+    revalidatePath('/client/home');
 
     // Notify client about new contract
     const clientUserId = await getClientUserIdFromClientId(validated.client_id);
@@ -233,7 +233,7 @@ export async function updateContract(id: string, input: unknown): Promise<Action
       revalidatePath(`/admin/projects/${data.project_id}`);
     }
     revalidatePath(`/admin/contracts/${id}`);
-    revalidatePath('/client/contracts');
+    revalidatePath('/client/documents');
     return { data, error: null };
   } catch (error) {
     if (error instanceof Error) {
@@ -289,10 +289,10 @@ export async function signContract(
       revalidatePath(`/admin/projects/${data.project_id}`);
     }
     revalidatePath(`/admin/contracts/${id}`);
-    revalidatePath('/client/contracts');
-    revalidatePath('/client/dashboard');
-    revalidatePath('/admin/contracts');
-    revalidatePath('/admin/dashboard');
+    revalidatePath('/client/documents');
+    revalidatePath('/client/home');
+    revalidatePath('/admin/clients');
+    revalidatePath('/admin/today');
 
     // Notify all admins about signed contract
     const adminIds = await getAdminUserIds();
@@ -410,9 +410,9 @@ export async function sendContract(id: string): Promise<ActionResult<{ id: strin
       revalidatePath(`/admin/projects/${contract.project_id}`);
     }
     revalidatePath(`/admin/contracts/${id}`);
-    revalidatePath('/admin/contracts');
-    revalidatePath('/client/contracts');
-    revalidatePath('/client/dashboard');
+    revalidatePath('/admin/clients');
+    revalidatePath('/client/documents');
+    revalidatePath('/client/home');
     return { data: { id: data.id }, error: null };
   } catch {
     return { data: null, error: 'Failed to send contract' };
@@ -439,8 +439,8 @@ export async function deleteContract(id: string): Promise<ActionResult<void>> {
     if (contract?.project_id) {
       revalidatePath(`/admin/projects/${contract.project_id}`);
     }
-    revalidatePath('/client/contracts');
-    revalidatePath('/client/dashboard');
+    revalidatePath('/client/documents');
+    revalidatePath('/client/home');
     return { data: undefined, error: null };
   } catch (err: unknown) {
     return { data: null, error: err instanceof Error ? err.message : 'Failed to delete contract' };

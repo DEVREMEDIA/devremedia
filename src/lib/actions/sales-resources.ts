@@ -43,8 +43,8 @@ export async function createSalesResourceCategory(
 
     if (error) return { data: null, error: error.message };
 
-    revalidatePath('/admin/sales-resources');
-    revalidatePath('/salesman/resources');
+    revalidatePath('/admin/knowledge');
+    revalidatePath('/salesman/library');
     return { data, error: null };
   } catch (error) {
     if (error instanceof Error) return { data: null, error: error.message };
@@ -70,8 +70,8 @@ export async function updateSalesResourceCategory(
 
     if (error) return { data: null, error: error.message };
 
-    revalidatePath('/admin/sales-resources');
-    revalidatePath('/salesman/resources');
+    revalidatePath('/admin/knowledge');
+    revalidatePath('/salesman/library');
     return { data, error: null };
   } catch (error) {
     if (error instanceof Error) return { data: null, error: error.message };
@@ -88,8 +88,8 @@ export async function deleteSalesResourceCategory(id: string): Promise<ActionRes
 
     if (error) return { data: null, error: error.message };
 
-    revalidatePath('/admin/sales-resources');
-    revalidatePath('/salesman/resources');
+    revalidatePath('/admin/knowledge');
+    revalidatePath('/salesman/library');
     return { data: undefined, error: null };
   } catch {
     return { data: null, error: 'Failed to delete category' };
@@ -137,8 +137,8 @@ export async function createSalesResource(input: unknown): Promise<ActionResult<
 
     if (error) return { data: null, error: error.message };
 
-    revalidatePath('/admin/sales-resources');
-    revalidatePath('/salesman/resources');
+    revalidatePath('/admin/knowledge');
+    revalidatePath('/salesman/library');
     return { data, error: null };
   } catch (error) {
     if (error instanceof Error) return { data: null, error: error.message };
@@ -166,8 +166,8 @@ export async function deleteSalesResource(id: string): Promise<ActionResult<void
       await supabase.storage.from('sales-resources').remove([resource.file_path]);
     }
 
-    revalidatePath('/admin/sales-resources');
-    revalidatePath('/salesman/resources');
+    revalidatePath('/admin/knowledge');
+    revalidatePath('/salesman/library');
     return { data: undefined, error: null };
   } catch {
     return { data: null, error: 'Failed to delete resource' };

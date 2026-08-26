@@ -77,8 +77,8 @@ export async function createKbCategory(input: unknown): Promise<ActionResult<KbC
 
     if (error) return { data: null, error: error.message };
 
-    revalidatePath('/admin/university');
-    revalidatePath('/employee/university', 'layout');
+    revalidatePath('/admin/knowledge');
+    revalidatePath('/employee/knowledge', 'layout');
     return { data, error: null };
   } catch (error) {
     if (error instanceof Error) return { data: null, error: error.message };
@@ -106,8 +106,8 @@ export async function updateKbCategory(
 
     if (error) return { data: null, error: error.message };
 
-    revalidatePath('/admin/university');
-    revalidatePath('/employee/university', 'layout');
+    revalidatePath('/admin/knowledge');
+    revalidatePath('/employee/knowledge', 'layout');
     return { data, error: null };
   } catch (error) {
     if (error instanceof Error) return { data: null, error: error.message };
@@ -124,8 +124,8 @@ export async function deleteKbCategory(id: string): Promise<ActionResult<void>> 
 
     if (error) return { data: null, error: error.message };
 
-    revalidatePath('/admin/university');
-    revalidatePath('/employee/university', 'layout');
+    revalidatePath('/admin/knowledge');
+    revalidatePath('/employee/knowledge', 'layout');
     return { data: undefined, error: null };
   } catch {
     return { data: null, error: 'Failed to delete category' };

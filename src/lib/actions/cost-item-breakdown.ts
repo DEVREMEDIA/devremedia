@@ -6,8 +6,8 @@ import type { ActionResult, CostItemBreakdown } from '@/types/index';
 import { revalidatePath } from 'next/cache';
 
 function revalidateCostModel() {
-  revalidatePath('/admin/cost-model');
-  revalidatePath('/admin/pricing-health');
+  revalidatePath('/admin/finance');
+  revalidatePath('/admin/finance');
 }
 
 const COLS =

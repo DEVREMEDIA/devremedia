@@ -113,9 +113,9 @@ export async function POST(
       });
     }
 
-    revalidatePath('/admin/contracts');
+    revalidatePath('/admin/clients');
     revalidatePath(`/admin/contracts/${contractId}`);
-    revalidatePath('/client/contracts');
+    revalidatePath('/client/documents');
 
     return NextResponse.json({ success: true });
   } catch (error) {

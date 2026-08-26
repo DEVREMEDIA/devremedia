@@ -180,7 +180,7 @@ export async function acceptGoogleChange(
     await supabase.from('notifications').update({ read: true }).eq('id', notificationId);
 
     revalidatePath('/admin/calendar');
-    revalidatePath('/admin/projects');
+    revalidatePath('/admin/productions');
     return { data: null, error: null };
   } catch (err) {
     return { data: null, error: err instanceof Error ? err.message : 'Failed to accept change' };

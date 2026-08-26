@@ -139,9 +139,9 @@ export async function createInvoice(input: unknown): Promise<ActionResult<Invoic
 
     if (error) return { data: null, error: error.message };
 
-    revalidatePath('/admin/invoices');
-    revalidatePath('/client/invoices');
-    revalidatePath('/client/dashboard');
+    revalidatePath('/admin/finance');
+    revalidatePath('/client/documents');
+    revalidatePath('/client/home');
     if (data.due_date) {
       await syncEntityToGoogle({
         entityType: 'invoice',
@@ -203,10 +203,10 @@ export async function updateInvoice(
 
     if (error) return { data: null, error: error.message };
 
-    revalidatePath('/admin/invoices');
+    revalidatePath('/admin/finance');
     revalidatePath(`/admin/invoices/${id}`);
-    revalidatePath('/client/invoices');
-    revalidatePath('/client/dashboard');
+    revalidatePath('/client/documents');
+    revalidatePath('/client/home');
     if (data.due_date) {
       await syncEntityToGoogle({
         entityType: 'invoice',
@@ -294,9 +294,9 @@ export async function deleteInvoice(id: string): Promise<ActionResult<void>> {
 
     if (error) return { data: null, error: error.message };
 
-    revalidatePath('/admin/invoices');
-    revalidatePath('/client/invoices');
-    revalidatePath('/client/dashboard');
+    revalidatePath('/admin/finance');
+    revalidatePath('/client/documents');
+    revalidatePath('/client/home');
     await syncEntityToGoogle({
       entityType: 'invoice',
       entityId: id,
@@ -390,9 +390,9 @@ export async function bulkDeleteInvoices(
     const deletedIds = (deleted ?? []).map((r) => r.id);
     const { succeeded, failed } = countBulkOutcome(ids, deletedIds);
 
-    revalidatePath('/admin/invoices');
-    revalidatePath('/client/invoices');
-    revalidatePath('/client/dashboard');
+    revalidatePath('/admin/finance');
+    revalidatePath('/client/documents');
+    revalidatePath('/client/home');
 
     for (const id of deletedIds) {
       await syncEntityToGoogle({ entityType: 'invoice', entityId: id, operation: 'delete' });

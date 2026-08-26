@@ -255,7 +255,7 @@ export async function updateProjectPricing(
     const { error: updErr } = await supabase.from('projects').update(update).eq('id', projectId);
     if (updErr) return { data: null, error: updErr.message };
 
-    revalidatePath('/admin/pricing-health');
+    revalidatePath('/admin/finance');
     revalidatePath(`/admin/projects/${projectId}`);
 
     return await getProjectPricing(projectId);
@@ -279,7 +279,7 @@ export async function resetProjectPricingSnapshot(projectId: string): Promise<Ac
       .eq('id', projectId);
     if (error) return { data: null, error: error.message };
 
-    revalidatePath('/admin/pricing-health');
+    revalidatePath('/admin/finance');
     revalidatePath(`/admin/projects/${projectId}`);
     return { data: undefined, error: null };
   } catch (err) {
