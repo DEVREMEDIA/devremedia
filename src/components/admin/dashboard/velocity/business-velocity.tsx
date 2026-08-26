@@ -17,7 +17,7 @@ function VelocityRow({ label, c }: { label: string; c: VelocityCounter }) {
     <div className="flex items-center justify-between border-b py-2 last:border-b-0">
       <span className="text-sm">{label}</span>
       <div className="flex items-center gap-2">
-        <span className="text-sm font-medium tabular-nums">
+        <span className="font-mono text-sm font-medium tabular-nums">
           {c.count}
           {c.sum != null && c.sum > 0 ? ` · ${fmtEur(c.sum)}` : ''}
         </span>
@@ -34,7 +34,7 @@ function MoneyRow({ label, m }: { label: string; m: MoneyDelta }) {
     <div className="flex items-center justify-between border-b py-2 last:border-b-0">
       <span className="text-sm">{label}</span>
       <div className="flex items-center gap-2">
-        <span className="text-sm font-medium tabular-nums">{fmtEur(m.sum)}</span>
+        <span className="font-mono text-sm font-medium tabular-nums">{fmtEur(m.sum)}</span>
         <DeltaBadge deltaPct={deltaPct} />
       </div>
     </div>

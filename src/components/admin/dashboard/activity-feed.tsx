@@ -73,7 +73,7 @@ export function ActivityFeed({ activities }: ActivityFeedProps) {
                     <p className="text-sm font-medium leading-none">
                       {user?.display_name ?? t('user')}
                     </p>
-                    <p className="text-xs text-muted-foreground">
+                    <p className="font-mono text-xs tabular-nums text-muted-foreground">
                       {formatDistanceToNow(new Date(activity.created_at), {
                         addSuffix: true,
                       })}
