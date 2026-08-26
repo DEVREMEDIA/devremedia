@@ -306,14 +306,27 @@ const tableUndetectableSet = new Set(
   TABLE_PENDING_UNDETECTABLE.map((p) => p.replaceAll('\\', '/')),
 );
 
+// Ένα αρχείο που μετανάστευσε στον κοινό πίνακα τον εισάγει. Είναι το μόνο
+// θετικό σημάδι μετανάστευσης που έχουμε για κάτι αόρατο στον ανιχνευτή.
+const USES_SHARED_TABLE = /from\s+['"](?:@\/components\/shared\/data-table|\.[^'"]*\/data-table)['"]/;
+
 const handRolledTables = [];
 const staleTableExemptions = [];
+const misfiledUndetectable = [];
 const tableGuardedFileSet = new Set(tableGuardedFiles);
 
 for (const file of tableGuardedFiles) {
-  // Αόρατο στον ανιχνευτή εξ ορισμού — καμία ετυμηγορία δεν έχει νόημα εδώ.
-  if (tableUndetectableSet.has(file)) continue;
-  const ownTable = buildsOwnTable(strippedOf(file));
+  const source = strippedOf(file);
+  const ownTable = buildsOwnTable(source);
+  // Μια λίστα που δεν ελέγχεται είναι λωρίδα παράκαμψης: ό,τι μπει εκεί γίνεται
+  // μόνιμα αόρατο, ακόμα κι αν παραβιάζει κανονικότατα. Άρα η ίδια η ιδιότητα
+  // που επικαλείται η εγγραφή πρέπει να αποδεικνύεται — αλλιώς ανήκει αλλού:
+  // αν ο ανιχνευτής ΤΗ ΒΛΕΠΕΙ, θέση της είναι το `TABLE_PENDING`, όπου θα
+  // ελεγχθεί· αν εισάγει τον κοινό πίνακα, έχει ήδη μεταναστεύσει.
+  if (tableUndetectableSet.has(file)) {
+    if (ownTable || USES_SHARED_TABLE.test(source)) misfiledUndetectable.push(file);
+    continue;
+  }
   // Ένα εκκρεμές που μετανάστευσε δεν είναι πια εκκρεμές. Αν δεν το πιάσουμε
   // εδώ, η λίστα μεγαλώνει μόνο και ο φύλακας διαφημίζει αναβολή που δεν
   // υπάρχει — ο ίδιος κανόνας που ήδη ισχύει για τις εξαιρέσεις παρακάτω.
@@ -360,7 +373,8 @@ if (
   stalePending.length > 0 ||
   doubleTitles.size > 0 ||
   handRolledTables.length > 0 ||
-  staleTableExemptions.length > 0
+  staleTableExemptions.length > 0 ||
+  misfiledUndetectable.length > 0
 ) {
   if (violations.length > 0) {
     console.error(`check:design — ${violations.length} raw colour(s) outside the token layer:\n`);
@@ -401,6 +415,12 @@ if (
       `\ncheck:design — ${staleTableExemptions.length} stale TABLE_DETAIL_EXEMPT / TABLE_PENDING entr${staleTableExemptions.length === 1 ? 'y' : 'ies'} — either no longer builds its own table, or no longer exists in a table-guarded area. Remove from the list:\n`,
     );
     for (const p of staleTableExemptions) console.error(`  ${p}`);
+  }
+  if (misfiledUndetectable.length > 0) {
+    console.error(
+      `\ncheck:design — ${misfiledUndetectable.length} TABLE_PENDING_UNDETECTABLE entr${misfiledUndetectable.length === 1 ? 'y is' : 'ies are'} misfiled. That list exists ONLY for tables the detector physically cannot see; ${misfiledUndetectable.length === 1 ? 'this one' : 'these'} either build${misfiledUndetectable.length === 1 ? 's' : ''} a visible table (move to TABLE_PENDING, where it gets checked) or already import${misfiledUndetectable.length === 1 ? 's' : ''} the shared DataTable (remove entirely):\n`,
+    );
+    for (const p of misfiledUndetectable) console.error(`  ${p}`);
   }
   process.exit(1);
 }
