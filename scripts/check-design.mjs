@@ -42,6 +42,16 @@ const COVERED = [
   'src/app/admin/pricing-health/pricing-health-content.tsx',
   'src/components/admin/reports/client-report.tsx',
   'src/components/admin/invoices/invoices-table-view.tsx',
+  // Η περιοχή των Πελατών περνάει στον κοινό πίνακα (#105) — ο κόμβος του hub
+  // και οι στήλες του (ολόκληρος ο φάκελος, ώστε ένα νέο component εκεί να
+  // φυλάσσεται αυτόματα), ο πίνακας ενδιαφέροντος, ο πίνακας συνομιλιών, η
+  // λίστα προτάσεων και η λίστα συμβολαίων.
+  'src/components/shared/status-badge.tsx',
+  'src/app/admin/clients',
+  'src/components/admin/leads/all-leads-table.tsx',
+  'src/components/admin/chatbot/conversations-table.tsx',
+  'src/app/admin/proposals/proposals-list.tsx',
+  'src/app/admin/contracts/contracts-list-page.tsx',
 ];
 
 // Αρχεία μέσα σε καλυμμένους φακέλους που όντως γράφουν ακόμα ωμό χρώμα.
@@ -212,10 +222,10 @@ for (const hub of hubs) {
   }
 }
 
-// Η περιοχή των Οικονομικών περνά από τον κοινό πίνακα. Ό,τι εισάγει απευθείας
-// τα ωμά primitives φτιάχνει δικό του πίνακα — αυτό ακριβώς που έφερε δεκαεπτά
-// ασύμβατες υλοποιήσεις στο προϊόν.
-const FINANCE_AREA = [
+// Οι περιοχές των Οικονομικών και των Πελατών περνούν από τον κοινό πίνακα.
+// Ό,τι εισάγει απευθείας τα ωμά primitives φτιάχνει δικό του πίνακα — αυτό
+// ακριβώς που έφερε δεκαεπτά ασύμβατες υλοποιήσεις στο προϊόν.
+const TABLE_GUARDED_AREAS = [
   'src/app/admin/finance/',
   'src/app/admin/invoices/',
   'src/app/admin/cost-model/',
@@ -225,6 +235,15 @@ const FINANCE_AREA = [
   // Τις δύο κάρτες αυτού του φακέλου τις κρεμάει το hub των Οικονομικών, άρα
   // ανήκουν στην περιοχή όσο και τα υπόλοιπα.
   'src/components/admin/dashboard/finance/',
+  // Η περιοχή των Πελατών (#105): ο hub και τα tabs του, οι λεπτομέρειες
+  // πελάτη, οι κάρτες προτάσεων και συμβολαίων, οι λίστες leads και το chatbot.
+  'src/app/admin/clients/',
+  'src/app/admin/proposals/',
+  'src/app/admin/contracts/',
+  'src/components/admin/clients/',
+  'src/components/admin/contracts/',
+  'src/components/admin/leads/',
+  'src/components/admin/chatbot/',
 ];
 
 // Λίστες λεπτομέρειας μέσα σε ήδη ανοιγμένη γραμμή. Δεν είναι το θέμα της
@@ -250,6 +269,14 @@ const TABLE_PENDING = [
   // εισαγωγές και ωμή σήμανση· ένας πίνακας από CSS grid του είναι αόρατος,
   // γι' αυτό γράφεται εδώ με το χέρι αντί να θεωρείται καλυμμένος.
   'src/app/admin/cost-model/tabs/items-tab.tsx',
+  // Η καρτέλα τιμολογίων μέσα στη λεπτομέρεια πελάτη — οφείλεται στην #106.
+  'src/components/admin/clients/client-invoices-tab.tsx',
+  // Η λίστα συμβολαίων μέσα στη λεπτομέρεια πελάτη — οφείλεται στην #106.
+  'src/components/admin/contracts/contract-list.tsx',
+  // Η αναφορά πωλήσεων της περιοχής Interest — έργο περιοχής για επόμενη φέτα.
+  'src/components/admin/leads/sales-report.tsx',
+  // Ο πίνακας γνώσης του chatbot — έργο περιοχής για επόμενη φέτα.
+  'src/components/admin/chatbot/knowledge-table.tsx',
 ];
 
 // Δύο μορφές, γιατί και οι δύο φτιάχνουν πίνακα στο χέρι: εισαγωγή των ωμών
@@ -260,17 +287,17 @@ const RAW_TABLE_TAG = /<table[\s>]/;
 const buildsOwnTable = (source) => RAW_TABLE_IMPORT.test(source) || RAW_TABLE_TAG.test(source);
 
 const tableDetailExemptSet = new Set(TABLE_DETAIL_EXEMPT.map((p) => p.replaceAll('\\', '/')));
-const financeFiles = allTsxFiles.filter((f) =>
-  FINANCE_AREA.some((prefix) => f.startsWith(prefix)),
+const tableGuardedFiles = allTsxFiles.filter((f) =>
+  TABLE_GUARDED_AREAS.some((prefix) => f.startsWith(prefix)),
 );
 
 const tablePendingSet = new Set(TABLE_PENDING.map((p) => p.replaceAll('\\', '/')));
 
 const handRolledTables = [];
 const staleTableExemptions = [];
-const financeFileSet = new Set(financeFiles);
+const tableGuardedFileSet = new Set(tableGuardedFiles);
 
-for (const file of financeFiles) {
+for (const file of tableGuardedFiles) {
   if (tablePendingSet.has(file)) continue;
   const ownTable = buildsOwnTable(strippedOf(file));
   if (tableDetailExemptSet.has(file)) {
@@ -287,15 +314,15 @@ for (const file of financeFiles) {
 // περνούσε ποτέ από εκεί — θα καθόταν σιωπηλή για πάντα, δίνοντας την
 // εντύπωση ότι κάτι φυλάσσεται. Το ίδιο ισχύει και για τα εκκρεμή.
 for (const exempt of tableDetailExemptSet) {
-  if (!financeFileSet.has(exempt)) staleTableExemptions.push(exempt);
+  if (!tableGuardedFileSet.has(exempt)) staleTableExemptions.push(exempt);
 }
 for (const pending of tablePendingSet) {
-  if (!financeFileSet.has(pending)) staleTableExemptions.push(pending);
+  if (!tableGuardedFileSet.has(pending)) staleTableExemptions.push(pending);
 }
 
 // Ο αριθμός που τυπώνεται πρέπει να λέει τι ΕΛΕΓΧΘΗΚΕ, όχι τι σαρώθηκε: ένα
 // εκκρεμές αρχείο περνάει από δίπλα χωρίς κανέναν έλεγχο.
-const financeChecked = financeFiles.length - tablePendingSet.size;
+const tableGuardedChecked = tableGuardedFiles.length - tablePendingSet.size;
 
 if (
   violations.length > 0 ||
@@ -332,7 +359,7 @@ if (
   }
   if (handRolledTables.length > 0) {
     console.error(
-      `\ncheck:design — ${handRolledTables.length} file(s) in the Finance area build their own table:\n`,
+      `\ncheck:design — ${handRolledTables.length} file(s) in a table-guarded area build their own table:\n`,
     );
     for (const f of handRolledTables) console.error(`  ${f}`);
     console.error(
@@ -341,7 +368,7 @@ if (
   }
   if (staleTableExemptions.length > 0) {
     console.error(
-      `\ncheck:design — ${staleTableExemptions.length} stale TABLE_DETAIL_EXEMPT entr${staleTableExemptions.length === 1 ? 'y' : 'ies'} — either no longer imports the raw primitives, or no longer exists in the Finance area. Remove from the list:\n`,
+      `\ncheck:design — ${staleTableExemptions.length} stale TABLE_DETAIL_EXEMPT entr${staleTableExemptions.length === 1 ? 'y' : 'ies'} — either no longer imports the raw primitives, or no longer exists in a table-guarded area. Remove from the list:\n`,
     );
     for (const p of staleTableExemptions) console.error(`  ${p}`);
   }
@@ -351,6 +378,6 @@ if (
 console.log(
   `ok — ${files.size} file(s) covered, no raw colours; one title per page ` +
     `(${headingPendingSet.size} pending, ${hubs.length} hubs checked for double titles), ` +
-    `${financeChecked} Finance file(s) checked for hand-rolled tables ` +
+    `${tableGuardedChecked} table-guarded-area file(s) checked for hand-rolled tables ` +
     `(${tablePendingSet.size} pending)`,
 );

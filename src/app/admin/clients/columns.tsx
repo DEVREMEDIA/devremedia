@@ -160,7 +160,7 @@ export function useClientColumns(): ColumnDef<Client>[] {
             <Tooltip>
               <TooltipTrigger>
                 {hasAuth ? (
-                  <ShieldCheck className="h-4 w-4 text-green-600" />
+                  <ShieldCheck className="h-4 w-4 text-tone-positive" />
                 ) : (
                   <ShieldOff className="h-4 w-4 text-muted-foreground" />
                 )}
