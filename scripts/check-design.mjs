@@ -244,6 +244,7 @@ const financeFiles = allTsxFiles.filter((f) =>
 
 const handRolledTables = [];
 const staleTableExemptions = [];
+const financeFileSet = new Set(financeFiles);
 
 for (const file of financeFiles) {
   const importsRawTable = RAW_TABLE_IMPORT.test(strippedOf(file));
@@ -254,6 +255,14 @@ for (const file of financeFiles) {
     continue;
   }
   if (importsRawTable) handRolledTables.push(file);
+}
+
+// Ο βρόχος από πάνω βλέπει μόνο αρχεία που ΥΠΑΡΧΟΥΝ μέσα στην περιοχή. Μια
+// εγγραφή που μετονομάστηκε, διαγράφηκε ή γράφτηκε με τυπογραφικό δεν θα
+// περνούσε ποτέ από εκεί — θα καθόταν σιωπηλή για πάντα, δίνοντας την
+// εντύπωση ότι κάτι φυλάσσεται. Εδώ πιάνεται.
+for (const exempt of tableDetailExemptSet) {
+  if (!financeFileSet.has(exempt)) staleTableExemptions.push(exempt);
 }
 
 if (
@@ -300,7 +309,7 @@ if (
   }
   if (staleTableExemptions.length > 0) {
     console.error(
-      `\ncheck:design — ${staleTableExemptions.length} stale TABLE_DETAIL_EXEMPT entr${staleTableExemptions.length === 1 ? 'y' : 'ies'} — no longer imports the raw primitives, remove from the list:\n`,
+      `\ncheck:design — ${staleTableExemptions.length} stale TABLE_DETAIL_EXEMPT entr${staleTableExemptions.length === 1 ? 'y' : 'ies'} — either no longer imports the raw primitives, or no longer exists in the Finance area. Remove from the list:\n`,
     );
     for (const p of staleTableExemptions) console.error(`  ${p}`);
   }
