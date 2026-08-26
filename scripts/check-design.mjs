@@ -74,11 +74,85 @@ for (const file of files) {
   });
 }
 
-if (violations.length > 0) {
-  console.error(`check:design — ${violations.length} raw colour(s) outside the token layer:\n`);
-  for (const v of violations) console.error(`  ${v}`);
-  console.error('\nUse a token (bg-card, text-muted-foreground, text-tone-critical, …) instead.');
+// Ένας τίτλος ανά σελίδα: ο μόνος που γράφει <h1> είναι το κοινό PageHeading.
+const HEADING_EXEMPT = [
+  'src/components/shared/page-heading.tsx', // εδώ ζει ο ένας και μοναδικός <h1>
+  'src/components/landing/', // άλλο επίπεδο, εκτός σκοπού μόνιμα
+];
+
+// Οθόνες που κρατούν προσωρινά τον δικό τους τίτλο, με ρητό λόγο και ρητό
+// σημείο επιστροφής. Κάθε επόμενη φέτα αφαιρεί από εδώ — η λίστα μόνο μικραίνει.
+const HEADING_PENDING = [
+  'src/app/book/page.tsx', // δημόσια σελίδα με δικό της κέλυφος
+  'src/app/admin/invoices/[invoiceId]/invoice-detail.tsx', // → #109
+  'src/app/client/projects/[projectId]/client-project-detail.tsx', // → #106
+  'src/components/admin/filming-requests/filming-request-detail.tsx', // → #109
+  'src/components/client/invoices/invoice-detail.tsx', // → #109
+];
+
+const HEADING_IMPORT = /['"][^'"]*\/shared\/page-header['"]/;
+const HEADING_TAG = /<h1\b/;
+
+const headingExemptPrefixes = HEADING_EXEMPT.filter((e) => e.endsWith('/')).map((e) =>
+  e.replaceAll('\\', '/'),
+);
+const headingExemptFiles = new Set(
+  HEADING_EXEMPT.filter((e) => !e.endsWith('/')).map((e) => e.replaceAll('\\', '/')),
+);
+const headingPendingSet = new Set(HEADING_PENDING.map((p) => p.replaceAll('\\', '/')));
+
+function isHeadingExempt(file) {
+  return headingExemptFiles.has(file) || headingExemptPrefixes.some((p) => file.startsWith(p));
+}
+
+const allTsxFiles = walk('src')
+  .map((f) => f.replaceAll('\\', '/'))
+  .filter((f) => f.endsWith('.tsx'));
+
+const headingViolations = [];
+const pendingWithH1 = new Set();
+
+for (const file of allTsxFiles) {
+  const lines = readFileSync(file, 'utf8').split('\n');
+  lines.forEach((line, i) => {
+    const stripped = stripComments(line);
+    if (HEADING_IMPORT.test(stripped)) {
+      headingViolations.push(`${file}:${i + 1}  ${line.trim()}`);
+    }
+    if (HEADING_TAG.test(stripped)) {
+      if (headingPendingSet.has(file)) {
+        pendingWithH1.add(file);
+      } else if (!isHeadingExempt(file)) {
+        headingViolations.push(`${file}:${i + 1}  ${line.trim()}`);
+      }
+    }
+  });
+}
+
+const stalePending = HEADING_PENDING.map((p) => p.replaceAll('\\', '/')).filter(
+  (p) => !pendingWithH1.has(p),
+);
+
+if (violations.length > 0 || headingViolations.length > 0 || stalePending.length > 0) {
+  if (violations.length > 0) {
+    console.error(`check:design — ${violations.length} raw colour(s) outside the token layer:\n`);
+    for (const v of violations) console.error(`  ${v}`);
+    console.error('\nUse a token (bg-card, text-muted-foreground, text-tone-critical, …) instead.');
+  }
+  if (headingViolations.length > 0) {
+    console.error(`\ncheck:design — ${headingViolations.length} heading violation(s):\n`);
+    for (const v of headingViolations) console.error(`  ${v}`);
+    console.error('\nUse the shared PageHeading component for page titles.');
+  }
+  if (stalePending.length > 0) {
+    console.error(
+      `\ncheck:design — ${stalePending.length} stale HEADING_PENDING entr${stalePending.length === 1 ? 'y' : 'ies'} — no <h1> found, remove from the list:\n`,
+    );
+    for (const p of stalePending) console.error(`  ${p}`);
+  }
   process.exit(1);
 }
 
-console.log(`ok — ${files.size} file(s) covered, no raw colours`);
+console.log(
+  `ok — ${files.size} file(s) covered, no raw colours; one title per page (${headingPendingSet.size} pending)`,
+);
