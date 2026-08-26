@@ -3,10 +3,13 @@
 import { useMemo, useState } from 'react';
 import Link from 'next/link';
 import { useTranslations } from 'next-intl';
+import { ColumnDef } from '@tanstack/react-table';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Badge } from '@/components/ui/badge';
+import { DataTable } from '@/components/shared/data-table';
+import { ToneChip } from '@/components/shared/tone-chip';
+import { statusTone } from '@/lib/status-tone';
 import {
   Select,
   SelectContent,
@@ -15,19 +18,11 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { Plus, Search, FileText } from 'lucide-react';
-import type { ProposalStatus, ProposalWithRelations } from '@/types/index';
+import type { ProposalWithRelations } from '@/types/index';
 
 interface Props {
   proposals: ProposalWithRelations[];
 }
-
-const statusStyles: Record<ProposalStatus, string> = {
-  draft: 'bg-zinc-500/15 text-zinc-400 border-zinc-500/30',
-  sent: 'bg-sky-500/15 text-sky-400 border-sky-500/30',
-  accepted: 'bg-emerald-500/15 text-emerald-400 border-emerald-500/30',
-  rejected: 'bg-red-500/15 text-red-400 border-red-500/30',
-  expired: 'bg-amber-500/15 text-amber-400 border-amber-500/30',
-};
 
 export function ProposalsList({ proposals }: Props) {
   const t = useTranslations('proposals');
@@ -49,6 +44,62 @@ export function ProposalsList({ proposals }: Props) {
       return matchesSearch && matchesStatus;
     });
   }, [proposals, search, statusFilter]);
+
+  const columns: ColumnDef<ProposalWithRelations>[] = useMemo(
+    () => [
+      {
+        accessorKey: 'client_name',
+        header: t('list.client'),
+        cell: ({ row }) => (
+          <Link
+            href={`/admin/proposals/${row.original.id}`}
+            className="font-medium hover:underline"
+          >
+            {row.original.client_name}
+          </Link>
+        ),
+      },
+      {
+        id: 'linked',
+        header: t('list.linkedTo'),
+        accessorFn: (row) =>
+          row.client?.company_name ||
+          row.client?.contact_name ||
+          row.lead?.company_name ||
+          row.lead?.contact_name ||
+          '—',
+      },
+      {
+        accessorKey: 'status',
+        header: t('list.status'),
+        cell: ({ row }) => (
+          <ToneChip tone={statusTone(row.original.status)}>{ts(row.original.status)}</ToneChip>
+        ),
+      },
+      {
+        id: 'packages',
+        header: t('list.packages'),
+        accessorFn: (row) => row.selected_packages.length,
+        meta: { numeric: true },
+      },
+      {
+        accessorKey: 'created_at',
+        header: t('list.created'),
+        cell: ({ row }) => new Date(row.original.created_at).toLocaleDateString('el-GR'),
+        meta: { numeric: true, align: 'left' },
+      },
+      {
+        accessorKey: 'valid_until',
+        header: t('list.validUntil'),
+        cell: ({ row }) =>
+          row.original.valid_until
+            ? new Date(row.original.valid_until).toLocaleDateString('el-GR')
+            : '—',
+        meta: { numeric: true, align: 'left' },
+      },
+    ],
+    [t, ts],
+  );
 
   return (
     <div className="space-y-6">
@@ -94,47 +145,11 @@ export function ProposalsList({ proposals }: Props) {
             </Select>
           </div>
 
-          {filtered.length === 0 ? (
-            <p className="py-12 text-center text-muted-foreground">{t('list.empty')}</p>
-          ) : (
-            <div className="divide-y">
-              {filtered.map((p) => {
-                const linked =
-                  p.client?.company_name ||
-                  p.client?.contact_name ||
-                  p.lead?.company_name ||
-                  p.lead?.contact_name ||
-                  null;
-                const created = new Date(p.created_at).toLocaleDateString('el-GR');
-                const pkgCount = p.selected_packages.length;
-                return (
-                  <Link
-                    key={p.id}
-                    href={`/admin/proposals/${p.id}`}
-                    className="flex items-center justify-between gap-3 py-3 hover:bg-muted/30 px-3 rounded transition-colors"
-                  >
-                    <div className="min-w-0 flex-1">
-                      <div className="flex items-center gap-2">
-                        <span className="font-semibold truncate">{p.client_name}</span>
-                        <Badge variant="outline" className={`text-xs ${statusStyles[p.status]}`}>
-                          {ts(p.status)}
-                        </Badge>
-                      </div>
-                      <div className="text-xs text-muted-foreground mt-0.5 truncate">
-                        {linked ? `${linked} · ` : ''}
-                        {pkgCount} {pkgCount === 1 ? 'package' : 'packages'} · {created}
-                      </div>
-                    </div>
-                    {p.valid_until && (
-                      <span className="text-xs text-muted-foreground whitespace-nowrap">
-                        ⏰ {new Date(p.valid_until).toLocaleDateString('el-GR')}
-                      </span>
-                    )}
-                  </Link>
-                );
-              })}
-            </div>
-          )}
+          <DataTable
+            columns={columns}
+            data={filtered}
+            emptyState={<span className="text-muted-foreground">{t('list.empty')}</span>}
+          />
         </CardContent>
       </Card>
     </div>

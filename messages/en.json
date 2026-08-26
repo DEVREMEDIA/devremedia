@@ -2461,7 +2461,13 @@
     "description": "Create and manage proposals for leads and clients.",
     "list": {
       "addProposal": "New Proposal",
-      "empty": "No proposals yet."
+      "empty": "No proposals yet.",
+      "client": "Client",
+      "linkedTo": "Linked to",
+      "status": "Status",
+      "packages": "Packages",
+      "created": "Created",
+      "validUntil": "Valid until"
     },
     "status": {
       "draft": "Draft",

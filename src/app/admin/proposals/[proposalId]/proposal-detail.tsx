@@ -7,7 +7,8 @@ import { useTranslations } from 'next-intl';
 import { PageHeading } from '@/components/shared/page-heading';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
+import { ToneChip } from '@/components/shared/tone-chip';
+import { statusTone } from '@/lib/status-tone';
 import {
   Dialog,
   DialogContent,
@@ -17,11 +18,7 @@ import {
 } from '@/components/ui/dialog';
 import { Download, Eye, Send, CheckCircle2, XCircle, Trash2, ArrowLeft } from 'lucide-react';
 import { toast } from 'sonner';
-import type {
-  ProposalPackageWithPrice,
-  ProposalStatus,
-  ProposalWithRelations,
-} from '@/types/index';
+import type { ProposalPackageWithPrice, ProposalWithRelations } from '@/types/index';
 import { deleteProposal, markProposalSent, setProposalResponse } from '@/lib/actions/proposals';
 import { formatEur as fmtEUR } from '@/lib/format';
 
@@ -29,14 +26,6 @@ interface Props {
   proposal: ProposalWithRelations;
   packages: ProposalPackageWithPrice[];
 }
-
-const statusStyles: Record<ProposalStatus, string> = {
-  draft: 'bg-zinc-500/15 text-zinc-400 border-zinc-500/30',
-  sent: 'bg-sky-500/15 text-sky-400 border-sky-500/30',
-  accepted: 'bg-emerald-500/15 text-emerald-400 border-emerald-500/30',
-  rejected: 'bg-red-500/15 text-red-400 border-red-500/30',
-  expired: 'bg-amber-500/15 text-amber-400 border-amber-500/30',
-};
 
 export function ProposalDetail({ proposal, packages }: Props) {
   const t = useTranslations('proposals');
@@ -116,9 +105,7 @@ export function ProposalDetail({ proposal, packages }: Props) {
           {t('title')}
         </Link>
         <PageHeading title={proposal.client_name}>
-          <Badge variant="outline" className={`${statusStyles[proposal.status]}`}>
-            {ts(proposal.status)}
-          </Badge>
+          <ToneChip tone={statusTone(proposal.status)}>{ts(proposal.status)}</ToneChip>
         </PageHeading>
       </div>
 
