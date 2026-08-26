@@ -2,6 +2,7 @@ import { Suspense, type ComponentProps } from 'react';
 import type { Metadata } from 'next';
 import { getTranslations } from 'next-intl/server';
 import { SectionTabs, type SectionTab } from '@/components/shell-v2/section-tabs';
+import { PageHeading } from '@/components/shared/page-heading';
 
 // Τα υπάρχοντα κομμάτια μπαίνουν αυτούσια — μετακομίζουν, δεν ξαναγράφονται.
 import { InvoicesContent } from '@/app/admin/invoices/invoices-content';
@@ -197,10 +198,7 @@ export default async function FinancePage({ searchParams }: { searchParams: Sear
 
   return (
     <div className="space-y-5">
-      <header>
-        <h1 className="text-2xl font-semibold tracking-tight">{t('title')}</h1>
-        <p className="mt-1 text-sm text-muted-foreground">{t('subtitle')}</p>
-      </header>
+      <PageHeading title={t('title')} subtitle={t('subtitle')} />
 
       <SectionTabs basePath="/admin/finance" tabs={TABS} active={active} />
 
