@@ -26,7 +26,7 @@ test.describe('V2 shell', () => {
     await expect(page.getByRole('link', { name: /Γνωσιακή βάση|Knowledge base/i })).toBeVisible();
   });
 
-  test('language switcher translates the shell', async ({ page }) => {
+  test('shell chrome is translated', async ({ page }) => {
     test.skip(!process.env.E2E_TEST_USERS_READY, 'Test users not configured in database');
     await loginAsAdmin(page);
     await page.goto('/admin-v2/today');

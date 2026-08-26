@@ -10,7 +10,7 @@ import type { NavItem } from './types';
 interface AppShellProps {
   items: NavItem[];
   settingsItem: NavItem;
-  /** Τα items που χωράνε στην κάτω μπάρα — το πολύ 5. */
+  /** Τα items της κάτω μπάρας — το grid προσαρμόζεται στο πλήθος τους. */
   mobileItems: NavItem[];
   /** Το παλιό prefix του ρόλου, π.χ. `client`, για να κρατάμε τα κλικ στο κέλυφος. */
   rolePrefix: string;
