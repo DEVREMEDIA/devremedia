@@ -29,7 +29,7 @@ These resolve conflicts between issue #102's acceptance criteria and what the co
 
 **Ruling 2 — a hub's subtitle is the hub's own, not a concatenation.** Where a removed tab heading's `description` says something the hub's subtitle does not, prefer the hub's. Do not merge five tab descriptions into one hub subtitle. Cost if wrong: a sentence of context is lost from a screen that still shows the same data.
 
-**Ruling 3 — `src/app/book` and `src/app/client/book` are in scope; `src/components/landing` is not.** `/book` has no layout of its own and is a product page that happens to be public. The marketing landing is `src/components/landing/**`, reached from `src/app/page.tsx`, and is excluded. Cost if wrong: the public booking form keeps the old heading one slice longer.
+**Ruling 3 — `src/app/client/book` is in scope; `src/app/book` and `src/components/landing` are not.** `/client/book` is the booking form inside the client portal and wears the app shell. `/book` is its public twin, and reading it settled the question: it brings its own `<nav>`, its own language switcher, a centred hero composition and raw colours throughout — it is outside the shell, and half-migrating it would break the composition while leaving it off the token layer. It goes on the guard's pending list with the detail screens. The marketing landing is `src/components/landing/**`, reached from `src/app/page.tsx`, and is excluded outright. Cost if wrong: the public booking form keeps its own look, which it arguably should.
 
 ---
 
@@ -156,9 +156,15 @@ Replace the `PageHeader` wrapper with a plain right-aligned toolbar row. `src/ap
 
 The controls themselves — their handlers, state, conditionals, icons and labels — must not change in any way. Only the wrapper does. `clients-content.tsx` keeps its `orphanedCount > 0` conditional exactly as written.
 
-- [ ] **Step 3: Remove orphaned translation keys**
+- [ ] **Step 3: Leave the translation catalogues alone**
 
-Deleting these headings orphans the `title`/`description` keys those files read — but ONLY where no other file reads the same key. For each key you stop reading, grep the whole of `src/` for it before deleting it from `messages/el.json` and `messages/en.json`. Delete from both files or neither.
+Deleting these headings orphans the `title` / `description` keys those files read. **Do not delete them in this slice.**
+
+An unused key in `messages/*.json` is inert data that nothing renders. A key deleted while something still reads it is a runtime failure that TypeScript cannot see, `pnpm build` does not catch, and the user meets on screen as a raw key name. Several of these files are still reachable through redirect stubs and are read from more than one place, so "grep says nobody uses it" is a weaker guarantee here than it looks. The trade is a tidier JSON file against a class of silent breakage — not worth it in a slice whose whole point is that nothing changes but the heading.
+
+Slice #111 sweeps the catalogues across the whole repo; that is where this belongs.
+
+Verify the catalogues are still in step — they should be trivially, since you changed neither:
 
 Run: `node -e "const el=require('./messages/el.json'),en=require('./messages/en.json');const walk=(o,p='')=>Object.entries(o).flatMap(([k,v])=>typeof v==='object'&&v?walk(v,p+k+'.'):[p+k]);const a=walk(el).sort(),b=walk(en).sort();const d=[...a.filter(k=>!b.includes(k)),...b.filter(k=>!a.includes(k))];console.log(d.length?'DRIFT: '+d.join(', '):'catalogues in step')"`
 Expected: `catalogues in step`
@@ -171,7 +177,7 @@ Expected: clean, 205/205.
 - [ ] **Step 5: Commit**
 
 ```bash
-git add -A src messages
+git add -A src
 git commit -m "feat(design): tab bodies give up their titles, keeping their controls"
 ```
 
@@ -236,54 +242,57 @@ git commit -m "feat(design): every standalone page moves onto the shared heading
 
 **Files:**
 - Modify: `src/app/admin/calendar/page.tsx`
-- Modify: `src/app/admin/invoices/[invoiceId]/invoice-detail.tsx`
-- Modify: `src/app/book/page.tsx`
 - Modify: `src/app/client/contracts/[contractId]/sign/sign-client.tsx`
 - Modify: `src/app/client/home/page.tsx`
-- Modify: `src/app/client/projects/[projectId]/client-project-detail.tsx`
-- Modify: `src/components/admin/filming-requests/filming-request-detail.tsx`
-- Modify: `src/components/client/invoices/invoice-detail.tsx`
 
 **Interfaces:**
 - Consumes: `PageHeading` — `{ title, subtitle?, children? }`.
-- Produces: no `<h1>` survives anywhere under `src/app/**` or `src/components/**` outside `page-heading.tsx` and `src/components/landing/`. Task 5's guard depends on that being true.
+- Produces: the only `<h1>`s left under `src/` are `page-heading.tsx`, `src/components/landing/`, and the five files Task 5's guard lists as pending.
 
-These eight never imported `PageHeader` — they wrote `<h1>` inline, which is why keying the migration off the import misses them. Four of them are detail screens whose title is an entity name rather than a static string:
+Eight files hand-roll an `<h1>` without importing `PageHeader`, which is why keying the migration off the import misses them. **Three of the eight migrate here. Five do not** — see the ruling below, which is binding.
 
-```tsx
-<h1 className="text-3xl font-bold tracking-tight">{invoice.invoice_number}</h1>
-<h1 className="text-3xl font-bold tracking-tight">{request.title}</h1>
-<h1 className="text-2xl sm:text-3xl font-bold tracking-tight truncate">{project.title}</h1>
-```
-
-That is a correct page title and it stays — it just renders through the shared component.
-
-- [ ] **Step 1: Replace each hand-rolled title**
+Each of the three is the same clean shape: a title, a one-line description, no leading control and no actions.
 
 ```tsx
-// before — an ad-hoc header block
-<div className="…">
-  <h1 className="text-3xl font-bold tracking-tight">{invoice.invoice_number}</h1>
-  <p className="text-muted-foreground">{someSubtitle}</p>
-  …possibly buttons beside it…
-</div>
+// before
+<header>
+  <h1 className="text-2xl font-semibold tracking-tight">{t('title')}</h1>
+  <p className="mt-1 text-sm text-muted-foreground">{t('subtitle')}</p>
+</header>
 
 // after
-<PageHeading title={invoice.invoice_number} subtitle={someSubtitle}>
-  …the same buttons, unchanged…
-</PageHeading>
+<PageHeading title={t('title')} subtitle={t('subtitle')} />
 ```
 
-The surrounding markup differs per file — some pair the `<h1>` with a paragraph, some with action buttons, some with neither. Read each file and map what is there onto `title` / `subtitle` / `children`. Drop only the wrapper `div` and its layout classes; never drop a button, a link, a conditional or a piece of text.
+**Ruling 4 — the four detail screens and the public booking page stay as they are.**
 
-`src/app/book/page.tsx` is a public page and its title is currently larger than the rest (`text-3xl sm:text-4xl`). It still becomes a plain `PageHeading` — one heading design, no exceptions.
+The three detail screens under `src/components/**` and `src/app/client/projects/**` share a shape `PageHeading` cannot express:
 
-Where the title can be empty or still loading (an entity that has not resolved), keep whatever fallback the file already uses. Do not introduce one.
+```tsx
+<div className="flex items-center gap-4">
+  <Button variant="ghost" size="icon" onClick={() => router.back()}><ArrowLeft /></Button>
+  <div className="flex-1">
+    <h1>{entity.name}</h1>
+    <div className="flex items-center gap-2 mt-2"><StatusBadge … /> …metadata…</div>
+  </div>
+  <div className="flex items-center gap-2">…actions…</div>
+</div>
+```
 
-- [ ] **Step 2: Verify no hand-rolled title survives**
+The title, the status row and the actions map onto `title` / `subtitle` / `children` cleanly enough. The **leading back control does not** — `PageHeading` has no slot before the title, deliberately. Adding a `back` prop here would invent, in a slice about titles, exactly the affordance that slice #106 (shared detail shell) exists to design properly. `src/app/admin/invoices/[invoiceId]/invoice-detail.tsx` has no back button and *could* migrate — it is held back anyway, so that the two invoice detail screens do not diverge for a slice.
 
-Run: `grep -rn "<h1" src/ --include=*.tsx`
-Expected: exactly two hits — `src/components/shared/page-heading.tsx` and `src/components/landing/hero-section.tsx`.
+`src/app/book/page.tsx` is a public page outside the app shell: its own `<nav>`, its own language switcher, a centred hero composition, and raw colours throughout (`text-zinc-400`, `border-white/10`). Migrating only its heading would leave it half on the token layer and break the centred composition. It belongs with the landing layer.
+
+All five go on the guard's pending list in Task 5, and come off it in #106 / #109. Cost if wrong: five screens keep their current heading for one to three more slices, which is what the wave plan already intends.
+
+- [ ] **Step 1: Replace the three hand-rolled titles**
+
+Read each of the three first — `client/home/page.tsx` uses different translation keys (`title` / `description`) and sits inside a `container mx-auto` wrapper that must stay. Use whatever keys each file already reads; do not invent or rename any.
+
+- [ ] **Step 2: Verify the expected `<h1>`s and no others**
+
+Run: `grep -rln "<h1" src/ --include=*.tsx`
+Expected: exactly seven files — `page-heading.tsx`, `landing/hero-section.tsx`, and the five deferred: `app/book/page.tsx`, `app/admin/invoices/[invoiceId]/invoice-detail.tsx`, `app/client/projects/[projectId]/client-project-detail.tsx`, `components/admin/filming-requests/filming-request-detail.tsx`, `components/client/invoices/invoice-detail.tsx`.
 
 Run: `pnpm type-check && pnpm lint`
 Expected: clean.
@@ -315,28 +324,42 @@ git rm src/components/shared/page-header.tsx
 
 - [ ] **Step 2: Teach the guard the new rule**
 
-Add a second check alongside the raw-colour scan. It runs over all of `src/app/**` and `src/components/**` EXCEPT `src/components/landing/`, and fails on either of:
+Add a second check alongside the raw-colour scan. It runs over every `.tsx` under `src/`, and fails on either of:
 
-- an import of `components/shared/page-header`
-- a literal `<h1` outside `src/components/shared/page-heading.tsx` and outside `src/components/landing/`
+- an import of `components/shared/page-header` — always, with no exemptions, because the module no longer exists
+- a literal `<h1`, outside the exempt list and outside the pending list
 
 ```js
-// Ένας τίτλος ανά σελίδα: ο μόνος που επιτρέπεται να γράψει <h1> είναι το
-// κοινό PageHeading. Το landing είναι άλλο επίπεδο και εξαιρείται ρητά.
-const HEADING_EXEMPT = ['src/components/shared/page-heading.tsx', 'src/components/landing/'];
+// Ένας τίτλος ανά σελίδα: ο μόνος που γράφει <h1> είναι το κοινό PageHeading.
+const HEADING_EXEMPT = [
+  'src/components/shared/page-heading.tsx', // εδώ ζει ο ένας και μοναδικός <h1>
+  'src/components/landing/', // άλλο επίπεδο, εκτός σκοπού μόνιμα
+];
 
-function ownsAHeading(file, src) {
-  if (HEADING_EXEMPT.some((e) => file.startsWith(e))) return false;
-  return src.includes('components/shared/page-header') || /<h1[\s>]/.test(src);
-}
+// Οθόνες που κρατούν προσωρινά τον δικό τους τίτλο, με ρητό λόγο και ρητό
+// σημείο επιστροφής. Κάθε επόμενη φέτα αφαιρεί από εδώ — η λίστα μόνο μικραίνει.
+const HEADING_PENDING = [
+  'src/app/book/page.tsx', // δημόσια σελίδα με δικό της κέλυφος
+  'src/app/admin/invoices/[invoiceId]/invoice-detail.tsx', // → #109
+  'src/app/client/projects/[projectId]/client-project-detail.tsx', // → #106
+  'src/components/admin/filming-requests/filming-request-detail.tsx', // → #109
+  'src/components/client/invoices/invoice-detail.tsx', // → #109
+];
 ```
+
+Two properties this check must have, both learned from the colour guard in #101:
+
+- **A pending entry that no longer violates is itself a failure.** If a file on `HEADING_PENDING` has no `<h1>`, the guard reports it, so the list cannot quietly outlive its reason. #101 shipped a `PENDING` list where five of eight entries were already clean.
+- **Comments do not count.** Reuse the existing `stripComments` helper so a `// βλ. <h1>` in a comment is not a violation.
 
 Report violations in the same shape as the colour violations, with a message naming `PageHeading` as the fix.
 
 - [ ] **Step 3: Run the guard against the tree as it now stands**
 
 Run: `node scripts/check-design.mjs`
-Expected: passes. If it reports a file, that file was missed in Tasks 1-4 — fix the file, do not exempt it.
+Expected: passes, and the summary line reports both what it covered and how many headings are pending.
+
+If it reports a file not on the pending list, that file was missed in Tasks 1-4 — fix the file, do not add it to the list. The pending list is closed: those five entries and no others.
 
 - [ ] **Step 4: Commit**
 
