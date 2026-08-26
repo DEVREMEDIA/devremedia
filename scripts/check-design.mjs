@@ -50,7 +50,11 @@ const COVERED = [
   'src/app/admin/clients',
   'src/components/admin/leads/all-leads-table.tsx',
   'src/components/admin/chatbot/conversations-table.tsx',
-  'src/app/admin/proposals/proposals-list.tsx',
+  // Ολόκληρος ο φάκελος των προτάσεων, όχι μόνο η λίστα: εδώ ζούσε η δεύτερη
+  // αντιγραφή του χάρτη ωμών χρωμάτων που σκότωσε αυτή η φέτα. Αν η οθόνη
+  // λεπτομέρειας μείνει αφύλακτη, ο χάρτης ξαναφυτρώνει ακριβώς εκεί που
+  // ξεριζώθηκε.
+  'src/app/admin/proposals',
   'src/app/admin/contracts/contracts-list-page.tsx',
 ];
 
@@ -262,13 +266,19 @@ const TABLE_DETAIL_EXEMPT = [
 // πρέπει ποτέ να γίνει DataTable», αυτό εδώ λέει «δεν έγινε ακόμα».
 // Η λίστα μόνο μικραίνει, και ο αριθμός στο τέλος τους αφαιρεί — αλλιώς ο
 // φύλακας διαφημίζει κάλυψη που δεν έχει.
-const TABLE_PENDING = [
+// Εκκρεμή που ο ανιχνευτής από κάτω ΔΕΝ μπορεί να δει: πίνακες φτιαγμένοι από
+// CSS grid, χωρίς εισαγωγή ούτε ωμή σήμανση. Γι' αυτά ο έλεγχος «δεν
+// παραβιάζει πια» είναι αδύνατος — θα έλεγε πάντα ότι ξεπεράστηκαν. Ελέγχονται
+// μόνο για ύπαρξη. Ζουν σε δική τους λίστα ώστε η αδυναμία να είναι γραμμένη,
+// όχι υπονοούμενη.
+const TABLE_PENDING_UNDETECTABLE = [
   // Πλέγμα 12 στηλών με επεξεργασία μέσα στα κελιά, σε γραμμές μέσα σε
   // γραμμές. Θέλει συμβόλαιο επεξεργάσιμου κελιού στον κοινό πίνακα, με έναν
-  // μόνο καταναλωτή — αναβλήθηκε συνειδητά. Ο κανόνας από κάτω κοιτάζει
-  // εισαγωγές και ωμή σήμανση· ένας πίνακας από CSS grid του είναι αόρατος,
-  // γι' αυτό γράφεται εδώ με το χέρι αντί να θεωρείται καλυμμένος.
+  // μόνο καταναλωτή — αναβλήθηκε συνειδητά.
   'src/app/admin/cost-model/tabs/items-tab.tsx',
+];
+
+const TABLE_PENDING = [
   // Η καρτέλα τιμολογίων μέσα στη λεπτομέρεια πελάτη — οφείλεται στην #106.
   'src/components/admin/clients/client-invoices-tab.tsx',
   // Η λίστα συμβολαίων μέσα στη λεπτομέρεια πελάτη — οφείλεται στην #106.
@@ -292,14 +302,25 @@ const tableGuardedFiles = allTsxFiles.filter((f) =>
 );
 
 const tablePendingSet = new Set(TABLE_PENDING.map((p) => p.replaceAll('\\', '/')));
+const tableUndetectableSet = new Set(
+  TABLE_PENDING_UNDETECTABLE.map((p) => p.replaceAll('\\', '/')),
+);
 
 const handRolledTables = [];
 const staleTableExemptions = [];
 const tableGuardedFileSet = new Set(tableGuardedFiles);
 
 for (const file of tableGuardedFiles) {
-  if (tablePendingSet.has(file)) continue;
+  // Αόρατο στον ανιχνευτή εξ ορισμού — καμία ετυμηγορία δεν έχει νόημα εδώ.
+  if (tableUndetectableSet.has(file)) continue;
   const ownTable = buildsOwnTable(strippedOf(file));
+  // Ένα εκκρεμές που μετανάστευσε δεν είναι πια εκκρεμές. Αν δεν το πιάσουμε
+  // εδώ, η λίστα μεγαλώνει μόνο και ο φύλακας διαφημίζει αναβολή που δεν
+  // υπάρχει — ο ίδιος κανόνας που ήδη ισχύει για τις εξαιρέσεις παρακάτω.
+  if (tablePendingSet.has(file)) {
+    if (!ownTable) staleTableExemptions.push(file);
+    continue;
+  }
   if (tableDetailExemptSet.has(file)) {
     // Μια εξαίρεση που δεν φτιάχνει πια δικό της πίνακα έχει ήδη μεταναστεύσει
     // — μένει εδώ μόνο ξεχασμένη, χωρίς πια να φυλάσσει τίποτα.
@@ -319,10 +340,19 @@ for (const exempt of tableDetailExemptSet) {
 for (const pending of tablePendingSet) {
   if (!tableGuardedFileSet.has(pending)) staleTableExemptions.push(pending);
 }
+for (const pending of tableUndetectableSet) {
+  if (!tableGuardedFileSet.has(pending)) staleTableExemptions.push(pending);
+}
 
-// Ο αριθμός που τυπώνεται πρέπει να λέει τι ΕΛΕΓΧΘΗΚΕ, όχι τι σαρώθηκε: ένα
-// εκκρεμές αρχείο περνάει από δίπλα χωρίς κανέναν έλεγχο.
-const tableGuardedChecked = tableGuardedFiles.length - tablePendingSet.size;
+// Ο αριθμός που τυπώνεται πρέπει να λέει τι ΕΛΕΓΧΘΗΚΕ για χειροποίητο πίνακα,
+// όχι τι σαρώθηκε. Και τα εκκρεμή και οι εξαιρέσεις βγαίνουν από τον βρόχο
+// πριν από την ετυμηγορία — ελέγχονται μόνο για το αν ξεπεράστηκαν. Αν δεν
+// αφαιρεθούν και τα δύο, η γραμμή επιτυχίας υπόσχεται κάλυψη που δεν έδωσε.
+const tableGuardedChecked =
+  tableGuardedFiles.length -
+  tablePendingSet.size -
+  tableUndetectableSet.size -
+  tableDetailExemptSet.size;
 
 if (
   violations.length > 0 ||
@@ -368,7 +398,7 @@ if (
   }
   if (staleTableExemptions.length > 0) {
     console.error(
-      `\ncheck:design — ${staleTableExemptions.length} stale TABLE_DETAIL_EXEMPT entr${staleTableExemptions.length === 1 ? 'y' : 'ies'} — either no longer imports the raw primitives, or no longer exists in a table-guarded area. Remove from the list:\n`,
+      `\ncheck:design — ${staleTableExemptions.length} stale TABLE_DETAIL_EXEMPT / TABLE_PENDING entr${staleTableExemptions.length === 1 ? 'y' : 'ies'} — either no longer builds its own table, or no longer exists in a table-guarded area. Remove from the list:\n`,
     );
     for (const p of staleTableExemptions) console.error(`  ${p}`);
   }
@@ -379,5 +409,6 @@ console.log(
   `ok — ${files.size} file(s) covered, no raw colours; one title per page ` +
     `(${headingPendingSet.size} pending, ${hubs.length} hubs checked for double titles), ` +
     `${tableGuardedChecked} table-guarded-area file(s) checked for hand-rolled tables ` +
-    `(${tablePendingSet.size} pending)`,
+    `(${tablePendingSet.size} pending, ${tableUndetectableSet.size} undetectable, ` +
+    `${tableDetailExemptSet.size} exempt)`,
 );

@@ -219,7 +219,7 @@ export function ProposalDetail({ proposal, packages }: Props) {
                 <>
                   <Button
                     variant="outline"
-                    className="w-full text-emerald-400 border-emerald-500/40 hover:bg-emerald-500/10"
+                    className="w-full text-tone-positive border-tone-positive/40 hover:bg-tone-positive-bg"
                     onClick={() => handleResponse('accepted')}
                     disabled={isPending}
                   >
@@ -228,7 +228,7 @@ export function ProposalDetail({ proposal, packages }: Props) {
                   </Button>
                   <Button
                     variant="outline"
-                    className="w-full text-red-400 border-red-500/40 hover:bg-red-500/10"
+                    className="w-full text-tone-critical border-tone-critical/40 hover:bg-tone-critical-bg"
                     onClick={() => handleResponse('rejected')}
                     disabled={isPending}
                   >
