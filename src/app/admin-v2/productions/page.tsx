@@ -1,6 +1,8 @@
 import type { Metadata } from 'next';
+import Link from 'next/link';
 import { getTranslations } from 'next-intl/server';
 import { SectionTabs, type SectionTab } from '@/components/shell-v2/section-tabs';
+import { Button } from '@/components/ui/button';
 
 import { ProjectsContent } from '@/app/admin/projects/projects-content';
 import AdminFilmingRequestsPage from '@/app/admin/filming-requests/page';
@@ -41,9 +43,19 @@ export default async function ProductionsPage({ searchParams }: { searchParams: 
 
   return (
     <div className="space-y-5">
-      <header>
-        <h1 className="text-2xl font-semibold tracking-tight">{t('title')}</h1>
-        <p className="mt-1 text-sm text-muted-foreground">{t('subtitle')}</p>
+      <header className="flex items-start justify-between gap-3">
+        <div>
+          <h1 className="text-2xl font-semibold tracking-tight">{t('title')}</h1>
+          <p className="mt-1 text-sm text-muted-foreground">{t('subtitle')}</p>
+        </div>
+        <div className="flex items-center gap-2">
+          <Button asChild variant="outline" size="sm">
+            <Link href="/admin-v2/availability">{t('linkAvailability')}</Link>
+          </Button>
+          <Button asChild variant="outline" size="sm">
+            <Link href="/admin-v2/filming-prep">{t('linkFilmingPrep')}</Link>
+          </Button>
+        </div>
       </header>
 
       <SectionTabs basePath="/admin-v2/productions" tabs={TABS} active={active} />

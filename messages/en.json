@@ -2650,13 +2650,15 @@
         "title": "Clients",
         "subtitle": "From first interest to active collaboration — one list, not two",
         "tabList": "Clients", "tabInterest": "Interest", "tabProposals": "Proposals",
-        "tabContracts": "Contracts", "tabChat": "Conversations"
+        "tabContracts": "Contracts", "tabChat": "Conversations",
+        "linkChatKnowledge": "Knowledge base", "linkNewContract": "New contract"
       },
       "adminProductions": {
         "title": "Productions",
         "subtitle": "All projects for all clients · shoot prep lives inside each project",
         "tabAll": "All", "tabRequests": "Requests & bookings",
-        "error": "Error: {message}"
+        "error": "Error: {message}",
+        "linkAvailability": "Availability", "linkFilmingPrep": "Filming prep"
       },
       "adminCalendar": {
         "title": "Calendar",

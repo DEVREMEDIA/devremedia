@@ -2651,13 +2651,15 @@
         "title": "Πελάτες",
         "subtitle": "Από το πρώτο ενδιαφέρον μέχρι την ενεργή συνεργασία — μία λίστα, όχι δύο",
         "tabList": "Πελάτες", "tabInterest": "Ενδιαφέρον", "tabProposals": "Προτάσεις",
-        "tabContracts": "Συμφωνητικά", "tabChat": "Συνομιλίες"
+        "tabContracts": "Συμφωνητικά", "tabChat": "Συνομιλίες",
+        "linkChatKnowledge": "Γνωσιακή βάση", "linkNewContract": "Νέο συμφωνητικό"
       },
       "adminProductions": {
         "title": "Παραγωγές",
         "subtitle": "Όλα τα έργα όλων των πελατών · η προετοιμασία γυρίσματος ζει μέσα στο κάθε έργο",
         "tabAll": "Όλες", "tabRequests": "Αιτήματα & κρατήσεις",
-        "error": "Σφάλμα: {message}"
+        "error": "Σφάλμα: {message}",
+        "linkAvailability": "Διαθεσιμότητα", "linkFilmingPrep": "Προετοιμασία γυρισμάτων"
       },
       "adminCalendar": {
         "title": "Ημερολόγιο",

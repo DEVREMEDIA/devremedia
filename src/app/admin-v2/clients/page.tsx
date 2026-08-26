@@ -1,19 +1,22 @@
 import type { ComponentProps } from 'react';
 import type { Metadata } from 'next';
+import Link from 'next/link';
 import { getTranslations } from 'next-intl/server';
 import { SectionTabs, type SectionTab } from '@/components/shell-v2/section-tabs';
+import { Button } from '@/components/ui/button';
 
 import { ClientsContent } from '@/app/admin/clients/clients-content';
 import { ProposalsList } from '@/app/admin/proposals/proposals-list';
 import { ContractsListPage } from '@/app/admin/contracts/contracts-list-page';
 import { AllLeadsTable } from '@/components/admin/leads/all-leads-table';
+import { ChatbotStats } from '@/components/admin/chatbot/chatbot-stats';
 import { ConversationsTable } from '@/components/admin/chatbot/conversations-table';
 
 import { getClients } from '@/lib/actions/clients';
 import { getProposals } from '@/lib/actions/proposals';
 import { getAllContracts } from '@/lib/actions/contracts';
 import { getLeads } from '@/lib/actions/leads';
-import { getChatConversations } from '@/lib/queries/chatbot';
+import { getChatConversations, getChatStats } from '@/lib/queries/chatbot';
 import type { Client, ChatConversation } from '@/types/index';
 
 export async function generateMetadata(): Promise<Metadata> {
@@ -40,14 +43,35 @@ async function ProposalsTab() {
 }
 
 async function ContractsTab() {
+  const t = await getTranslations('shellV2.pages.adminClients');
   const result = await getAllContracts();
   const contracts = (result.data ?? []) as ComponentProps<typeof ContractsListPage>['contracts'];
-  return <ContractsListPage contracts={contracts} />;
+  return (
+    <div className="space-y-4">
+      <div className="flex justify-end">
+        <Button asChild size="sm">
+          <Link href="/admin-v2/contracts/new">{t('linkNewContract')}</Link>
+        </Button>
+      </div>
+      <ContractsListPage contracts={contracts} />
+    </div>
+  );
 }
 
 async function ChatTab() {
-  const conversations = await getChatConversations();
-  return <ConversationsTable conversations={conversations as ChatConversation[]} />;
+  const t = await getTranslations('shellV2.pages.adminClients');
+  const [conversations, stats] = await Promise.all([getChatConversations(), getChatStats()]);
+  return (
+    <div className="space-y-4">
+      <div className="flex justify-end">
+        <Button asChild variant="outline" size="sm">
+          <Link href="/admin-v2/chatbot/knowledge">{t('linkChatKnowledge')}</Link>
+        </Button>
+      </div>
+      <ChatbotStats {...stats} />
+      <ConversationsTable conversations={conversations as ChatConversation[]} />
+    </div>
+  );
 }
 
 export default async function ClientsPage({ searchParams }: { searchParams: SearchParams }) {
