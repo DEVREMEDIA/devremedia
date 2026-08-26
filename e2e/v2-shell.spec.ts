@@ -38,7 +38,13 @@ test.describe('V2 shell', () => {
     test.skip(!process.env.E2E_TEST_USERS_READY, 'Test users not configured in database');
     await loginAsAdmin(page);
     await page.goto('/admin-v2/today');
-    await expect(page.getByText(/Σήμερα|Today/i).first()).toBeVisible();
+    // Το page h1 λέει επίσης «Σήμερα»/«Today» — σκοπεύουμε στο card-title του widget, όχι όλη τη σελίδα.
+    await expect(
+      page
+        .locator('[data-slot="card-title"]')
+        .filter({ hasText: /Σήμερα|Today/i })
+        .first(),
+    ).toBeVisible();
     await expect(page.getByText(/Πρόσφατη Δραστηριότητα|Recent Activity/i).first()).toBeVisible();
   });
 
