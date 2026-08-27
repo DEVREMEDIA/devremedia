@@ -26,17 +26,15 @@ export function OverdueTasks({ tasks }: OverdueTasksProps) {
   const tCommon = useTranslations('common');
 
   return (
-    <div className={cn('rounded-xl border bg-card', tasks.length > 0 && 'border-red-500/30')}>
+    <div className={cn('rounded-xl border bg-card', tasks.length > 0 && 'border-tone-critical/30')}>
       <div className="flex items-center gap-2 px-5 py-4 border-b border-border/50">
         <AlertTriangle
-          className={cn('h-5 w-5', tasks.length > 0 ? 'text-red-500' : 'text-muted-foreground')}
-        />
-        <h2
           className={cn(
-            'text-lg font-semibold',
-            tasks.length > 0 && 'text-red-600 dark:text-red-400',
+            'h-5 w-5',
+            tasks.length > 0 ? 'text-tone-critical' : 'text-muted-foreground',
           )}
-        >
+        />
+        <h2 className={cn('text-lg font-semibold', tasks.length > 0 && 'text-tone-critical')}>
           {t('overdueTasks')}
         </h2>
         {tasks.length > 0 && (
@@ -60,7 +58,7 @@ export function OverdueTasks({ tasks }: OverdueTasksProps) {
                   key={task.id}
                   className={cn(
                     'flex items-start gap-3 p-3 rounded-lg transition-all duration-200',
-                    'border border-red-500/20 hover:border-red-500/40 hover:bg-red-500/5',
+                    'border border-tone-critical/20 hover:border-tone-critical/40 hover:bg-tone-critical/5',
                   )}
                 >
                   <div className="flex-1 min-w-0">

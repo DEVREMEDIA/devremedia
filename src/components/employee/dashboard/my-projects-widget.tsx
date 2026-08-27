@@ -28,10 +28,12 @@ export function MyProjectsWidget({ projects }: MyProjectsWidgetProps) {
   return (
     <div className="rounded-xl border bg-card">
       <div className="flex items-center gap-2 px-5 py-4 border-b border-border/50">
-        <FolderKanban className="h-5 w-5 text-amber-500" />
+        <FolderKanban className="h-5 w-5 text-primary" />
         <h2 className="text-lg font-semibold">{t('myProjects')}</h2>
         {projects.length > 0 && (
-          <Badge variant="secondary" className="text-xs">{projects.length}</Badge>
+          <Badge variant="secondary" className="text-xs">
+            {projects.length}
+          </Badge>
         )}
       </div>
       <div className="p-5">
@@ -45,16 +47,17 @@ export function MyProjectsWidget({ projects }: MyProjectsWidgetProps) {
             {projects.slice(0, 5).map((project) => (
               <Link
                 key={project.id}
-                href={"/employee/projects/" + project.id}
+                href={'/employee/projects/' + project.id}
                 className={cn(
                   'flex items-center justify-between p-3 rounded-lg transition-all duration-200',
-                  'border border-border/50 hover:border-amber-500/30 hover:bg-amber-500/5',
+                  'border border-border/50 hover:border-primary/30 hover:bg-primary/5',
                 )}
               >
                 <div className="flex-1 min-w-0">
                   <h4 className="text-sm font-medium truncate">{project.title}</h4>
                   <p className="text-xs text-muted-foreground mt-1">
-                    {project.taskCount} {project.taskCount === 1 ? tCommon('task') : tCommon('tasks')}
+                    {project.taskCount}{' '}
+                    {project.taskCount === 1 ? tCommon('task') : tCommon('tasks')}
                   </p>
                 </div>
                 <StatusBadge status={project.status} />
