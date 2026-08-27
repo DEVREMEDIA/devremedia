@@ -1,24 +1,31 @@
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { DetailShell } from '@/components/shared/detail-shell';
+import type { SectionTab } from '@/components/shell-v2/section-tabs';
 import { StatusBadge } from '@/components/shared/status-badge';
 import { MessageThread } from '@/components/shared/message-thread';
 import { PROJECT_TYPE_LABELS, PROJECT_STATUS_LABELS } from '@/lib/constants';
-import { Calendar, MapPin, FileText, Video, MessageSquare, ArrowLeft } from 'lucide-react';
-import { Button } from '@/components/ui/button';
-import { useRouter, useSearchParams } from 'next/navigation';
+import { Calendar, MapPin } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { DeliverablesTab } from '@/components/client/projects/deliverables-tab';
 import { ContractsTab } from '@/components/client/projects/contracts-tab';
 import type { ProjectWithClient, Deliverable, ContractWithRelations } from '@/types';
+
+/** Οι καρτέλες με τη σειρά τους. Το `page.tsx` επικυρώνει το `?tab=` πάνω σε αυτή. */
+export const CLIENT_PROJECT_TABS: readonly string[] = [
+  'overview',
+  'deliverables',
+  'messages',
+  'contracts',
+];
 
 interface ClientProjectDetailProps {
   project: ProjectWithClient;
   deliverables: Deliverable[];
   contracts: ContractWithRelations[];
   currentUserId: string;
+  activeTab: string;
 }
 
 export function ClientProjectDetail({
@@ -26,88 +33,43 @@ export function ClientProjectDetail({
   deliverables,
   contracts,
   currentUserId,
+  activeTab,
 }: ClientProjectDetailProps) {
-  const router = useRouter();
-  const searchParams = useSearchParams();
   const t = useTranslations('client.projects');
-  const tabFromUrl = searchParams.get('tab') || 'overview';
-  const [activeTab, setActiveTab] = useState(tabFromUrl);
 
-  useEffect(() => {
-    setActiveTab(tabFromUrl);
-  }, [tabFromUrl]);
-
-  const handleTabChange = useCallback(
-    (value: string) => {
-      setActiveTab(value);
-      const params = new URLSearchParams(searchParams.toString());
-      if (value === 'overview') {
-        params.delete('tab');
-      } else {
-        params.set('tab', value);
-      }
-      const query = params.toString();
-      router.replace(`?${query}`, { scroll: false });
+  const TABS: SectionTab[] = [
+    { key: 'overview', label: t('overview') },
+    {
+      key: 'deliverables',
+      label: t('deliverables'),
+      ...(deliverables.length > 0 ? { count: deliverables.length } : {}),
     },
-    [router, searchParams],
-  );
+    { key: 'messages', label: t('messages') },
+    {
+      key: 'contracts',
+      label: t('contracts'),
+      ...(contracts.length > 0 ? { count: contracts.length } : {}),
+    },
+  ];
 
   return (
-    <div className="container mx-auto px-4 py-6 sm:px-6 space-y-6">
-      {/* Header */}
-      <div className="flex items-center gap-4">
-        <Button variant="ghost" size="icon" className="flex-shrink-0" onClick={() => router.back()}>
-          <ArrowLeft className="h-4 w-4" />
-        </Button>
-        <div className="flex-1 min-w-0">
-          <h1 className="text-2xl sm:text-3xl font-bold tracking-tight truncate">
-            {project.title}
-          </h1>
-          <div className="flex items-center gap-2 mt-2 flex-wrap">
+    <div className="container mx-auto px-4 py-6 sm:px-6">
+      <DetailShell
+        backHref="/client/projects"
+        backLabel={t('title')}
+        title={project.title}
+        meta={
+          <div className="flex items-center gap-2 flex-wrap">
             <StatusBadge status={project.status} />
-            <span className="text-sm text-muted-foreground">
+            <span>
               {PROJECT_TYPE_LABELS[project.project_type as keyof typeof PROJECT_TYPE_LABELS] ||
                 project.project_type}
             </span>
           </div>
-        </div>
-      </div>
-
-      {/* Tabs */}
-      <Tabs value={activeTab} onValueChange={handleTabChange}>
-        <div className="overflow-x-auto -mx-4 px-4 sm:mx-0 sm:px-0">
-          <TabsList className="inline-flex w-auto min-w-full sm:min-w-0">
-            <TabsTrigger value="overview">
-              <FileText className="h-4 w-4 sm:mr-2" />
-              <span className="hidden sm:inline">{t('overview')}</span>
-            </TabsTrigger>
-            <TabsTrigger value="deliverables">
-              <Video className="h-4 w-4 sm:mr-2" />
-              <span className="hidden sm:inline">{t('deliverables')}</span>
-              {deliverables.length > 0 && (
-                <span className="ml-1 sm:ml-2 px-1.5 sm:px-2 py-0.5 text-xs rounded-full bg-primary/10 text-primary">
-                  {deliverables.length}
-                </span>
-              )}
-            </TabsTrigger>
-            <TabsTrigger value="messages">
-              <MessageSquare className="h-4 w-4 sm:mr-2" />
-              <span className="hidden sm:inline">{t('messages')}</span>
-            </TabsTrigger>
-            <TabsTrigger value="contracts">
-              <FileText className="h-4 w-4 sm:mr-2" />
-              <span className="hidden sm:inline">{t('contracts')}</span>
-              {contracts.length > 0 && (
-                <span className="ml-1 sm:ml-2 px-1.5 sm:px-2 py-0.5 text-xs rounded-full bg-primary/10 text-primary">
-                  {contracts.length}
-                </span>
-              )}
-            </TabsTrigger>
-          </TabsList>
-        </div>
-
-        {/* Overview Tab */}
-        <TabsContent value="overview" className="space-y-6">
+        }
+        tabs={{ items: TABS, active: activeTab, basePath: `/client/projects/${project.id}` }}
+      >
+        {activeTab === 'overview' && (
           <Card>
             <CardHeader>
               <CardTitle>{t('projectDetails')}</CardTitle>
@@ -175,27 +137,20 @@ export function ClientProjectDetail({
               </div>
             </CardContent>
           </Card>
-        </TabsContent>
+        )}
 
-        {/* Deliverables Tab */}
-        <TabsContent value="deliverables">
-          <DeliverablesTab deliverables={deliverables} />
-        </TabsContent>
+        {activeTab === 'deliverables' && <DeliverablesTab deliverables={deliverables} />}
 
-        {/* Messages Tab */}
-        <TabsContent value="messages">
+        {activeTab === 'messages' && (
           <Card>
             <CardContent className="p-0">
               <MessageThread projectId={project.id} currentUserId={currentUserId} />
             </CardContent>
           </Card>
-        </TabsContent>
+        )}
 
-        {/* Contracts Tab */}
-        <TabsContent value="contracts">
-          <ContractsTab contracts={contracts} />
-        </TabsContent>
-      </Tabs>
+        {activeTab === 'contracts' && <ContractsTab contracts={contracts} />}
+      </DetailShell>
     </div>
   );
 }
