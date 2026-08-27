@@ -27,7 +27,7 @@ export default async function ClientInvoiceDetailPage({ params }: PageProps) {
   const invoice = invoiceResult.data;
 
   return (
-    <div className="container mx-auto px-4 py-6 sm:px-6">
+    <div>
       <InvoiceDetail invoice={invoice} />
     </div>
   );

@@ -53,7 +53,7 @@ export function ClientProjectDetail({
   ];
 
   return (
-    <div className="container mx-auto px-4 py-6 sm:px-6">
+    <div>
       <DetailShell
         backHref="/client/projects"
         backLabel={t('title')}

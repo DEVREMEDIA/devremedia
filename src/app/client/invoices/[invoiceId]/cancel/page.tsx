@@ -13,7 +13,7 @@ export default async function InvoicePaymentCancelPage({ params }: PageProps) {
   const t = await getTranslations('client.invoices');
 
   return (
-    <div className="container mx-auto px-4 py-6 sm:px-6 flex items-center justify-center min-h-[60vh]">
+    <div className="flex items-center justify-center min-h-[60vh]">
       <Card className="max-w-md w-full text-center">
         <CardHeader className="space-y-4">
           <div className="mx-auto w-16 h-16 rounded-full bg-tone-critical-bg flex items-center justify-center">

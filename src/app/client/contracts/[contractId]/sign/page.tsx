@@ -15,7 +15,7 @@ export default async function SignContractPage({ params }: SignContractPageProps
 
   if (result.error) {
     return (
-      <div className="container mx-auto px-4 py-6 sm:px-6 max-w-4xl">
+      <div className="max-w-4xl mx-auto">
         <div className="text-center text-tone-critical">
           <p>{t('failedToLoadContract', { error: result.error })}</p>
         </div>
@@ -35,7 +35,7 @@ export default async function SignContractPage({ params }: SignContractPageProps
 
   if (contract.status === 'expired' || contract.status === 'cancelled') {
     return (
-      <div className="container mx-auto px-4 py-6 sm:px-6 max-w-4xl">
+      <div className="max-w-4xl mx-auto">
         <div className="text-center">
           <p className="text-lg font-semibold">{t('notAvailableForSigning')}</p>
           <p className="text-muted-foreground mt-2">
@@ -47,7 +47,7 @@ export default async function SignContractPage({ params }: SignContractPageProps
   }
 
   return (
-    <div className="container mx-auto px-4 py-6 sm:px-6 max-w-4xl">
+    <div className="max-w-4xl mx-auto">
       <SignContractClient contract={contract} />
     </div>
   );
