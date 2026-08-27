@@ -67,8 +67,8 @@ export default function ForgotPasswordPage() {
       <CardContent>
         {isSuccess ? (
           <div className="space-y-4">
-            <div className="rounded-md bg-green-50 dark:bg-green-950 border border-green-200 dark:border-green-800 p-4">
-              <p className="text-sm text-green-800 dark:text-green-200">{t('resetLinkSent')}</p>
+            <div className="rounded-md bg-tone-positive-bg border border-tone-positive/30 p-4">
+              <p className="text-sm text-tone-positive">{t('resetLinkSent')}</p>
             </div>
 
             <Link

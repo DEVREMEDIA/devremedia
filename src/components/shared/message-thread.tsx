@@ -138,7 +138,7 @@ export function MessageThread({
           </span>
           {isConnected && (
             <div className="flex items-center gap-1">
-              <div className="h-2 w-2 rounded-full bg-green-500 animate-pulse" />
+              <div className="h-2 w-2 rounded-full bg-tone-positive animate-pulse" />
               <span>{t('live')}</span>
             </div>
           )}
