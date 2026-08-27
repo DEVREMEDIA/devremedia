@@ -175,7 +175,7 @@ export function AvailabilityEditor({ initialMonth }: AvailabilityEditorProps) {
       </div>
 
       {/* Day rows */}
-      <div className="rounded-md border border-zinc-800 divide-y divide-zinc-800">
+      <div className="rounded-md border divide-y">
         {loading ? (
           <div className="p-6 text-center text-sm text-muted-foreground">{tc('loading')}</div>
         ) : (
@@ -206,7 +206,7 @@ export function AvailabilityEditor({ initialMonth }: AvailabilityEditorProps) {
                   />
                   <Label
                     htmlFor={`open-${date}`}
-                    className={`text-xs w-16 ${isOpen ? 'text-green-400' : 'text-muted-foreground'}`}
+                    className={`text-xs w-16 ${isOpen ? 'text-tone-positive' : 'text-muted-foreground'}`}
                   >
                     {isOpen ? t('open') : t('closed')}
                   </Label>

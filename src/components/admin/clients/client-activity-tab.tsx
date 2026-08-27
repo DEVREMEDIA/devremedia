@@ -10,6 +10,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Activity } from 'lucide-react';
 import { formatDistanceToNow, format } from 'date-fns';
+import { statusTone, type Tone } from '@/lib/status-tone';
 
 const PAGE_SIZE = 20;
 const RECENT_THRESHOLD_DAYS = 7;
@@ -122,16 +123,15 @@ export function ClientActivityTab({ clientId, refreshKey }: ClientActivityTabPro
   );
 }
 
-const ACTION_COLORS: Record<string, string> = {
-  created: 'bg-blue-500',
-  updated: 'bg-yellow-500',
-  deleted: 'bg-red-500',
-  paid: 'bg-green-500',
-  sent: 'bg-purple-500',
-  signed: 'bg-green-600',
+// Same tone map task-card.tsx and project-card.tsx already use — the dot's
+// colour is the action's tone (statusTone), not a hand-picked hue per action.
+const TONE_DOT: Record<Tone, string> = {
+  critical: 'bg-tone-critical',
+  caution: 'bg-tone-caution',
+  positive: 'bg-tone-positive',
+  neutral: 'bg-tone-neutral',
 };
 
 function ActivityDot({ action }: { action: string }) {
-  const color = ACTION_COLORS[action] ?? 'bg-muted-foreground';
-  return <div className={`h-2 w-2 rounded-full ${color}`} />;
+  return <div className={`h-2 w-2 rounded-full ${TONE_DOT[statusTone(action)]}`} />;
 }

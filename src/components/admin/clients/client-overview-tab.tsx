@@ -124,7 +124,7 @@ export function ClientOverviewTab({ client, stats, onViewAllActivity }: ClientOv
               <Separator />
               <div className="flex items-start gap-3">
                 {client.user_id ? (
-                  <Shield className="mt-0.5 h-5 w-5 text-green-600" />
+                  <Shield className="mt-0.5 h-5 w-5 text-tone-positive" />
                 ) : (
                   <ShieldOff className="mt-0.5 h-5 w-5 text-muted-foreground" />
                 )}

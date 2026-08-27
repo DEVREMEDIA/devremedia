@@ -611,7 +611,7 @@ function BreakdownEditor({ costItemId, rows, parentCost }: BreakdownEditorProps)
       ) : null}
 
       {delta !== 0 ? (
-        <p className="text-[10px] text-amber-600 dark:text-amber-400">
+        <p className="text-[10px] text-tone-caution">
           {t('deltaWarning', { delta: fmtEUR(delta) })}
         </p>
       ) : null}

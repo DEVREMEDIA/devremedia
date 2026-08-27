@@ -3,18 +3,39 @@
 import { cn } from '@/lib/utils';
 import { useTranslations } from 'next-intl';
 import type { PricingHealthStatus } from '@/types/index';
+import type { Tone } from '@/lib/status-tone';
 
 interface Props {
   status: PricingHealthStatus;
   className?: string;
 }
 
+// None of these five statuses appear in `TONE_RULES` (src/lib/status-tone.ts,
+// owned by issue #128), so this maps straight to a tone instead of going
+// through statusTone(). `healthy` and `premium` both land on `positive` —
+// the tone system has no fifth "exceptional" bucket, and neither state needs
+// the viewer to act, which is what the tone actually encodes.
+const STATUS_TONE: Record<PricingHealthStatus, Tone> = {
+  loss: 'critical',
+  underpriced: 'caution',
+  healthy: 'positive',
+  premium: 'positive',
+  unpriced: 'neutral',
+};
+
+const TONE_BADGE: Record<Tone, string> = {
+  critical: 'bg-tone-critical-bg text-tone-critical border-tone-critical',
+  caution: 'bg-tone-caution-bg text-tone-caution border-tone-caution',
+  positive: 'bg-tone-positive-bg text-tone-positive border-tone-positive',
+  neutral: 'bg-tone-neutral-bg text-tone-neutral border-tone-neutral',
+};
+
 const styles: Record<PricingHealthStatus, string> = {
-  loss: 'bg-red-500/15 text-red-400 border-red-500/30',
-  underpriced: 'bg-amber-500/15 text-amber-400 border-amber-500/30',
-  healthy: 'bg-emerald-500/15 text-emerald-400 border-emerald-500/30',
-  premium: 'bg-sky-500/15 text-sky-400 border-sky-500/30',
-  unpriced: 'bg-zinc-500/15 text-zinc-400 border-zinc-500/30',
+  loss: TONE_BADGE[STATUS_TONE.loss],
+  underpriced: TONE_BADGE[STATUS_TONE.underpriced],
+  healthy: TONE_BADGE[STATUS_TONE.healthy],
+  premium: TONE_BADGE[STATUS_TONE.premium],
+  unpriced: TONE_BADGE[STATUS_TONE.unpriced],
 };
 
 export function HealthStatusBadge({ status, className }: Props) {
