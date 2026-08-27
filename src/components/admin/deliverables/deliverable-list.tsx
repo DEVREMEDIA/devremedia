@@ -1,23 +1,28 @@
 'use client';
 
-import { Badge } from '@/components/ui/badge';
+import { useState } from 'react';
+import { useForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
+import type { z } from 'zod';
 import { Button } from '@/components/ui/button';
-import { DELIVERABLE_STATUS_LABELS } from '@/lib/constants';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import {
-  Dialog,
-  DialogContent,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from '@/components/ui/dialog';
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from '@/components/ui/form';
+import { FormDialog } from '@/components/shared/form-dialog';
+import { StatusBadge } from '@/components/shared/status-badge';
 import { ExternalLink, FileVideo, Calendar, Trash2, Pencil, MessageSquare } from 'lucide-react';
 import { format } from 'date-fns';
 import { useTranslations } from 'next-intl';
 import { deleteDeliverable, updateDeliverable } from '@/lib/actions/deliverables';
+import { updateDeliverableSchema } from '@/lib/schemas/deliverable';
 import { toast } from 'sonner';
-import { useState } from 'react';
 import { ConfirmDialog } from '@/components/shared/confirm-dialog';
 import type { Deliverable } from '@/types';
 
@@ -27,37 +32,42 @@ interface DeliverableListProps {
   onRefresh?: () => void;
 }
 
-const STATUS_COLOR: Record<string, string> = {
-  pending_review: 'bg-yellow-500/10 text-yellow-700 dark:text-yellow-400 border-yellow-500/20',
-  approved: 'bg-green-500/10 text-green-700 dark:text-green-400 border-green-500/20',
-  revision_requested: 'bg-red-500/10 text-red-700 dark:text-red-400 border-red-500/20',
-  final: 'bg-blue-500/10 text-blue-700 dark:text-blue-400 border-blue-500/20',
-};
+// status isn't a field this dialog edits — it moves through the approval
+// actions instead. The visible form validates only what it shows.
+const editDeliverableSchema = updateDeliverableSchema.omit({
+  status: true,
+  file_type: true,
+});
+type EditDeliverableValues = z.input<typeof editDeliverableSchema>;
 
 export function DeliverableList({ deliverables, onSelect, onRefresh }: DeliverableListProps) {
   const t = useTranslations('deliverables');
   const [deleteId, setDeleteId] = useState<string | null>(null);
   const [isDeleting, setIsDeleting] = useState(false);
   const [editDeliverable, setEditDeliverable] = useState<Deliverable | null>(null);
-  const [editTitle, setEditTitle] = useState('');
-  const [editDescription, setEditDescription] = useState('');
-  const [editFilePath, setEditFilePath] = useState('');
-  const [isSaving, setIsSaving] = useState(false);
+
+  const form = useForm<EditDeliverableValues>({
+    resolver: zodResolver(editDeliverableSchema),
+    defaultValues: { title: '', description: '', file_path: '' },
+  });
 
   const openEditDialog = (d: Deliverable) => {
     setEditDeliverable(d);
-    setEditTitle(d.title);
-    setEditDescription(d.description ?? '');
-    setEditFilePath(d.file_path);
+    form.reset({
+      title: d.title,
+      description: d.description ?? '',
+      file_path: d.file_path,
+    });
   };
 
-  const handleEdit = async () => {
+  const handleEdit = async (values: EditDeliverableValues) => {
     if (!editDeliverable) return;
-    setIsSaving(true);
 
-    const updates: Record<string, string> = { title: editTitle };
-    if (editDescription) updates.description = editDescription;
-    if (editFilePath !== editDeliverable.file_path) updates.file_path = editFilePath;
+    const updates: Record<string, string> = { title: values.title?.trim() ?? '' };
+    if (values.description) updates.description = values.description.trim();
+    if (values.file_path && values.file_path !== editDeliverable.file_path) {
+      updates.file_path = values.file_path;
+    }
 
     const result = await updateDeliverable(editDeliverable.id, updates);
     if (result.error) {
@@ -65,9 +75,8 @@ export function DeliverableList({ deliverables, onSelect, onRefresh }: Deliverab
     } else {
       toast.success(t('deliverableUpdated'));
       onRefresh?.();
+      setEditDeliverable(null);
     }
-    setIsSaving(false);
-    setEditDeliverable(null);
   };
 
   const handleDelete = async () => {
@@ -123,9 +132,7 @@ export function DeliverableList({ deliverables, onSelect, onRefresh }: Deliverab
               <div className="flex-1 min-w-0">
                 <div className="flex items-center gap-2 flex-wrap">
                   <h4 className="font-medium text-sm">{deliverable.title}</h4>
-                  <Badge variant="outline" className={STATUS_COLOR[deliverable.status] ?? ''}>
-                    {DELIVERABLE_STATUS_LABELS[deliverable.status]}
-                  </Badge>
+                  <StatusBadge status={deliverable.status} />
                 </div>
                 {deliverable.description && (
                   <p className="text-sm text-muted-foreground mt-1">{deliverable.description}</p>
@@ -204,43 +211,63 @@ export function DeliverableList({ deliverables, onSelect, onRefresh }: Deliverab
         destructive
       />
 
-      <Dialog open={!!editDeliverable} onOpenChange={(open) => !open && setEditDeliverable(null)}>
-        <DialogContent className="max-w-lg">
-          <DialogHeader>
-            <DialogTitle>{t('editDeliverable')}</DialogTitle>
-          </DialogHeader>
-          <div className="space-y-4">
-            <div className="space-y-2">
-              <label className="text-sm font-medium">{t('title')}</label>
-              <Input value={editTitle} onChange={(e) => setEditTitle(e.target.value)} />
-            </div>
-            <div className="space-y-2">
-              <label className="text-sm font-medium">{t('description')}</label>
-              <Textarea
-                value={editDescription}
-                onChange={(e) => setEditDescription(e.target.value)}
-                rows={3}
-              />
-            </div>
-            <div className="space-y-2">
-              <label className="text-sm font-medium">{t('videoUrl')}</label>
-              <Input
-                value={editFilePath}
-                onChange={(e) => setEditFilePath(e.target.value)}
-                placeholder="https://drive.google.com/..."
-              />
-            </div>
-          </div>
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setEditDeliverable(null)} disabled={isSaving}>
-              {t('cancel')}
-            </Button>
-            <Button onClick={handleEdit} disabled={isSaving || !editTitle.trim()}>
-              {isSaving ? t('saving') : t('save')}
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+      <FormDialog
+        open={!!editDeliverable}
+        onOpenChange={(open) => !open && setEditDeliverable(null)}
+        title={t('editDeliverable')}
+        onSubmit={form.handleSubmit(handleEdit)}
+        submitLabel={form.formState.isSubmitting ? t('saving') : t('save')}
+        cancelLabel={t('cancel')}
+        submitting={form.formState.isSubmitting}
+      >
+        <Form {...form}>
+          <FormField
+            control={form.control}
+            name="title"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>{t('title')}</FormLabel>
+                <FormControl>
+                  <Input {...field} value={field.value ?? ''} />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+
+          <FormField
+            control={form.control}
+            name="description"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>{t('description')}</FormLabel>
+                <FormControl>
+                  <Textarea rows={3} {...field} value={field.value ?? ''} />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+
+          <FormField
+            control={form.control}
+            name="file_path"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>{t('videoUrl')}</FormLabel>
+                <FormControl>
+                  <Input
+                    {...field}
+                    value={field.value ?? ''}
+                    placeholder="https://drive.google.com/..."
+                  />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+        </Form>
+      </FormDialog>
     </>
   );
 }
