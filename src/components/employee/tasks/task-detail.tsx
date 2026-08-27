@@ -9,6 +9,7 @@ import { StatusBadge } from '@/components/shared/status-badge';
 import { TaskStatusUpdate } from './task-status-update';
 import type { Task } from '@/types/index';
 import { cn } from '@/lib/utils';
+import { formatDate } from '@/lib/format';
 
 interface SubTask {
   id: string;
@@ -93,13 +94,13 @@ export function TaskDetail({ task }: TaskDetailProps) {
               <div
                 className={cn(
                   'flex items-center gap-2 text-sm',
-                  isOverdue ? 'text-red-600 font-semibold' : 'text-foreground',
+                  isOverdue ? 'text-tone-critical font-semibold' : 'text-foreground',
                 )}
               >
                 {isOverdue && <AlertCircle className="h-4 w-4" />}
                 <Calendar className="h-4 w-4" />
                 <span>
-                  {new Date(task.due_date).toLocaleDateString('en-US', {
+                  {formatDate(task.due_date, {
                     weekday: 'long',
                     month: 'long',
                     day: 'numeric',

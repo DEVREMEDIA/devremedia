@@ -10,6 +10,7 @@ import { EmployeeDeliverables } from '@/components/employee/deliverables/deliver
 import { MessageThread } from '@/components/shared/message-thread';
 import { CheckSquare, Calendar, AlertCircle } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { formatDate } from '@/lib/format';
 import type { Task, Deliverable } from '@/types/index';
 
 interface ProjectDetailProps {
@@ -78,16 +79,15 @@ export function ProjectDetail({
                           <div
                             className={cn(
                               'flex items-center gap-1 text-xs',
-                              isOverdue ? 'text-red-600 font-semibold' : 'text-muted-foreground',
+                              isOverdue
+                                ? 'text-tone-critical font-semibold'
+                                : 'text-muted-foreground',
                             )}
                           >
                             {isOverdue && <AlertCircle className="h-3 w-3" />}
                             <Calendar className="h-3 w-3" />
                             <span>
-                              {new Date(task.due_date).toLocaleDateString(undefined, {
-                                month: 'short',
-                                day: 'numeric',
-                              })}
+                              {formatDate(task.due_date, { month: 'short', day: 'numeric' })}
                             </span>
                           </div>
                         )}

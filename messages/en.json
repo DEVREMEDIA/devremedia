@@ -1869,7 +1869,8 @@
       "statusUpdated": "Status updated successfully",
       "statusUpdateFailed": "Failed to update status",
       "taskDetail": "Task Detail",
-      "subTasks": "Sub-tasks"
+      "subTasks": "Sub-tasks",
+      "unknownProject": "Unknown Project"
     },
     "deliverables": {
       "title": "Deliverables",

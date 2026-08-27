@@ -1869,7 +1869,8 @@
       "statusUpdated": "Η κατάσταση ενημερώθηκε",
       "statusUpdateFailed": "Αποτυχία ενημέρωσης κατάστασης",
       "taskDetail": "Λεπτομέρειες Εργασίας",
-      "subTasks": "Υπο-εργασίες"
+      "subTasks": "Υπο-εργασίες",
+      "unknownProject": "Άγνωστο Έργο"
     },
     "deliverables": {
       "title": "Παραδοτέα",

@@ -7,6 +7,7 @@ import { Badge } from '@/components/ui/badge';
 import { EmptyState } from '@/components/shared/empty-state';
 import { cn } from '@/lib/utils';
 import { PROJECT_STAGES } from '@/lib/constants';
+import { formatDate } from '@/lib/format';
 
 interface ProjectItem {
   id: string;
@@ -63,7 +64,7 @@ export function ProjectList({ projects }: ProjectListProps) {
               <div className="p-5 pb-3">
                 <div className="flex items-start justify-between gap-3">
                   <h3 className="font-semibold text-base line-clamp-2 flex-1">{project.title}</h3>
-                  <ArrowRight className="h-5 w-5 text-muted-foreground/40 group-hover:text-amber-500 transition-colors shrink-0 mt-0.5" />
+                  <ArrowRight className="h-5 w-5 text-muted-foreground/40 group-hover:text-primary transition-colors shrink-0 mt-0.5" />
                 </div>
               </div>
 
@@ -77,14 +78,14 @@ export function ProjectList({ projects }: ProjectListProps) {
                         className={cn(
                           'h-2 flex-1 rounded-full transition-all relative',
                           i < stageIndex
-                            ? 'bg-amber-500/70'
+                            ? 'bg-primary/70'
                             : i === stageIndex
-                              ? 'bg-amber-500 shadow-[0_0_8px_rgba(234,179,8,0.4)]'
+                              ? 'bg-primary shadow-[0_0_8px_color-mix(in_oklab,var(--primary)_40%,transparent)]'
                               : 'bg-muted-foreground/10',
                         )}
                       >
                         {i === stageIndex && (
-                          <div className="absolute inset-0 rounded-full bg-amber-500 animate-pulse opacity-40" />
+                          <div className="absolute inset-0 rounded-full bg-primary animate-pulse opacity-40" />
                         )}
                       </div>
                     ))}
@@ -96,7 +97,7 @@ export function ProjectList({ projects }: ProjectListProps) {
                         className={cn(
                           'flex-1 text-center text-[10px] leading-tight',
                           i === stageIndex
-                            ? 'text-amber-600 dark:text-amber-400 font-semibold'
+                            ? 'text-primary font-semibold'
                             : i < stageIndex
                               ? 'text-muted-foreground/60'
                               : 'text-muted-foreground/30',
@@ -118,7 +119,7 @@ export function ProjectList({ projects }: ProjectListProps) {
                 {project.deadline && (
                   <span className="flex items-center gap-1">
                     <Calendar className="h-3 w-3" />
-                    {new Date(project.deadline).toLocaleDateString(undefined, {
+                    {formatDate(project.deadline, {
                       month: 'short',
                       day: 'numeric',
                       year: 'numeric',
