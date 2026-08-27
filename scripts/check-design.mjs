@@ -368,7 +368,7 @@ for (const file of files) {
       // περνούσε — δεν περνά πια.
       const declared = pendingDebt.get(file);
       const found = colourMultiset(readFileSync(file, 'utf8'));
-      if (declared.join(' ') !== found.join(' ')) {
+      if (declared.join('\u0000') !== found.join('\u0000')) {
         changedPendingDebt.push({ file, declared, found });
       }
     }
