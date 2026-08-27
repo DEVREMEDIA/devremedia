@@ -320,8 +320,10 @@ test.describe('design identity — shared table', () => {
     await expect(page).toHaveURL(/\/admin\/finance/);
 
     // Η προεπιλογή είναι η προβολή καρτών· το toggle φέρνει τον κοινό πίνακα.
-    const viewToggle = page.locator('div.rounded-lg.border.p-1 button').nth(1);
-    await viewToggle.click();
+    // Δομικός επιλογέας επίτηδες: τα δύο κουμπιά αυτού του toggle (Οικονομικά)
+    // δεν έχουν προσβάσιμο όνομα, και η διόρθωσή τους θέλει νέα κλειδιά σε
+    // περιοχή εκτός αυτής της φέτας. Δηλωμένο χρέος, όχι παράλειψη.
+    await page.locator('div.rounded-lg.border.p-1 button').nth(1).click();
 
     const tableContainer = page.locator('[data-slot="table-container"]').first();
     await expect(tableContainer.locator('table')).toBeVisible();
@@ -461,8 +463,7 @@ test.describe('design identity — detail screens', () => {
 
     // Η προεπιλογή είναι το kanban board, χωρίς links πάνω στις κάρτες — το
     // toggle φέρνει τη λίστα, όπου κάθε γραμμή έχει πραγματικό σύνδεσμο.
-    const viewToggle = page.locator('div.rounded-lg.border.p-1 button').nth(1);
-    await viewToggle.click();
+    await page.getByRole('button', { name: /Λίστα|List/ }).click();
 
     const firstProjectLink = page
       .locator('table tbody tr')
@@ -483,8 +484,7 @@ test.describe('design identity — detail screens', () => {
     await page.goto('/admin/productions?tab=all');
     await expect(page).toHaveURL(/\/admin\/productions/);
 
-    const viewToggle = page.locator('div.rounded-lg.border.p-1 button').nth(1);
-    await viewToggle.click();
+    await page.getByRole('button', { name: /Λίστα|List/ }).click();
 
     const firstProjectLink = page
       .locator('table tbody tr')
