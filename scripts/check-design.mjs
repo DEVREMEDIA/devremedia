@@ -89,6 +89,13 @@ const COVERED = [
   'src/components/admin/calendar',
   'src/components/admin/filming-requests',
   'src/components/admin/filming-prep',
+  // Οι τέσσερις οθόνες λεπτομέρειας περνούν στο κοινό κέλυφος (#109) — τιμολόγιο,
+  // lead, αίτημα γυρίσματος, και τα δύο φυλασσόμενα δέντρα γύρω τους.
+  'src/app/admin/invoices',
+  'src/app/admin/leads',
+  'src/app/admin/filming-requests',
+  'src/components/admin/invoices',
+  'src/components/admin/leads',
 ];
 
 // Αρχεία μέσα σε καλυμμένους φακέλους που όντως γράφουν ακόμα ωμό χρώμα.
@@ -114,6 +121,20 @@ const PENDING = [
   // Η λίστα έργων του portal πελάτη — και δεν είναι οθόνη λεπτομέρειας:
   // μπήκε στην κάλυψη μαζί με τον φάκελό της, δεν την ανέλαβε η #106.
   { file: 'src/components/client/projects/projects-list.tsx', lines: 17 },
+  // Η αναφορά πωλήσεων της περιοχής Interest — CHART_COLORS και τα
+  // text-green-600/text-red-600 της. Ήδη στο TABLE_PENDING ως έργο περιοχής
+  // για επόμενη φέτα· ίδιος λόγος εδώ. Δεν είναι ότι τα χρώματα γραφήματος
+  // δεν μπορούν να γίνουν tokens — τα --chart-1..5 υπάρχουν ήδη στο
+  // globals.css. Είναι θέμα εμβέλειας: η οθόνη ανήκει σε επόμενη φέτα.
+  { file: 'src/components/admin/leads/sales-report.tsx', lines: 4 },
+  // Εύρημα εκτός σχεδίου της #109: η κάρτα ανά πελάτη μέσα στη λίστα
+  // τιμολογίων ζωγραφίζει ακόμα text-green-600 (πληρωμένο) και
+  // text-orange-600 (υπόλοιπο) στο χέρι. Ο πίνακας εδώ ήδη μετανάστευσε
+  // (#104, βλ. TABLE_DETAIL_EXEMPT) αλλά το χρώμα ξέφυγε επειδή το
+  // src/app/admin/invoices δεν ήταν καλυμμένο για χρώμα μέχρι αυτή τη φέτα.
+  // Θέμα εμβέλειας, όχι αδυναμίας — το χρέος προϋπάρχει της #109 και δεν
+  // ήταν κάτι που τα Tasks 1-6 ανέλαβαν να καθαρίσουν.
+  { file: 'src/app/admin/invoices/invoices-content.tsx', lines: 4 },
 ];
 
 // ΠΡΟΣΟΧΗ στα όρια λέξης. Το Tailwind γράφει τα κενά μιας αυθαίρετης τιμής ως
@@ -370,9 +391,11 @@ const TABLE_GUARDED_AREAS = [
 const TABLE_DETAIL_EXEMPT = [
   'src/app/admin/invoices/invoices-content.tsx', // λίστα τιμολογίων μέσα σε ανοιγμένο πελάτη
   // Οι γραμμές ενός παραστατικού είναι το ίδιο το περιεχόμενο του εγγράφου:
-  // λίγες, σταθερές, χωρίς νόημα να αναζητηθούν ή να σελιδοποιηθούν. Η οθόνη
-  // αυτή ανασχεδιάζεται ούτως ή άλλως στη #109.
+  // λίγες, σταθερές, χωρίς νόημα να αναζητηθούν ή να σελιδοποιηθούν. Ισχύει
+  // εξίσου και για τις δύο πλευρές — η admin οθόνη λεπτομέρειας τιμολογίου
+  // και η αντίστοιχη client (Ruling B, #109).
   'src/app/admin/invoices/[invoiceId]/invoice-detail.tsx',
+  'src/components/client/invoices/invoice-detail.tsx',
 ];
 
 // Πίνακες της περιοχής που ΔΕΝ έχουν μεταναστεύσει ακόμα, με ρητό λόγο και
@@ -397,9 +420,6 @@ const TABLE_PENDING = [
   'src/components/admin/leads/sales-report.tsx',
   // Ο πίνακας γνώσης του chatbot — έργο περιοχής για επόμενη φέτα.
   'src/components/admin/chatbot/knowledge-table.tsx',
-  // Ο πίνακας χτισμένος στο χέρι από τα ωμά primitives — έργο περιοχής για
-  // επόμενη φέτα, #109.
-  'src/components/client/invoices/invoice-detail.tsx',
 ];
 
 // Δύο μορφές, γιατί και οι δύο φτιάχνουν πίνακα στο χέρι: εισαγωγή των ωμών

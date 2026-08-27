@@ -1,4 +1,4 @@
-// scripts/check-routes.mjs — guard: κανένα revalidatePath σε stub route, κανένα stub χωρίς υπαρκτό target.
+// scripts/check-routes.mjs — guard: κανένα revalidatePath ούτε backHref σε stub route, κανένα stub χωρίς υπαρκτό target.
 import { readdirSync, readFileSync, statSync, existsSync } from 'node:fs';
 import { join } from 'node:path';
 
@@ -35,10 +35,14 @@ for (const f of files) {
   for (const m of src.matchAll(/revalidatePath\(\s*'([^']+)'/g)) {
     if (stubs.has(m[1])) errors.push(`${f}: revalidatePath('${m[1]}') targets a stub (use ${stubs.get(m[1]).split('?')[0]})`);
   }
+  for (const m of src.matchAll(/backHref=["']([^"']+)["']/g)) {
+    const route = m[1].split('?')[0];
+    if (stubs.has(route)) errors.push(`${f}: backHref="${m[1]}" targets a stub (use ${stubs.get(route)})`);
+  }
 }
 
 if (errors.length) {
   console.error(errors.join('\n'));
   process.exit(1);
 }
-console.log(`ok — ${stubs.size} stubs, no revalidatePath targets a stub`);
+console.log(`ok — ${stubs.size} stubs, no revalidatePath or backHref targets a stub`);
