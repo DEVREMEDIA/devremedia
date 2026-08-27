@@ -1,7 +1,9 @@
+import { Suspense } from 'react';
 import type { Metadata } from 'next';
 import { getTranslations } from 'next-intl/server';
 import { SectionTabs, type SectionTab } from '@/components/shell-v2/section-tabs';
 import { PageHeading } from '@/components/shared/page-heading';
+import { CardSkeleton } from '@/components/admin/dashboard/shared/card-skeletons';
 
 // Μετακομίζουν αυτούσιες οι δύο υπάρχουσες σελίδες, κάτω από μία στέγη.
 import ClientContractsPage from '../contracts/contracts-page';
@@ -33,7 +35,16 @@ export default async function ClientV2DocumentsPage({
 
       <SectionTabs basePath="/client/documents" tabs={TABS} active={active} />
 
-      {active === 'contracts' ? <ClientContractsPage /> : <ClientInvoicesPage />}
+      {active === 'contracts' && (
+        <Suspense fallback={<CardSkeleton rows={5} />}>
+          <ClientContractsPage />
+        </Suspense>
+      )}
+      {active === 'invoices' && (
+        <Suspense fallback={<CardSkeleton rows={5} />}>
+          <ClientInvoicesPage />
+        </Suspense>
+      )}
     </div>
   );
 }

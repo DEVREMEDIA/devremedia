@@ -31,10 +31,13 @@ export default async function ClientProjectDetailPage({ params, searchParams }: 
   const project = projectResult.data;
 
   // Fetch related data (RLS ensures client can only see their own projects)
-  const deliverablesResult = await getDeliverablesByProject(projectId);
+  // Κανένα από τα δύο δεν περιμένει το άλλο· μόνο η σειρά των γραμμών τα
+  // έβαζε στη σειρά.
+  const [deliverablesResult, contractsResult] = await Promise.all([
+    getDeliverablesByProject(projectId),
+    getContractsByProject(projectId),
+  ]);
   const deliverables = (deliverablesResult.data ?? []) as import('@/types').Deliverable[];
-
-  const contractsResult = await getContractsByProject(projectId);
   const contracts = (contractsResult.data ?? []) as import('@/types').ContractWithRelations[];
 
   // Άγνωστη καρτέλα πέφτει στην πρώτη, όπως ακριβώς κάνουν οι κόμβοι.
