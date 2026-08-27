@@ -52,7 +52,7 @@ export function CinematicLogo({
       {/* Gold flash overlay during reveal */}
       <div
         className={cn(
-          'absolute inset-0 bg-gradient-to-r from-transparent via-amber-500/30 to-transparent pointer-events-none transition-opacity duration-500',
+          'absolute inset-0 bg-gradient-to-r from-transparent via-primary/30 to-transparent pointer-events-none transition-opacity duration-500',
           phase === 'revealing' ? 'opacity-100 delay-500' : 'opacity-0',
         )}
       />

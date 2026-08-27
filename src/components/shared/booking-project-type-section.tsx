@@ -43,7 +43,7 @@ export function BookingProjectTypeSection({
 
   return (
     <section className="space-y-4">
-      <h2 className="text-lg font-semibold text-white">{t('projectTypeSection')}</h2>
+      <h2 className="text-lg font-semibold text-foreground">{t('projectTypeSection')}</h2>
 
       <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
         {PROJECT_TYPES.map((type) => {
@@ -59,14 +59,16 @@ export function BookingProjectTypeSection({
                 flex flex-col items-center justify-center p-4 rounded-lg border-2 transition-all
                 ${
                   isSelected
-                    ? 'border-amber-500 bg-amber-500/10 ring-2 ring-amber-500/20'
-                    : 'border-zinc-700 bg-zinc-800/30 hover:border-zinc-600'
+                    ? 'border-primary bg-primary/10 ring-2 ring-primary/20'
+                    : 'border-border bg-muted/30 hover:border-primary/60'
                 }
               `}
             >
-              <Icon className={`h-6 w-6 mb-2 ${isSelected ? 'text-amber-500' : 'text-zinc-400'}`} />
+              <Icon
+                className={`h-6 w-6 mb-2 ${isSelected ? 'text-primary' : 'text-muted-foreground'}`}
+              />
               <span
-                className={`text-sm font-medium text-center ${isSelected ? 'text-amber-500' : 'text-zinc-300'}`}
+                className={`text-sm font-medium text-center ${isSelected ? 'text-primary' : 'text-foreground'}`}
               >
                 {statusT(`projectType.${type}`)}
               </span>
@@ -75,7 +77,9 @@ export function BookingProjectTypeSection({
         })}
       </div>
 
-      {errors.project_type && <p className="text-sm text-red-400">{errors.project_type.message}</p>}
+      {errors.project_type && (
+        <p className="text-sm text-destructive">{errors.project_type.message}</p>
+      )}
     </section>
   );
 }

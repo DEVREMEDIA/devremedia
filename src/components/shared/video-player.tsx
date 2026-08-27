@@ -131,12 +131,12 @@ export function VideoPlayer({
   };
 
   return (
-    <div ref={containerRef} className="bg-black rounded-lg overflow-hidden">
-      <div className="relative aspect-video bg-black group">
+    <div ref={containerRef} className="bg-media-surface rounded-lg overflow-hidden">
+      <div className="relative aspect-video bg-media-surface group">
         <video ref={videoRef} src={src} className="w-full h-full" onClick={togglePlay} />
 
         {/* Controls Overlay */}
-        <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity">
+        <div className="absolute inset-0 bg-gradient-to-t from-media-surface/60 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity">
           <div className="absolute bottom-0 left-0 right-0 p-4 space-y-2">
             {/* Seek Bar with Annotations */}
             <div className="relative">
@@ -159,7 +159,7 @@ export function VideoPlayer({
                       key={annotation.id}
                       className={cn(
                         'absolute top-1/2 -translate-y-1/2 w-2 h-2 rounded-full transition-all hover:scale-150',
-                        annotation.resolved ? 'bg-green-500' : 'bg-yellow-500',
+                        annotation.resolved ? 'bg-tone-positive' : 'bg-tone-caution',
                       )}
                       style={{
                         left: `${((annotation.timestamp_seconds as number) / duration) * 100}%`,

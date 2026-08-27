@@ -1,8 +1,9 @@
 'use client';
 
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
+import type { ColumnDef } from '@tanstack/react-table';
 import { Plus, Pencil, Trash2 } from 'lucide-react';
 import {
   createSalesResourceCategorySchema,
@@ -33,14 +34,7 @@ import {
 } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from '@/components/ui/table';
+import { DataTable } from '@/components/shared/data-table';
 import { ConfirmDialog } from '@/components/shared/confirm-dialog';
 import { toast } from 'sonner';
 import { useTranslations } from 'next-intl';
@@ -60,12 +54,7 @@ interface CategoryManageProps {
   onSuccess: () => void;
 }
 
-export function CategoryManage({
-  open,
-  onOpenChange,
-  categories,
-  onSuccess,
-}: CategoryManageProps) {
+export function CategoryManage({ open, onOpenChange, categories, onSuccess }: CategoryManageProps) {
   const t = useTranslations('salesResources');
   const tc = useTranslations('common');
   const tToast = useTranslations('toast');
@@ -142,78 +131,72 @@ export function CategoryManage({
       return;
     }
 
-    toast.success(editingCategory ? 'Category updated' : 'Category created');
+    toast.success(editingCategory ? tToast('updateSuccess') : tToast('createSuccess'));
     setFormOpen(false);
     form.reset();
     onSuccess();
   };
+
+  const columns: ColumnDef<Category>[] = useMemo(
+    () => [
+      {
+        accessorKey: 'title',
+        header: tc('title'),
+        cell: ({ row }) => <span className="font-medium">{row.original.title}</span>,
+      },
+      {
+        accessorKey: 'description',
+        header: tc('description'),
+        cell: ({ row }) => (
+          <span className="text-muted-foreground">{row.original.description ?? '-'}</span>
+        ),
+      },
+      {
+        accessorKey: 'sort_order',
+        header: t('sortOrder'),
+        meta: { numeric: true },
+      },
+      {
+        id: 'actions',
+        header: tc('actions'),
+        meta: { align: 'right' },
+        cell: ({ row }) => (
+          <div className="flex items-center justify-end gap-2">
+            <Button variant="ghost" size="sm" onClick={() => handleEditCategory(row.original)}>
+              <Pencil className="h-4 w-4" />
+            </Button>
+            <Button variant="ghost" size="sm" onClick={() => handleDeleteClick(row.original.id)}>
+              <Trash2 className="h-4 w-4" />
+            </Button>
+          </div>
+        ),
+      },
+    ],
+    [t, tc],
+  );
 
   return (
     <>
       <Dialog open={open} onOpenChange={onOpenChange}>
         <DialogContent className="max-w-3xl">
           <DialogHeader>
-            <DialogTitle>Manage Categories</DialogTitle>
-            <DialogDescription>
-              Create, edit, and delete sales resource categories
-            </DialogDescription>
+            <DialogTitle>{t('manageCategories')}</DialogTitle>
+            <DialogDescription>{t('manageCategoriesDescription')}</DialogDescription>
           </DialogHeader>
 
           <div className="space-y-4">
             <Button onClick={handleNewCategory} size="sm">
               <Plus className="h-4 w-4 mr-2" />
-              New Category
+              {t('newCategory')}
             </Button>
 
-            <div className="rounded-md border">
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>Title</TableHead>
-                    <TableHead>Description</TableHead>
-                    <TableHead>Sort Order</TableHead>
-                    <TableHead className="text-right">Actions</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {categories.length === 0 ? (
-                    <TableRow>
-                      <TableCell colSpan={4} className="text-center text-muted-foreground">
-                        {t('noCategoriesCreateOne')}
-                      </TableCell>
-                    </TableRow>
-                  ) : (
-                    categories.map((category) => (
-                      <TableRow key={category.id}>
-                        <TableCell className="font-medium">{category.title}</TableCell>
-                        <TableCell className="text-muted-foreground">
-                          {category.description ?? '-'}
-                        </TableCell>
-                        <TableCell>{category.sort_order}</TableCell>
-                        <TableCell className="text-right">
-                          <div className="flex items-center justify-end gap-2">
-                            <Button
-                              variant="ghost"
-                              size="sm"
-                              onClick={() => handleEditCategory(category)}
-                            >
-                              <Pencil className="h-4 w-4" />
-                            </Button>
-                            <Button
-                              variant="ghost"
-                              size="sm"
-                              onClick={() => handleDeleteClick(category.id)}
-                            >
-                              <Trash2 className="h-4 w-4" />
-                            </Button>
-                          </div>
-                        </TableCell>
-                      </TableRow>
-                    ))
-                  )}
-                </TableBody>
-              </Table>
-            </div>
+            <DataTable
+              columns={columns}
+              data={categories}
+              emptyState={
+                <span className="text-muted-foreground">{t('noCategoriesCreateOne')}</span>
+              }
+            />
           </div>
         </DialogContent>
       </Dialog>
@@ -222,13 +205,9 @@ export function CategoryManage({
       <Dialog open={formOpen} onOpenChange={setFormOpen}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>
-              {editingCategory ? 'Edit Category' : 'New Category'}
-            </DialogTitle>
+            <DialogTitle>{editingCategory ? t('editCategory') : t('newCategory')}</DialogTitle>
             <DialogDescription>
-              {editingCategory
-                ? 'Update category details'
-                : 'Create a new sales resource category'}
+              {editingCategory ? t('updateCategoryDetails') : t('createCategoryDescription')}
             </DialogDescription>
           </DialogHeader>
 
@@ -239,9 +218,9 @@ export function CategoryManage({
                 name="title"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Title</FormLabel>
+                    <FormLabel>{tc('title')}</FormLabel>
                     <FormControl>
-                      <Input placeholder="e.g., Brochures" {...field} />
+                      <Input placeholder={t('titlePlaceholder')} {...field} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -253,7 +232,7 @@ export function CategoryManage({
                 name="description"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Description (Optional)</FormLabel>
+                    <FormLabel>{t('descriptionOptional')}</FormLabel>
                     <FormControl>
                       <Textarea
                         placeholder={t('categoryDescriptionPlaceholder')}
@@ -271,7 +250,7 @@ export function CategoryManage({
                 name="sort_order"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Sort Order</FormLabel>
+                    <FormLabel>{t('sortOrder')}</FormLabel>
                     <FormControl>
                       <Input
                         type="number"
@@ -281,7 +260,7 @@ export function CategoryManage({
                         onChange={(e) => field.onChange(parseInt(e.target.value) || 0)}
                       />
                     </FormControl>
-                    <FormDescription>Lower numbers appear first</FormDescription>
+                    <FormDescription>{t('sortOrderHint')}</FormDescription>
                     <FormMessage />
                   </FormItem>
                 )}
@@ -294,18 +273,18 @@ export function CategoryManage({
                   onClick={() => setFormOpen(false)}
                   disabled={isSubmitting}
                 >
-                  Cancel
+                  {tc('cancel')}
                 </Button>
                 <Button type="submit" disabled={isSubmitting}>
                   {isSubmitting ? (
                     <div className="flex items-center gap-2">
                       <LoadingSpinner size="sm" />
-                      <span>Saving...</span>
+                      <span>{tc('saving')}</span>
                     </div>
                   ) : editingCategory ? (
-                    'Update'
+                    tc('update')
                   ) : (
-                    'Create'
+                    tc('create')
                   )}
                 </Button>
               </DialogFooter>
@@ -319,7 +298,7 @@ export function CategoryManage({
         open={deleteDialogOpen}
         onOpenChange={setDeleteDialogOpen}
         title={t('deleteCategoryTitle')}
-        description="Are you sure you want to delete this category? All resources in this category will also be deleted."
+        description={t('deleteCategoryWithResourcesConfirm')}
         confirmLabel={tc('delete')}
         onConfirm={handleDeleteConfirm}
         destructive

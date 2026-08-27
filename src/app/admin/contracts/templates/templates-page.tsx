@@ -15,10 +15,11 @@ export default async function ContractTemplatesPage() {
   const result = await getContractTemplates();
 
   if (result.error) {
+    const t = await getTranslations('contracts');
     return (
       <div className="space-y-6">
-        <div className="text-center text-red-600">
-          <p>Failed to load templates: {result.error}</p>
+        <div className="text-center text-destructive">
+          <p>{t('failedToLoadTemplates', { error: result.error })}</p>
         </div>
       </div>
     );

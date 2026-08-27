@@ -145,7 +145,7 @@ export function NotificationsLog() {
                       <span
                         className={cn(
                           'mt-1.5 h-2 w-2 shrink-0 rounded-full',
-                          notification.read ? 'bg-transparent' : 'bg-blue-500',
+                          notification.read ? 'bg-transparent' : 'bg-primary',
                         )}
                         aria-hidden="true"
                       />

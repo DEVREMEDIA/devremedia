@@ -21,7 +21,7 @@ export function NotificationBell() {
           <Bell className="h-5 w-5" aria-hidden="true" />
           {hasUnread && (
             <span
-              className="absolute top-1 right-1 h-2 w-2 rounded-full bg-red-500"
+              className="absolute top-1 right-1 h-2 w-2 rounded-full bg-tone-critical"
               aria-hidden="true"
             />
           )}

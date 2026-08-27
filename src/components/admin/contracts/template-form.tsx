@@ -42,6 +42,7 @@ interface TemplateFormProps {
 
 export function TemplateForm({ template, onSuccess, onCancel }: TemplateFormProps) {
   const t = useTranslations('contracts');
+  const tc = useTranslations('common');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [content, setContent] = useState(template?.content || '');
   const [placeholders, setPlaceholders] = useState<string[]>([]);
@@ -75,10 +76,13 @@ export function TemplateForm({ template, onSuccess, onCancel }: TemplateFormProp
     const formData = {
       title: data.title,
       content,
-      placeholders: placeholders.reduce((acc, ph) => {
-        acc[ph] = ph.replace(/[{}]/g, '');
-        return acc;
-      }, {} as Record<string, string>),
+      placeholders: placeholders.reduce(
+        (acc, ph) => {
+          acc[ph] = ph.replace(/[{}]/g, '');
+          return acc;
+        },
+        {} as Record<string, string>,
+      ),
     };
 
     try {
@@ -91,9 +95,7 @@ export function TemplateForm({ template, onSuccess, onCancel }: TemplateFormProp
         return;
       }
 
-      toast.success(
-        template ? 'Template updated successfully' : 'Template created successfully'
-      );
+      toast.success(template ? t('templateUpdated') : t('templateCreated'));
       onSuccess(result.data!);
     } finally {
       setIsSubmitting(false);
@@ -103,20 +105,18 @@ export function TemplateForm({ template, onSuccess, onCancel }: TemplateFormProp
   return (
     <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
       <div>
-        <Label htmlFor="title">Template Title</Label>
+        <Label htmlFor="title">{t('templateName')}</Label>
         <Input
           id="title"
           {...register('title')}
-          placeholder="e.g., Standard Service Agreement"
+          placeholder={t('templateTitlePlaceholder')}
           disabled={isSubmitting}
         />
-        {errors.title && (
-          <p className="text-sm text-red-600 mt-1">{errors.title.message}</p>
-        )}
+        {errors.title && <p className="text-sm text-destructive mt-1">{errors.title.message}</p>}
       </div>
 
       <div>
-        <Label>Content</Label>
+        <Label>{t('templateContent')}</Label>
         <div className="border rounded-md">
           <TiptapEditor
             content={content}
@@ -125,13 +125,13 @@ export function TemplateForm({ template, onSuccess, onCancel }: TemplateFormProp
           />
         </div>
         {errors.content && (
-          <p className="text-sm text-red-600 mt-1">{errors.content.message}</p>
+          <p className="text-sm text-destructive mt-1">{errors.content.message}</p>
         )}
       </div>
 
       {placeholders.length > 0 && (
         <div>
-          <Label className="mb-2 block">Detected Placeholders</Label>
+          <Label className="mb-2 block">{t('detectedPlaceholders')}</Label>
           <div className="flex flex-wrap gap-2">
             {placeholders.map((placeholder) => (
               <Badge key={placeholder} variant="secondary">
@@ -139,24 +139,17 @@ export function TemplateForm({ template, onSuccess, onCancel }: TemplateFormProp
               </Badge>
             ))}
           </div>
-          <p className="text-sm text-muted-foreground mt-2">
-            These placeholders will be auto-filled when creating a contract from this template.
-          </p>
+          <p className="text-sm text-muted-foreground mt-2">{t('placeholdersAutoFillNotice')}</p>
         </div>
       )}
 
       <div className="flex justify-end gap-3">
-        <Button
-          type="button"
-          variant="outline"
-          onClick={onCancel}
-          disabled={isSubmitting}
-        >
-          Cancel
+        <Button type="button" variant="outline" onClick={onCancel} disabled={isSubmitting}>
+          {tc('cancel')}
         </Button>
         <Button type="submit" disabled={isSubmitting}>
           {isSubmitting && <LoadingSpinner size="sm" className="mr-2" />}
-          {template ? 'Update Template' : 'Create Template'}
+          {template ? t('updateTemplate') : t('createTemplateCta')}
         </Button>
       </div>
     </form>

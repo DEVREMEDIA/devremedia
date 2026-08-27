@@ -68,7 +68,7 @@ export function TemplateList({ templates, onEdit, onDelete }: TemplateListProps)
                 <div className="flex-1">
                   <CardTitle className="text-lg">{template.title}</CardTitle>
                   <CardDescription className="mt-1 line-clamp-2">
-                    {template.content.slice(0, 100) || 'No description'}
+                    {template.content.slice(0, 100) || t('noTemplateDescription')}
                   </CardDescription>
                 </div>
               </div>
@@ -76,13 +76,13 @@ export function TemplateList({ templates, onEdit, onDelete }: TemplateListProps)
             <CardContent>
               <div className="space-y-4">
                 <div className="flex items-center justify-between text-sm">
-                  <span className="text-muted-foreground">Placeholders</span>
+                  <span className="text-muted-foreground">{t('placeholders')}</span>
                   <Badge variant="secondary">
-                    {extractPlaceholders(template.content)} variables
+                    {extractPlaceholders(template.content)} {t('placeholders').toLowerCase()}
                   </Badge>
                 </div>
                 <div className="text-sm text-muted-foreground">
-                  Created {format(new Date(template.created_at), 'MMM d, yyyy')}
+                  {t('created')} {format(new Date(template.created_at), 'MMM d, yyyy')}
                 </div>
                 <div className="flex gap-2">
                   <Button
@@ -92,12 +92,12 @@ export function TemplateList({ templates, onEdit, onDelete }: TemplateListProps)
                     onClick={() => onEdit(template)}
                   >
                     <Edit className="h-4 w-4 mr-2" />
-                    Edit
+                    {tc('edit')}
                   </Button>
                   <Button
                     size="sm"
                     variant="outline"
-                    className="text-red-600 hover:text-red-700 hover:bg-red-50"
+                    className="text-destructive hover:bg-destructive/10 hover:text-destructive"
                     onClick={() => setDeleteId(template.id)}
                   >
                     <Trash2 className="h-4 w-4" />

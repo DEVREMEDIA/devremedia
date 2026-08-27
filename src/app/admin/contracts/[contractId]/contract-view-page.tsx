@@ -143,7 +143,7 @@ export function ContractViewPage({ contract }: ContractViewPageProps) {
             size="sm"
             variant="outline"
             onClick={() => setDeleteDialogOpen(true)}
-            className="text-red-600 hover:text-red-700 hover:bg-red-50"
+            className="text-destructive hover:bg-destructive/10 hover:text-destructive"
           >
             <Trash2 className="h-4 w-4 mr-2" />
             {t('delete')}

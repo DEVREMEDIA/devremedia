@@ -239,7 +239,7 @@ export function PackagesContent({ packages }: Props) {
                   </span>
                   <span
                     className={`px-2 py-0.5 rounded ${
-                      p.price_mode === 'auto' ? 'bg-sky-500/15 text-sky-400' : 'bg-muted'
+                      p.price_mode === 'auto' ? 'bg-primary/10 text-primary' : 'bg-muted'
                     }`}
                   >
                     {p.price_mode}

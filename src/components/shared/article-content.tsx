@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { sanitizeHtml } from '@/lib/sanitize';
 import { parseSections, type ArticleSection } from '@/lib/article-sections';
 import { ChevronDown, Play } from 'lucide-react';
+import { useTranslations } from 'next-intl';
 import { cn } from '@/lib/utils';
 
 /** Try to get an embeddable URL from any video link */
@@ -73,6 +74,7 @@ export function ArticleContent({ content, videoUrls }: ArticleContentProps) {
 }
 
 function SectionCard({ section, index }: { section: ArticleSection; index: number }) {
+  const t = useTranslations('university');
   const [isOpen, setIsOpen] = useState(index === 0);
 
   return (
@@ -86,7 +88,7 @@ function SectionCard({ section, index }: { section: ArticleSection; index: numbe
           {index + 1}
         </span>
         <span className="flex-1 font-semibold text-[15px] text-foreground">
-          {section.title || 'Untitled'}
+          {section.title || t('untitledSection')}
         </span>
         <ChevronDown
           className={cn(
@@ -105,7 +107,7 @@ function SectionCard({ section, index }: { section: ArticleSection; index: numbe
                 dangerouslySetInnerHTML={{ __html: sanitizeHtml(section.content) }}
               />
             ) : (
-              <p className="text-sm text-muted-foreground italic">No content</p>
+              <p className="text-sm text-muted-foreground italic">{t('noSectionContent')}</p>
             )}
           </div>
         </div>
@@ -115,13 +117,14 @@ function SectionCard({ section, index }: { section: ArticleSection; index: numbe
 }
 
 function VideoGrid({ urls }: { urls?: string[] }) {
+  const t = useTranslations('university');
   if (!urls || urls.length === 0) return null;
 
   return (
     <div className="mt-8 space-y-4">
       <h2 className="text-lg font-semibold flex items-center gap-2 text-foreground">
         <Play className="h-5 w-5" />
-        Videos
+        {t('videosHeading')}
       </h2>
       <div className="grid gap-4 md:grid-cols-2">
         {urls.map((url, index) => {
@@ -143,7 +146,11 @@ function VideoGrid({ urls }: { urls?: string[] }) {
           if (embed.type === 'video') {
             return (
               <div key={index} className="aspect-video rounded-xl overflow-hidden border shadow-sm">
-                <video src={embed.src} controls className="w-full h-full object-contain bg-black" />
+                <video
+                  src={embed.src}
+                  controls
+                  className="w-full h-full object-contain bg-media-surface"
+                />
               </div>
             );
           }

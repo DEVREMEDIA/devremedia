@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -12,14 +12,8 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from '@/components/ui/table';
+import type { ColumnDef } from '@tanstack/react-table';
+import { DataTable } from '@/components/shared/data-table';
 import { Badge } from '@/components/ui/badge';
 import {
   Dialog,
@@ -114,6 +108,67 @@ export function TeamManagement({ members }: TeamManagementProps) {
     setDeactivateUserId(null);
   };
 
+  const columns: ColumnDef<UserProfile>[] = useMemo(
+    () => [
+      {
+        accessorKey: 'display_name',
+        header: tc('name'),
+        cell: ({ row }) => (
+          <span className="font-medium">{row.original.display_name || t('unnamedUser')}</span>
+        ),
+      },
+      {
+        accessorKey: 'role',
+        header: t('role'),
+        cell: ({ row }) => <Badge variant="secondary">{USER_ROLE_LABELS[row.original.role]}</Badge>,
+      },
+      {
+        accessorKey: 'created_at',
+        header: t('joined'),
+        cell: ({ row }) => new Date(row.original.created_at).toLocaleDateString(),
+        meta: { numeric: true, align: 'left' },
+      },
+      {
+        id: 'actions',
+        header: '',
+        meta: { align: 'right' },
+        cell: ({ row }) => {
+          const member = row.original;
+          return (
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="ghost" size="icon">
+                  <MoreHorizontal className="h-4 w-4" />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end">
+                <DropdownMenuItem onClick={() => handleChangeRole(member.id, 'admin')}>
+                  {t('changeToAdmin')}
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={() => handleChangeRole(member.id, 'super_admin')}>
+                  {t('changeToSuperAdmin')}
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={() => handleChangeRole(member.id, 'employee')}>
+                  {t('changeToEmployee')}
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={() => handleChangeRole(member.id, 'salesman')}>
+                  {t('changeToSalesman')}
+                </DropdownMenuItem>
+                <DropdownMenuItem
+                  className="text-destructive"
+                  onClick={() => setDeactivateUserId(member.id)}
+                >
+                  {t('deactivate')}
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+          );
+        },
+      },
+    ],
+    [t],
+  );
+
   return (
     <>
       <Card>
@@ -189,60 +244,7 @@ export function TeamManagement({ members }: TeamManagementProps) {
           </div>
         </CardHeader>
         <CardContent>
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>{tc('name')}</TableHead>
-                <TableHead>{t('role')}</TableHead>
-                <TableHead>{t('joined')}</TableHead>
-                <TableHead className="w-[50px]"></TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {members.map((member) => (
-                <TableRow key={member.id}>
-                  <TableCell className="font-medium">
-                    {member.display_name || t('unnamedUser')}
-                  </TableCell>
-                  <TableCell>
-                    <Badge variant="secondary">{USER_ROLE_LABELS[member.role]}</Badge>
-                  </TableCell>
-                  <TableCell>{new Date(member.created_at).toLocaleDateString()}</TableCell>
-                  <TableCell>
-                    <DropdownMenu>
-                      <DropdownMenuTrigger asChild>
-                        <Button variant="ghost" size="icon">
-                          <MoreHorizontal className="h-4 w-4" />
-                        </Button>
-                      </DropdownMenuTrigger>
-                      <DropdownMenuContent align="end">
-                        <DropdownMenuItem onClick={() => handleChangeRole(member.id, 'admin')}>
-                          {t('changeToAdmin')}
-                        </DropdownMenuItem>
-                        <DropdownMenuItem
-                          onClick={() => handleChangeRole(member.id, 'super_admin')}
-                        >
-                          {t('changeToSuperAdmin')}
-                        </DropdownMenuItem>
-                        <DropdownMenuItem onClick={() => handleChangeRole(member.id, 'employee')}>
-                          {t('changeToEmployee')}
-                        </DropdownMenuItem>
-                        <DropdownMenuItem onClick={() => handleChangeRole(member.id, 'salesman')}>
-                          {t('changeToSalesman')}
-                        </DropdownMenuItem>
-                        <DropdownMenuItem
-                          className="text-destructive"
-                          onClick={() => setDeactivateUserId(member.id)}
-                        >
-                          {t('deactivate')}
-                        </DropdownMenuItem>
-                      </DropdownMenuContent>
-                    </DropdownMenu>
-                  </TableCell>
-                </TableRow>
-              ))}
-            </TableBody>
-          </Table>
+          <DataTable columns={columns} data={members} />
         </CardContent>
       </Card>
 

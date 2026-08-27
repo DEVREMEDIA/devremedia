@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import {
@@ -15,17 +15,11 @@ import {
   FileText,
 } from 'lucide-react';
 import { useTranslations } from 'next-intl';
+import type { ColumnDef } from '@tanstack/react-table';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent } from '@/components/ui/card';
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from '@/components/ui/table';
+import { DataTable } from '@/components/shared/data-table';
 import { EmptyState } from '@/components/shared/empty-state';
 import { ConfirmDialog } from '@/components/shared/confirm-dialog';
 import { CategoryForm } from './category-form';
@@ -128,17 +122,106 @@ export function UniversityOverview({ categories, articles }: UniversityOverviewP
     router.refresh();
   };
 
+  const columns: ColumnDef<Article>[] = useMemo(() => {
+    const cols: ColumnDef<Article>[] = [
+      {
+        accessorKey: 'title',
+        header: tc('title'),
+        cell: ({ row }) => (
+          <Link
+            href={`/admin/university/articles/${row.original.id}`}
+            className="font-medium hover:underline hover:text-primary"
+          >
+            {row.original.title}
+          </Link>
+        ),
+      },
+    ];
+
+    if (!selectedCategoryId) {
+      cols.push({
+        id: 'category',
+        header: t('category'),
+        cell: ({ row }) => (
+          <Badge variant="outline" className="text-xs">
+            {row.original.category.title}
+          </Badge>
+        ),
+      });
+    }
+
+    cols.push(
+      {
+        id: 'status',
+        header: tc('status'),
+        cell: ({ row }) => (
+          <Badge variant={row.original.published ? 'default' : 'secondary'} className="gap-1">
+            {row.original.published ? (
+              <>
+                <Eye className="h-3 w-3" />
+                {t('published')}
+              </>
+            ) : (
+              <>
+                <EyeOff className="h-3 w-3" />
+                {t('draft')}
+              </>
+            )}
+          </Badge>
+        ),
+      },
+      {
+        accessorKey: 'sort_order',
+        header: t('sort'),
+        meta: { numeric: true },
+      },
+      {
+        id: 'actions',
+        header: tc('actions'),
+        meta: { align: 'right' },
+        cell: ({ row }) => (
+          <div className="flex items-center justify-end gap-1">
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => router.push(`/admin/university/articles/${row.original.id}`)}
+              title={t('viewArticle')}
+            >
+              <ExternalLink className="h-4 w-4" />
+            </Button>
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => router.push(`/admin/university/articles/${row.original.id}/edit`)}
+            >
+              <Pencil className="h-4 w-4" />
+            </Button>
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => handleDeleteClick('article', row.original.id)}
+            >
+              <Trash2 className="h-4 w-4" />
+            </Button>
+          </div>
+        ),
+      },
+    );
+
+    return cols;
+  }, [t, tc, router, selectedCategoryId]);
+
   return (
     <div className="space-y-6">
       {/* Categories section */}
       <div className="space-y-3">
         <div className="flex items-center justify-between">
           <h2 className="text-sm font-semibold text-muted-foreground uppercase tracking-wide">
-            Categories
+            {t('categories')}
           </h2>
           <Button variant="outline" size="sm" onClick={() => setCategoryFormOpen(true)}>
             <Plus className="h-4 w-4 mr-1" />
-            New Category
+            {t('addCategory')}
           </Button>
         </div>
 
@@ -146,7 +229,7 @@ export function UniversityOverview({ categories, articles }: UniversityOverviewP
           <EmptyState
             icon={FolderOpen}
             title={t('noCategories')}
-            description="Create your first category to organize articles"
+            description={t('createFirstCategoryDescription')}
             action={{
               label: t('addCategory'),
               onClick: () => setCategoryFormOpen(true),
@@ -180,7 +263,7 @@ export function UniversityOverview({ categories, articles }: UniversityOverviewP
                           </p>
                         )}
                         <p className="text-xs text-muted-foreground mt-2">
-                          {count} {count === 1 ? 'article' : 'articles'}
+                          {t('articleCount', { count })}
                         </p>
                       </div>
                       <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity shrink-0">
@@ -221,13 +304,15 @@ export function UniversityOverview({ categories, articles }: UniversityOverviewP
         <div className="flex items-center justify-between">
           <h2 className="text-sm font-semibold text-muted-foreground uppercase tracking-wide">
             {selectedCategoryId
-              ? `Articles — ${categories.find((c) => c.id === selectedCategoryId)?.title}`
-              : 'All Articles'}
+              ? t('articlesInCategory', {
+                  category: categories.find((c) => c.id === selectedCategoryId)?.title ?? '',
+                })
+              : t('allArticles')}
             <span className="ml-2 text-xs font-normal">({filteredArticles.length})</span>
           </h2>
           <Button size="sm" onClick={() => router.push('/admin/university/articles/new')}>
             <Plus className="h-4 w-4 mr-1" />
-            New Article
+            {t('addArticle')}
           </Button>
         </div>
 
@@ -236,9 +321,7 @@ export function UniversityOverview({ categories, articles }: UniversityOverviewP
             icon={FileText}
             title={selectedCategoryId ? t('noArticlesInCategory') : t('noArticles')}
             description={
-              selectedCategoryId
-                ? 'No articles in this category yet'
-                : 'Create your first knowledge base article to get started'
+              selectedCategoryId ? t('noArticlesInCategoryDescription') : t('noArticlesDescription')
             }
             action={{
               label: t('addArticle'),
@@ -246,87 +329,7 @@ export function UniversityOverview({ categories, articles }: UniversityOverviewP
             }}
           />
         ) : (
-          <div className="rounded-md border">
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Title</TableHead>
-                  {!selectedCategoryId && <TableHead>Category</TableHead>}
-                  <TableHead>Status</TableHead>
-                  <TableHead>Sort</TableHead>
-                  <TableHead className="text-right">Actions</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {filteredArticles.map((article) => (
-                  <TableRow key={article.id}>
-                    <TableCell className="font-medium">
-                      <Link
-                        href={`/admin/university/articles/${article.id}`}
-                        className="hover:underline hover:text-primary"
-                      >
-                        {article.title}
-                      </Link>
-                    </TableCell>
-                    {!selectedCategoryId && (
-                      <TableCell>
-                        <Badge variant="outline" className="text-xs">
-                          {article.category.title}
-                        </Badge>
-                      </TableCell>
-                    )}
-                    <TableCell>
-                      <Badge
-                        variant={article.published ? 'default' : 'secondary'}
-                        className="gap-1"
-                      >
-                        {article.published ? (
-                          <>
-                            <Eye className="h-3 w-3" />
-                            Published
-                          </>
-                        ) : (
-                          <>
-                            <EyeOff className="h-3 w-3" />
-                            Draft
-                          </>
-                        )}
-                      </Badge>
-                    </TableCell>
-                    <TableCell>{article.sort_order}</TableCell>
-                    <TableCell className="text-right">
-                      <div className="flex items-center justify-end gap-1">
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          onClick={() => router.push(`/admin/university/articles/${article.id}`)}
-                          title={t('viewArticle')}
-                        >
-                          <ExternalLink className="h-4 w-4" />
-                        </Button>
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          onClick={() =>
-                            router.push(`/admin/university/articles/${article.id}/edit`)
-                          }
-                        >
-                          <Pencil className="h-4 w-4" />
-                        </Button>
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          onClick={() => handleDeleteClick('article', article.id)}
-                        >
-                          <Trash2 className="h-4 w-4" />
-                        </Button>
-                      </div>
-                    </TableCell>
-                  </TableRow>
-                ))}
-              </TableBody>
-            </Table>
-          </div>
+          <DataTable columns={columns} data={filteredArticles} />
         )}
       </div>
 
@@ -349,8 +352,8 @@ export function UniversityOverview({ categories, articles }: UniversityOverviewP
         title={deleteType === 'category' ? t('deleteCategoryTitle') : t('deleteArticleTitle')}
         description={
           deleteType === 'category'
-            ? 'Are you sure? All articles in this category will also be deleted.'
-            : 'Are you sure you want to delete this article? This action cannot be undone.'
+            ? t('deleteCategoryWithArticlesConfirm')
+            : `${t('deleteArticleConfirm')} ${tc('deleteConfirmation')}`
         }
         confirmLabel={tc('delete')}
         onConfirm={handleDeleteConfirm}

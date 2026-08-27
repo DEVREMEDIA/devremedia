@@ -237,7 +237,7 @@ export function AnnotationList({
                 className="mt-0.5 shrink-0"
               >
                 {annotation.resolved ? (
-                  <CheckCircle2 className="h-5 w-5 text-green-600" />
+                  <CheckCircle2 className="h-5 w-5 text-tone-positive" />
                 ) : (
                   <Circle className="h-5 w-5 text-muted-foreground hover:text-foreground transition-colors" />
                 )}
@@ -256,7 +256,7 @@ export function AnnotationList({
                   {annotation.resolved && (
                     <Badge
                       variant="outline"
-                      className="text-xs bg-green-500/10 text-green-700 dark:text-green-400 border-green-500/20"
+                      className="text-xs bg-tone-positive-bg text-tone-positive border-tone-positive/20"
                     >
                       {t('resolved')}
                     </Badge>

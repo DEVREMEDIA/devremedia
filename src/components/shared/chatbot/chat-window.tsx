@@ -73,7 +73,7 @@ export function ChatWindow({
       el.style.height = 'auto';
       el.style.height = Math.min(el.scrollHeight, 100) + 'px';
     },
-    [onInputChange]
+    [onInputChange],
   );
 
   // Shift+Enter for new line, Enter to send
@@ -87,7 +87,7 @@ export function ChatWindow({
         }
       }
     },
-    [input, isLoading]
+    [input, isLoading],
   );
 
   const isGreek = language === 'el';
@@ -95,7 +95,11 @@ export function ChatWindow({
   const charsLeft = MAX_CHARS - input.length;
 
   return (
-    <div role="dialog" aria-label={isGreek ? 'Συνομιλία με Devre Media' : 'Chat with Devre Media'} className="flex flex-col h-full bg-zinc-950 rounded-2xl border border-white/[0.06] shadow-2xl shadow-black/40 overflow-hidden animate-in fade-in slide-in-from-bottom-4 duration-200">
+    <div
+      role="dialog"
+      aria-label={isGreek ? 'Συνομιλία με Devre Media' : 'Chat with Devre Media'}
+      className="flex flex-col h-full bg-zinc-950 rounded-2xl border border-white/[0.06] shadow-2xl shadow-black/40 overflow-hidden animate-in fade-in slide-in-from-bottom-4 duration-200"
+    >
       {/* Header */}
       <div className="flex items-center justify-between px-4 py-3 bg-gradient-to-r from-gold-500/10 via-gold-500/5 to-transparent border-b border-white/[0.06]">
         <div className="flex items-center gap-2.5">
@@ -123,7 +127,11 @@ export function ChatWindow({
       </div>
 
       {/* Messages Area */}
-      <div role="log" aria-live="polite" className="flex-1 overflow-y-auto p-4 space-y-3 min-h-0 scrollbar-thin">
+      <div
+        role="log"
+        aria-live="polite"
+        className="flex-1 overflow-y-auto p-4 space-y-3 min-h-0 scrollbar-thin"
+      >
         {!hasMessages ? (
           <ChatWelcomeScreen language={language} onQuickAction={onQuickAction} />
         ) : (
@@ -132,9 +140,7 @@ export function ChatWindow({
               const text = getMessageText(msg);
               if (!text) return null;
               const isLastAssistant =
-                msg.role === 'assistant' &&
-                !isLoading &&
-                idx === messages.length - 1;
+                msg.role === 'assistant' && !isLoading && idx === messages.length - 1;
               return (
                 <ChatMessageBubble
                   key={msg.id}
@@ -147,7 +153,10 @@ export function ChatWindow({
             })}
             {isLoading && <ChatTypingIndicator />}
             {error && (
-              <div role="alert" className="text-center text-xs text-red-400 py-2 bg-red-500/5 rounded-lg border border-red-500/10">
+              <div
+                role="alert"
+                className="text-center text-xs text-red-400 py-2 bg-red-500/5 rounded-lg border border-red-500/10"
+              >
                 {isGreek
                   ? 'Κάτι πήγε στραβά. Δοκιμάστε ξανά.'
                   : 'Something went wrong. Please try again.'}
@@ -168,7 +177,7 @@ export function ChatWindow({
             onKeyDown={handleKeyDown}
             placeholder={isGreek ? 'Γράψε ένα μήνυμα...' : 'Type a message...'}
             aria-label={isGreek ? 'Μήνυμα' : 'Message'}
-            className="flex-1 bg-transparent text-sm text-white placeholder:text-zinc-500 outline-none resize-none min-h-[20px] max-h-[100px] leading-5"
+            className="flex-1 bg-transparent text-sm text-white placeholder:text-zinc-500 outline-none focus-visible:ring-2 focus-visible:ring-ring resize-none min-h-[20px] max-h-[100px] leading-5"
             rows={1}
             disabled={isLoading}
           />
@@ -189,7 +198,9 @@ export function ChatWindow({
           </div>
         </div>
         <p className="text-[11px] text-zinc-500 mt-1.5 text-center">
-          {isGreek ? 'Enter αποστολή · Shift+Enter νέα γραμμή' : 'Enter to send · Shift+Enter for new line'}
+          {isGreek
+            ? 'Enter αποστολή · Shift+Enter νέα γραμμή'
+            : 'Enter to send · Shift+Enter for new line'}
         </p>
       </form>
     </div>

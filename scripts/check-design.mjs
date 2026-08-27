@@ -4,107 +4,61 @@
 import { readdirSync, readFileSync, statSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 
-// Περιοχές που έχουν μεταναστεύσει. Σαρώνονται ολόκληρες — ένα νέο component
-// σε καλυμμένο φάκελο φυλάσσεται αυτόματα, χωρίς να χρειάζεται να προστεθεί
-// ρητά εδώ. Ό,τι δεν έχει μεταναστεύσει ακόμα πάει στο PENDING από κάτω.
-const COVERED = [
-  'src/app/admin/today',
-  'src/components/admin/dashboard',
-  'src/components/shared/page-heading.tsx',
-  // Εδώ ζει ΟΛΟΣ ο χάρτης τόνου→κλάσης. Αν ξεφύγει αυτό, ξεβάφει κάθε
-  // πλακίδιο της μεταναστευμένης οθόνης — πρέπει να φυλάσσεται.
-  'src/components/shared/tone-chip.tsx',
-  // Ο ίδιος χάρτης για άλλη γεωμετρία (πλακίδιο εικονιδίου). Μπαίνει δίπλα στο
-  // αδελφάκι του: ένα αρχείο που κρατά χάρτη τόνος→χρώμα και δεν φυλάσσεται
-  // είναι το ακριβώς σωστό σημείο για να ξαναγεννηθεί η ωμή παλέτα.
-  'src/components/shared/tone-icon.tsx',
-  // Το κοινό πλέγμα αριθμών και το πλακίδιό του — η βάση όλης αυτής της φέτας.
-  'src/components/shared/stat-grid.tsx',
-  'src/components/shared/stat-card.tsx',
-  'src/components/shared/delta-badge.tsx',
-  'src/components/shared/sparkline.tsx',
-  // Οι οθόνες που πέρασαν στο κοινό πλέγμα. Δύο από αυτές (employee, client)
-  // ήταν χτισμένες από ωμά χρώματα, οπότε εκεί ο κανόνας πιάνει πραγματική
-  // οπισθοδρόμηση· οι άλλες δύο μπαίνουν για να μη γίνουν ποτέ.
-  //
-  // ΤΙ ΔΕΝ ΠΙΑΝΕΙ ΑΥΤΟ: κανένας κανόνας εδώ δεν βλέπει ένα ΝΕΟ αυτοσχέδιο
-  // πλέγμα αριθμών σε αρχείο εκτός λίστας — ούτε ένα που είναι γραμμένο
-  // αποκλειστικά με tokens. Ο φύλακας φυλάει το χρώμα, όχι τη σύνθεση.
-  //
-  // Το pipeline-summary.tsx του πωλητή ήταν εδώ γραμμένο ως εξαίρεση «οφειλόμενη
-  // σε επόμενη φέτα». Η φέτα ήρθε (#110): το panel «Pipeline by Stage» πέρασε
-  // στο κοινό πλέγμα, και το αρχείο φυλάσσεται πλέον από το ολόκληρο
-  // 'src/components/salesman' πιο κάτω. Το σχόλιο μένει μόνο ως ιστορία —
-  // η εξαίρεση δεν υπάρχει πια.
-  'src/components/admin/chatbot/chatbot-stats.tsx',
-  'src/components/admin/calendar/calendar-stats.tsx',
-  'src/components/employee/dashboard/task-stats.tsx',
-  'src/components/client/dashboard/dashboard-stats.tsx',
-  // Η περιοχή των Οικονομικών περνάει στον κοινό πίνακα (#104) — ο κόμβος
-  // του hub, το γράφημα κόστους, το KpiCard της υγείας τιμολόγησης, η
-  // αναφορά κορυφαίων πελατών και ο πίνακας τιμολογίων.
-  'src/app/admin/finance',
-  'src/app/admin/cost-model/tabs/summary-tab.tsx',
-  'src/app/admin/pricing-health/pricing-health-content.tsx',
-  'src/components/admin/reports/client-report.tsx',
-  'src/components/admin/invoices/invoices-table-view.tsx',
-  // Η περιοχή των Πελατών περνάει στον κοινό πίνακα (#105) — ο κόμβος του hub
-  // και οι στήλες του (ολόκληρος ο φάκελος, ώστε ένα νέο component εκεί να
-  // φυλάσσεται αυτόματα), ο πίνακας ενδιαφέροντος, ο πίνακας συνομιλιών, η
-  // λίστα προτάσεων και η λίστα συμβολαίων.
-  'src/components/shared/status-badge.tsx',
-  'src/app/admin/clients',
-  'src/components/admin/leads/all-leads-table.tsx',
-  'src/components/admin/chatbot/conversations-table.tsx',
-  // Ολόκληρος ο φάκελος των προτάσεων, όχι μόνο η λίστα: εδώ ζούσε η δεύτερη
-  // αντιγραφή του χάρτη ωμών χρωμάτων που σκότωσε αυτή η φέτα. Αν η οθόνη
-  // λεπτομέρειας μείνει αφύλακτη, ο χάρτης ξαναφυτρώνει ακριβώς εκεί που
-  // ξεριζώθηκε.
-  'src/app/admin/proposals',
-  'src/app/admin/contracts/contracts-list-page.tsx',
-  // Οι τρεις οθόνες λεπτομέρειας περνούν στο κοινό κέλυφος (#106) — ο σύνδεσμος
-  // επιστροφής, ο ένας τίτλος και οι καρτέλες οδηγούμενες από το URL ζουν εδώ.
-  'src/components/shared/detail-shell.tsx',
-  // Το σκελετικό φόρτωσης του κελύφους — καμία δικαιολογία να ζωγραφίσει ωμό χρώμα.
-  'src/components/shell-v2/detail-skeleton.tsx',
-  // Η γραμμή καρτελών που ζωγραφίζει και τους έντεκα κόμβους και οθόνες
-  // λεπτομέρειας. Πιο βαρύ από τον σκελετό δίπλα του, και έλειπε.
-  'src/components/shell-v2/section-tabs.tsx',
-  'src/app/admin/projects/[projectId]',
-  'src/app/client/projects/[projectId]',
-  // Ο φάκελος από τον οποίο η οθόνη του portal ΠΡΟΣΑΡΤΑ τα σώματα των καρτελών
-  // της. Ήταν στα φυλασσόμενα για πίνακες αλλά όχι για χρώμα — κάλυψη που
-  // δηλωνόταν πιο φαρδιά απ' ό,τι δινόταν.
-  'src/components/client/projects',
-  // Ολόκληρο το portal πελάτη περνάει στη νέα γλώσσα (#107) — δύο ολόκληρα
-  // δέντρα, ώστε ένα νέο component οπουδήποτε από κάτω να φυλάσσεται αυτόματα.
-  'src/app/client',
-  'src/components/client',
-  // Η περιοχή των Παραγωγών (#108-#109) — ο κοινός FormDialog, ο κόμβος και
-  // τα πέντε δέντρα components του: έργα, tasks, deliverables, ημερολόγιο,
-  // αιτήματα και προετοιμασία γυρίσματος.
-  'src/components/shared/form-dialog.tsx',
-  'src/app/admin/productions',
-  'src/components/admin/projects',
-  'src/components/admin/tasks',
-  'src/components/admin/deliverables',
-  'src/components/admin/calendar',
-  'src/components/admin/filming-requests',
-  'src/components/admin/filming-prep',
-  // Οι τέσσερις οθόνες λεπτομέρειας περνούν στο κοινό κέλυφος (#109) — τιμολόγιο,
-  // lead, αίτημα γυρίσματος, και τα δύο φυλασσόμενα δέντρα γύρω τους.
-  'src/app/admin/invoices',
-  'src/app/admin/leads',
-  'src/app/admin/filming-requests',
-  'src/components/admin/invoices',
-  'src/components/admin/leads',
-  // Οι περιοχές Εργαζομένων και Πωλητών περνούν στη νέα γλώσσα (#110) — δύο
-  // ολόκληρα δέντρα η καθεμία, ώστε ένα νέο component οπουδήποτε από κάτω να
-  // φυλάσσεται αυτόματα.
-  'src/app/employee',
-  'src/components/employee',
-  'src/app/salesman',
-  'src/components/salesman',
+// Ο κανόνας χρώματος καλύπτει πλέον ΟΛΟΚΛΗΡΟ το src — όχι πια μια λίστα
+// περιοχών που μεγάλωνε φέτα τη φέτα (#104-#110). Η ιστορία ποιος φάκελος
+// πέρασε σε ποιο issue μένει στο git log· ο κανόνας δεν τη χρειάζεται πια
+// για να αποφασίσει τι σαρώνει. Ένα νέο component οπουδήποτε στο src
+// φυλάσσεται αυτόματα, χωρίς να χρειάζεται να προστεθεί ρητά εδώ. Ό,τι δεν
+// έχει μεταναστεύσει ακόμα πάει στο PENDING, και ό,τι δεν πρόκειται ΠΟΤΕ να
+// μεταναστεύσει πάει στο COLOUR_EXEMPT — και τα δύο πιο κάτω.
+const COVERED = ['src'];
+
+// Περιοχές ΜΟΝΙΜΑ έξω από τον κανόνα χρώματος — όχι «δεν πρόλαβε ακόμα»
+// (αυτό είναι το PENDING από κάτω), αλλά «δεν πρόκειται ποτέ». Κάθε εγγραφή
+// είναι απόφαση με λόγο, όχι παράλειψη, και ο έλεγχος στο τέλος του αρχείου
+// την ξαναεπιβεβαιώνει: αν ένα αρχείο εδώ πάψει να γράφει ωμό χρώμα ή
+// εξαφανιστεί, το build πέφτει. Μια εξαίρεση που δεν εξαιρεί πια τίποτα
+// είναι ακριβώς η πόρτα από την οποία ξαναμπαίνει η ωμή παλέτα.
+const COLOUR_EXEMPT = [
+  // Ruling A — η επιφάνεια μάρκετινγκ μιλάει σε αγνώστους με άλλη οπτική
+  // γλώσσα. Ίδια διάκριση με τον κανόνα <h1> πιο κάτω (HEADING_EXEMPT), που
+  // εξαιρεί μόνιμα το src/components/landing/ ενώ κρατά τη σελίδα κράτησης
+  // ως προσωρινό χρέος. Το cinematic-logo.tsx ΔΕΝ μπαίνει εδώ — ήταν στην
+  // αρχική απογραφή, αλλά είναι πλέον προϊόν: ζει στο src/components/shared/
+  // χωρίς κανένα ωμό χρώμα, ήδη μεταναστευμένο.
+  'src/components/landing/',
+  'src/components/shared/landing-contact-form.tsx',
+  'src/components/shared/landing-mobile-nav.tsx',
+  'src/components/shared/chatbot/',
+  'src/app/page.tsx',
+
+  // Ruling C — email και PDF templates αποδίδουν ΕΞΩ από τον browser: το
+  // @react-pdf/renderer και το HTML που στέλνει το Resend δεν βλέπουν
+  // Tailwind, ούτε CSS custom properties, ούτε color-mix(). Το ωμό χρώμα
+  // εδώ είναι ΑΝΑΓΚΗ, όχι οφειλή — δεν υπάρχει token να το «ξεπληρώσει»
+  // ένα μελλοντικό πέρασμα, γιατί δεν υπάρχει στυλοσελίδα εκεί να διαβάσει
+  // ένα token.
+  'src/lib/pdf/',
+  'src/lib/email/templates/',
+  // Ίδια ανάγκη, διαφορετικό σχήμα: όχι component μέσα στο templates/, αλλά
+  // συνάρτηση που χτίζει το ίδιο ωμό HTML string για το email πρόσκλησης —
+  // ο λόγος του Ruling C («αποδίδει έξω από τον browser») ισχύει ακριβώς
+  // το ίδιο.
+  'src/lib/email/send-invite-email.ts',
+
+  // Ruling D — αυτό ΕΙΝΑΙ η παλέτα: το CVD-safe οκτάχρωμο scale του commit
+  // 667d387. Ένα αρχείο παλέτας χωρίς κανένα χρώμα θα ήταν άδειο αρχείο.
+  // Πόρισμα που το κρατά ασφαλές: αυτό είναι το ΜΟΝΟ δηλωμένο σπίτι ενός
+  // χρώματος γραφήματος — το ίδιο literal γραμμένο οπουδήποτε αλλού στο
+  // src δεν είναι «διπλότυπο», είναι παραβίαση, και ο βρόχος βάσης το
+  // πιάνει κανονικά εκεί (δεν χρειάζεται δικό του μηχανισμό).
+  'src/lib/chart-colors.ts',
+
+  // Το fallback του FOUC: το inline style του src/app/layout.tsx είναι η
+  // τιμή για το ένα στιγμιότυπο πριν προλάβει να φορτώσει η στυλοσελίδα —
+  // η κύρια τιμή είναι ήδη το token (var(--background, ...)), το hex είναι
+  // μόνο το fallback του ίδιου του CSS var(). Τεχνική ανάγκη, όχι οφειλή.
+  'src/app/layout.tsx',
 ];
 
 // Αρχεία μέσα σε καλυμμένους φακέλους που όντως γράφουν ακόμα ωμό χρώμα.
@@ -262,6 +216,41 @@ const PENDING = [
       'text-orange-700',
     ],
   },
+  // Ψευδώς θετικό, όχι χρέος: το #000000 εδώ είναι προεπιλεγμένη τιμή για
+  // color picker και placeholder — δεδομένο που διαλέγει ο χρήστης, όχι
+  // ζωγραφισμένο UI. Το regex δεν ξεχωρίζει τα δύο. Δεν πρόκειται ποτέ να
+  // «πληρωθεί» με token, γιατί δεν είναι πραγματική οφειλή.
+  {
+    file: 'src/components/admin/settings/branding-settings.tsx',
+    colours: ['#000000', '#000000'],
+  },
+  // Media chrome — λευκά εικονίδια/κείμενο πάνω σε αυθαίρετο, αθεμάτιστο
+  // βίντεο ή φωτογραφία (video-player.tsx, message-attachment.tsx). Το
+  // foreground/muted-foreground αντιστρέφεται ανά έκδοση θέματος (σχεδόν
+  // μαύρο στο light mode) και θα έσπαγε την αντίθεση ακριβώς στη μισή
+  // περίπτωση. Καταγράφηκε συνειδητά εδώ ως PENDING, όχι μόνιμη εξαίρεση —
+  // βλ. lane-5-report.md: πληρώνεται μόλις υπάρξει token
+  // `--media-foreground` (σταθερό λευκό/σχεδόν-λευκό, ίδιο και στις δύο
+  // εκδόσεις) στο globals.css, αρχείο εκτός της κάλυψης αυτής της φέτας.
+  {
+    file: 'src/components/shared/message-attachment.tsx',
+    colours: ['bg-white', 'text-white'],
+  },
+  {
+    file: 'src/components/shared/video-player.tsx',
+    colours: [
+      'bg-white',
+      'bg-white',
+      'bg-white',
+      'bg-white',
+      'bg-white',
+      'bg-white',
+      'text-white',
+      'text-white',
+      'text-white',
+      'text-white',
+    ],
+  },
 ];
 
 // ΠΡΟΣΟΧΗ στα όρια λέξης. Το Tailwind γράφει τα κενά μιας αυθαίρετης τιμής ως
@@ -296,8 +285,20 @@ const PENDING = [
 // κανονικότατο χρώμα, άρα το `;` από πίσω δεν κάνει για κριτήριο.
 // Το βρήκε implementer μετρώντας το χρέος ενός αρχείου, όχι έλεγχος: η
 // μέτρηση έβγαινε έξι παραπάνω απ' όσα χρώματα υπήρχαν στ' αλήθεια.
+// Ο τέταρτος κλάδος προστέθηκε αφού μια ανεξάρτητη εξέταση απέδειξε ότι το ωμό
+// χρώμα ξαναμπαίνει από την πιο συνηθισμένη πόρτα και ο φύλακας τύπωνε «ok»:
+// ένα `style={{ color: 'white' }}` ή ένα `fill="white"` σε SVG δεν ταίριαζε σε
+// κανέναν από τους τρεις πρώτους. Δεν ήταν επίθεση — έτσι γράφει κανείς ένα
+// εικονίδιο.
+//
+// Πιάνει ΜΟΝΟ ονόματα χρωμάτων σε θέση που πραγματικά βάφει, δηλαδή μετά από
+// γνωστή ιδιότητα χρώματος. Αυτό κρατά έξω τα `fill="none"`,
+// `stroke="currentColor"`, `fill="url(#grad)"` και `color: 'inherit'`, που
+// είναι όλα θεμιτά και συχνά. Η λίστα ονομάτων είναι τα χρώματα που πληκτρολογεί
+// στην πράξη ένας άνθρωπος· δεν είναι και τα 148 της προδιαγραφής, και δεν
+// προσποιείται ότι είναι — ένα `whitesmoke` περνάει ακόμη.
 const RAW_COLOUR =
-  /(?<!&)#[0-9a-fA-F]{3,8}(?![0-9a-fA-F])|(?<![a-zA-Z0-9])(?:[rR][gG][bB][aA]?|[hH][sS][lL][aA]?|[oO][kK][lL][cC][hH])\s*\([^)]*\)?|\b(?:bg|text|border|ring|fill|stroke|from|via|to|divide|outline|shadow|decoration|accent|caret)-(?:white|black|red|orange|amber|yellow|lime|green|emerald|teal|cyan|sky|blue|indigo|violet|purple|fuchsia|pink|rose|slate|gray|grey|zinc|neutral|stone)(?:-\d{2,3})?\b/;
+  /(?<!&)#[0-9a-fA-F]{3,8}(?![0-9a-fA-F])|(?<![a-zA-Z0-9])(?:[rR][gG][bB][aA]?|[hH][sS][lL][aA]?|[oO][kK][lL][cC][hH])\s*\([^)]*\)?|\b(?:bg|text|border|ring|fill|stroke|from|via|to|divide|outline|shadow|decoration|accent|caret)-(?:white|black|red|orange|amber|yellow|lime|green|emerald|teal|cyan|sky|blue|indigo|violet|purple|fuchsia|pink|rose|slate|gray|grey|zinc|neutral|stone)(?:-\d{2,3})?\b|\b(?:fill|stroke|stop-?[cC]olor|flood-?[cC]olor|color|background|background-?[cC]olor|border-?[cC]olor|outline-?[cC]olor|caret-?[cC]olor|text-?[dD]ecoration-?[cC]olor)\s*[:=]\s*['"`]?(?:white|black|red|green|blue|yellow|orange|purple|pink|gray|grey|brown|cyan|magenta|lime|navy|teal|olive|maroon|silver|gold|beige|ivory|khaki|salmon|coral|crimson|indigo|violet|turquoise|aqua|fuchsia)\b/;
 
 /** Το ίδιο, με `g`: για να μετρηθεί ΤΙ παραβιάζει ένα εκκρεμές, όχι μόνο ΑΝ. */
 const RAW_COLOUR_ALL = new RegExp(RAW_COLOUR.source, 'g');
@@ -348,6 +349,26 @@ for (const target of COVERED) {
   for (const file of walk(target)) files.add(file.replaceAll('\\', '/'));
 }
 
+// Ίδιο σχήμα με το HEADING_EXEMPT πιο κάτω: πρόθεμα φακέλου (τελειώνει σε
+// '/') έναντι ακριβούς αρχείου.
+const colourExemptPrefixes = COLOUR_EXEMPT.filter((e) => e.endsWith('/')).map((e) =>
+  e.replaceAll('\\', '/'),
+);
+const colourExemptFiles = new Set(
+  COLOUR_EXEMPT.filter((e) => !e.endsWith('/')).map((e) => e.replaceAll('\\', '/')),
+);
+
+function isColourExempt(file) {
+  return colourExemptFiles.has(file) || colourExemptPrefixes.some((p) => file.startsWith(p));
+}
+
+// Ποιες εγγραφές του COLOUR_EXEMPT είδαμε στ' αλήθεια να δικαιολογούν κάτι.
+// Ένα ακριβές αρχείο μπαίνει εδώ μόνο αν βρέθηκε μέσα του ωμό χρώμα· ένα
+// πρόθεμα φακέλου μπαίνει αν έστω ΕΝΑ αρχείο από κάτω του βρέθηκε να έχει.
+// Χωρίς αυτό, μια εξαίρεση θα μπορούσε να μείνει για πάντα έστω κι αν το
+// αρχείο που δικαιολογούσε έγινε καθαρό ή έφυγε.
+const colourExemptSeenRaw = new Set();
+
 const violations = [];
 const stalePendingColours = [];
 const changedPendingDebt = [];
@@ -357,6 +378,17 @@ for (const file of files) {
   lines.forEach((line, i) => {
     if (RAW_COLOUR.test(stripComments(line))) offending.push(`${file}:${i + 1}  ${line.trim()}`);
   });
+
+  if (isColourExempt(file)) {
+    if (offending.length > 0) {
+      colourExemptSeenRaw.add(file);
+      for (const prefix of colourExemptPrefixes) {
+        if (file.startsWith(prefix)) colourExemptSeenRaw.add(prefix);
+      }
+    }
+    continue;
+  }
+
   // Ένα εκκρεμές που καθάρισε δεν είναι πια εκκρεμές. Ήταν η μόνη από τις
   // λίστες αναβολής χωρίς αυτόν τον έλεγχο — άρα η μόνη που μπορούσε να
   // κρατήσει για πάντα μια εξαίρεση που δεν εξαιρεί τίποτα.
@@ -382,6 +414,22 @@ for (const file of files) {
 // διαγραφή, τυπογραφικό — κάθεται σιωπηλή δίνοντας την εντύπωση ότι φυλάει κάτι.
 for (const pending of pendingDebt.keys()) {
   if (!files.has(pending)) stalePendingColours.push(pending);
+}
+
+// Το COLOUR_EXEMPT είναι μόνιμο, αλλά «μόνιμο» δεν σημαίνει «απαρακολούθητο».
+// Κάθε εγγραφή πρέπει να αποδεικνύεται ενεργή: το αρχείο/φάκελος υπάρχει ΚΑΙ
+// βρέθηκε μέσα του τουλάχιστον ένα ωμό χρώμα. Ρητό statSync εδώ (όχι μόνο
+// μέλος του `files`, που θα έκρυβε μια εγγραφή μετονομασμένη σε κάτι εκτός
+// .ts/.tsx) πιάνει και τη διαγραφή/μετονομασία ρητά.
+const staleColourExemptions = [];
+for (const entry of COLOUR_EXEMPT) {
+  try {
+    statSync(entry);
+  } catch {
+    staleColourExemptions.push(entry);
+    continue;
+  }
+  if (!colourExemptSeenRaw.has(entry)) staleColourExemptions.push(entry);
 }
 
 // Ένας τίτλος ανά σελίδα: ο μόνος που γράφει <h1> είναι το κοινό PageHeading.
@@ -530,53 +578,15 @@ for (const hub of hubs) {
   }
 }
 
-// Οι περιοχές των Οικονομικών και των Πελατών περνούν από τον κοινό πίνακα.
-// Ό,τι εισάγει απευθείας τα ωμά primitives φτιάχνει δικό του πίνακα — αυτό
-// ακριβώς που έφερε δεκαεπτά ασύμβατες υλοποιήσεις στο προϊόν.
-const TABLE_GUARDED_AREAS = [
-  'src/app/admin/finance/',
-  'src/app/admin/invoices/',
-  'src/app/admin/cost-model/',
-  'src/app/admin/pricing-health/',
-  'src/components/admin/invoices/',
-  'src/components/admin/reports/',
-  // Τις δύο κάρτες αυτού του φακέλου τις κρεμάει το hub των Οικονομικών, άρα
-  // ανήκουν στην περιοχή όσο και τα υπόλοιπα.
-  'src/components/admin/dashboard/finance/',
-  // Η περιοχή των Πελατών (#105): ο hub και τα tabs του, οι λεπτομέρειες
-  // πελάτη, οι κάρτες προτάσεων και συμβολαίων, οι λίστες leads και το chatbot.
-  'src/app/admin/clients/',
-  'src/app/admin/proposals/',
-  'src/app/admin/contracts/',
-  'src/components/admin/clients/',
-  'src/components/admin/contracts/',
-  'src/components/admin/leads/',
-  'src/components/admin/chatbot/',
-  // Οι τρεις οθόνες λεπτομέρειας (#106): ο πίνακας τιμολογίων και η λίστα
-  // συμβολαίων μέσα στη λεπτομέρεια έργου, και ό,τι δείχνει η πλευρά του πελάτη.
-  'src/app/admin/projects/',
-  'src/app/client/projects/',
-  'src/components/client/projects/',
-  // Ολόκληρο το portal πελάτη (#107) — δύο ολόκληρα δέντρα, όπως και για το
-  // χρώμα από πάνω.
-  'src/app/client/',
-  'src/components/client/',
-  // Η περιοχή των Παραγωγών (#108-#109), όπως και για το χρώμα από πάνω.
-  'src/app/admin/productions/',
-  'src/components/admin/filming-requests/',
-  'src/components/admin/filming-prep/',
-  'src/components/admin/deliverables/',
-  'src/components/admin/tasks/',
-  // Οι περιοχές Εργαζομένων και Πωλητών (#110). Αυτό δεν πιάνει τίποτα σήμερα
-  // — καμία από τις δύο δεν είχε ποτέ πίνακα, κάθε λίστα και στις δύο είναι
-  // πλέγμα καρτών ή kanban board. Η εγγραφή κοιτάζει μπροστά: σταματάει έναν
-  // χειροποίητο πίνακα να εμφανιστεί εκεί στο μέλλον, δεν δηλώνει δουλειά που
-  // έγινε.
-  'src/app/employee/',
-  'src/components/employee/',
-  'src/app/salesman/',
-  'src/components/salesman/',
-];
+// Ο κανόνας πίνακα καλύπτει πλέον ΟΛΟΚΛΗΡΟ το src — όχι πια μια λίστα
+// περιοχών που μεγάλωνε φέτα τη φέτα (Οικονομικά, Πελάτες, Παραγωγοί,
+// Εργαζόμενοι/Πωλητές, ...). Ό,τι εισάγει απευθείας τα ωμά primitives ή
+// γράφει σκέτο <table> φτιάχνει δικό του πίνακα — αυτό ακριβώς που έφερε
+// δεκαεπτά ασύμβατες υλοποιήσεις στο προϊόν, και τίποτα δεν εγγυάται ότι δεν
+// θα ξαναφυτρώσει σε μια περιοχή που κανείς δεν είχε βάλει ρητά στη λίστα. Ένα
+// νέο component οπουδήποτε στο src φυλάσσεται αυτόματα, χωρίς να χρειάζεται
+// να προστεθεί ρητά εδώ.
+const TABLE_GUARDED_AREAS = ['src/'];
 
 // Λίστες λεπτομέρειας μέσα σε ήδη ανοιγμένη γραμμή. Δεν είναι το θέμα της
 // σελίδας — δεν έχουν δουλειά να αποκτήσουν δική τους μπάρα αναζήτησης και
@@ -589,6 +599,23 @@ const TABLE_DETAIL_EXEMPT = [
   // και η αντίστοιχη client (Ruling B, #109).
   'src/app/admin/invoices/[invoiceId]/invoice-detail.tsx',
   'src/components/client/invoices/invoice-detail.tsx',
+  // Ψευδώς θετικό του ανιχνευτή: αυτό ΕΙΝΑΙ ο κοινός DataTable που προωθεί ο
+  // κανόνας — χτίζεται πάνω στα ωμά primitives εξ ορισμού, αλλιώς δεν θα
+  // μπορούσε να υπάρξει. Μόνιμη, ονομαστική εξαίρεση (Ruling F) — το ίδιο
+  // είδος εξαίρεσης με το page-heading.tsx στον κανόνα <h1> και το
+  // TITLE_OWNERS: όχι «δεν έχει μεταναστεύσει ακόμα», αλλά «αυτό είναι το
+  // σημείο άφιξης».
+  'src/components/shared/data-table.tsx',
+  // Ψευδώς θετικό του ανιχνευτή: αυτό ΕΙΝΑΙ το ίδιο το primitive πάνω στο
+  // οποίο χτίζεται ο κοινός πίνακας. Μόνιμη, ονομαστική εξαίρεση (Ruling F) —
+  // ίδια λογική με το data-table.tsx από πάνω.
+  'src/components/ui/table.tsx',
+  // Πλέγμα προσωπικού×ημερών, όχι λίστα: κάθε κελί είναι σύνδεσμος έντασης
+  // χρώματος, όχι γραμμή προς αναζήτηση ή σελιδοποίηση. Το μοντέλο γραμμής
+  // του DataTable δεν ταιριάζει εδώ και δεν πρόκειται ποτέ να ταιριάξει —
+  // διαρθρωτική εξαίρεση (Ruling E), ίδια κλάση με τις δύο παραπάνω: «οι
+  // γραμμές ΕΙΝΑΙ το περιεχόμενο, όχι λίστα προς αναζήτηση/σελιδοποίηση».
+  'src/components/admin/dashboard/production/crew-load-heatmap.tsx',
 ];
 
 // Πίνακες της περιοχής που ΔΕΝ έχουν μεταναστεύσει ακόμα, με ρητό λόγο και
@@ -697,6 +724,7 @@ if (
   violations.length > 0 ||
   stalePendingColours.length > 0 ||
   changedPendingDebt.length > 0 ||
+  staleColourExemptions.length > 0 ||
   headingViolations.length > 0 ||
   stalePending.length > 0 ||
   doubleTitles.size > 0 ||
@@ -743,6 +771,12 @@ if (
         );
       }
     }
+  }
+  if (staleColourExemptions.length > 0) {
+    console.error(
+      `\ncheck:design — ${staleColourExemptions.length} stale COLOUR_EXEMPT entr${staleColourExemptions.length === 1 ? 'y' : 'ies'} — either writes no raw colour any more, or no longer exists. Remove from the list:\n`,
+    );
+    for (const p of staleColourExemptions) console.error(`  ${p}`);
   }
   if (headingViolations.length > 0) {
     console.error(`\ncheck:design — ${headingViolations.length} heading violation(s):\n`);
