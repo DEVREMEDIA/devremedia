@@ -530,6 +530,60 @@ test.describe('design identity — detail screens', () => {
   });
 });
 
+test.describe('design identity — productions', () => {
+  /**
+   * Η περιοχή των Παραγωγών (#108-#109) περνά στη νέα γλώσσα: κοινός
+   * FormDialog, κοινός πίνακας για τα αιτήματα γυρίσματος, κοινή επικεφαλίδα
+   * για τον κόμβο. Ο κόμβος ανοίγει στην καρτέλα `all` — κάθε άλλη καρτέλα
+   * θέλει ρητά το δικό της `?tab=`.
+   *
+   * Δεν υπάρχει test που ανοίγει και ολοκληρώνει ένα FormDialog δημιουργίας:
+   * θα έγραφε πραγματική εγγραφή στη βάση που δείχνει η σουίτα, και δεν
+   * υπάρχουν fixtures ή teardown εδώ για να την καθαρίσουν.
+   */
+
+  test('/admin/productions?tab=requests — the requests list renders through the shared table', async ({
+    page,
+  }) => {
+    test.skip(!process.env.E2E_TEST_USERS_READY, 'Test users not configured in database');
+    await loginAsAdmin(page);
+    await page.goto('/admin/productions?tab=requests');
+    await expect(page).toHaveURL(/\/admin\/productions\?tab=requests/);
+
+    const tableContainer = page.locator('[data-slot="table-container"]').first();
+    await expect(tableContainer.locator('table')).toBeVisible();
+    await expect(tableContainer.locator('table thead tr').first()).toBeVisible();
+  });
+
+  test('/admin/productions?tab=all — exactly one page heading and the board renders', async ({
+    page,
+  }) => {
+    test.skip(!process.env.E2E_TEST_USERS_READY, 'Test users not configured in database');
+    await loginAsAdmin(page);
+    await page.goto('/admin/productions?tab=all');
+    await expect(page).toHaveURL(/\/admin\/productions\?tab=all/);
+
+    await expect(page.locator('[data-slot="page-heading"]')).toHaveCount(1);
+
+    // Η προεπιλεγμένη προβολή είναι το kanban board· το toggle μόνο μετά το
+    // mount του ProjectsContent αποδίδεται, άρα η ορατότητά του αποδεικνύει
+    // ότι ο πίνακας πραγματικά τερμάτισε το render.
+    await expect(page.getByRole('button', { name: /Λίστα|List/ })).toBeVisible();
+  });
+
+  test('/admin/calendar — the calendar still renders', async ({ page }) => {
+    test.skip(!process.env.E2E_TEST_USERS_READY, 'Test users not configured in database');
+    await loginAsAdmin(page);
+    await page.goto('/admin/calendar');
+    await expect(page).toHaveURL(/\/admin\/calendar/);
+
+    await expect(page.locator('[data-slot="page-heading"]')).toHaveCount(1);
+    // Το ριζικό στοιχείο του FullCalendar — αποδεικνύει ότι η βιβλιοθήκη
+    // πραγματικά mount-άρισε, όχι μόνο ότι η σελίδα φόρτωσε.
+    await expect(page.locator('.fc').first()).toBeVisible();
+  });
+});
+
 test.describe('design identity — client portal', () => {
   /**
    * Η φέτα #107 πέρασε το portal πελάτη στη νέα γλώσσα και σταμάτησε την αρχική

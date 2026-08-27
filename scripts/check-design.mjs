@@ -78,6 +78,17 @@ const COVERED = [
   // δέντρα, ώστε ένα νέο component οπουδήποτε από κάτω να φυλάσσεται αυτόματα.
   'src/app/client',
   'src/components/client',
+  // Η περιοχή των Παραγωγών (#108-#109) — ο κοινός FormDialog, ο κόμβος και
+  // τα πέντε δέντρα components του: έργα, tasks, deliverables, ημερολόγιο,
+  // αιτήματα και προετοιμασία γυρίσματος.
+  'src/components/shared/form-dialog.tsx',
+  'src/app/admin/productions',
+  'src/components/admin/projects',
+  'src/components/admin/tasks',
+  'src/components/admin/deliverables',
+  'src/components/admin/calendar',
+  'src/components/admin/filming-requests',
+  'src/components/admin/filming-prep',
 ];
 
 // Αρχεία μέσα σε καλυμμένους φακέλους που όντως γράφουν ακόμα ωμό χρώμα.
@@ -91,6 +102,12 @@ const PENDING = [
   // οθόνη λεπτομέρειας: μπήκε στην κάλυψη μαζί με τον φάκελό της, δεν την
   // ανέλαβε η #106.
   'src/components/client/projects/projects-list.tsx',
+  // Ο χάρτης χρωμάτων του ημερολογίου — FullCalendar και η κουκκίδα του
+  // upcoming-events τα γράφουν κατευθείαν σε inline style, όχι σε class, άρα
+  // δεν μπορούν να γίνουν tone-class. Κανένα υπάρχον token δεν ταιριάζει με
+  // αυτές τις ακριβείς αποχρώσεις — θέλει σχεδιαστική απόφαση, όχι μηχανική
+  // αντικατάσταση.
+  'src/components/admin/calendar/event-filter-colors.ts',
 ];
 
 // ΠΡΟΣΟΧΗ στα όρια λέξης. Το Tailwind γράφει τα κενά μιας αυθαίρετης τιμής ως
@@ -329,6 +346,12 @@ const TABLE_GUARDED_AREAS = [
   // χρώμα από πάνω.
   'src/app/client/',
   'src/components/client/',
+  // Η περιοχή των Παραγωγών (#108-#109), όπως και για το χρώμα από πάνω.
+  'src/app/admin/productions/',
+  'src/components/admin/filming-requests/',
+  'src/components/admin/filming-prep/',
+  'src/components/admin/deliverables/',
+  'src/components/admin/tasks/',
 ];
 
 // Λίστες λεπτομέρειας μέσα σε ήδη ανοιγμένη γραμμή. Δεν είναι το θέμα της
