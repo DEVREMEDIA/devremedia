@@ -44,7 +44,7 @@ export function LeadCard({ lead, onClick, isOverlay }: LeadCardProps) {
           </div>
 
           {lead.deal_value !== null && lead.deal_value > 0 && (
-            <div className="flex items-center gap-1 text-xs font-semibold text-green-600">
+            <div className="flex items-center gap-1 text-xs font-semibold text-tone-positive">
               <DollarSign className="h-3 w-3" />
               <span>€{lead.deal_value.toLocaleString()}</span>
             </div>
@@ -59,7 +59,7 @@ export function LeadCard({ lead, onClick, isOverlay }: LeadCardProps) {
               <span
                 className={cn(
                   'text-xs',
-                  daysSinceContact > 7 ? 'text-red-600 font-medium' : 'text-muted-foreground',
+                  daysSinceContact > 7 ? 'text-tone-critical font-medium' : 'text-muted-foreground',
                 )}
               >
                 {daysSinceContact === 0

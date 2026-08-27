@@ -1923,7 +1923,8 @@
       "noFollowups": "No follow-ups today",
       "recentActivity": "Recent Activity",
       "latestInteractions": "Your latest interactions",
-      "noRecentActivity": "No recent activity to show"
+      "noRecentActivity": "No recent activity to show",
+      "weighted": "Weighted"
     },
     "leads": {
       "title": "My Leads",

@@ -1923,7 +1923,8 @@
       "noFollowups": "Δεν υπάρχουν follow-ups σήμερα",
       "recentActivity": "Πρόσφατη Δραστηριότητα",
       "latestInteractions": "Οι πιο πρόσφατες αλληλεπιδράσεις σας",
-      "noRecentActivity": "Δεν υπάρχει πρόσφατη δραστηριότητα"
+      "noRecentActivity": "Δεν υπάρχει πρόσφατη δραστηριότητα",
+      "weighted": "Σταθμισμένο"
     },
     "leads": {
       "title": "Τα Leads Μου",

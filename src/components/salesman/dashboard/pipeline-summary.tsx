@@ -36,7 +36,7 @@ export function PipelineSummary({ summary, pipelineValue }: PipelineSummaryProps
           label={t('pipelineSummary')}
           value={`${pipelineValue.total.toLocaleString('el-GR')}€`}
           icon={DollarSign}
-          caption={`Weighted: ${pipelineValue.weighted.toLocaleString('el-GR')}€`}
+          caption={`${t('weighted')}: ${pipelineValue.weighted.toLocaleString('el-GR')}€`}
         />
         <StatCard
           label={t('activeLeads')}
