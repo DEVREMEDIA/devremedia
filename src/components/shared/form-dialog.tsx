@@ -9,6 +9,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog';
+import { Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 
@@ -54,7 +55,15 @@ export function FormDialog({
       <DialogContent className={cn('max-w-lg', className)}>
         <DialogHeader>
           <DialogTitle>{title}</DialogTitle>
-          {description ? <DialogDescription>{description}</DialogDescription> : null}
+          {/*
+           * Πάντα υπάρχει περιγραφή, ακόμα κι όταν δεν υπάρχει τι να πει: το
+           * Radix τη θέλει για το `aria-describedby`, και ένας διάλογος χωρίς
+           * αυτήν φτάνει στον αναγνώστη οθόνης μόνο με τον τίτλο του. Όταν ο
+           * καλών δεν δίνει κείμενο, μένει αόρατη.
+           */}
+          <DialogDescription className={description ? undefined : 'sr-only'}>
+            {description ?? title}
+          </DialogDescription>
         </DialogHeader>
 
         <form
@@ -75,7 +84,14 @@ export function FormDialog({
             >
               {cancelLabel}
             </Button>
+            {/*
+             * Το κέλυφος κατέχει το υποσέλιδο, άρα κατέχει και το να δείχνει
+             * ότι κάτι τρέχει. Χωρίς αυτό, κάθε διάλογος που μετακομίζει εδώ
+             * χάνει τον δείκτη προόδου που είχε και μένει με ένα απλώς
+             * απενεργοποιημένο κουμπί.
+             */}
             <Button type="submit" disabled={submitting}>
+              {submitting ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
               {submitLabel}
             </Button>
           </DialogFooter>
