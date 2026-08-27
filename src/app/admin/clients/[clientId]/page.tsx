@@ -5,12 +5,13 @@ import { getClient } from '@/lib/actions/clients';
 import { getProjects } from '@/lib/actions/projects';
 import { getInvoices } from '@/lib/actions/invoices';
 import { Client } from '@/types/index';
-import { ClientDetail } from './client-detail';
+import { ClientDetail, CLIENT_TABS } from './client-detail';
 
 interface ClientDetailPageProps {
   params: Promise<{
     clientId: string;
   }>;
+  searchParams: Promise<{ tab?: string }>;
 }
 
 export async function generateMetadata({ params }: ClientDetailPageProps): Promise<Metadata> {
@@ -25,7 +26,7 @@ export async function generateMetadata({ params }: ClientDetailPageProps): Promi
   return { title: (result.data as Client).contact_name };
 }
 
-export default async function ClientDetailPage({ params }: ClientDetailPageProps) {
+export default async function ClientDetailPage({ params, searchParams }: ClientDetailPageProps) {
   const { clientId } = await params;
 
   // Fetch client + lightweight stats only — tabs fetch their own data lazily
@@ -47,6 +48,9 @@ export default async function ClientDetailPage({ params }: ClientDetailPageProps
     .filter((inv) => inv.status === 'paid')
     .reduce((sum, inv) => sum + (inv.total ?? 0), 0);
 
+  const { tab } = await searchParams;
+  const activeTab = CLIENT_TABS.includes(tab ?? '') ? (tab as string) : 'overview';
+
   return (
     <ClientDetail
       client={client}
@@ -57,6 +61,7 @@ export default async function ClientDetailPage({ params }: ClientDetailPageProps
       }}
       initialProjects={projects}
       initialInvoices={invoices}
+      activeTab={activeTab}
     />
   );
 }

@@ -3,13 +3,14 @@ import { getProject } from '@/lib/actions/projects';
 import { getDeliverablesByProject } from '@/lib/actions/deliverables';
 import { getContractsByProject } from '@/lib/actions/contracts';
 import { redirect, notFound } from 'next/navigation';
-import { ClientProjectDetail } from './client-project-detail';
+import { ClientProjectDetail, CLIENT_PROJECT_TABS } from './client-project-detail';
 
 interface PageProps {
   params: Promise<{ projectId: string }>;
+  searchParams: Promise<{ tab?: string }>;
 }
 
-export default async function ClientProjectDetailPage({ params }: PageProps) {
+export default async function ClientProjectDetailPage({ params, searchParams }: PageProps) {
   const { projectId } = await params;
 
   const supabase = await createClient();
@@ -36,12 +37,17 @@ export default async function ClientProjectDetailPage({ params }: PageProps) {
   const contractsResult = await getContractsByProject(projectId);
   const contracts = (contractsResult.data ?? []) as import('@/types').ContractWithRelations[];
 
+  // Άγνωστη καρτέλα πέφτει στην πρώτη, όπως ακριβώς κάνουν οι κόμβοι.
+  const { tab } = await searchParams;
+  const activeTab = CLIENT_PROJECT_TABS.includes(tab ?? '') ? (tab as string) : 'overview';
+
   return (
     <ClientProjectDetail
       project={project}
       deliverables={deliverables}
       contracts={contracts}
       currentUserId={user.id}
+      activeTab={activeTab}
     />
   );
 }

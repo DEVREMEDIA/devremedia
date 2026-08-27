@@ -1,12 +1,13 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo, useCallback } from 'react';
 import { useTranslations } from 'next-intl';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { format, isPast } from 'date-fns';
 import { toast } from 'sonner';
 import { Receipt, Plus, MoreHorizontal, Eye, FileDown, CheckCircle } from 'lucide-react';
+import type { ColumnDef } from '@tanstack/react-table';
 
 import { createClient } from '@/lib/supabase/client';
 import { getInvoices, getNextInvoiceNumber, updateInvoiceStatus } from '@/lib/actions/invoices';
@@ -14,15 +15,6 @@ import type { InvoiceWithRelations } from '@/types/relations';
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableFooter,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from '@/components/ui/table';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -32,6 +24,7 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { StatusBadge } from '@/components/shared/status-badge';
 import { EmptyState } from '@/components/shared/empty-state';
+import { DataTable } from '@/components/shared/data-table';
 import { CreateInvoiceDrawer } from '@/components/admin/invoices/create-invoice-drawer';
 import { cn } from '@/lib/utils';
 import { formatEur as formatCurrency } from '@/lib/format';
@@ -73,41 +66,140 @@ export function InvoicesTab({ projectId, clientId, projectTitle }: InvoicesTabPr
     setDrawerOpen(true);
   };
 
-  const handleMarkAsPaid = async (invoiceId: string) => {
-    const previous = invoices.find((inv) => inv.id === invoiceId);
-    setInvoices((prev) =>
-      prev.map((inv) => (inv.id === invoiceId ? { ...inv, status: 'paid' as const } : inv)),
-    );
-    const result = await updateInvoiceStatus(invoiceId, 'paid');
-    if (result.error) {
-      if (previous) {
-        setInvoices((prev) =>
-          prev.map((inv) => (inv.id === invoiceId ? { ...inv, status: previous.status } : inv)),
-        );
+  const handleMarkAsPaid = useCallback(
+    async (invoiceId: string) => {
+      const previous = invoices.find((inv) => inv.id === invoiceId);
+      setInvoices((prev) =>
+        prev.map((inv) => (inv.id === invoiceId ? { ...inv, status: 'paid' as const } : inv)),
+      );
+      const result = await updateInvoiceStatus(invoiceId, 'paid');
+      if (result.error) {
+        if (previous) {
+          setInvoices((prev) =>
+            prev.map((inv) => (inv.id === invoiceId ? { ...inv, status: previous.status } : inv)),
+          );
+        }
+        toast.error(result.error);
+      } else {
+        toast.success(t('markedAsPaid'));
       }
-      toast.error(result.error);
-    } else {
-      toast.success(t('markedAsPaid'));
-    }
-  };
+    },
+    [invoices, t],
+  );
 
-  const handleMarkAsUnpaid = async (invoiceId: string) => {
-    const previous = invoices.find((inv) => inv.id === invoiceId);
-    setInvoices((prev) =>
-      prev.map((inv) => (inv.id === invoiceId ? { ...inv, status: 'draft' as const } : inv)),
-    );
-    const result = await updateInvoiceStatus(invoiceId, 'draft');
-    if (result.error) {
-      if (previous) {
-        setInvoices((prev) =>
-          prev.map((inv) => (inv.id === invoiceId ? { ...inv, status: previous.status } : inv)),
-        );
+  const handleMarkAsUnpaid = useCallback(
+    async (invoiceId: string) => {
+      const previous = invoices.find((inv) => inv.id === invoiceId);
+      setInvoices((prev) =>
+        prev.map((inv) => (inv.id === invoiceId ? { ...inv, status: 'draft' as const } : inv)),
+      );
+      const result = await updateInvoiceStatus(invoiceId, 'draft');
+      if (result.error) {
+        if (previous) {
+          setInvoices((prev) =>
+            prev.map((inv) => (inv.id === invoiceId ? { ...inv, status: previous.status } : inv)),
+          );
+        }
+        toast.error(result.error);
+      } else {
+        toast.success(t('markedAsUnpaid'));
       }
-      toast.error(result.error);
-    } else {
-      toast.success(t('markedAsUnpaid'));
-    }
-  };
+    },
+    [invoices, t],
+  );
+
+  const columns: ColumnDef<InvoiceWithRelations>[] = useMemo(
+    () => [
+      {
+        accessorKey: 'invoice_number',
+        header: t('invoiceNumber'),
+        cell: ({ row }) => (
+          <span className="font-mono text-sm">{row.getValue('invoice_number')}</span>
+        ),
+      },
+      {
+        accessorKey: 'total',
+        header: t('total'),
+        cell: ({ row }) => <span className="text-sm">{formatCurrency(row.getValue('total'))}</span>,
+        meta: { numeric: true },
+      },
+      {
+        id: 'status',
+        header: t('status'),
+        cell: ({ row }) => {
+          const invoice = row.original;
+          return <StatusBadge status={isOverdue(invoice) ? 'overdue' : invoice.status} />;
+        },
+      },
+      {
+        accessorKey: 'due_date',
+        header: t('dueDate'),
+        cell: ({ row }) => {
+          const invoice = row.original;
+          const overdue = isOverdue(invoice);
+          return (
+            <span className={cn('text-sm', overdue && 'font-medium text-tone-critical')}>
+              {format(new Date(invoice.due_date), 'dd/MM/yyyy')}
+            </span>
+          );
+        },
+        meta: { numeric: true, align: 'left' },
+      },
+      {
+        id: 'actions',
+        header: '',
+        meta: { width: 'w-10' },
+        cell: ({ row }) => {
+          const invoice = row.original;
+          return (
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="ghost" size="icon" className="h-8 w-8">
+                  <MoreHorizontal className="h-4 w-4" />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end">
+                <DropdownMenuItem asChild>
+                  <Link href={`/admin/invoices/${invoice.id}`}>
+                    <Eye className="mr-2 h-4 w-4" />
+                    {t('viewInvoice')}
+                  </Link>
+                </DropdownMenuItem>
+                {invoice.file_path && (
+                  <DropdownMenuItem
+                    onClick={async () => {
+                      const supabase = createClient();
+                      const { data } = await supabase.storage
+                        .from('invoices')
+                        .createSignedUrl(invoice.file_path!, 3600);
+                      if (data?.signedUrl) window.open(data.signedUrl, '_blank');
+                    }}
+                  >
+                    <FileDown className="mr-2 h-4 w-4" />
+                    {t('downloadPdf')}
+                  </DropdownMenuItem>
+                )}
+                <DropdownMenuSeparator />
+                {invoice.status !== 'paid' && invoice.status !== 'cancelled' && (
+                  <DropdownMenuItem onClick={() => handleMarkAsPaid(invoice.id)}>
+                    <CheckCircle className="mr-2 h-4 w-4 text-tone-positive" />
+                    {t('markAsPaid')}
+                  </DropdownMenuItem>
+                )}
+                {invoice.status === 'paid' && (
+                  <DropdownMenuItem onClick={() => handleMarkAsUnpaid(invoice.id)}>
+                    <CheckCircle className="mr-2 h-4 w-4 text-tone-caution" />
+                    {t('markAsUnpaid')}
+                  </DropdownMenuItem>
+                )}
+              </DropdownMenuContent>
+            </DropdownMenu>
+          );
+        },
+      },
+    ],
+    [t, handleMarkAsPaid, handleMarkAsUnpaid],
+  );
 
   if (isLoading) {
     return (
@@ -155,97 +247,25 @@ export function InvoicesTab({ projectId, clientId, projectTitle }: InvoicesTabPr
             </Button>
           </div>
 
-          <Card>
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>{t('invoiceNumber')}</TableHead>
-                  <TableHead>{t('total')}</TableHead>
-                  <TableHead>Status</TableHead>
-                  <TableHead>{t('dueDate')}</TableHead>
-                  <TableHead className="w-10" />
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {invoices.map((invoice) => {
-                  const overdue = isOverdue(invoice);
-                  return (
-                    <TableRow key={invoice.id}>
-                      <TableCell className="font-mono text-sm">{invoice.invoice_number}</TableCell>
-                      <TableCell className="text-sm">{formatCurrency(invoice.total)}</TableCell>
-                      <TableCell>
-                        <StatusBadge status={overdue ? 'overdue' : invoice.status} />
-                      </TableCell>
-                      <TableCell className={cn('text-sm', overdue && 'font-medium text-red-600')}>
-                        {format(new Date(invoice.due_date), 'dd/MM/yyyy')}
-                      </TableCell>
-                      <TableCell>
-                        <DropdownMenu>
-                          <DropdownMenuTrigger asChild>
-                            <Button variant="ghost" size="icon" className="h-8 w-8">
-                              <MoreHorizontal className="h-4 w-4" />
-                            </Button>
-                          </DropdownMenuTrigger>
-                          <DropdownMenuContent align="end">
-                            <DropdownMenuItem asChild>
-                              <Link href={`/admin/invoices/${invoice.id}`}>
-                                <Eye className="mr-2 h-4 w-4" />
-                                {t('viewInvoice')}
-                              </Link>
-                            </DropdownMenuItem>
-                            {invoice.file_path && (
-                              <DropdownMenuItem
-                                onClick={async () => {
-                                  const supabase = createClient();
-                                  const { data } = await supabase.storage
-                                    .from('invoices')
-                                    .createSignedUrl(invoice.file_path!, 3600);
-                                  if (data?.signedUrl) window.open(data.signedUrl, '_blank');
-                                }}
-                              >
-                                <FileDown className="mr-2 h-4 w-4" />
-                                {t('downloadPdf')}
-                              </DropdownMenuItem>
-                            )}
-                            <DropdownMenuSeparator />
-                            {invoice.status !== 'paid' && invoice.status !== 'cancelled' && (
-                              <DropdownMenuItem onClick={() => handleMarkAsPaid(invoice.id)}>
-                                <CheckCircle className="mr-2 h-4 w-4 text-green-600" />
-                                {t('markAsPaid')}
-                              </DropdownMenuItem>
-                            )}
-                            {invoice.status === 'paid' && (
-                              <DropdownMenuItem onClick={() => handleMarkAsUnpaid(invoice.id)}>
-                                <CheckCircle className="mr-2 h-4 w-4 text-orange-500" />
-                                {t('markAsUnpaid')}
-                              </DropdownMenuItem>
-                            )}
-                          </DropdownMenuContent>
-                        </DropdownMenu>
-                      </TableCell>
-                    </TableRow>
-                  );
-                })}
-              </TableBody>
-              <TableFooter>
-                <TableRow>
-                  <TableCell className="font-semibold">{t('total')}</TableCell>
-                  <TableCell className="font-semibold">{formatCurrency(totalInvoiced)}</TableCell>
-                  <TableCell>
-                    <span className="text-xs text-muted-foreground">
-                      {t('paid')}: {formatCurrency(totalPaid)}
-                    </span>
-                  </TableCell>
-                  <TableCell
-                    colSpan={2}
-                    className={cn('font-semibold', unpaid > 0 && 'text-red-600')}
-                  >
-                    {t('outstanding')}: {formatCurrency(unpaid)}
-                  </TableCell>
-                </TableRow>
-              </TableFooter>
-            </Table>
-          </Card>
+          <DataTable
+            columns={columns}
+            data={invoices}
+            emptyState={<span className="text-muted-foreground">{t('noInvoices')}</span>}
+          />
+
+          <div className="flex flex-wrap items-baseline justify-end gap-x-6 gap-y-1 border-t border-border pt-3 text-sm">
+            <span className="font-mono text-xs uppercase tracking-[0.1em] text-muted-foreground">
+              {t('total')}
+            </span>
+            <span className="font-mono tabular-nums">{formatCurrency(totalInvoiced)}</span>
+            <span className="text-muted-foreground">
+              {t('paid')}:{' '}
+              <span className="font-mono tabular-nums">{formatCurrency(totalPaid)}</span>
+            </span>
+            <span className={cn('font-mono tabular-nums', unpaid > 0 && 'text-tone-critical')}>
+              {t('outstanding')}: {formatCurrency(unpaid)}
+            </span>
+          </div>
         </div>
       )}
 

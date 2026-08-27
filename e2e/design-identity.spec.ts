@@ -320,8 +320,10 @@ test.describe('design identity — shared table', () => {
     await expect(page).toHaveURL(/\/admin\/finance/);
 
     // Η προεπιλογή είναι η προβολή καρτών· το toggle φέρνει τον κοινό πίνακα.
-    const viewToggle = page.locator('div.rounded-lg.border.p-1 button').nth(1);
-    await viewToggle.click();
+    // Δομικός επιλογέας επίτηδες: τα δύο κουμπιά αυτού του toggle (Οικονομικά)
+    // δεν έχουν προσβάσιμο όνομα, και η διόρθωσή τους θέλει νέα κλειδιά σε
+    // περιοχή εκτός αυτής της φέτας. Δηλωμένο χρέος, όχι παράλειψη.
+    await page.locator('div.rounded-lg.border.p-1 button').nth(1).click();
 
     const tableContainer = page.locator('[data-slot="table-container"]').first();
     await expect(tableContainer.locator('table')).toBeVisible();
@@ -438,6 +440,93 @@ test.describe('design identity — clients area', () => {
     await page.keyboard.press('Escape');
     await expect(dialog).not.toBeVisible();
     await expect(rows).toHaveCount(rowsBefore);
+  });
+});
+
+test.describe('design identity — detail screens', () => {
+  /**
+   * Οι τρεις οθόνες λεπτομέρειας (#106) περνούν στο κοινό `DetailShell`: ένας
+   * τίτλος, καρτέλες οδηγούμενες από το URL, σύνδεσμος επιστροφής. Κάθε test
+   * ανοίγει την πραγματική λίστα και πατά τον σύνδεσμο της πρώτης γραμμής —
+   * ποτέ ένα id από seed file, που θα σαπίσει με την πρώτη αλλαγή δεδομένων.
+   *
+   * Δεν υπάρχει test για την κατάσταση φόρτωσης (`detail-skeleton.tsx`):
+   * θα κέρδιζε κούρσα με τον διακομιστή και θα απέτυχε τυχαία — το κριτήριο
+   * αποδοχής που τη ζητά δεν αξίζει ένα test που αποτυγχάνει στην τύχη.
+   */
+
+  test('the shell renders on a project', async ({ page }) => {
+    test.skip(!process.env.E2E_TEST_USERS_READY, 'Test users not configured in database');
+    await loginAsAdmin(page);
+    await page.goto('/admin/productions?tab=all');
+    await expect(page).toHaveURL(/\/admin\/productions/);
+
+    // Η προεπιλογή είναι το kanban board, χωρίς links πάνω στις κάρτες — το
+    // toggle φέρνει τη λίστα, όπου κάθε γραμμή έχει πραγματικό σύνδεσμο.
+    await page.getByRole('button', { name: /Λίστα|List/ }).click();
+
+    const firstProjectLink = page
+      .locator('table tbody tr')
+      .first()
+      .locator('a[href^="/admin/projects/"]')
+      .first();
+    await firstProjectLink.click();
+    await expect(page).toHaveURL(/\/admin\/projects\/[^/]+$/);
+
+    await expect(page.locator('[data-slot="page-heading"]')).toHaveCount(1);
+    await expect(page.locator('[role="tablist"]')).toHaveCount(1);
+    await expect(page.locator('a[href="/admin/projects"]')).toBeVisible();
+  });
+
+  test('a deep link into a tab resolves to that tab', async ({ page }) => {
+    test.skip(!process.env.E2E_TEST_USERS_READY, 'Test users not configured in database');
+    await loginAsAdmin(page);
+    await page.goto('/admin/productions?tab=all');
+    await expect(page).toHaveURL(/\/admin\/productions/);
+
+    await page.getByRole('button', { name: /Λίστα|List/ }).click();
+
+    const firstProjectLink = page
+      .locator('table tbody tr')
+      .first()
+      .locator('a[href^="/admin/projects/"]')
+      .first();
+    await firstProjectLink.click();
+    await expect(page).toHaveURL(/\/admin\/projects\/[^/]+$/);
+
+    // Βαθύ σύνδεσμο απευθείας πάνω στην ίδια οθόνη λεπτομέρειας.
+    await page.goto(`${page.url()}?tab=invoices`);
+    await expect(page).toHaveURL(/\/admin\/projects\/[^/]+\?tab=invoices/);
+
+    const invoicesTab = page.locator('a[role="tab"][href*="tab=invoices"]');
+    await expect(invoicesTab).toHaveAttribute('aria-selected', 'true');
+    // Το σώμα της καρτέλας, όχι ο σύνδεσμός της. Ένα σκέτο getByText(/τιμολ/i)
+    // θα έπιανε πρώτα την ίδια την ετικέτα «Τιμολόγια» πάνω στη γραμμή
+    // καρτελών, και θα περνούσε ακόμα και με τελείως άδεια καρτέλα. Το σώμα
+    // έχει δύο μόνο μορφές — πίνακα ή κενή κατάσταση — και καμία από τις δύο
+    // δεν είναι σύνδεσμος καρτέλας.
+    const invoicesBody = page
+      .locator('[data-slot="table-container"]')
+      .or(page.getByRole('heading', { name: /Δεν υπάρχουν τιμολόγια|No invoices yet/ }));
+    await expect(invoicesBody.first()).toBeVisible();
+  });
+
+  test("the client detail's tabs are in the URL", async ({ page }) => {
+    test.skip(!process.env.E2E_TEST_USERS_READY, 'Test users not configured in database');
+    await loginAsAdmin(page);
+    await page.goto('/admin/clients');
+    await expect(page).toHaveURL(/\/admin\/clients/);
+
+    const firstClientLink = page
+      .locator('table tbody tr')
+      .first()
+      .locator('a[href^="/admin/clients/"]')
+      .first();
+    await firstClientLink.click();
+    await expect(page).toHaveURL(/\/admin\/clients\/[^/]+$/);
+
+    await page.locator('a[role="tab"][href*="tab=contracts"]').click();
+    expect(page.url()).toContain('tab=contracts');
   });
 });
 

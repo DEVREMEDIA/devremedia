@@ -56,6 +56,20 @@ const COVERED = [
   // ξεριζώθηκε.
   'src/app/admin/proposals',
   'src/app/admin/contracts/contracts-list-page.tsx',
+  // Οι τρεις οθόνες λεπτομέρειας περνούν στο κοινό κέλυφος (#106) — ο σύνδεσμος
+  // επιστροφής, ο ένας τίτλος και οι καρτέλες οδηγούμενες από το URL ζουν εδώ.
+  'src/components/shared/detail-shell.tsx',
+  // Το σκελετικό φόρτωσης του κελύφους — καμία δικαιολογία να ζωγραφίσει ωμό χρώμα.
+  'src/components/shell-v2/detail-skeleton.tsx',
+  // Η γραμμή καρτελών που ζωγραφίζει και τους έντεκα κόμβους και οθόνες
+  // λεπτομέρειας. Πιο βαρύ από τον σκελετό δίπλα του, και έλειπε.
+  'src/components/shell-v2/section-tabs.tsx',
+  'src/app/admin/projects/[projectId]',
+  'src/app/client/projects/[projectId]',
+  // Ο φάκελος από τον οποίο η οθόνη του portal ΠΡΟΣΑΡΤΑ τα σώματα των καρτελών
+  // της. Ήταν στα φυλασσόμενα για πίνακες αλλά όχι για χρώμα — κάλυψη που
+  // δηλωνόταν πιο φαρδιά απ' ό,τι δινόταν.
+  'src/components/client/projects',
 ];
 
 // Αρχεία μέσα σε καλυμμένους φακέλους που όντως γράφουν ακόμα ωμό χρώμα.
@@ -65,6 +79,13 @@ const PENDING = [
   'src/components/admin/dashboard/production/crew-load-heatmap.tsx',
   'src/components/admin/dashboard/risk/risk-panel.tsx',
   'src/components/admin/dashboard/sales/revenue-forecast-card.tsx',
+  // Η λίστα έργων του portal πελάτη — δεκαπέντε ωμά χρώματα, και δεν είναι
+  // οθόνη λεπτομέρειας: μπήκε στην κάλυψη μαζί με τον φάκελό της, δεν την
+  // ανέλαβε η #106.
+  'src/components/client/projects/projects-list.tsx',
+  // Μία γραμμή: `bg-black` ως φόντο θεατή βίντεο. Σωστό σημασιολογικά, αλλά
+  // δεν υπάρχει σύμβολο γι' αυτό ακόμα — να γεννηθεί στη φέτα των παραδοτέων.
+  'src/components/client/projects/deliverable-detail-view.tsx',
 ];
 
 const RAW_COLOUR =
@@ -104,16 +125,29 @@ const files = new Set();
 for (const target of COVERED) {
   for (const file of walk(target)) files.add(file.replaceAll('\\', '/'));
 }
-for (const pending of pendingSet) files.delete(pending);
 
 const violations = [];
+const stalePendingColours = [];
 for (const file of files) {
   const lines = readFileSync(file, 'utf8').split('\n');
+  const offending = [];
   lines.forEach((line, i) => {
-    if (RAW_COLOUR.test(stripComments(line))) {
-      violations.push(`${file}:${i + 1}  ${line.trim()}`);
-    }
+    if (RAW_COLOUR.test(stripComments(line))) offending.push(`${file}:${i + 1}  ${line.trim()}`);
   });
+  // Ένα εκκρεμές που καθάρισε δεν είναι πια εκκρεμές. Ήταν η μόνη από τις
+  // λίστες αναβολής χωρίς αυτόν τον έλεγχο — άρα η μόνη που μπορούσε να
+  // κρατήσει για πάντα μια εξαίρεση που δεν εξαιρεί τίποτα.
+  if (pendingSet.has(file)) {
+    if (offending.length === 0) stalePendingColours.push(file);
+    continue;
+  }
+  violations.push(...offending);
+}
+
+// Και μια εγγραφή που δείχνει σε αρχείο εκτός καλυμμένης περιοχής — μετονομασία,
+// διαγραφή, τυπογραφικό — κάθεται σιωπηλή δίνοντας την εντύπωση ότι φυλάει κάτι.
+for (const pending of pendingSet) {
+  if (!files.has(pending)) stalePendingColours.push(pending);
 }
 
 // Ένας τίτλος ανά σελίδα: ο μόνος που γράφει <h1> είναι το κοινό PageHeading.
@@ -127,7 +161,6 @@ const HEADING_EXEMPT = [
 const HEADING_PENDING = [
   'src/app/book/page.tsx', // δημόσια σελίδα με δικό της κέλυφος
   'src/app/admin/invoices/[invoiceId]/invoice-detail.tsx', // → #109
-  'src/app/client/projects/[projectId]/client-project-detail.tsx', // → #106
   'src/components/admin/filming-requests/filming-request-detail.tsx', // → #109
   'src/components/client/invoices/invoice-detail.tsx', // → #109
 ];
@@ -188,6 +221,15 @@ const strippedOf = (f) => sourceOf.get(f).split('\n').map(stripComments).join('\
 
 const IMPORT_SPEC = /from\s+'(@\/[^']+|\.[^']*)'/g;
 const RENDERS_HEADING = /<PageHeading[\s/>]/;
+const RENDERS_DETAIL_SHELL = /<DetailShell[\s/>]/;
+
+// Τα δύο components των οποίων η ΔΟΥΛΕΙΑ είναι να γράψουν τον τίτλο. Χωρίς
+// αυτή την εξαίρεση, ο έλεγχος διπλού τίτλου θα κατήγγειλλε το ίδιο το κέλυφος
+// — γιατί ναι, ζωγραφίζει `PageHeading`· αυτός είναι ο σκοπός του.
+const TITLE_OWNERS = new Set([
+  'src/components/shared/page-heading.tsx',
+  'src/components/shared/detail-shell.tsx',
+]);
 
 function resolveImport(spec, fromFile) {
   const base = spec.startsWith('@/')
@@ -199,8 +241,16 @@ function resolveImport(spec, fromFile) {
   return null;
 }
 
+// Δύο σχήματα οθόνης με καρτέλες, όχι ένα. Ο κόμβος γράφει ο ίδιος
+// `SectionTabs` μέσα στο `page.tsx` του. Η οθόνη λεπτομέρειας τον φτάνει
+// ΕΜΜΕΣΑ, μέσα από το `DetailShell`, και συνήθως από component πελάτη — άρα
+// ένας έλεγχος που ψάχνει μόνο «page.tsx που λέει SectionTabs» δεν έβλεπε
+// καμία από τις τρεις οθόνες λεπτομέρειας. Το εντόπισε ο τελικός έλεγχος της
+// #106 βάζοντας δεύτερο `PageHeading` σε σώμα καρτέλας και βλέποντας πράσινο.
 const hubs = allTsxFiles.filter(
-  (f) => f.endsWith('/page.tsx') && sourceOf.get(f).includes('SectionTabs'),
+  (f) =>
+    (f.endsWith('/page.tsx') && sourceOf.get(f).includes('SectionTabs')) ||
+    RENDERS_DETAIL_SHELL.test(strippedOf(f)),
 );
 
 const doubleTitles = new Map();
@@ -215,7 +265,7 @@ for (const hub of hubs) {
     if (seen.has(file)) continue;
     seen.add(file);
 
-    if (RENDERS_HEADING.test(strippedOf(file))) {
+    if (!TITLE_OWNERS.has(file) && RENDERS_HEADING.test(strippedOf(file))) {
       if (!doubleTitles.has(file)) doubleTitles.set(file, new Set());
       doubleTitles.get(file).add(hub);
     }
@@ -248,6 +298,11 @@ const TABLE_GUARDED_AREAS = [
   'src/components/admin/contracts/',
   'src/components/admin/leads/',
   'src/components/admin/chatbot/',
+  // Οι τρεις οθόνες λεπτομέρειας (#106): ο πίνακας τιμολογίων και η λίστα
+  // συμβολαίων μέσα στη λεπτομέρεια έργου, και ό,τι δείχνει η πλευρά του πελάτη.
+  'src/app/admin/projects/',
+  'src/app/client/projects/',
+  'src/components/client/projects/',
 ];
 
 // Λίστες λεπτομέρειας μέσα σε ήδη ανοιγμένη γραμμή. Δεν είναι το θέμα της
@@ -279,10 +334,6 @@ const TABLE_PENDING_UNDETECTABLE = [
 ];
 
 const TABLE_PENDING = [
-  // Η καρτέλα τιμολογίων μέσα στη λεπτομέρεια πελάτη — οφείλεται στην #106.
-  'src/components/admin/clients/client-invoices-tab.tsx',
-  // Η λίστα συμβολαίων μέσα στη λεπτομέρεια πελάτη — οφείλεται στην #106.
-  'src/components/admin/contracts/contract-list.tsx',
   // Η αναφορά πωλήσεων της περιοχής Interest — έργο περιοχής για επόμενη φέτα.
   'src/components/admin/leads/sales-report.tsx',
   // Ο πίνακας γνώσης του chatbot — έργο περιοχής για επόμενη φέτα.
@@ -369,6 +420,7 @@ const tableGuardedChecked =
 
 if (
   violations.length > 0 ||
+  stalePendingColours.length > 0 ||
   headingViolations.length > 0 ||
   stalePending.length > 0 ||
   doubleTitles.size > 0 ||
@@ -380,6 +432,12 @@ if (
     console.error(`check:design — ${violations.length} raw colour(s) outside the token layer:\n`);
     for (const v of violations) console.error(`  ${v}`);
     console.error('\nUse a token (bg-card, text-muted-foreground, text-tone-critical, …) instead.');
+  }
+  if (stalePendingColours.length > 0) {
+    console.error(
+      `\ncheck:design — ${stalePendingColours.length} stale PENDING entr${stalePendingColours.length === 1 ? 'y' : 'ies'} — either writes no raw colour any more, or no longer sits inside a covered area. Remove from the list:\n`,
+    );
+    for (const p of stalePendingColours) console.error(`  ${p}`);
   }
   if (headingViolations.length > 0) {
     console.error(`\ncheck:design — ${headingViolations.length} heading violation(s):\n`);

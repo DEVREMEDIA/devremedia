@@ -1,9 +1,10 @@
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState } from 'react';
 import { format } from 'date-fns';
 import { ProjectWithClient, Contract } from '@/types';
-import { PageHeading } from '@/components/shared/page-heading';
+import { DetailShell } from '@/components/shared/detail-shell';
+import type { SectionTab } from '@/components/shell-v2/section-tabs';
 import { StatusBadge } from '@/components/shared/status-badge';
 import { ConfirmDialog } from '@/components/shared/confirm-dialog';
 import { EmptyState } from '@/components/shared/empty-state';
@@ -14,7 +15,6 @@ import { DeliverablesTab } from './deliverables-tab';
 import { InvoicesTab } from './invoices-tab';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import {
   Select,
   SelectContent,
@@ -23,7 +23,6 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import {
-  ArrowLeft,
   Edit,
   Trash,
   Building2,
@@ -38,54 +37,41 @@ import {
   MapPin,
 } from 'lucide-react';
 import Link from 'next/link';
-import { useRouter, useSearchParams } from 'next/navigation';
+import { useRouter } from 'next/navigation';
 import { deleteProject } from '@/lib/actions/projects';
 import { toast } from 'sonner';
 import { differenceInDays } from 'date-fns';
-import { createClient } from '@/lib/supabase/client';
 import { PROJECT_TYPE_LABELS, PROJECT_STATUS_LABELS, PRIORITY_LABELS } from '@/lib/constants';
 import { useTranslations } from 'next-intl';
+
+/** Οι καρτέλες με τη σειρά τους. Το `page.tsx` επικυρώνει το `?tab=` πάνω σε αυτή. */
+export const PROJECT_TABS: readonly string[] = [
+  'overview',
+  'tasks',
+  'deliverables',
+  'messages',
+  'invoices',
+  'contracts',
+];
 
 interface ProjectDetailProps {
   project: ProjectWithClient;
   contracts: Contract[];
+  activeTab: string;
+  currentUserId: string | null;
 }
 
-export function ProjectDetail({ project, contracts }: ProjectDetailProps) {
+export function ProjectDetail({
+  project,
+  contracts,
+  activeTab,
+  currentUserId,
+}: ProjectDetailProps) {
   const t = useTranslations('projects');
   const tc = useTranslations('common');
   const router = useRouter();
-  const searchParams = useSearchParams();
-  const tabFromUrl = searchParams.get('tab') || 'overview';
-  const [activeTab, setActiveTab] = useState(tabFromUrl);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
-  const [currentUserId, setCurrentUserId] = useState<string | null>(null);
-
-  useEffect(() => {
-    setActiveTab(tabFromUrl);
-  }, [tabFromUrl]);
-
-  useEffect(() => {
-    const supabase = createClient();
-    supabase.auth.getUser().then(({ data }) => {
-      setCurrentUserId(data.user?.id ?? null);
-    });
-  }, []);
-
-  const handleTabChange = useCallback(
-    (value: string) => {
-      setActiveTab(value);
-      const params = new URLSearchParams(searchParams.toString());
-      if (value === 'overview') {
-        params.delete('tab');
-      } else {
-        params.set('tab', value);
-      }
-      router.replace(`?${params.toString()}`, { scroll: false });
-    },
-    [router, searchParams],
-  );
 
   const handleDelete = async () => {
     setIsDeleting(true);
@@ -112,16 +98,37 @@ export function ProjectDetail({ project, contracts }: ProjectDetailProps) {
     return Math.min(Math.max((elapsed / total) * 100, 0), 100);
   })();
 
+  const TABS: SectionTab[] = [
+    { key: 'overview', label: t('overview') },
+    { key: 'tasks', label: t('tasks') },
+    { key: 'deliverables', label: t('deliverables') },
+    { key: 'messages', label: tc('messages') },
+    { key: 'invoices', label: t('invoices') },
+    { key: 'contracts', label: t('contracts') },
+  ];
+
   return (
-    <div className="space-y-6">
-      <PageHeading title={project.title}>
-        <div className="flex items-center gap-3">
-          <Button variant="outline" size="sm" asChild>
-            <Link href="/admin/projects">
-              <ArrowLeft className="h-4 w-4 mr-2" />
-              {tc('back')}
-            </Link>
-          </Button>
+    <DetailShell
+      backHref="/admin/projects"
+      backLabel={t('title')}
+      title={project.title}
+      meta={
+        <div className="flex flex-wrap items-center gap-3">
+          <Link
+            href={`/admin/clients/${project.client_id}`}
+            className="flex items-center gap-2 transition-colors hover:text-foreground"
+          >
+            <Building2 className="h-4 w-4" />
+            <span className="font-medium">
+              {project.client?.company_name || project.client?.contact_name}
+            </span>
+          </Link>
+          <StatusBadge status={project.status} />
+          <StatusBadge status={project.priority} />
+        </div>
+      }
+      actions={
+        <>
           <Button variant="outline" size="sm" asChild>
             <Link href={`/admin/projects/${project.id}/edit`}>
               <Edit className="h-4 w-4 mr-2" />
@@ -137,36 +144,12 @@ export function ProjectDetail({ project, contracts }: ProjectDetailProps) {
             <Trash className="h-4 w-4 mr-2" />
             {tc('delete')}
           </Button>
-        </div>
-      </PageHeading>
-
-      <div className="flex items-center gap-4 flex-wrap">
-        <Link
-          href={`/admin/clients/${project.client_id}`}
-          className="flex items-center gap-2 text-muted-foreground hover:text-foreground transition-colors"
-        >
-          <Building2 className="h-4 w-4" />
-          <span className="font-medium">
-            {project.client?.company_name || project.client?.contact_name}
-          </span>
-        </Link>
-        <StatusBadge status={project.status} />
-        <StatusBadge status={project.priority} />
-      </div>
-
-      <Tabs value={activeTab} onValueChange={handleTabChange} className="space-y-6">
-        <div className="overflow-x-auto -mx-4 px-4 md:mx-0 md:px-0">
-          <TabsList className="inline-flex w-auto min-w-full sm:min-w-0">
-            <TabsTrigger value="overview">{t('overview')}</TabsTrigger>
-            <TabsTrigger value="tasks">{t('tasks')}</TabsTrigger>
-            <TabsTrigger value="deliverables">{t('deliverables')}</TabsTrigger>
-            <TabsTrigger value="messages">{tc('messages')}</TabsTrigger>
-            <TabsTrigger value="invoices">{t('invoices')}</TabsTrigger>
-            <TabsTrigger value="contracts">{t('contracts')}</TabsTrigger>
-          </TabsList>
-        </div>
-
-        <TabsContent value="overview" className="space-y-6">
+        </>
+      }
+      tabs={{ items: TABS, active: activeTab, basePath: `/admin/projects/${project.id}` }}
+    >
+      {activeTab === 'overview' && (
+        <div className="space-y-6">
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
             <Card>
               <CardHeader className="pb-3">
@@ -270,7 +253,7 @@ export function ProjectDetail({ project, contracts }: ProjectDetailProps) {
                         daysUntilDeadline < 0
                           ? 'text-destructive'
                           : daysUntilDeadline <= 7
-                            ? 'text-amber-600'
+                            ? 'text-tone-caution'
                             : 'text-muted-foreground'
                       }`}
                     >
@@ -342,40 +325,35 @@ export function ProjectDetail({ project, contracts }: ProjectDetailProps) {
               </CardContent>
             </Card>
           )}
-        </TabsContent>
+        </div>
+      )}
 
-        <TabsContent value="tasks">
-          <TasksTab projectId={project.id} />
-        </TabsContent>
+      {activeTab === 'tasks' && <TasksTab projectId={project.id} />}
 
-        <TabsContent value="deliverables">
-          <DeliverablesTab
-            projectId={project.id}
-            projectName={project.title}
-            clientName={project.client?.company_name ?? project.client?.contact_name ?? undefined}
-          />
-        </TabsContent>
+      {activeTab === 'deliverables' && (
+        <DeliverablesTab
+          projectId={project.id}
+          projectName={project.title}
+          clientName={project.client?.company_name ?? project.client?.contact_name ?? undefined}
+        />
+      )}
 
-        <TabsContent value="messages">
-          {currentUserId ? (
-            <MessagesWithChannel projectId={project.id} currentUserId={currentUserId} />
-          ) : (
-            <EmptyState icon={MessageSquare} title={tc('loading')} description={tc('pleaseWait')} />
-          )}
-        </TabsContent>
+      {activeTab === 'messages' &&
+        (currentUserId ? (
+          <MessagesWithChannel projectId={project.id} currentUserId={currentUserId} />
+        ) : (
+          <EmptyState icon={MessageSquare} title={tc('loading')} description={tc('pleaseWait')} />
+        ))}
 
-        <TabsContent value="invoices">
-          <InvoicesTab
-            projectId={project.id}
-            clientId={project.client_id}
-            projectTitle={project.title}
-          />
-        </TabsContent>
+      {activeTab === 'invoices' && (
+        <InvoicesTab
+          projectId={project.id}
+          clientId={project.client_id}
+          projectTitle={project.title}
+        />
+      )}
 
-        <TabsContent value="contracts">
-          <ContractsTab project={project} contracts={contracts} />
-        </TabsContent>
-      </Tabs>
+      {activeTab === 'contracts' && <ContractsTab project={project} contracts={contracts} />}
 
       <ConfirmDialog
         open={deleteDialogOpen}
@@ -387,7 +365,7 @@ export function ProjectDetail({ project, contracts }: ProjectDetailProps) {
         destructive
         loading={isDeleting}
       />
-    </div>
+    </DetailShell>
   );
 }
 
