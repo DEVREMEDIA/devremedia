@@ -1,69 +1,68 @@
-'use client'
+'use client';
 
-import { useSortable } from '@dnd-kit/sortable'
-import { CSS } from '@dnd-kit/utilities'
-import { GripVertical, Calendar } from 'lucide-react'
-import { format } from 'date-fns'
-import { cn } from '@/lib/utils'
-import { Card } from '@/components/ui/card'
-import { Badge } from '@/components/ui/badge'
-import { PRIORITY_LABELS } from '@/lib/constants'
-import { useTranslations } from 'next-intl'
+import { useSortable } from '@dnd-kit/sortable';
+import { CSS } from '@dnd-kit/utilities';
+import { GripVertical, Calendar } from 'lucide-react';
+import { format } from 'date-fns';
+import { cn } from '@/lib/utils';
+import { Card } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
+import { statusTone, type Tone } from '@/lib/status-tone';
+import { useTranslations } from 'next-intl';
 
-type Priority = 'low' | 'medium' | 'high' | 'urgent'
+type Priority = 'low' | 'medium' | 'high' | 'urgent';
 
 type Task = {
-  id: string
-  project_id: string
-  title: string
-  description: string | null
-  status: 'todo' | 'in_progress' | 'review' | 'done'
-  priority: Priority
-  assigned_to: string | null
-  due_date: string | null
-  order_index: number
-  metadata: Record<string, unknown>
-  created_by: string
-  created_at: string
-  updated_at: string
-}
+  id: string;
+  project_id: string;
+  title: string;
+  description: string | null;
+  status: 'todo' | 'in_progress' | 'review' | 'done';
+  priority: Priority;
+  assigned_to: string | null;
+  due_date: string | null;
+  order_index: number;
+  metadata: Record<string, unknown>;
+  created_by: string;
+  created_at: string;
+  updated_at: string;
+};
 
 type TaskCardProps = {
-  task: Task
-  onClick: (task: Task) => void
-}
+  task: Task;
+  onClick: (task: Task) => void;
+};
 
-const priorityColors: Record<Priority, string> = {
-  low: 'bg-slate-500',
-  medium: 'bg-blue-500',
-  high: 'bg-amber-500',
-  urgent: 'bg-red-500',
-}
+// Tailwind can't see a dynamically built class name, so the map stays
+// static — but it now has 4 rows (tone) instead of 4 (priority) x 2.
+const TONE_DOT: Record<Tone, string> = {
+  critical: 'bg-tone-critical',
+  caution: 'bg-tone-caution',
+  positive: 'bg-tone-positive',
+  neutral: 'bg-tone-neutral',
+};
 
-const priorityBadgeColors: Record<Priority, string> = {
-  low: 'bg-slate-100 text-slate-700 border-slate-300',
-  medium: 'bg-blue-100 text-blue-700 border-blue-300',
-  high: 'bg-amber-100 text-amber-700 border-amber-300',
-  urgent: 'bg-red-100 text-red-700 border-red-300',
-}
+const TONE_BADGE: Record<Tone, string> = {
+  critical: 'bg-tone-critical-bg text-tone-critical border-tone-critical',
+  caution: 'bg-tone-caution-bg text-tone-caution border-tone-caution',
+  positive: 'bg-tone-positive-bg text-tone-positive border-tone-positive',
+  neutral: 'bg-tone-neutral-bg text-tone-neutral border-tone-neutral',
+};
 
 export function TaskCard({ task, onClick }: TaskCardProps) {
-  const t = useTranslations('tasks')
-  const {
-    attributes,
-    listeners,
-    setNodeRef,
-    transform,
-    transition,
-    isDragging,
-  } = useSortable({ id: task.id })
+  const t = useTranslations('tasks');
+  const tPriority = useTranslations('statuses.priority');
+  const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({
+    id: task.id,
+  });
 
   const style = {
     transform: CSS.Transform.toString(transform),
     transition,
-  }
+  };
 
-  const isOverdue = task.due_date && new Date(task.due_date) < new Date() && task.status !== 'done'
+  const isOverdue = task.due_date && new Date(task.due_date) < new Date() && task.status !== 'done';
+  const priorityTone = statusTone(task.priority);
 
   return (
     <Card
@@ -71,7 +70,7 @@ export function TaskCard({ task, onClick }: TaskCardProps) {
       style={style}
       className={cn(
         'p-3 cursor-pointer hover:shadow-md transition-shadow bg-background',
-        isDragging && 'opacity-50'
+        isDragging && 'opacity-50',
       )}
       onClick={() => onClick(task)}
     >
@@ -88,8 +87,8 @@ export function TaskCard({ task, onClick }: TaskCardProps) {
         <div className="flex-1 min-w-0">
           <div className="flex items-start gap-2 mb-2">
             <div
-              className={cn('h-2 w-2 rounded-full mt-1.5 flex-shrink-0', priorityColors[task.priority])}
-              title={PRIORITY_LABELS[task.priority]}
+              className={cn('h-2 w-2 rounded-full mt-1.5 flex-shrink-0', TONE_DOT[priorityTone])}
+              title={tPriority(task.priority)}
             />
             <h4 className="text-sm font-medium leading-tight flex-1 break-words">{task.title}</h4>
           </div>
@@ -99,15 +98,15 @@ export function TaskCard({ task, onClick }: TaskCardProps) {
           )}
 
           <div className="flex items-center gap-2 flex-wrap">
-            <Badge variant="outline" className={cn('text-xs', priorityBadgeColors[task.priority])}>
-              {PRIORITY_LABELS[task.priority]}
+            <Badge variant="outline" className={cn('text-xs', TONE_BADGE[priorityTone])}>
+              {tPriority(task.priority)}
             </Badge>
 
             {task.due_date && (
               <div
                 className={cn(
                   'flex items-center gap-1 text-xs',
-                  isOverdue ? 'text-red-600 font-medium' : 'text-muted-foreground'
+                  isOverdue ? 'text-destructive font-medium' : 'text-muted-foreground',
                 )}
               >
                 <Calendar className="h-3 w-3" />
@@ -115,15 +114,20 @@ export function TaskCard({ task, onClick }: TaskCardProps) {
               </div>
             )}
 
-            {Array.isArray(task.metadata?.sub_tasks) && (task.metadata.sub_tasks as unknown[]).length > 0 && (
-              <span className="text-xs text-muted-foreground">
-                {(task.metadata.sub_tasks as Array<{ completed: boolean }>).filter((st) => st.completed).length}/
-                {(task.metadata.sub_tasks as Array<unknown>).length} {t('subtasks')}
-              </span>
-            )}
+            {Array.isArray(task.metadata?.sub_tasks) &&
+              (task.metadata.sub_tasks as unknown[]).length > 0 && (
+                <span className="text-xs text-muted-foreground">
+                  {
+                    (task.metadata.sub_tasks as Array<{ completed: boolean }>).filter(
+                      (st) => st.completed,
+                    ).length
+                  }
+                  /{(task.metadata.sub_tasks as Array<unknown>).length} {t('subtasks')}
+                </span>
+              )}
           </div>
         </div>
       </div>
     </Card>
-  )
+  );
 }

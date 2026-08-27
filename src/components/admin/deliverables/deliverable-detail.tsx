@@ -210,7 +210,7 @@ export function DeliverableDetail({ deliverable, projectId, onBack }: Deliverabl
           {/* Video Player — iframe embed for YouTube/Vimeo/Drive/Loom, native player for direct files */}
           {videoUrl ? (
             getEmbedUrl(videoUrl) ? (
-              <div className="aspect-video rounded-lg overflow-hidden bg-black">
+              <div className="aspect-video rounded-lg overflow-hidden bg-media-surface">
                 <iframe
                   src={getEmbedUrl(videoUrl)!}
                   className="w-full h-full border-0"

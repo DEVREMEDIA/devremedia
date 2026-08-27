@@ -1,7 +1,7 @@
 import Link from 'next/link';
 import { getTranslations } from 'next-intl/server';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
+import { StatusBadge } from '@/components/shared/status-badge';
 import { getUpcomingDeadlinesGrouped } from '@/lib/queries/dashboard/production';
 import type { DeadlineProject } from '@/types/dashboard';
 
@@ -19,7 +19,7 @@ function Row({ p }: { p: DeadlineProject }) {
         <span className="text-xs tabular-nums text-muted-foreground">
           {p.daysUntilDeadline >= 0 ? `+${p.daysUntilDeadline}d` : `${p.daysUntilDeadline}d`}
         </span>
-        <Badge variant="outline">{p.status}</Badge>
+        <StatusBadge status={p.status} />
       </div>
     </Link>
   );

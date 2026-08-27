@@ -1,7 +1,8 @@
 'use client';
 
-import { useEffect, useState, useCallback } from 'react';
+import { useEffect, useState, useCallback, useMemo } from 'react';
 import { useTranslations } from 'next-intl';
+import { ColumnDef } from '@tanstack/react-table';
 import { getShotLists, createShotList, updateShotList } from '@/lib/actions/filming-prep';
 import type { Shot, ShotList as ShotListData } from '@/types';
 import { SHOT_TYPES, SHOT_TYPE_LABELS } from '@/lib/constants';
@@ -9,14 +10,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from '@/components/ui/table';
+import { DataTable } from '@/components/shared/data-table';
 import {
   Select,
   SelectContent,
@@ -150,25 +144,138 @@ function ShotListTable({ shotList }: ShotListTableProps) {
     setIsDirty(true);
   };
 
-  const updateShot = (index: number, updates: Partial<Shot>) => {
+  // Οι στήλες πιο κάτω μπαίνουν σε useMemo, οπότε κάθε handler που καλεί ένα
+  // κελί χρειάζεται σταθερή ταυτότητα — αλλιώς οι μνημονευμένες στήλες
+  // κλειδώνουν πάνω σε ένα παλιό closure. Και οι τρεις χρησιμοποιούν μόνο τη
+  // συναρτησιακή μορφή του setShots, άρα δεν εξαρτώνται πραγματικά από τίποτα.
+  const updateShot = useCallback((index: number, updates: Partial<Shot>) => {
     setShots((prev) => prev.map((shot, i) => (i === index ? { ...shot, ...updates } : shot)));
     setIsDirty(true);
-  };
+  }, []);
 
-  const deleteShot = (index: number) => {
+  const deleteShot = useCallback((index: number) => {
     setShots((prev) => {
       const filtered = prev.filter((_, i) => i !== index);
       return filtered.map((shot, i) => ({ ...shot, number: i + 1 }));
     });
     setIsDirty(true);
-  };
+  }, []);
 
-  const toggleCompleted = (index: number) => {
+  const toggleCompleted = useCallback((index: number) => {
     setShots((prev) =>
       prev.map((shot, i) => (i === index ? { ...shot, completed: !shot.completed } : shot)),
     );
     setIsDirty(true);
-  };
+  }, []);
+
+  const columns: ColumnDef<Shot>[] = useMemo(
+    () => [
+      {
+        accessorKey: 'number',
+        header: '#',
+        meta: { align: 'center', width: 'w-12' },
+        cell: ({ row }) => <span className="font-medium">{row.original.number}</span>,
+      },
+      {
+        accessorKey: 'description',
+        header: tc('description'),
+        meta: { width: 'w-[200px]' },
+        cell: ({ row }) => (
+          <Input
+            value={row.original.description}
+            onChange={(e) => updateShot(row.index, { description: e.target.value })}
+            placeholder={t('shotDescriptionPlaceholder')}
+            className="h-9"
+          />
+        ),
+      },
+      {
+        accessorKey: 'shot_type',
+        header: t('shotType'),
+        meta: { width: 'w-[140px]' },
+        cell: ({ row }) => (
+          <Select
+            value={row.original.shot_type}
+            onValueChange={(value) =>
+              updateShot(row.index, { shot_type: value as Shot['shot_type'] })
+            }
+          >
+            <SelectTrigger className="h-9">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              {SHOT_TYPES.map((type) => (
+                <SelectItem key={type} value={type}>
+                  {SHOT_TYPE_LABELS[type]}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        ),
+      },
+      {
+        accessorKey: 'location',
+        header: t('locationPlaceholder'),
+        meta: { width: 'w-[160px]' },
+        cell: ({ row }) => (
+          <Input
+            value={row.original.location || ''}
+            onChange={(e) => updateShot(row.index, { location: e.target.value })}
+            placeholder={t('locationPlaceholder')}
+            className="h-9"
+          />
+        ),
+      },
+      {
+        accessorKey: 'duration_est',
+        header: t('durationEstimate'),
+        meta: { width: 'w-[120px]' },
+        cell: ({ row }) => (
+          <Input
+            value={row.original.duration_est || ''}
+            onChange={(e) => updateShot(row.index, { duration_est: e.target.value })}
+            placeholder={t('durationPlaceholder')}
+            className="h-9"
+          />
+        ),
+      },
+      {
+        accessorKey: 'notes',
+        header: tc('notes'),
+        meta: { width: 'w-[160px]' },
+        cell: ({ row }) => (
+          <Input
+            value={row.original.notes || ''}
+            onChange={(e) => updateShot(row.index, { notes: e.target.value })}
+            placeholder={t('shotNotesPlaceholder')}
+            className="h-9"
+          />
+        ),
+      },
+      {
+        accessorKey: 'completed',
+        header: t('doneLabel'),
+        meta: { align: 'center', width: 'w-[80px]' },
+        cell: ({ row }) => (
+          <Checkbox
+            checked={row.original.completed}
+            onCheckedChange={() => toggleCompleted(row.index)}
+          />
+        ),
+      },
+      {
+        id: 'actions',
+        header: '',
+        meta: { width: 'w-[60px]' },
+        cell: ({ row }) => (
+          <Button variant="ghost" size="sm" onClick={() => deleteShot(row.index)}>
+            <Trash2 className="h-4 w-4 text-destructive" />
+          </Button>
+        ),
+      },
+    ],
+    [t, tc, updateShot, toggleCompleted, deleteShot],
+  );
 
   const completedCount = shots.filter((shot) => shot.completed).length;
 
@@ -202,95 +309,13 @@ function ShotListTable({ shotList }: ShotListTableProps) {
         </div>
       </div>
 
-      {shots.length === 0 ? (
-        <EmptyState icon={Camera} title={t('noShotsYet')} description={t('addFirstShot')} />
-      ) : (
-        <div className="border rounded-lg">
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead className="w-12">#</TableHead>
-                <TableHead className="w-[200px]">{tc('description')}</TableHead>
-                <TableHead className="w-[140px]">{t('shotType')}</TableHead>
-                <TableHead className="w-[160px]">{t('locationPlaceholder')}</TableHead>
-                <TableHead className="w-[120px]">{t('durationEstimate')}</TableHead>
-                <TableHead className="w-[160px]">{tc('notes')}</TableHead>
-                <TableHead className="w-[80px]">{t('doneLabel')}</TableHead>
-                <TableHead className="w-[60px]"></TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {shots.map((shot, index) => (
-                <TableRow key={`shot-${index}`}>
-                  <TableCell className="font-medium text-center">{shot.number}</TableCell>
-                  <TableCell>
-                    <Input
-                      value={shot.description}
-                      onChange={(e) => updateShot(index, { description: e.target.value })}
-                      placeholder={t('shotDescriptionPlaceholder')}
-                      className="h-9"
-                    />
-                  </TableCell>
-                  <TableCell>
-                    <Select
-                      value={shot.shot_type}
-                      onValueChange={(value) =>
-                        updateShot(index, { shot_type: value as Shot['shot_type'] })
-                      }
-                    >
-                      <SelectTrigger className="h-9">
-                        <SelectValue />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {SHOT_TYPES.map((type) => (
-                          <SelectItem key={type} value={type}>
-                            {SHOT_TYPE_LABELS[type]}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  </TableCell>
-                  <TableCell>
-                    <Input
-                      value={shot.location || ''}
-                      onChange={(e) => updateShot(index, { location: e.target.value })}
-                      placeholder={t('locationPlaceholder')}
-                      className="h-9"
-                    />
-                  </TableCell>
-                  <TableCell>
-                    <Input
-                      value={shot.duration_est || ''}
-                      onChange={(e) => updateShot(index, { duration_est: e.target.value })}
-                      placeholder={t('durationPlaceholder')}
-                      className="h-9"
-                    />
-                  </TableCell>
-                  <TableCell>
-                    <Input
-                      value={shot.notes || ''}
-                      onChange={(e) => updateShot(index, { notes: e.target.value })}
-                      placeholder={t('shotNotesPlaceholder')}
-                      className="h-9"
-                    />
-                  </TableCell>
-                  <TableCell className="text-center">
-                    <Checkbox
-                      checked={shot.completed}
-                      onCheckedChange={() => toggleCompleted(index)}
-                    />
-                  </TableCell>
-                  <TableCell>
-                    <Button variant="ghost" size="sm" onClick={() => deleteShot(index)}>
-                      <Trash2 className="h-4 w-4 text-destructive" />
-                    </Button>
-                  </TableCell>
-                </TableRow>
-              ))}
-            </TableBody>
-          </Table>
-        </div>
-      )}
+      <DataTable
+        columns={columns}
+        data={shots}
+        emptyState={
+          <EmptyState icon={Camera} title={t('noShotsYet')} description={t('addFirstShot')} />
+        }
+      />
     </div>
   );
 }

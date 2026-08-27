@@ -78,22 +78,42 @@ const COVERED = [
   // δέντρα, ώστε ένα νέο component οπουδήποτε από κάτω να φυλάσσεται αυτόματα.
   'src/app/client',
   'src/components/client',
+  // Η περιοχή των Παραγωγών (#108-#109) — ο κοινός FormDialog, ο κόμβος και
+  // τα πέντε δέντρα components του: έργα, tasks, deliverables, ημερολόγιο,
+  // αιτήματα και προετοιμασία γυρίσματος.
+  'src/components/shared/form-dialog.tsx',
+  'src/app/admin/productions',
+  'src/components/admin/projects',
+  'src/components/admin/tasks',
+  'src/components/admin/deliverables',
+  'src/components/admin/calendar',
+  'src/components/admin/filming-requests',
+  'src/components/admin/filming-prep',
 ];
 
 // Αρχεία μέσα σε καλυμμένους φακέλους που όντως γράφουν ακόμα ωμό χρώμα.
 // Κάθε επόμενη φέτα αφαιρεί από εδώ ό,τι μεταναστεύει. Μπαίνει εδώ μόνο
 // ό,τι πραγματικά παραβιάζει — ένα καθαρό αρχείο δεν έχει λόγο να εξαιρεθεί.
+//
+// ΤΟ `lines` ΕΙΝΑΙ ΤΟ ΧΡΕΟΣ, και ο φύλακας απαιτεί να ταιριάζει ΑΚΡΙΒΩΣ.
+// Χωρίς αυτόν τον αριθμό η λίστα ήταν ανοιχτή πόρτα: μια εγγραφή εξαιρούσε
+// ΤΟ ΑΡΧΕΙΟ, όχι τις γνωστές του παραβιάσεις, οπότε ένα ήδη εκκρεμές αρχείο
+// μπορούσε να μαζέψει όσα καινούργια ωμά χρώματα ήθελε και ο έλεγχος
+// «παραβιάζει ακόμα;» απαντούσε ναι και σιωπούσε. Το απέδειξε ο τελικός
+// έλεγχος της #108 βάζοντας άσχετη παραβίαση σε εκκρεμές αρχείο.
+//
+// Μεγαλώνει ο αριθμός → μπήκε νέο χρέος πίσω από παλιά εξαίρεση.
+// Μικραίνει → κάποιος πλήρωσε μέρος και δεν το είπε· γράψε τον νέο.
+// Μηδενίζεται → η εγγραφή φεύγει.
+// (Ο πρώτος αριθμός που γράφτηκε εδώ ως σχόλιο ήταν ήδη λάθος: έλεγε
+// δεκαπέντε για ένα αρχείο με δεκαεπτά. Γι' αυτό τον μετράει ο φύλακας.)
 const PENDING = [
-  'src/components/admin/dashboard/production/crew-load-heatmap.tsx',
-  'src/components/admin/dashboard/risk/risk-panel.tsx',
-  'src/components/admin/dashboard/sales/revenue-forecast-card.tsx',
-  // Η λίστα έργων του portal πελάτη — δεκαπέντε ωμά χρώματα, και δεν είναι
-  // οθόνη λεπτομέρειας: μπήκε στην κάλυψη μαζί με τον φάκελό της, δεν την
-  // ανέλαβε η #106.
-  'src/components/client/projects/projects-list.tsx',
-  // Μία γραμμή: `bg-black` ως φόντο θεατή βίντεο. Σωστό σημασιολογικά, αλλά
-  // δεν υπάρχει σύμβολο γι' αυτό ακόμα — να γεννηθεί στη φέτα των παραδοτέων.
-  'src/components/client/projects/deliverable-detail-view.tsx',
+  { file: 'src/components/admin/dashboard/production/crew-load-heatmap.tsx', lines: 3 },
+  { file: 'src/components/admin/dashboard/risk/risk-panel.tsx', lines: 1 },
+  { file: 'src/components/admin/dashboard/sales/revenue-forecast-card.tsx', lines: 1 },
+  // Η λίστα έργων του portal πελάτη — και δεν είναι οθόνη λεπτομέρειας:
+  // μπήκε στην κάλυψη μαζί με τον φάκελό της, δεν την ανέλαβε η #106.
+  { file: 'src/components/client/projects/projects-list.tsx', lines: 17 },
 ];
 
 // ΠΡΟΣΟΧΗ στα όρια λέξης. Το Tailwind γράφει τα κενά μιας αυθαίρετης τιμής ως
@@ -138,7 +158,7 @@ function stripComments(line) {
   return i === -1 ? line : line.slice(0, i);
 }
 
-const pendingSet = new Set(PENDING.map((p) => p.replaceAll('\\', '/')));
+const pendingDebt = new Map(PENDING.map((p) => [p.file.replaceAll('\\', '/'), p.lines]));
 
 const files = new Set();
 for (const target of COVERED) {
@@ -147,6 +167,7 @@ for (const target of COVERED) {
 
 const violations = [];
 const stalePendingColours = [];
+const changedPendingDebt = [];
 for (const file of files) {
   const lines = readFileSync(file, 'utf8').split('\n');
   const offending = [];
@@ -156,8 +177,14 @@ for (const file of files) {
   // Ένα εκκρεμές που καθάρισε δεν είναι πια εκκρεμές. Ήταν η μόνη από τις
   // λίστες αναβολής χωρίς αυτόν τον έλεγχο — άρα η μόνη που μπορούσε να
   // κρατήσει για πάντα μια εξαίρεση που δεν εξαιρεί τίποτα.
-  if (pendingSet.has(file)) {
-    if (offending.length === 0) stalePendingColours.push(file);
+  if (pendingDebt.has(file)) {
+    if (offending.length === 0) {
+      stalePendingColours.push(file);
+    } else if (offending.length !== pendingDebt.get(file)) {
+      // Η εξαίρεση καλύπτει ΣΥΓΚΕΚΡΙΜΕΝΟ χρέος, όχι το αρχείο. Ό,τι δεν
+      // ταιριάζει με τον δηλωμένο αριθμό δεν είναι το χρέος που εξαιρέθηκε.
+      changedPendingDebt.push({ file, declared: pendingDebt.get(file), found: offending });
+    }
     continue;
   }
   violations.push(...offending);
@@ -165,7 +192,7 @@ for (const file of files) {
 
 // Και μια εγγραφή που δείχνει σε αρχείο εκτός καλυμμένης περιοχής — μετονομασία,
 // διαγραφή, τυπογραφικό — κάθεται σιωπηλή δίνοντας την εντύπωση ότι φυλάει κάτι.
-for (const pending of pendingSet) {
+for (const pending of pendingDebt.keys()) {
   if (!files.has(pending)) stalePendingColours.push(pending);
 }
 
@@ -332,6 +359,12 @@ const TABLE_GUARDED_AREAS = [
   // χρώμα από πάνω.
   'src/app/client/',
   'src/components/client/',
+  // Η περιοχή των Παραγωγών (#108-#109), όπως και για το χρώμα από πάνω.
+  'src/app/admin/productions/',
+  'src/components/admin/filming-requests/',
+  'src/components/admin/filming-prep/',
+  'src/components/admin/deliverables/',
+  'src/components/admin/tasks/',
 ];
 
 // Λίστες λεπτομέρειας μέσα σε ήδη ανοιγμένη γραμμή. Δεν είναι το θέμα της
@@ -453,6 +486,7 @@ const tableGuardedChecked =
 if (
   violations.length > 0 ||
   stalePendingColours.length > 0 ||
+  changedPendingDebt.length > 0 ||
   headingViolations.length > 0 ||
   stalePending.length > 0 ||
   doubleTitles.size > 0 ||
@@ -470,6 +504,21 @@ if (
       `\ncheck:design — ${stalePendingColours.length} stale PENDING entr${stalePendingColours.length === 1 ? 'y' : 'ies'} — either writes no raw colour any more, or no longer sits inside a covered area. Remove from the list:\n`,
     );
     for (const p of stalePendingColours) console.error(`  ${p}`);
+  }
+  if (changedPendingDebt.length > 0) {
+    console.error(
+      `\ncheck:design — ${changedPendingDebt.length} PENDING entr${changedPendingDebt.length === 1 ? 'y whose' : 'ies whose'} colour debt changed. A PENDING entry excuses a KNOWN number of raw colours, not the file:\n`,
+    );
+    for (const { file, declared, found } of changedPendingDebt) {
+      console.error(
+        `  ${file} — declared ${declared}, found ${found.length}. ${
+          found.length > declared
+            ? 'New raw colour went in behind an old exception. Remove it, or raise the number and say why.'
+            : 'Some of it was paid. Lower the number to what is left.'
+        }`,
+      );
+      for (const line of found) console.error(`      ${line}`);
+    }
   }
   if (headingViolations.length > 0) {
     console.error(`\ncheck:design — ${headingViolations.length} heading violation(s):\n`);

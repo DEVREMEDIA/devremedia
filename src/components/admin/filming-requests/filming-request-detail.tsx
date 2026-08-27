@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
 import { StatusBadge } from '@/components/shared/status-badge';
+import { ConfirmDialog } from '@/components/shared/confirm-dialog';
 import { format } from 'date-fns';
 import {
   ArrowLeft,
@@ -370,13 +371,13 @@ export function FilmingRequestDetail({ request }: FilmingRequestDetailProps) {
                       <span
                         className={`inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-xs font-medium ${
                           availability[dateInfo.date]
-                            ? 'bg-green-500/10 text-green-700 dark:text-green-400'
-                            : 'bg-red-500/10 text-red-700 dark:text-red-400'
+                            ? 'bg-tone-positive-bg text-tone-positive'
+                            : 'bg-tone-critical-bg text-tone-critical'
                         }`}
                       >
                         <span
                           className={`h-1.5 w-1.5 rounded-full ${
-                            availability[dateInfo.date] ? 'bg-green-500' : 'bg-red-500'
+                            availability[dateInfo.date] ? 'bg-tone-positive' : 'bg-tone-critical'
                           }`}
                         />
                         {availability[dateInfo.date] ? t('available') : t('busy')}
@@ -481,27 +482,15 @@ export function FilmingRequestDetail({ request }: FilmingRequestDetailProps) {
       </Dialog>
 
       {/* Convert to Project Dialog */}
-      <Dialog open={convertDialogOpen} onOpenChange={setConvertDialogOpen}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>{t('convertToProject')}</DialogTitle>
-            <DialogDescription>{t('convertDescription')}</DialogDescription>
-          </DialogHeader>
-
-          <DialogFooter>
-            <Button
-              variant="outline"
-              onClick={() => setConvertDialogOpen(false)}
-              disabled={loading}
-            >
-              {tc('cancel')}
-            </Button>
-            <Button onClick={handleConvertToProject} disabled={loading}>
-              {loading ? t('converting') : t('convertToProject')}
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+      <ConfirmDialog
+        open={convertDialogOpen}
+        onOpenChange={setConvertDialogOpen}
+        title={t('convertToProject')}
+        description={t('convertDescription')}
+        confirmLabel={t('convertToProject')}
+        onConfirm={handleConvertToProject}
+        loading={loading}
+      />
     </>
   );
 }

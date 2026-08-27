@@ -2,7 +2,6 @@
 
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
 import {
   Dialog,
   DialogContent,
@@ -14,6 +13,7 @@ import {
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { updateDeliverableStatus, requestRevisionWithNote } from '@/lib/actions/deliverables';
+import { StatusBadge } from '@/components/shared/status-badge';
 import { DELIVERABLE_STATUS_LABELS } from '@/lib/constants';
 import type { DeliverableStatus } from '@/lib/constants';
 import { toast } from 'sonner';
@@ -39,21 +39,6 @@ type Deliverable = {
 type ApprovalActionsProps = {
   deliverable: Deliverable;
   onStatusChange: () => void;
-};
-
-const getStatusColor = (status: DeliverableStatus) => {
-  switch (status) {
-    case 'pending_review':
-      return 'bg-yellow-500/10 text-yellow-700 dark:text-yellow-400 border-yellow-500/20';
-    case 'approved':
-      return 'bg-green-500/10 text-green-700 dark:text-green-400 border-green-500/20';
-    case 'revision_requested':
-      return 'bg-red-500/10 text-red-700 dark:text-red-400 border-red-500/20';
-    case 'final':
-      return 'bg-blue-500/10 text-blue-700 dark:text-blue-400 border-blue-500/20';
-    default:
-      return '';
-  }
 };
 
 export function ApprovalActions({ deliverable, onStatusChange }: ApprovalActionsProps) {
@@ -114,9 +99,7 @@ export function ApprovalActions({ deliverable, onStatusChange }: ApprovalActions
     <div className="space-y-6">
       <div className="space-y-2">
         <h3 className="text-sm font-medium text-muted-foreground">{t('currentStatus')}</h3>
-        <Badge variant="outline" className={getStatusColor(deliverable.status)}>
-          {DELIVERABLE_STATUS_LABELS[deliverable.status]}
-        </Badge>
+        <StatusBadge status={deliverable.status} />
       </div>
 
       <div className="space-y-3">
@@ -162,12 +145,10 @@ export function ApprovalActions({ deliverable, onStatusChange }: ApprovalActions
         )}
 
         {deliverable.status === 'final' && (
-          <div className="rounded-lg border bg-blue-500/10 border-blue-500/20 p-4">
+          <div className="rounded-lg border border-tone-positive/30 bg-tone-positive-bg p-4">
             <div className="flex items-center gap-2">
-              <Award className="h-5 w-5 text-blue-600" />
-              <p className="text-sm font-medium text-blue-700 dark:text-blue-400">
-                {t('finalApprovedVersion')}
-              </p>
+              <Award className="h-5 w-5 text-tone-positive" />
+              <p className="text-sm font-medium text-tone-positive">{t('finalApprovedVersion')}</p>
             </div>
           </div>
         )}

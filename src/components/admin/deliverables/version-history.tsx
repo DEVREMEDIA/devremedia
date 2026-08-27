@@ -7,6 +7,7 @@ import { Calendar, FileVideo } from 'lucide-react';
 import { format } from 'date-fns';
 import { cn } from '@/lib/utils';
 import { formatFileSize } from '@/lib/format';
+import { statusTone, type Tone } from '@/lib/status-tone';
 
 type Deliverable = {
   id: string;
@@ -29,19 +30,13 @@ type VersionHistoryProps = {
   currentId?: string;
 };
 
-const getStatusColor = (status: DeliverableStatus) => {
-  switch (status) {
-    case 'pending_review':
-      return 'bg-yellow-500/10 text-yellow-700 dark:text-yellow-400 border-yellow-500/20';
-    case 'approved':
-      return 'bg-green-500/10 text-green-700 dark:text-green-400 border-green-500/20';
-    case 'revision_requested':
-      return 'bg-red-500/10 text-red-700 dark:text-red-400 border-red-500/20';
-    case 'final':
-      return 'bg-blue-500/10 text-blue-700 dark:text-blue-400 border-blue-500/20';
-    default:
-      return '';
-  }
+// Tailwind can't see a dynamically built class name, so the map stays
+// static — but it now has 4 rows (tone) instead of 4 (status).
+const TONE_BADGE: Record<Tone, string> = {
+  critical: 'bg-tone-critical-bg text-tone-critical border-tone-critical',
+  caution: 'bg-tone-caution-bg text-tone-caution border-tone-caution',
+  positive: 'bg-tone-positive-bg text-tone-positive border-tone-positive',
+  neutral: 'bg-tone-neutral-bg text-tone-neutral border-tone-neutral',
 };
 
 export function VersionHistory({ deliverables, currentId }: VersionHistoryProps) {
@@ -85,7 +80,7 @@ export function VersionHistory({ deliverables, currentId }: VersionHistoryProps)
                     </Badge>
                   )}
                 </div>
-                <Badge variant="outline" className={getStatusColor(deliverable.status)}>
+                <Badge variant="outline" className={TONE_BADGE[statusTone(deliverable.status)]}>
                   {DELIVERABLE_STATUS_LABELS[deliverable.status]}
                 </Badge>
               </div>
