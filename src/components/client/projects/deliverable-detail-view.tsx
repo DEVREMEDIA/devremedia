@@ -106,7 +106,7 @@ export function DeliverableDetailView({
         {/* Video Player — iframe embed for YouTube/Vimeo/Drive/Loom, native player for direct files */}
         {resolvedVideoSrc ? (
           getEmbedUrl(resolvedVideoSrc) ? (
-            <div className="aspect-video rounded-lg overflow-hidden bg-black">
+            <div className="aspect-video rounded-lg overflow-hidden bg-media-surface">
               <iframe
                 src={getEmbedUrl(resolvedVideoSrc)!}
                 className="w-full h-full border-0"
