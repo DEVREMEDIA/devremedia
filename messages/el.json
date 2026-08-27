@@ -1,5 +1,6 @@
 {
   "common": {
+    "deleteItem": "Διαγραφή: {item}",
     "save": "Αποθήκευση",
     "cancel": "Ακύρωση",
     "delete": "Διαγραφή",
@@ -1034,7 +1035,7 @@
     "templateDeletedSuccess": "Το πρότυπο διαγράφηκε επιτυχώς",
     "noTemplatesDescription": "Δημιουργήστε το πρώτο πρότυπο συμβολαίου",
     "deleteTemplateConfirm": "Είστε σίγουροι ότι θέλετε να διαγράψετε αυτό το πρότυπο; Η ενέργεια δεν μπορεί να αναιρεθεί.",
-    "templatePlaceholder": "Γράψτε το πρότυπο συμβολαίου εδώ. Χρησιμοποιήστε {placeholder_name} για δυναμικές τιμές...",
+    "templatePlaceholder": "Γράψτε το πρότυπο συμβολαίου εδώ. Χρησιμοποιήστε '{placeholder_name}' για δυναμικές τιμές...",
     "failedToSendContract": "Αποτυχία αποστολής συμβολαίου",
     "contractSignedSuccess": "Το συμβόλαιο υπογράφηκε επιτυχώς",
     "signDigitally": "Ψηφιακή Υπογραφή",
@@ -1638,6 +1639,19 @@
   },
 
   "university": {
+    "category": "Κατηγορία",
+    "sortOrder": "Σειρά Ταξινόμησης",
+    "sort": "Ταξινόμηση",
+    "published": "Δημοσιευμένο",
+    "draft": "Πρόχειρο",
+    "noArticlesDescription": "Δημιουργήστε το πρώτο σας άρθρο βάσης γνώσης για να ξεκινήσετε",
+    "allCategories": "Όλες οι Κατηγορίες",
+    "articleCount": "{count, plural, one {# άρθρο} other {# άρθρα}}",
+    "articlesInCategory": "Άρθρα — {category}",
+    "allArticles": "Όλα τα Άρθρα",
+    "noArticlesInCategoryDescription": "Δεν υπάρχουν ακόμα άρθρα σε αυτή την κατηγορία",
+    "deleteCategoryWithArticlesConfirm": "Είστε σίγουροι; Όλα τα άρθρα αυτής της κατηγορίας θα διαγραφούν επίσης.",
+    "createFirstCategoryDescription": "Δημιουργήστε την πρώτη σας κατηγορία για να οργανώσετε τα άρθρα",
     "untitledSection": "Χωρίς τίτλο",
     "noSectionContent": "Χωρίς περιεχόμενο",
     "videosHeading": "Βίντεο",
@@ -1705,6 +1719,16 @@
   },
 
   "salesResources": {
+    "manageCategoriesDescription": "Δημιουργία, επεξεργασία και διαγραφή κατηγοριών πόρων πωλήσεων",
+    "newCategory": "Νέα Κατηγορία",
+    "editCategory": "Επεξεργασία Κατηγορίας",
+    "sortOrder": "Σειρά Ταξινόμησης",
+    "updateCategoryDetails": "Ενημέρωση στοιχείων κατηγορίας",
+    "createCategoryDescription": "Δημιουργία νέας κατηγορίας πόρων πωλήσεων",
+    "descriptionOptional": "Περιγραφή (Προαιρετικό)",
+    "titlePlaceholder": "π.χ., Έντυπα",
+    "sortOrderHint": "Οι μικρότεροι αριθμοί εμφανίζονται πρώτοι",
+    "deleteCategoryWithResourcesConfirm": "Είστε σίγουροι ότι θέλετε να διαγράψετε αυτή την κατηγορία; Όλοι οι πόροι αυτής της κατηγορίας θα διαγραφούν επίσης.",
     "title": "Πόροι Πωλήσεων",
     "description": "Υλικό και έγγραφα πωλήσεων",
     "addResource": "Μεταφόρτωση Πόρου",
