@@ -158,12 +158,15 @@ export const KB_ARTICLE_STATUS_LABELS: Record<KbArticleStatus, string> = {
   published: 'Published',
 };
 
+// FullCalendar writes these into an inline style, so they are tokens rather
+// than tone classes — `filming` and `deadline` already were. `src/lib` is not
+// colour-guarded, which is precisely why the literals do not belong here.
 export const CALENDAR_EVENT_COLORS: Record<CalendarEventType, string> = {
-  meeting: 'hsl(262 83% 58%)',
-  reminder: 'hsl(199 89% 48%)',
+  meeting: 'var(--event-meeting)',
+  reminder: 'var(--event-reminder)',
   filming: 'var(--primary)',
   deadline: 'var(--destructive)',
-  custom: 'hsl(280 60% 55%)',
+  custom: 'var(--event-custom)',
 };
 
 // Calendar event type i18n keys

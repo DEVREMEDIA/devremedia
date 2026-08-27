@@ -105,6 +105,17 @@
   /* Το έδαφος πίσω από βίντεο. Μαύρο και στις δύο εκδόσεις: το letterbox
      δεν ακολουθεί το θέμα, ακολουθεί το βίντεο. */
   --media-surface: #000000;
+  /* Τα χρώματα των τύπων συμβάντος του ημερολογίου. Το FullCalendar και η
+     κουκκίδα των επερχόμενων τα γράφουν σε inline style, όχι σε class — άρα
+     δεν γίνονται tone-class, γίνονται όμως μεταβλητές: ο ίδιος χάρτης ήδη
+     έγραφε var(--primary) για τα γυρίσματα και var(--destructive) για τις
+     προθεσμίες. Ίδιες τιμές και στις δύο εκδόσεις προς το παρόν, όσο ήταν
+     και ως κυριολεξίες· από εδώ και πέρα αλλάζουν σε ένα σημείο. */
+  --event-meeting: hsl(262 83% 58%);
+  --event-reminder: hsl(199 89% 48%);
+  --event-task: hsl(142 76% 36%);
+  --event-invoice: hsl(25 95% 53%);
+  --event-custom: hsl(280 60% 55%);
   --sidebar: #f6f3ea;
   --sidebar-foreground: #1a1a18;
   --sidebar-primary: #8a6d1f;
@@ -149,6 +160,11 @@
   --tone-neutral: #9a968c;
   --tone-neutral-bg: #171714;
   --media-surface: #000000;
+  --event-meeting: hsl(262 83% 58%);
+  --event-reminder: hsl(199 89% 48%);
+  --event-task: hsl(142 76% 36%);
+  --event-invoice: hsl(25 95% 53%);
+  --event-custom: hsl(280 60% 55%);
   --sidebar: #0d0d0c;
   --sidebar-foreground: #ece9e2;
   --sidebar-primary: #c9a033;
