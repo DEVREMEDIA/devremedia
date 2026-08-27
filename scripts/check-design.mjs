@@ -207,7 +207,6 @@ const HEADING_EXEMPT = [
 const HEADING_PENDING = [
   'src/app/book/page.tsx', // δημόσια σελίδα με δικό της κέλυφος
   'src/components/admin/filming-requests/filming-request-detail.tsx', // → #109
-  'src/components/client/invoices/invoice-detail.tsx', // → #109
 ];
 
 const HEADING_IMPORT = /['"][^'"]*\/shared\/page-header['"]/;
@@ -399,8 +398,8 @@ const TABLE_PENDING = [
   'src/components/admin/leads/sales-report.tsx',
   // Ο πίνακας γνώσης του chatbot — έργο περιοχής για επόμενη φέτα.
   'src/components/admin/chatbot/knowledge-table.tsx',
-  // Ο πίνακας χτισμένος στο χέρι από τα ωμά primitives· ο δικός του ωμός τίτλος
-  // ζει ήδη στο HEADING_PENDING για τον ίδιο λόγο — το ίδιο ξαναγράψιμο, #109.
+  // Ο πίνακας χτισμένος στο χέρι από τα ωμά primitives — έργο περιοχής για
+  // επόμενη φέτα, #109.
   'src/components/client/invoices/invoice-detail.tsx',
 ];
 

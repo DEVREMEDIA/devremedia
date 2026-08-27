@@ -3,10 +3,10 @@
 import { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
+import { DetailShell } from '@/components/shared/detail-shell';
 import { StatusBadge } from '@/components/shared/status-badge';
 import { format } from 'date-fns';
-import { ArrowLeft, Download, CreditCard, Eye } from 'lucide-react';
-import { useRouter } from 'next/navigation';
+import { Download, CreditCard, Eye } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import {
@@ -26,7 +26,6 @@ interface InvoiceDetailProps {
 }
 
 export function InvoiceDetail({ invoice }: InvoiceDetailProps) {
-  const router = useRouter();
   const t = useTranslations('invoices');
   const [loading, setLoading] = useState(false);
   const [previewOpen, setPreviewOpen] = useState(false);
@@ -71,28 +70,20 @@ export function InvoiceDetail({ invoice }: InvoiceDetailProps) {
   };
 
   return (
-    <div className="space-y-6 max-w-4xl mx-auto">
-      {/* Header */}
-      <div className="flex items-center gap-4">
-        <Button variant="ghost" size="icon" onClick={() => router.back()}>
-          <ArrowLeft className="h-4 w-4" />
-        </Button>
-        <div className="flex-1">
-          <h1 className="text-3xl font-bold tracking-tight">
-            {t('title')} {invoice.invoice_number}
-          </h1>
-          <div className="flex items-center gap-2 mt-2">
-            <StatusBadge status={invoice.status} />
-          </div>
-        </div>
-        <div className="flex items-center gap-2">
+    <DetailShell
+      backHref="/client/documents?tab=invoices"
+      backLabel={t('title')}
+      title={invoice.invoice_number}
+      meta={<StatusBadge status={invoice.status} />}
+      actions={
+        <>
           <Button variant="outline" onClick={handlePreview} className="gap-2">
             <Eye className="h-4 w-4" />
-            Preview
+            {t('preview')}
           </Button>
           <Button variant="outline" onClick={handleDownload} className="gap-2">
             <Download className="h-4 w-4" />
-            Download
+            {t('download')}
           </Button>
           {invoice.status !== 'paid' && invoice.status !== 'cancelled' && (
             <Button onClick={handlePayment} disabled={loading} className="gap-2">
@@ -100,9 +91,9 @@ export function InvoiceDetail({ invoice }: InvoiceDetailProps) {
               {loading ? t('processing') : t('payNow')}
             </Button>
           )}
-        </div>
-      </div>
-
+        </>
+      }
+    >
       {/* Invoice Details */}
       <Card>
         <CardHeader>
@@ -220,17 +211,17 @@ export function InvoiceDetail({ invoice }: InvoiceDetailProps) {
       <Dialog open={previewOpen} onOpenChange={setPreviewOpen}>
         <DialogContent className="max-w-6xl w-[95vw] h-[90vh] flex flex-col">
           <DialogHeader className="shrink-0">
-            <DialogTitle>{invoice.invoice_number} — Preview</DialogTitle>
+            <DialogTitle>{t('previewTitle', { number: invoice.invoice_number })}</DialogTitle>
           </DialogHeader>
           {previewUrl && (
             <iframe
               src={previewUrl}
               className="w-full flex-1 min-h-0 rounded-md border"
-              title="Invoice Preview"
+              title={t('previewFrameTitle')}
             />
           )}
         </DialogContent>
       </Dialog>
-    </div>
+    </DetailShell>
   );
 }
