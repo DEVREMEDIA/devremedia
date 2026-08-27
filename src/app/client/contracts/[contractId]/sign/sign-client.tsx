@@ -48,7 +48,7 @@ export function SignContractClient({ contract }: SignContractClientProps) {
   if (signed) {
     return (
       <div className="flex flex-col items-center justify-center py-12">
-        <CheckCircle className="h-16 w-16 text-green-600 mb-4" />
+        <CheckCircle className="h-16 w-16 text-tone-positive mb-4" />
         <h2 className="text-2xl font-bold mb-2">{t('contractSignedSuccess')}</h2>
         <p className="text-muted-foreground">{t('redirecting')}</p>
       </div>

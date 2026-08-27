@@ -49,15 +49,15 @@ export function SuccessContent({ invoiceId, sessionId }: SuccessContentProps) {
                 status === 'confirming'
                   ? undefined
                   : status === 'confirmed'
-                    ? '#dcfce7'
-                    : '#fee2e2',
+                    ? 'var(--tone-positive-bg)'
+                    : 'var(--tone-critical-bg)',
             }}
           >
             {status === 'confirming' && (
               <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
             )}
-            {status === 'confirmed' && <CheckCircle className="h-8 w-8 text-green-600" />}
-            {status === 'error' && <AlertCircle className="h-8 w-8 text-red-600" />}
+            {status === 'confirmed' && <CheckCircle className="h-8 w-8 text-tone-positive" />}
+            {status === 'error' && <AlertCircle className="h-8 w-8 text-tone-critical" />}
           </div>
           <CardTitle className="text-2xl">
             {status === 'confirming' && t('confirmingPayment')}

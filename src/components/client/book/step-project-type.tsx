@@ -61,18 +61,18 @@ export function StepProjectType({ formData, updateFormData }: StepProjectTypePro
               'group relative p-5 cursor-pointer border bg-card',
               'transition-all duration-300 ease-out',
               'hover:scale-[1.04] hover:-translate-y-1',
-              'hover:shadow-[0_8px_30px_-4px_rgba(234,179,8,0.3)]',
-              'dark:hover:shadow-[0_8px_30px_-4px_rgba(234,179,8,0.2)]',
+              'hover:shadow-[0_8px_30px_-4px_color-mix(in_srgb,var(--primary)_30%,transparent)]',
+              'dark:hover:shadow-[0_8px_30px_-4px_color-mix(in_srgb,var(--primary)_20%,transparent)]',
               isSelected
-                ? 'border-amber-500 ring-2 ring-amber-500/30 shadow-[0_8px_30px_-4px_rgba(234,179,8,0.35)]'
-                : 'border-border hover:border-amber-400/60',
+                ? 'border-primary ring-2 ring-primary/30 shadow-[0_8px_30px_-4px_color-mix(in_srgb,var(--primary)_35%,transparent)]'
+                : 'border-border hover:border-primary/60',
             )}
             onClick={() => updateFormData({ project_type: type, selected_package: undefined })}
           >
             {/* Selected check badge */}
             {isSelected && (
-              <div className="absolute top-3 right-3 w-6 h-6 rounded-full bg-amber-500 flex items-center justify-center">
-                <Check className="h-3.5 w-3.5 text-white" />
+              <div className="absolute top-3 right-3 w-6 h-6 rounded-full bg-primary flex items-center justify-center">
+                <Check className="h-3.5 w-3.5 text-primary-foreground" />
               </div>
             )}
 
@@ -81,8 +81,8 @@ export function StepProjectType({ formData, updateFormData }: StepProjectTypePro
                 className={cn(
                   'p-3 rounded-xl transition-colors duration-300',
                   isSelected
-                    ? 'bg-amber-500 text-white'
-                    : 'bg-muted text-muted-foreground group-hover:bg-amber-500/10 group-hover:text-amber-600 dark:group-hover:text-amber-400',
+                    ? 'bg-primary text-primary-foreground'
+                    : 'bg-muted text-muted-foreground group-hover:bg-primary/10 group-hover:text-primary',
                 )}
               >
                 <Icon className="h-7 w-7" />

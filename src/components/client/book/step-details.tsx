@@ -80,9 +80,9 @@ export function StepDetails({ formData, updateFormData }: StepDetailsProps) {
       </div>
 
       {/* Tip */}
-      <div className="flex items-start gap-3 rounded-xl bg-amber-50 dark:bg-amber-950/20 border border-amber-200/50 dark:border-amber-800/30 p-4">
-        <Lightbulb className="h-4 w-4 text-amber-600 dark:text-amber-400 shrink-0 mt-0.5" />
-        <p className="text-sm text-amber-800 dark:text-amber-300">{t('tipDescribeAudience')}</p>
+      <div className="flex items-start gap-3 rounded-xl bg-tone-caution-bg border border-tone-caution/30 p-4">
+        <Lightbulb className="h-4 w-4 text-tone-caution shrink-0 mt-0.5" />
+        <p className="text-sm text-tone-caution">{t('tipDescribeAudience')}</p>
       </div>
 
       {/* Reference Links */}
