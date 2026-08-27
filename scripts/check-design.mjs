@@ -70,6 +70,10 @@ const COVERED = [
   // της. Ήταν στα φυλασσόμενα για πίνακες αλλά όχι για χρώμα — κάλυψη που
   // δηλωνόταν πιο φαρδιά απ' ό,τι δινόταν.
   'src/components/client/projects',
+  // Ολόκληρο το portal πελάτη περνάει στη νέα γλώσσα (#107) — δύο ολόκληρα
+  // δέντρα, ώστε ένα νέο component οπουδήποτε από κάτω να φυλάσσεται αυτόματα.
+  'src/app/client',
+  'src/components/client',
 ];
 
 // Αρχεία μέσα σε καλυμμένους φακέλους που όντως γράφουν ακόμα ωμό χρώμα.
@@ -303,6 +307,10 @@ const TABLE_GUARDED_AREAS = [
   'src/app/admin/projects/',
   'src/app/client/projects/',
   'src/components/client/projects/',
+  // Ολόκληρο το portal πελάτη (#107) — δύο ολόκληρα δέντρα, όπως και για το
+  // χρώμα από πάνω.
+  'src/app/client/',
+  'src/components/client/',
 ];
 
 // Λίστες λεπτομέρειας μέσα σε ήδη ανοιγμένη γραμμή. Δεν είναι το θέμα της
@@ -338,6 +346,9 @@ const TABLE_PENDING = [
   'src/components/admin/leads/sales-report.tsx',
   // Ο πίνακας γνώσης του chatbot — έργο περιοχής για επόμενη φέτα.
   'src/components/admin/chatbot/knowledge-table.tsx',
+  // Ο πίνακας χτισμένος στο χέρι από τα ωμά primitives· ο δικός του ωμός τίτλος
+  // ζει ήδη στο HEADING_PENDING για τον ίδιο λόγο — το ίδιο ξαναγράψιμο, #109.
+  'src/components/client/invoices/invoice-detail.tsx',
 ];
 
 // Δύο μορφές, γιατί και οι δύο φτιάχνουν πίνακα στο χέρι: εισαγωγή των ωμών
