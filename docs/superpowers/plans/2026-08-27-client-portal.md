@@ -597,7 +597,64 @@ git commit -m "perf(client): two more places that waited for no reason"
 
 ---
 
-### Task 8: Lock the portal in
+### Task 8: The portal stops padding itself twice
+
+**Files:**
+- Modify: every file listed in Step 1 below.
+
+**Context:** Task 2 removed `container mx-auto px-4 py-6 sm:px-6` from the client home, because the shell already pads: `AppShell` renders `<main className="flex-1 overflow-y-auto p-4 md:p-6">`, so the wrapper was a second helping of the same padding, plus a width cap no other page in the product has.
+
+That was right, and it left the home as the **only** page in the portal without the wrapper — an inconsistency this task closes. Fourteen other places still carry it. The issue asks for exactly this: the portal should use "the hub pattern the rest of the product uses", and every admin hub renders into a bare `space-y-*` div.
+
+**Two things in those class lists are NOT padding and must survive:**
+- `max-w-4xl` on the contract pages caps a document's reading width. Keep it, with its own `mx-auto` — a capped column still needs centring.
+- `min-h-[60vh] flex items-center justify-center` on the payment success and cancel pages centres a single message in the viewport. Keep it.
+
+Strip only `container`, `mx-auto` (where nothing else needs centring), `px-4`, `py-6`, `sm:px-6`. Keep every `space-y-*` exactly as it is.
+
+- [ ] **Step 1: The files**
+
+```
+src/app/client/settings/page.tsx:30
+src/app/client/invoices/[invoiceId]/success/success-content.tsx:42
+src/app/client/invoices/[invoiceId]/page.tsx:30
+src/app/client/invoices/[invoiceId]/cancel/page.tsx:16
+src/app/client/invoices/invoices-page.tsx:30
+src/app/client/contracts/[contractId]/sign/page.tsx:16,36,46
+src/app/client/productions/page.tsx:36
+src/app/client/contracts/[contractId]/page.tsx:31
+src/app/client/contracts/contracts-page.tsx:20
+src/app/client/book/page.tsx:15
+src/app/client/projects/[projectId]/loading.tsx:5
+src/app/client/projects/[projectId]/client-project-detail.tsx:56
+```
+
+Line numbers are where I found them; verify each against the file rather than trusting the number.
+
+**The last two are a pair.** `client-project-detail.tsx` and its `loading.tsx` must keep the *same* wrapper as each other, or the skeleton sits at a different width from the content that replaces it — the exact page-jump slice #106 added that skeleton to prevent. Change both or neither.
+
+- [ ] **Step 2: Verify**
+
+Only these may remain, and only with a `max-w-*` or a centring reason beside them:
+
+```bash
+grep -rn "container mx-auto" src/app/client src/components/client
+```
+
+Report what is left and why each one earned its place.
+
+`pnpm type-check` → clean. `pnpm lint` → 0 errors. `pnpm build` → succeeds with both guards `ok`.
+
+- [ ] **Step 3: Commit**
+
+```bash
+git add src/app/client
+git commit -m "fix(client): the portal stops padding what the shell already padded"
+```
+
+---
+
+### Task 9: Lock the portal in
 
 **Files:**
 - Modify: `scripts/check-design.mjs`
