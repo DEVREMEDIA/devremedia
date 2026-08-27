@@ -475,7 +475,10 @@ test.describe('design identity — detail screens', () => {
 
     await expect(page.locator('[data-slot="page-heading"]')).toHaveCount(1);
     await expect(page.locator('[role="tablist"]')).toHaveCount(1);
-    await expect(page.locator('a[href="/admin/projects"]')).toBeVisible();
+    // Ο προορισμός, όχι το stub. Το `/admin/projects` ανακατευθύνει εδώ — ο
+    // σύνδεσμος δούλευε και πλήρωνε μια αναπήδηση, και αυτό ακριβώς έπιασε
+    // αυτό το test όταν διορθώθηκε ο σύνδεσμος.
+    await expect(page.locator('a[href="/admin/productions?tab=all"]')).toBeVisible();
   });
 
   test('a deep link into a tab resolves to that tab', async ({ page }) => {
