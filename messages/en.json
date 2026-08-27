@@ -1235,6 +1235,12 @@
   "filmingRequests": {
     "title": "Filming Requests",
     "description": "Client filming requests and booking inquiries",
+    "list": {
+      "title": "Title",
+      "status": "Status",
+      "contact": "Contact",
+      "created": "Created"
+    },
     "noRequests": "No filming requests",
     "noRequestsDescription": "Filming requests from clients will appear here.",
     "requestDetails": "Request Details",

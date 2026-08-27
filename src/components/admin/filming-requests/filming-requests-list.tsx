@@ -1,11 +1,14 @@
 'use client';
 
+import { useMemo } from 'react';
+import Link from 'next/link';
+import { ColumnDef } from '@tanstack/react-table';
 import { Card, CardContent } from '@/components/ui/card';
+import { DataTable } from '@/components/shared/data-table';
 import { StatusBadge } from '@/components/shared/status-badge';
 import { EmptyState } from '@/components/shared/empty-state';
 import { format } from 'date-fns';
 import { Video, ChevronRight } from 'lucide-react';
-import { useRouter } from 'next/navigation';
 import { PROJECT_TYPE_LABELS } from '@/lib/constants';
 import type { FilmingRequest } from '@/types';
 import { useTranslations } from 'next-intl';
@@ -16,56 +19,66 @@ interface FilmingRequestsListProps {
 
 export function FilmingRequestsList({ requests }: FilmingRequestsListProps) {
   const t = useTranslations('filmingRequests');
-  const router = useRouter();
+
+  const columns: ColumnDef<FilmingRequest>[] = useMemo(
+    () => [
+      {
+        accessorKey: 'title',
+        header: t('list.title'),
+        cell: ({ row }) => (
+          <Link
+            href={`/admin/filming-requests/${row.original.id}`}
+            className="flex items-center gap-2 font-semibold hover:underline"
+          >
+            <span className="truncate">{row.original.title}</span>
+            <ChevronRight className="h-4 w-4 text-muted-foreground flex-shrink-0" />
+          </Link>
+        ),
+      },
+      {
+        accessorKey: 'status',
+        header: t('list.status'),
+        cell: ({ row }) => <StatusBadge status={row.original.status} />,
+      },
+      {
+        id: 'contact',
+        header: t('list.contact'),
+        accessorFn: (row) => row.contact_name ?? '',
+        cell: ({ row }) =>
+          row.original.contact_name ? (
+            <span>
+              {row.original.contact_name}
+              {row.original.contact_email ? ` (${row.original.contact_email})` : ''}
+            </span>
+          ) : null,
+      },
+      {
+        accessorKey: 'project_type',
+        header: t('projectType'),
+        cell: ({ row }) =>
+          row.original.project_type
+            ? PROJECT_TYPE_LABELS[row.original.project_type as keyof typeof PROJECT_TYPE_LABELS]
+            : t('notSpecified'),
+      },
+      {
+        accessorKey: 'created_at',
+        header: t('list.created'),
+        cell: ({ row }) => format(new Date(row.original.created_at), 'MMM d, yyyy'),
+        meta: { numeric: true, align: 'left' },
+      },
+    ],
+    [t],
+  );
 
   if (requests.length === 0) {
     return (
       <Card>
         <CardContent className="py-12">
-          <EmptyState
-            icon={Video}
-            title={t('noRequests')}
-            description={t('noSubmittedRequests')}
-          />
+          <EmptyState icon={Video} title={t('noRequests')} description={t('noSubmittedRequests')} />
         </CardContent>
       </Card>
     );
   }
 
-  return (
-    <div className="space-y-3">
-      {requests.map((request) => (
-        <Card
-          key={request.id}
-          className="cursor-pointer hover:shadow-md transition-shadow"
-          onClick={() => router.push(`/admin/filming-requests/${request.id}`)}
-        >
-          <CardContent className="p-4">
-            <div className="flex items-center justify-between gap-4">
-              <div className="flex-1 min-w-0 space-y-1">
-                <div className="flex items-center gap-3 flex-wrap">
-                  <span className="font-semibold text-sm truncate">
-                    {request.title}
-                  </span>
-                  <StatusBadge status={request.status} />
-                </div>
-                <div className="flex items-center gap-4 text-xs text-muted-foreground">
-                  {request.contact_name && (
-                    <span>{request.contact_name}{request.contact_email ? ` (${request.contact_email})` : ''}</span>
-                  )}
-                  <span>
-                    {request.project_type
-                      ? PROJECT_TYPE_LABELS[request.project_type as keyof typeof PROJECT_TYPE_LABELS]
-                      : t('notSpecified')}
-                  </span>
-                  <span>{format(new Date(request.created_at), 'MMM d, yyyy')}</span>
-                </div>
-              </div>
-              <ChevronRight className="h-5 w-5 text-muted-foreground flex-shrink-0" />
-            </div>
-          </CardContent>
-        </Card>
-      ))}
-    </div>
-  );
+  return <DataTable columns={columns} data={requests} />;
 }
