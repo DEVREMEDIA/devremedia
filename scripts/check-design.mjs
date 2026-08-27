@@ -206,7 +206,6 @@ const HEADING_EXEMPT = [
 // σημείο επιστροφής. Κάθε επόμενη φέτα αφαιρεί από εδώ — η λίστα μόνο μικραίνει.
 const HEADING_PENDING = [
   'src/app/book/page.tsx', // δημόσια σελίδα με δικό της κέλυφος
-  'src/app/admin/invoices/[invoiceId]/invoice-detail.tsx', // → #109
   'src/components/admin/filming-requests/filming-request-detail.tsx', // → #109
   'src/components/client/invoices/invoice-detail.tsx', // → #109
 ];

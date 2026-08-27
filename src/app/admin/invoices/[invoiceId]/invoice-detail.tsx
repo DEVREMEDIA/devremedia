@@ -3,6 +3,7 @@
 import * as React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
+import { DetailShell } from '@/components/shared/detail-shell';
 import { StatusBadge } from '@/components/shared/status-badge';
 import { ConfirmDialog } from '@/components/shared/confirm-dialog';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
@@ -96,7 +97,7 @@ export function InvoiceDetail({ invoice: initialInvoice }: InvoiceDetailProps) {
 
   const handlePreview = () => {
     if (!pdfUrl) {
-      toast.error('PDF not loaded yet');
+      toast.error(t('pdfNotReady'));
       return;
     }
     setPreviewUrl(pdfUrl);
@@ -105,7 +106,7 @@ export function InvoiceDetail({ invoice: initialInvoice }: InvoiceDetailProps) {
 
   const handleDownload = () => {
     if (!pdfUrl) {
-      toast.error('PDF not loaded yet');
+      toast.error(t('pdfNotReady'));
       return;
     }
     const a = document.createElement('a');
@@ -127,29 +128,29 @@ export function InvoiceDetail({ invoice: initialInvoice }: InvoiceDetailProps) {
   };
 
   return (
-    <>
+    <DetailShell
+      backHref="/admin/finance?tab=invoices"
+      backLabel={t('title')}
+      title={invoice.invoice_number}
+      meta={<StatusBadge status={invoice.status} />}
+      actions={
+        <>
+          <Button variant="outline" onClick={handlePreview}>
+            <Eye className="mr-2 h-4 w-4" />
+            {t('preview')}
+          </Button>
+          <Button variant="outline" onClick={handleDownload}>
+            <Download className="mr-2 h-4 w-4" />
+            {t('download')}
+          </Button>
+          <Button variant="destructive" onClick={() => setDeleteDialogOpen(true)}>
+            <Trash2 className="mr-2 h-4 w-4" />
+            {tc('delete')}
+          </Button>
+        </>
+      }
+    >
       <div className="space-y-6">
-        <div className="flex items-center justify-between">
-          <div>
-            <h1 className="text-3xl font-bold tracking-tight">{invoice.invoice_number}</h1>
-            <p className="text-muted-foreground mt-2">{t('invoiceDetailsDescription')}</p>
-          </div>
-          <div className="flex items-center gap-2">
-            <Button variant="outline" onClick={handlePreview}>
-              <Eye className="mr-2 h-4 w-4" />
-              Preview
-            </Button>
-            <Button variant="outline" onClick={handleDownload}>
-              <Download className="mr-2 h-4 w-4" />
-              Download
-            </Button>
-            <Button variant="destructive" onClick={() => setDeleteDialogOpen(true)}>
-              <Trash2 className="mr-2 h-4 w-4" />
-              {tc('delete')}
-            </Button>
-          </div>
-        </div>
-
         <div className="grid gap-6 md:grid-cols-2">
           <Card>
             <CardHeader>
@@ -300,14 +301,14 @@ export function InvoiceDetail({ invoice: initialInvoice }: InvoiceDetailProps) {
       <Dialog open={previewOpen} onOpenChange={handlePreviewClose}>
         <DialogContent className="max-w-4xl h-[85vh] flex flex-col gap-0 p-0">
           <DialogHeader className="px-6 py-4 shrink-0">
-            <DialogTitle>{invoice.invoice_number} — Preview</DialogTitle>
+            <DialogTitle>{t('previewTitle', { number: invoice.invoice_number })}</DialogTitle>
           </DialogHeader>
           {previewUrl && (
             <iframe
               key={previewUrl}
               src={previewUrl}
               className="w-full flex-1 min-h-0 border-t"
-              title="Invoice Preview"
+              title={t('previewFrameTitle')}
             />
           )}
         </DialogContent>
@@ -323,6 +324,6 @@ export function InvoiceDetail({ invoice: initialInvoice }: InvoiceDetailProps) {
         destructive
         loading={isDeleting}
       />
-    </>
+    </DetailShell>
   );
 }
