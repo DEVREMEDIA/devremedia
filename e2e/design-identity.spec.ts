@@ -885,3 +885,48 @@ test.describe('design identity — explicit theme beats OS preference', () => {
     });
   });
 });
+
+// Η τρίτη κατάσταση του θέματος, και η πιο συνηθισμένη: κανείς δεν διάλεξε
+// τίποτα. Οι δύο ομάδες από πάνω αποδεικνύουν ότι μια ΡΗΤΗ επιλογή νικά το
+// λειτουργικό — δεν λένε τίποτα για το τι βλέπει κάποιος που δεν άγγιξε ποτέ
+// τον διακόπτη, δηλαδή η πλειοψηφία.
+//
+// Εδώ η σκοτεινή ΔΕΝ είναι απλώς η προεπιλογή· είναι η μητρική έκδοση της
+// ταυτότητας, και η φωτεινή είναι πραγματική έκδοση της ίδιας γλώσσας, όχι
+// αντιστροφή. Ο πάροχος τρέχει με `defaultTheme="dark"` και ο διακόπτης
+// εναλλάσσει μόνο μεταξύ σκοτεινού και φωτεινού — το «system» δεν επιλέγεται
+// ποτέ, οπότε η προτίμηση του λειτουργικού δεν αποφασίζει ποτέ τίποτα.
+//
+// Τι θα έπιανε αν έτρεχε: αν κάποιος γυρίσει το `defaultTheme` σε "system" ή
+// το αφαιρέσει, κάθε χρήστης με φωτεινό λειτουργικό που δεν άγγιξε ποτέ τον
+// διακόπτη θα προσγειωνόταν ξαφνικά στη φωτεινή έκδοση. Η ταυτότητα του
+// προϊόντος θα άλλαζε για την πλειοψηφία, χωρίς να αλλάξει καμία γραμμή CSS
+// και χωρίς κανένα άλλο τεστ να το δει.
+test.describe('design identity — with no explicit choice, the native edition wins', () => {
+  // Το initScript σβήνει ρητά το κλειδί αντί να το αφήνει απλώς άγραφο, ώστε
+  // το τεστ να δηλώνει «καμία επιλογή» αντί να στηρίζεται στο ότι το context
+  // τυχαίνει να ξεκινά άδειο.
+  test.describe('OS prefers dark', () => {
+    test.use({ colorScheme: 'dark' });
+
+    test('renders the dark edition', async ({ page }) => {
+      await page.addInitScript(() => window.localStorage.removeItem('theme'));
+      await page.goto('/login');
+      expect(await hasThemeClass(page, 'dark')).toBe(true);
+      expect(await hasThemeClass(page, 'light')).toBe(false);
+    });
+  });
+
+  test.describe('OS prefers light', () => {
+    test.use({ colorScheme: 'light' });
+
+    // Αυτό είναι το ενδιαφέρον από τα δύο: το λειτουργικό ζητά φωτεινό και το
+    // προϊόν επιμένει στη μητρική του έκδοση, γιατί κανείς δεν διάλεξε.
+    test('still renders the dark edition — the OS does not get a vote', async ({ page }) => {
+      await page.addInitScript(() => window.localStorage.removeItem('theme'));
+      await page.goto('/login');
+      expect(await hasThemeClass(page, 'dark')).toBe(true);
+      expect(await hasThemeClass(page, 'light')).toBe(false);
+    });
+  });
+});
