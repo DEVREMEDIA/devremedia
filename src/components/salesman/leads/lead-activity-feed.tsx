@@ -20,15 +20,6 @@ const activityIcons: Record<LeadActivityType, React.ComponentType<{ className?: 
   other: MoreHorizontal,
 };
 
-const activityStyles: Record<LeadActivityType, { color: string; bg: string }> = {
-  call: { color: 'text-blue-500', bg: 'bg-blue-500/10' },
-  email: { color: 'text-purple-500', bg: 'bg-purple-500/10' },
-  meeting: { color: 'text-emerald-500', bg: 'bg-emerald-500/10' },
-  note: { color: 'text-amber-500', bg: 'bg-amber-500/10' },
-  stage_change: { color: 'text-indigo-500', bg: 'bg-indigo-500/10' },
-  other: { color: 'text-muted-foreground', bg: 'bg-muted' },
-};
-
 export function LeadActivityFeed({ activities }: LeadActivityFeedProps) {
   const t = useTranslations('leads');
 
@@ -45,18 +36,17 @@ export function LeadActivityFeed({ activities }: LeadActivityFeedProps) {
     <div className="space-y-2">
       {activities.map((activity) => {
         const Icon = activityIcons[activity.activity_type];
-        const style = activityStyles[activity.activity_type];
 
         return (
           <div
             key={activity.id}
             className={cn(
               'flex gap-3 p-3 rounded-lg transition-all duration-200',
-              'border border-border/50 hover:border-amber-500/30 hover:bg-amber-500/5',
+              'border border-border/50 hover:border-primary/30 hover:bg-primary/5',
             )}
           >
-            <div className={cn('p-2 rounded-lg h-fit shrink-0', style.bg)}>
-              <Icon className={cn('h-4 w-4', style.color)} />
+            <div className="p-2 rounded-lg h-fit shrink-0 bg-muted">
+              <Icon className="h-4 w-4 text-muted-foreground" />
             </div>
 
             <div className="flex-1 min-w-0">

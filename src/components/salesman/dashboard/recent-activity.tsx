@@ -31,23 +31,13 @@ const ACTIVITY_ICONS: Record<string, typeof Phone> = {
   lost: XCircle,
 };
 
-const ACTIVITY_STYLES: Record<string, { color: string; bg: string }> = {
-  call: { color: 'text-blue-500', bg: 'bg-blue-500/10' },
-  email: { color: 'text-purple-500', bg: 'bg-purple-500/10' },
-  meeting: { color: 'text-amber-500', bg: 'bg-amber-500/10' },
-  note: { color: 'text-muted-foreground', bg: 'bg-muted' },
-  proposal_sent: { color: 'text-orange-500', bg: 'bg-orange-500/10' },
-  won: { color: 'text-emerald-500', bg: 'bg-emerald-500/10' },
-  lost: { color: 'text-red-500', bg: 'bg-red-500/10' },
-};
-
 export function RecentActivity({ activities }: RecentActivityProps) {
   const t = useTranslations('salesman.dashboard');
 
   return (
     <div className="rounded-xl border bg-card">
       <div className="flex items-center gap-2 px-5 py-4 border-b border-border/50">
-        <MessageSquare className="h-5 w-5 text-purple-500" />
+        <MessageSquare className="h-5 w-5 text-primary" />
         <h2 className="text-lg font-semibold">{t('recentActivity')}</h2>
       </div>
       <div className="p-5">
@@ -60,18 +50,17 @@ export function RecentActivity({ activities }: RecentActivityProps) {
           <div className="space-y-2">
             {activities.map((activity) => {
               const Icon = ACTIVITY_ICONS[activity.activity_type] || MessageSquare;
-              const style = ACTIVITY_STYLES[activity.activity_type] ?? ACTIVITY_STYLES.note;
 
               return (
                 <div
                   key={activity.id}
                   className={cn(
                     'flex items-start gap-3 p-3 rounded-lg transition-all duration-200',
-                    'border border-border/50 hover:border-amber-500/30 hover:bg-amber-500/5',
+                    'border border-border/50 hover:border-primary/30 hover:bg-primary/5',
                   )}
                 >
-                  <div className={cn('p-2 rounded-lg shrink-0', style.bg)}>
-                    <Icon className={cn('h-4 w-4', style.color)} />
+                  <div className="p-2 rounded-lg shrink-0 bg-muted">
+                    <Icon className="h-4 w-4 text-muted-foreground" />
                   </div>
                   <div className="flex-1 min-w-0">
                     <div className="flex items-start justify-between gap-2">
