@@ -949,6 +949,36 @@
   },
 
   "contracts": {
+    "contractPreview": "Contract Preview",
+    "reviewBeforeSending": "Review before sending to the client",
+    "videographyProduction": "Videography & Production",
+    "serviceAgreementLabel": "Service Agreement",
+    "serviceProviderLabel": "Service Provider",
+    "scopeOfServices": "Scope of Services",
+    "totalAmount": "Total Amount",
+    "paymentMethod": "Payment Method",
+    "signatureDeadline": "Signature Deadline",
+    "pdfGenerationNotice": "A professional PDF contract with legal terms and signature section will be generated and made available to the client immediately.",
+    "backToEdit": "Back to Edit",
+    "createAndSendContract": "Create & Send Contract",
+    "typeOfService": "Type of Service",
+    "serviceTypePlaceholder": "e.g., Wedding Video Production, Corporate Event Coverage...",
+    "selectPaymentMethod": "Select payment method",
+    "paymentBankTransfer": "Bank Transfer",
+    "paymentCash": "Cash",
+    "paymentCard": "Credit / Debit Card",
+    "paymentInstallments": "Installments",
+    "newServiceAgreement": "New Service Agreement",
+    "loadingClients": "Loading clients...",
+    "noClientsFound": "No clients found. Please create a client first.",
+    "templateTitlePlaceholder": "e.g., Standard Service Agreement",
+    "detectedPlaceholders": "Detected Placeholders",
+    "placeholdersAutoFillNotice": "These placeholders will be auto-filled when creating a contract from this template.",
+    "updateTemplate": "Update Template",
+    "createTemplateCta": "Create Template",
+    "noTemplateDescription": "No description",
+    "placeholders": "Placeholders",
+    "failedToLoadTemplates": "Failed to load templates: {error}",
     "title": "Contracts",
     "description": "Manage contracts and agreements",
     "addContract": "New Contract",
@@ -1608,6 +1638,9 @@
   },
 
   "university": {
+    "untitledSection": "Untitled",
+    "noSectionContent": "No content",
+    "videosHeading": "Videos",
     "title": "DMS University",
     "description": "Training and knowledge base",
     "categories": "Categories",
@@ -2587,6 +2620,11 @@
   },
 
   "pricingHealth": {
+    "chart": {
+      "costLabel": "Cost",
+      "targetLabel": "Target",
+      "quotedPriceLabel": "Quoted price"
+    },
     "title": "Pricing Health",
     "description": "Per-project price analysis. Compare actual price against min / target / max range.",
     "kpis": {

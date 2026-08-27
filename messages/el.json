@@ -949,6 +949,36 @@
   },
 
   "contracts": {
+    "contractPreview": "Προεπισκόπηση Συμβολαίου",
+    "reviewBeforeSending": "Ελέγξτε πριν την αποστολή στον πελάτη",
+    "videographyProduction": "Βιντεοσκόπηση & Παραγωγή",
+    "serviceAgreementLabel": "Σύμβαση Υπηρεσιών",
+    "serviceProviderLabel": "Πάροχος Υπηρεσιών",
+    "scopeOfServices": "Πεδίο Υπηρεσιών",
+    "totalAmount": "Συνολικό Ποσό",
+    "paymentMethod": "Τρόπος Πληρωμής",
+    "signatureDeadline": "Προθεσμία Υπογραφής",
+    "pdfGenerationNotice": "Ένα επαγγελματικό PDF συμβόλαιο με νομικούς όρους και ενότητα υπογραφής θα δημιουργηθεί και θα είναι άμεσα διαθέσιμο στον πελάτη.",
+    "backToEdit": "Πίσω στην Επεξεργασία",
+    "createAndSendContract": "Δημιουργία & Αποστολή Συμβολαίου",
+    "typeOfService": "Τύπος Υπηρεσίας",
+    "serviceTypePlaceholder": "π.χ. Βιντεοσκόπηση Γάμου, Κάλυψη Εταιρικής Εκδήλωσης...",
+    "selectPaymentMethod": "Επιλέξτε τρόπο πληρωμής",
+    "paymentBankTransfer": "Τραπεζικό Έμβασμα",
+    "paymentCash": "Μετρητά",
+    "paymentCard": "Πιστωτική / Χρεωστική Κάρτα",
+    "paymentInstallments": "Δόσεις",
+    "newServiceAgreement": "Νέα Σύμβαση Υπηρεσιών",
+    "loadingClients": "Φόρτωση πελατών...",
+    "noClientsFound": "Δεν βρέθηκαν πελάτες. Παρακαλώ δημιουργήστε πρώτα έναν πελάτη.",
+    "templateTitlePlaceholder": "π.χ. Τυπική Σύμβαση Υπηρεσιών",
+    "detectedPlaceholders": "Εντοπισμένα Placeholders",
+    "placeholdersAutoFillNotice": "Αυτά τα placeholders θα συμπληρωθούν αυτόματα κατά τη δημιουργία συμβολαίου από αυτό το πρότυπο.",
+    "updateTemplate": "Ενημέρωση Προτύπου",
+    "createTemplateCta": "Δημιουργία Προτύπου",
+    "noTemplateDescription": "Χωρίς περιγραφή",
+    "placeholders": "Placeholders",
+    "failedToLoadTemplates": "Αποτυχία φόρτωσης προτύπων: {error}",
     "title": "Συμβόλαια",
     "description": "Διαχείριση συμβολαίων και συμφωνιών",
     "addContract": "Νέο Συμβόλαιο",
@@ -1608,6 +1638,9 @@
   },
 
   "university": {
+    "untitledSection": "Χωρίς τίτλο",
+    "noSectionContent": "Χωρίς περιεχόμενο",
+    "videosHeading": "Βίντεο",
     "title": "DMS University",
     "description": "Εκπαίδευση και βάση γνώσεων",
     "categories": "Κατηγορίες",
@@ -2587,6 +2620,11 @@
   },
 
   "pricingHealth": {
+    "chart": {
+      "costLabel": "Κόστος",
+      "targetLabel": "Στόχος",
+      "quotedPriceLabel": "Προσφερόμενη τιμή"
+    },
     "title": "Υγεία Τιμολόγησης",
     "description": "Αναλυτική εικόνα τιμών ανά project. Σύγκριση πραγματικής τιμής με το εύρος min / target / max.",
     "kpis": {
