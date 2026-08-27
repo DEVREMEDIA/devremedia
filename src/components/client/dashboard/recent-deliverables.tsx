@@ -20,7 +20,7 @@ export function RecentDeliverables({ deliverables }: RecentDeliverablesProps) {
   return (
     <div className="rounded-xl border bg-card">
       <div className="flex items-center gap-2 px-5 py-4 border-b border-border/50">
-        <Video className="h-5 w-5 text-amber-500" />
+        <Video className="h-5 w-5 text-primary" />
         <h2 className="text-lg font-semibold">{t('recentDeliverables')}</h2>
       </div>
       <div className="p-5">
@@ -37,11 +37,11 @@ export function RecentDeliverables({ deliverables }: RecentDeliverablesProps) {
                 key={deliverable.id}
                 className={cn(
                   'flex items-start gap-3 p-3 rounded-lg cursor-pointer transition-all duration-200',
-                  'border border-border/50 hover:border-amber-500/30 hover:bg-amber-500/5',
+                  'border border-border/50 hover:border-primary/30 hover:bg-primary/5',
                 )}
                 onClick={() => router.push(`/client/projects/${deliverable.project_id}`)}
               >
-                <div className="p-2 rounded-lg bg-amber-500/10 text-amber-500">
+                <div className="p-2 rounded-lg bg-primary/10 text-primary">
                   <Video className="h-4 w-4" />
                 </div>
                 <div className="flex-1 min-w-0">

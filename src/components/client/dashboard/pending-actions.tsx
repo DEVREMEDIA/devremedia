@@ -42,9 +42,9 @@ export function PendingActions({ invoices, unsignedContracts = [] }: PendingActi
     <div className="rounded-xl border bg-card">
       <div className="flex items-center gap-2 px-5 py-4 border-b border-border/50">
         {pendingItems.length > 0 ? (
-          <AlertCircle className="h-5 w-5 text-orange-500" />
+          <AlertCircle className="h-5 w-5 text-tone-caution" />
         ) : (
-          <CheckCircle2 className="h-5 w-5 text-emerald-500" />
+          <CheckCircle2 className="h-5 w-5 text-tone-positive" />
         )}
         <h2 className="text-lg font-semibold">{t('pendingActions')}</h2>
       </div>
@@ -60,11 +60,11 @@ export function PendingActions({ invoices, unsignedContracts = [] }: PendingActi
                   key={`${item.type}-${item.id}`}
                   className={cn(
                     'flex items-center justify-between p-3 rounded-lg transition-all duration-200',
-                    'border border-border/50 hover:border-amber-500/30 hover:bg-amber-500/5',
+                    'border border-border/50 hover:border-primary/30 hover:bg-primary/5',
                   )}
                 >
                   <div className="flex items-start gap-3 flex-1">
-                    <div className="p-2 rounded-lg bg-orange-500/10 text-orange-500">
+                    <div className="p-2 rounded-lg bg-tone-caution-bg text-tone-caution">
                       <Icon className="h-4 w-4" />
                     </div>
                     <div className="flex-1 min-w-0">
