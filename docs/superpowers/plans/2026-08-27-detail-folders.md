@@ -342,7 +342,15 @@ Then a fourth, specific to Ruling B: put a real raw `<table>` into a file that i
 
 Do not commit any temporary edit.
 
-- [ ] **Step 5: Extend `e2e/design-identity.spec.ts`**
+- [ ] **Step 5: A back-link may not point at a redirect stub**
+
+`scripts/check-routes.mjs` already fails the build when a `revalidatePath` targets one of the 33 redirect stubs. Extend it with the same rule for back destinations: find every `backHref="…"` literal under `src/`, and fail if it names a stub.
+
+This rule has already caught two: slice #106 aimed `/admin/projects` and `/client/projects` at stubs, and both were fixed at the start of this slice. Without the check the third one arrives silently, because a back-link to a stub *works* — it just costs a hop.
+
+Prove it: temporarily point one `backHref` at `/admin/invoices` and confirm the build fails naming the file and the stub. Revert; confirm green.
+
+- [ ] **Step 6: Extend `e2e/design-identity.spec.ts`**
 
 A `design identity — detail folders` block. Every test starts with `test.skip(!process.env.E2E_TEST_USERS_READY, 'Test users not configured in database')`, asserts its URL first, and reaches the record by navigating rather than by a hardcoded id.
 
@@ -354,11 +362,11 @@ A `design identity — detail folders` block. Every test starts with `test.skip(
 
 **No test completes the review dialog, approves, rejects or converts.** Those write records, and this suite has no fixtures and no teardown (see #119). Opening the dialog is the assertion; closing it is the cleanup. Say in your report that you stopped there and why.
 
-- [ ] **Step 6: Full verification**
+- [ ] **Step 7: Full verification**
 
 `pnpm type-check` clean. `pnpm lint` at baseline. `pnpm test:unit` all pass. `pnpm exec playwright test e2e/design-identity.spec.ts --list` lists the new tests. `pnpm build` succeeds with both guards `ok` — paste the guard's success line verbatim.
 
-- [ ] **Step 7: Commit**
+- [ ] **Step 8: Commit**
 
 ```bash
 git add scripts/check-design.mjs e2e/design-identity.spec.ts
