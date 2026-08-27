@@ -47,7 +47,7 @@ export function UniversityBrowse({ categories }: UniversityBrowseProps) {
             <div
               className={cn(
                 'group rounded-xl border bg-card p-5 h-full cursor-pointer transition-all duration-300',
-                'hover:shadow-[0_8px_30px_-4px_rgba(234,179,8,0.15)] hover:-translate-y-0.5',
+                'lift-on-hover',
               )}
             >
               <div className="flex items-start justify-between mb-3">

@@ -192,6 +192,28 @@
 }
 
 /* ═══════════════════════════════════════════════════════════════
+   HOVER LIFT — shared card hover treatment, token-driven
+   ═══════════════════════════════════════════════════════════════ */
+
+/* Ίδιο lift σε κάθε κάρτα-σύνδεσμο του προϊόντος: σκιά μέσα από
+   color-mix() πάνω στο --primary, ώστε να ακολουθεί το token και στις
+   δύο εκδόσεις αντί να κουβαλά το δικό της κεχριμπάρι. */
+.lift-on-hover {
+  transition: box-shadow 0.3s, transform 0.3s;
+}
+
+.lift-on-hover:hover {
+  box-shadow: 0 8px 30px -4px color-mix(in oklab, var(--primary) 15%, transparent);
+  transform: translateY(-0.125rem);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .lift-on-hover:hover {
+    transform: none;
+  }
+}
+
+/* ═══════════════════════════════════════════════════════════════
    PROSE — Gold list markers & bullets
    ═══════════════════════════════════════════════════════════════ */
 

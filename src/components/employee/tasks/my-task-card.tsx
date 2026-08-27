@@ -34,7 +34,7 @@ export function MyTaskCard({ task }: MyTaskCardProps) {
     <div
       className={cn(
         'group rounded-xl border bg-card p-4 transition-all duration-300',
-        'hover:shadow-[0_8px_30px_-4px_rgba(234,179,8,0.15)] hover:-translate-y-0.5',
+        'lift-on-hover',
         isOverdue && 'border-red-500/30',
       )}
     >

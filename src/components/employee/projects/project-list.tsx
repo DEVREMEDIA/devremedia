@@ -56,7 +56,7 @@ export function ProjectList({ projects }: ProjectListProps) {
             <div
               className={cn(
                 'group rounded-xl border bg-card cursor-pointer transition-all duration-300 h-full',
-                'hover:shadow-[0_8px_30px_-4px_rgba(234,179,8,0.15)] hover:-translate-y-0.5',
+                'lift-on-hover',
               )}
             >
               {/* Header */}
