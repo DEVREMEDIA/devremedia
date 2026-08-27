@@ -742,6 +742,126 @@ test.describe('design identity — client portal', () => {
   });
 });
 
+test.describe('design identity — employee area', () => {
+  /**
+   * Οι δώδεκα φέτες πριν από αυτήν πέρασαν την περιοχή του Υπαλλήλου στα κοινά
+   * μέρη — κοινή επικεφαλίδα, κοινό StatGrid. Εδώ επιβεβαιώνεται ότι οι δύο
+   * λίστες που ζουν εκεί (εργασίες, παραγωγές) όντως αποδίδουν κάτι: είτε
+   * πραγματικές κάρτες είτε η δική τους κενή κατάσταση — ποτέ τίποτα.
+   */
+
+  test('/employee/work — the task list renders and exactly one page heading', async ({ page }) => {
+    test.skip(!process.env.E2E_TEST_USERS_READY, 'Test users not configured in database');
+    await loginAsAdmin(page);
+    await page.goto('/employee/work');
+    await expect(page).toHaveURL(/\/employee\/work/);
+
+    await expect(page.locator('[data-slot="page-heading-title"]')).toHaveCount(1);
+
+    // Το MyTaskList αποδίδει είτε κάρτες εργασιών είτε τη δική του κενή
+    // κατάσταση — ποτέ τα δύο μαζί, ποτέ κανένα από τα δύο.
+    const taskCards = page.locator('a[href^="/employee/tasks/"]');
+    const emptyState = page.getByRole('heading', {
+      name: /Δεν υπάρχουν εργασίες|No tasks assigned/,
+    });
+    await expect(taskCards.or(emptyState).first()).toBeVisible();
+  });
+
+  test('/employee/productions — the project list renders and exactly one page heading', async ({
+    page,
+  }) => {
+    test.skip(!process.env.E2E_TEST_USERS_READY, 'Test users not configured in database');
+    await loginAsAdmin(page);
+    await page.goto('/employee/productions');
+    await expect(page).toHaveURL(/\/employee\/productions/);
+
+    await expect(page.locator('[data-slot="page-heading-title"]')).toHaveCount(1);
+
+    const projectCards = page.locator('a[href^="/employee/projects/"]');
+    const emptyState = page.getByRole('heading', {
+      name: /Δεν υπάρχουν παραγωγές|No productions yet/,
+    });
+    await expect(projectCards.or(emptyState).first()).toBeVisible();
+  });
+});
+
+test.describe('design identity — salesman area', () => {
+  /**
+   * Ίδιο μάθημα και για την περιοχή του Πωλητή: το CRM pipeline και η λίστα
+   * πόρων περνούν στα κοινά μέρη, και εδώ επιβεβαιώνεται ότι πραγματικά
+   * αποδίδουν κάτι όταν φορτώνει η σελίδα.
+   */
+
+  test('/salesman/leads — all seven pipeline stage columns render and exactly one page heading', async ({
+    page,
+  }) => {
+    test.skip(!process.env.E2E_TEST_USERS_READY, 'Test users not configured in database');
+    await loginAsAdmin(page);
+    await page.goto('/salesman/leads');
+    await expect(page).toHaveURL(/\/salesman\/leads/);
+
+    await expect(page.locator('[data-slot="page-heading-title"]')).toHaveCount(1);
+
+    // Το LeadPipeline ζωγραφίζει μία στήλη ανά στάδιο του LEAD_STAGES ασχέτως
+    // αν υπάρχει lead εκεί μέσα — επτά επικεφαλίδες αποδεικνύουν ότι ο πίνακας
+    // όντως τερμάτισε το render, όχι ότι υπάρχουν leads.
+    await expect(page.getByRole('heading', { level: 3 })).toHaveCount(7);
+  });
+
+  test('/salesman/library — the resources list renders and exactly one page heading', async ({
+    page,
+  }) => {
+    test.skip(!process.env.E2E_TEST_USERS_READY, 'Test users not configured in database');
+    await loginAsAdmin(page);
+    await page.goto('/salesman/library');
+    await expect(page).toHaveURL(/\/salesman\/library/);
+
+    await expect(page.locator('[data-slot="page-heading-title"]')).toHaveCount(1);
+
+    const resourceCards = page.locator('a[href^="/salesman/resources/"]');
+    const emptyState = page.getByRole('heading', { name: /Δεν υπάρχουν πόροι|No resources yet/ });
+    await expect(resourceCards.or(emptyState).first()).toBeVisible();
+  });
+
+  test('a lead: "add activity" opens the shared FormDialog', async ({ page }) => {
+    test.skip(!process.env.E2E_TEST_USERS_READY, 'Test users not configured in database');
+    await loginAsAdmin(page);
+    await page.goto('/salesman/leads');
+    await expect(page).toHaveURL(/\/salesman\/leads/);
+
+    // Οι κάρτες leads δεν είναι σύνδεσμοι — το dnd-kit τις κάνει draggable και
+    // το κλικ γίνεται router.push. Η επικεφαλίδα επαφής μέσα στην κάρτα είναι
+    // το σταθερό σημείο κλικ.
+    const firstLeadCard = page.getByRole('heading', { level: 4 }).first();
+    // Χωρίς lead ανατεθειμένο δεν υπάρχει καμία κάρτα να ανοίξει. Η σουίτα δεν
+    // έχει fixtures (#119), οπότε το περιεχόμενο της βάσης δεν είναι δεδομένο.
+    test.skip((await firstLeadCard.count()) === 0, 'No lead in this database');
+
+    await firstLeadCard.click();
+    await expect(page).toHaveURL(/\/salesman\/leads\/[^/]+$/);
+
+    await page.getByRole('tab', { name: /Δραστηριότητες|Activities/ }).click();
+    await page.getByRole('button', { name: /Νέα Δραστηριότητα|Add Activity/ }).click();
+
+    const dialog = page.getByRole('dialog');
+    await expect(dialog).toBeVisible();
+
+    // Το κρίσιμο σημείο: η φόρμα δραστηριότητας μετακόμισε στο κοινό
+    // FormDialog σε αυτή τη φέτα. Τίτλος, πεδίο επιλογής τύπου δραστηριότητας
+    // και το κουμπί Ακύρωση ζουν όλα στο κέλυφος — αν η φόρμα ξεφύγει ξανά σε
+    // δικό της διάλογο, κάποιο από αυτά θα λείπει ή θα αλλάξει σχήμα.
+    await expect(
+      dialog.getByRole('heading', { name: /Νέα Δραστηριότητα|Add Activity/ }),
+    ).toBeVisible();
+    await expect(dialog.getByRole('combobox')).toHaveCount(1);
+    await expect(dialog.getByRole('button', { name: /Ακύρωση|Cancel/ })).toBeVisible();
+
+    // Το άνοιγμα είναι η επιβεβαίωση — κανένα submit, καμία εγγραφή στη βάση.
+    await page.keyboard.press('Escape');
+    await expect(dialog).not.toBeVisible();
+  });
+});
+
 test.describe('design identity — explicit theme beats OS preference', () => {
   test.describe('OS prefers dark, user explicitly chose light', () => {
     test.use({ colorScheme: 'dark' });
