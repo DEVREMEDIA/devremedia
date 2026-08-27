@@ -7,9 +7,10 @@ import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
 import { StatusBadge } from '@/components/shared/status-badge';
 import { ConfirmDialog } from '@/components/shared/confirm-dialog';
+import { DetailShell } from '@/components/shared/detail-shell';
+import { FormDialog } from '@/components/shared/form-dialog';
 import { format } from 'date-fns';
 import {
-  ArrowLeft,
   Check,
   X,
   FolderKanban,
@@ -32,14 +33,6 @@ import {
 import { toast } from 'sonner';
 import { PROJECT_TYPE_LABELS } from '@/lib/constants';
 import { Separator } from '@/components/ui/separator';
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from '@/components/ui/dialog';
 import type { FilmingRequest } from '@/types';
 import { useTranslations } from 'next-intl';
 
@@ -154,332 +147,339 @@ export function FilmingRequestDetail({ request }: FilmingRequestDetailProps) {
 
   return (
     <>
-      <div className="space-y-6 max-w-4xl mx-auto">
-        {/* Header */}
-        <div className="flex items-center gap-4">
-          <Button variant="ghost" size="icon" onClick={() => router.back()}>
-            <ArrowLeft className="h-4 w-4" />
-          </Button>
-          <div className="flex-1">
-            <h1 className="text-3xl font-bold tracking-tight">{request.title}</h1>
-            <div className="flex items-center gap-2 mt-2">
+      <div className="max-w-4xl mx-auto">
+        <DetailShell
+          backHref="/admin/productions?tab=requests"
+          backLabel={t('title')}
+          title={request.title}
+          meta={
+            <div className="flex items-center gap-2">
               <StatusBadge status={request.status} />
-              <span className="text-sm text-muted-foreground">
+              <span>
                 {t('submitted')} {format(new Date(request.created_at), 'MMM d, yyyy')}
               </span>
             </div>
-          </div>
-          {request.status === 'pending' && isHold && (
-            <div className="flex items-center gap-2">
-              <Button
-                variant="outline"
-                onClick={handleRejectHold}
-                disabled={loading}
-                className="gap-2"
-              >
-                <X className="h-4 w-4" />
-                {t('reject')}
-              </Button>
-              <Button onClick={handleApproveHold} disabled={loading} className="gap-2">
-                <Check className="h-4 w-4" />
-                {t('approve')}
-              </Button>
-            </div>
-          )}
-          {request.status === 'pending' && !isHold && (
-            <div className="flex items-center gap-2">
-              <Button
-                variant="outline"
-                onClick={() => openReviewDialog('declined')}
-                disabled={loading}
-                className="gap-2"
-              >
-                <X className="h-4 w-4" />
-                {t('decline')}
-              </Button>
-              <Button
-                onClick={() => openReviewDialog('accepted')}
-                disabled={loading}
-                className="gap-2"
-              >
-                <Check className="h-4 w-4" />
-                {t('accept')}
-              </Button>
-            </div>
-          )}
-          {request.status === 'accepted' && (
-            <Button onClick={() => setConvertDialogOpen(true)} disabled={loading} className="gap-2">
-              <FolderKanban className="h-4 w-4" />
-              {t('convertToProject')}
-            </Button>
-          )}
-        </div>
-
-        {/* Booked date+time (Hold) */}
-        {isHold && request.booking_date && (
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Calendar className="h-5 w-5" />
-                {t('bookedSlot')}
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="text-base font-medium">
-                {format(new Date(request.booking_date), 'MMMM d, yyyy')}
-              </div>
-              {request.start_time && (
-                <div className="text-sm text-muted-foreground mt-1">
-                  {(request.start_time as string).slice(0, 5)}
-                  {request.duration_minutes != null && (
-                    <span className="ml-1">({Math.round(request.duration_minutes / 60)}ω)</span>
-                  )}
+          }
+          actions={
+            <>
+              {request.status === 'pending' && isHold && (
+                <div className="flex items-center gap-2">
+                  <Button
+                    variant="outline"
+                    onClick={handleRejectHold}
+                    disabled={loading}
+                    className="gap-2"
+                  >
+                    <X className="h-4 w-4" />
+                    {t('reject')}
+                  </Button>
+                  <Button onClick={handleApproveHold} disabled={loading} className="gap-2">
+                    <Check className="h-4 w-4" />
+                    {t('approve')}
+                  </Button>
                 </div>
               )}
-            </CardContent>
-          </Card>
-        )}
-
-        {/* Request Details */}
-        <Card>
-          <CardHeader>
-            <CardTitle>{t('requestDetails')}</CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <div>
-              <div className="text-sm font-medium text-muted-foreground">{t('projectType')}</div>
-              <div className="text-base">
-                {request.project_type
-                  ? PROJECT_TYPE_LABELS[request.project_type as keyof typeof PROJECT_TYPE_LABELS]
-                  : t('notSpecified')}
-              </div>
-            </div>
-
-            {request.description && (
-              <>
-                <Separator />
-                <div>
-                  <div className="text-sm font-medium text-muted-foreground">
-                    {tc('description')}
-                  </div>
-                  <div className="text-sm whitespace-pre-wrap mt-1">{request.description}</div>
+              {request.status === 'pending' && !isHold && (
+                <div className="flex items-center gap-2">
+                  <Button
+                    variant="outline"
+                    onClick={() => openReviewDialog('declined')}
+                    disabled={loading}
+                    className="gap-2"
+                  >
+                    <X className="h-4 w-4" />
+                    {t('decline')}
+                  </Button>
+                  <Button
+                    onClick={() => openReviewDialog('accepted')}
+                    disabled={loading}
+                    className="gap-2"
+                  >
+                    <Check className="h-4 w-4" />
+                    {t('accept')}
+                  </Button>
                 </div>
-              </>
+              )}
+              {request.status === 'accepted' && (
+                <Button
+                  onClick={() => setConvertDialogOpen(true)}
+                  disabled={loading}
+                  className="gap-2"
+                >
+                  <FolderKanban className="h-4 w-4" />
+                  {t('convertToProject')}
+                </Button>
+              )}
+            </>
+          }
+        >
+          <div className="space-y-6">
+            {/* Booked date+time (Hold) */}
+            {isHold && request.booking_date && (
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <Calendar className="h-5 w-5" />
+                    {t('bookedSlot')}
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="text-base font-medium">
+                    {format(new Date(request.booking_date), 'MMMM d, yyyy')}
+                  </div>
+                  {request.start_time && (
+                    <div className="text-sm text-muted-foreground mt-1">
+                      {(request.start_time as string).slice(0, 5)}
+                      {request.duration_minutes != null && (
+                        <span className="ml-1">({Math.round(request.duration_minutes / 60)}ω)</span>
+                      )}
+                    </div>
+                  )}
+                </CardContent>
+              </Card>
             )}
 
-            {request.reference_links && request.reference_links.length > 0 && (
-              <>
-                <Separator />
+            {/* Request Details */}
+            <Card>
+              <CardHeader>
+                <CardTitle>{t('requestDetails')}</CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
                 <div>
-                  <div className="text-sm font-medium text-muted-foreground mb-2">
-                    {t('referenceLinks')}
+                  <div className="text-sm font-medium text-muted-foreground">
+                    {t('projectType')}
                   </div>
-                  <div className="space-y-1">
-                    {request.reference_links.map((link, index) => (
-                      <a
+                  <div className="text-base">
+                    {request.project_type
+                      ? PROJECT_TYPE_LABELS[
+                          request.project_type as keyof typeof PROJECT_TYPE_LABELS
+                        ]
+                      : t('notSpecified')}
+                  </div>
+                </div>
+
+                {request.description && (
+                  <>
+                    <Separator />
+                    <div>
+                      <div className="text-sm font-medium text-muted-foreground">
+                        {tc('description')}
+                      </div>
+                      <div className="text-sm whitespace-pre-wrap mt-1">{request.description}</div>
+                    </div>
+                  </>
+                )}
+
+                {request.reference_links && request.reference_links.length > 0 && (
+                  <>
+                    <Separator />
+                    <div>
+                      <div className="text-sm font-medium text-muted-foreground mb-2">
+                        {t('referenceLinks')}
+                      </div>
+                      <div className="space-y-1">
+                        {request.reference_links.map((link, index) => (
+                          <a
+                            key={index}
+                            href={link}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="flex items-center gap-2 text-sm text-primary hover:underline"
+                          >
+                            <LinkIcon className="h-3 w-3" />
+                            {link}
+                          </a>
+                        ))}
+                      </div>
+                    </div>
+                  </>
+                )}
+              </CardContent>
+            </Card>
+
+            {/* Contact Information (for public submissions) */}
+            {request.contact_name && (
+              <Card>
+                <CardHeader>
+                  <CardTitle>{t('contactInfo')}</CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-3">
+                  <div className="flex items-start gap-2">
+                    <User className="h-4 w-4 text-muted-foreground mt-0.5" />
+                    <div>
+                      <div className="text-sm font-medium text-muted-foreground">
+                        {t('contactName')}
+                      </div>
+                      <div className="text-sm">{request.contact_name}</div>
+                    </div>
+                  </div>
+                  {request.contact_email && (
+                    <div className="flex items-start gap-2">
+                      <Mail className="h-4 w-4 text-muted-foreground mt-0.5" />
+                      <div>
+                        <div className="text-sm font-medium text-muted-foreground">
+                          {t('contactEmail')}
+                        </div>
+                        <div className="text-sm">{request.contact_email}</div>
+                      </div>
+                    </div>
+                  )}
+                  {request.contact_phone && (
+                    <div className="flex items-start gap-2">
+                      <Phone className="h-4 w-4 text-muted-foreground mt-0.5" />
+                      <div>
+                        <div className="text-sm font-medium text-muted-foreground">
+                          {t('contactPhone')}
+                        </div>
+                        <div className="text-sm">{request.contact_phone}</div>
+                      </div>
+                    </div>
+                  )}
+                  {request.contact_company && (
+                    <div className="flex items-start gap-2">
+                      <Building2 className="h-4 w-4 text-muted-foreground mt-0.5" />
+                      <div>
+                        <div className="text-sm font-medium text-muted-foreground">
+                          {t('contactCompany')}
+                        </div>
+                        <div className="text-sm">{request.contact_company}</div>
+                      </div>
+                    </div>
+                  )}
+                </CardContent>
+              </Card>
+            )}
+
+            {/* Preferred Dates */}
+            {request.preferred_dates && request.preferred_dates.length > 0 && (
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <Calendar className="h-5 w-5" />
+                    {t('preferredDates')}
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="space-y-2">
+                    {request.preferred_dates.map((dateInfo, index) => (
+                      <div
                         key={index}
-                        href={link}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="flex items-center gap-2 text-sm text-primary hover:underline"
+                        className="flex items-center gap-2 text-sm p-2 border rounded"
                       >
-                        <LinkIcon className="h-3 w-3" />
-                        {link}
-                      </a>
+                        <Check className="h-4 w-4 text-muted-foreground" />
+                        <span className="flex-1">
+                          {dateInfo.date
+                            ? format(new Date(dateInfo.date), 'MMMM d, yyyy')
+                            : t('dateNotSpecified')}
+                          {dateInfo.time_slot && ` - ${dateInfo.time_slot}`}
+                        </span>
+                        {dateInfo.date && availability[dateInfo.date] !== undefined && (
+                          <span
+                            className={`inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-xs font-medium ${
+                              availability[dateInfo.date]
+                                ? 'bg-tone-positive-bg text-tone-positive'
+                                : 'bg-tone-critical-bg text-tone-critical'
+                            }`}
+                          >
+                            <span
+                              className={`h-1.5 w-1.5 rounded-full ${
+                                availability[dateInfo.date]
+                                  ? 'bg-tone-positive'
+                                  : 'bg-tone-critical'
+                              }`}
+                            />
+                            {availability[dateInfo.date] ? t('available') : t('busy')}
+                          </span>
+                        )}
+                      </div>
                     ))}
                   </div>
-                </div>
-              </>
+                </CardContent>
+              </Card>
             )}
-          </CardContent>
-        </Card>
 
-        {/* Contact Information (for public submissions) */}
-        {request.contact_name && (
-          <Card>
-            <CardHeader>
-              <CardTitle>{t('contactInfo')}</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-3">
-              <div className="flex items-start gap-2">
-                <User className="h-4 w-4 text-muted-foreground mt-0.5" />
-                <div>
-                  <div className="text-sm font-medium text-muted-foreground">
-                    {t('contactName')}
-                  </div>
-                  <div className="text-sm">{request.contact_name}</div>
-                </div>
-              </div>
-              {request.contact_email && (
-                <div className="flex items-start gap-2">
-                  <Mail className="h-4 w-4 text-muted-foreground mt-0.5" />
-                  <div>
-                    <div className="text-sm font-medium text-muted-foreground">
-                      {t('contactEmail')}
+            {/* Additional Details */}
+            {(request.location || request.budget_range) && (
+              <Card>
+                <CardHeader>
+                  <CardTitle>{t('additionalDetails')}</CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-3">
+                  {request.location && (
+                    <div className="flex items-start gap-2">
+                      <MapPin className="h-4 w-4 text-muted-foreground mt-0.5" />
+                      <div>
+                        <div className="text-sm font-medium text-muted-foreground">
+                          {t('location')}
+                        </div>
+                        <div className="text-sm">{request.location}</div>
+                      </div>
                     </div>
-                    <div className="text-sm">{request.contact_email}</div>
-                  </div>
-                </div>
-              )}
-              {request.contact_phone && (
-                <div className="flex items-start gap-2">
-                  <Phone className="h-4 w-4 text-muted-foreground mt-0.5" />
-                  <div>
-                    <div className="text-sm font-medium text-muted-foreground">
-                      {t('contactPhone')}
-                    </div>
-                    <div className="text-sm">{request.contact_phone}</div>
-                  </div>
-                </div>
-              )}
-              {request.contact_company && (
-                <div className="flex items-start gap-2">
-                  <Building2 className="h-4 w-4 text-muted-foreground mt-0.5" />
-                  <div>
-                    <div className="text-sm font-medium text-muted-foreground">
-                      {t('contactCompany')}
-                    </div>
-                    <div className="text-sm">{request.contact_company}</div>
-                  </div>
-                </div>
-              )}
-            </CardContent>
-          </Card>
-        )}
+                  )}
 
-        {/* Preferred Dates */}
-        {request.preferred_dates && request.preferred_dates.length > 0 && (
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Calendar className="h-5 w-5" />
-                {t('preferredDates')}
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-2">
-                {request.preferred_dates.map((dateInfo, index) => (
-                  <div key={index} className="flex items-center gap-2 text-sm p-2 border rounded">
-                    <Check className="h-4 w-4 text-muted-foreground" />
-                    <span className="flex-1">
-                      {dateInfo.date
-                        ? format(new Date(dateInfo.date), 'MMMM d, yyyy')
-                        : t('dateNotSpecified')}
-                      {dateInfo.time_slot && ` - ${dateInfo.time_slot}`}
-                    </span>
-                    {dateInfo.date && availability[dateInfo.date] !== undefined && (
-                      <span
-                        className={`inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-xs font-medium ${
-                          availability[dateInfo.date]
-                            ? 'bg-tone-positive-bg text-tone-positive'
-                            : 'bg-tone-critical-bg text-tone-critical'
-                        }`}
-                      >
-                        <span
-                          className={`h-1.5 w-1.5 rounded-full ${
-                            availability[dateInfo.date] ? 'bg-tone-positive' : 'bg-tone-critical'
-                          }`}
-                        />
-                        {availability[dateInfo.date] ? t('available') : t('busy')}
-                      </span>
-                    )}
-                  </div>
-                ))}
-              </div>
-            </CardContent>
-          </Card>
-        )}
-
-        {/* Additional Details */}
-        {(request.location || request.budget_range) && (
-          <Card>
-            <CardHeader>
-              <CardTitle>{t('additionalDetails')}</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-3">
-              {request.location && (
-                <div className="flex items-start gap-2">
-                  <MapPin className="h-4 w-4 text-muted-foreground mt-0.5" />
-                  <div>
-                    <div className="text-sm font-medium text-muted-foreground">{t('location')}</div>
-                    <div className="text-sm">{request.location}</div>
-                  </div>
-                </div>
-              )}
-
-              {request.budget_range && (
-                <div className="flex items-start gap-2">
-                  <DollarSign className="h-4 w-4 text-muted-foreground mt-0.5" />
-                  <div>
-                    <div className="text-sm font-medium text-muted-foreground">
-                      {t('budgetRange')}
+                  {request.budget_range && (
+                    <div className="flex items-start gap-2">
+                      <DollarSign className="h-4 w-4 text-muted-foreground mt-0.5" />
+                      <div>
+                        <div className="text-sm font-medium text-muted-foreground">
+                          {t('budgetRange')}
+                        </div>
+                        <div className="text-sm">
+                          {BUDGET_RANGE_LABELS[request.budget_range] || request.budget_range}
+                        </div>
+                      </div>
                     </div>
-                    <div className="text-sm">
-                      {BUDGET_RANGE_LABELS[request.budget_range] || request.budget_range}
-                    </div>
-                  </div>
-                </div>
-              )}
-            </CardContent>
-          </Card>
-        )}
+                  )}
+                </CardContent>
+              </Card>
+            )}
 
-        {/* Admin Notes */}
-        <Card>
-          <CardHeader>
-            <CardTitle>{t('adminNotes')}</CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-2">
-            <Label htmlFor="admin-notes">{t('internalNotesInfo')}</Label>
-            <Textarea
-              id="admin-notes"
-              value={adminNotes}
-              onChange={(e) => setAdminNotes(e.target.value)}
-              placeholder={t('addNotesPlaceholder')}
-              rows={4}
-              disabled={request.status !== 'pending'}
-            />
-          </CardContent>
-        </Card>
+            {/* Admin Notes */}
+            <Card>
+              <CardHeader>
+                <CardTitle>{t('adminNotes')}</CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-2">
+                <Label htmlFor="admin-notes">{t('internalNotesInfo')}</Label>
+                <Textarea
+                  id="admin-notes"
+                  value={adminNotes}
+                  onChange={(e) => setAdminNotes(e.target.value)}
+                  placeholder={t('addNotesPlaceholder')}
+                  rows={4}
+                  disabled={request.status !== 'pending'}
+                />
+              </CardContent>
+            </Card>
+          </div>
+        </DetailShell>
       </div>
 
       {/* Review Dialog */}
-      <Dialog open={reviewDialogOpen} onOpenChange={setReviewDialogOpen}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>
-              {reviewStatus === 'accepted' ? t('acceptRequest') : t('declineRequest')}
-            </DialogTitle>
-            <DialogDescription>
-              {reviewStatus === 'accepted' ? t('acceptDescription') : t('declineDescription')}
-            </DialogDescription>
-          </DialogHeader>
-
-          <div className="space-y-2">
-            <Label htmlFor="review-notes">{t('adminNotesOptional')}</Label>
-            <Textarea
-              id="review-notes"
-              value={adminNotes}
-              onChange={(e) => setAdminNotes(e.target.value)}
-              placeholder={t('addInternalNotes')}
-              rows={3}
-            />
-          </div>
-
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setReviewDialogOpen(false)} disabled={loading}>
-              {tc('cancel')}
-            </Button>
-            <Button
-              onClick={() => handleReview(reviewStatus)}
-              disabled={loading}
-              variant={reviewStatus === 'declined' ? 'destructive' : 'default'}
-            >
-              {loading ? t('processing') : reviewStatus === 'accepted' ? t('accept') : t('decline')}
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+      <FormDialog
+        open={reviewDialogOpen}
+        onOpenChange={setReviewDialogOpen}
+        title={reviewStatus === 'accepted' ? t('acceptRequest') : t('declineRequest')}
+        description={reviewStatus === 'accepted' ? t('acceptDescription') : t('declineDescription')}
+        onSubmit={() => handleReview(reviewStatus)}
+        submitLabel={
+          loading ? t('processing') : reviewStatus === 'accepted' ? t('accept') : t('decline')
+        }
+        cancelLabel={tc('cancel')}
+        submitting={loading}
+        submitVariant={reviewStatus === 'declined' ? 'destructive' : 'default'}
+      >
+        <div className="space-y-2">
+          <Label htmlFor="review-notes">{t('adminNotesOptional')}</Label>
+          <Textarea
+            id="review-notes"
+            value={adminNotes}
+            onChange={(e) => setAdminNotes(e.target.value)}
+            placeholder={t('addInternalNotes')}
+            rows={3}
+          />
+        </div>
+      </FormDialog>
 
       {/* Convert to Project Dialog */}
       <ConfirmDialog

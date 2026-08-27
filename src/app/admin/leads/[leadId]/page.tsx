@@ -1,6 +1,5 @@
 import { notFound } from 'next/navigation';
-import { PageHeading } from '@/components/shared/page-heading';
-import { AdminLeadDetail } from '@/components/admin/leads/lead-detail';
+import { AdminLeadDetail, LEAD_TABS } from '@/components/admin/leads/lead-detail';
 import { getLead } from '@/lib/actions/leads';
 import { getLeadActivities } from '@/lib/actions/lead-activities';
 import { createClient } from '@/lib/supabase/server';
@@ -8,8 +7,10 @@ import type { ComponentProps } from 'react';
 
 export default async function AdminLeadDetailPage({
   params,
+  searchParams,
 }: {
   params: Promise<{ leadId: string }>;
+  searchParams: Promise<{ tab?: string }>;
 }) {
   const { leadId } = await params;
 
@@ -33,14 +34,16 @@ export default async function AdminLeadDetailPage({
     .in('role', ['salesman', 'admin', 'super_admin'])
     .order('display_name', { ascending: true });
 
+  // Άγνωστη καρτέλα πέφτει στην πρώτη, όπως ακριβώς κάνουν οι κόμβοι.
+  const { tab } = await searchParams;
+  const activeTab = LEAD_TABS.includes(tab ?? '') ? (tab as string) : 'info';
+
   return (
-    <div className="space-y-6">
-      <PageHeading title={lead.contact_name} subtitle={lead.company_name ?? lead.email} />
-      <AdminLeadDetail
-        lead={lead as unknown as ComponentProps<typeof AdminLeadDetail>['lead']}
-        activities={activities as unknown as ComponentProps<typeof AdminLeadDetail>['activities']}
-        salesmen={(salesmen as unknown as ComponentProps<typeof AdminLeadDetail>['salesmen']) ?? []}
-      />
-    </div>
+    <AdminLeadDetail
+      lead={lead as unknown as ComponentProps<typeof AdminLeadDetail>['lead']}
+      activities={activities as unknown as ComponentProps<typeof AdminLeadDetail>['activities']}
+      salesmen={(salesmen as unknown as ComponentProps<typeof AdminLeadDetail>['salesmen']) ?? []}
+      activeTab={activeTab}
+    />
   );
 }

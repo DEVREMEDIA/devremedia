@@ -1,4 +1,4 @@
-import { createClient } from '@/lib/supabase/server';
+import { requireUser } from '@/lib/auth-helpers';
 import { getInvoice } from '@/lib/actions/invoices';
 import { redirect, notFound } from 'next/navigation';
 import { InvoiceDetail } from '@/components/client/invoices/invoice-detail';
@@ -10,12 +10,9 @@ interface PageProps {
 export default async function ClientInvoiceDetailPage({ params }: PageProps) {
   const { invoiceId } = await params;
 
-  const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  const { error: authError } = await requireUser();
 
-  if (!user) {
+  if (authError) {
     redirect('/login');
   }
 

@@ -89,31 +89,113 @@ const COVERED = [
   'src/components/admin/calendar',
   'src/components/admin/filming-requests',
   'src/components/admin/filming-prep',
+  // Οι τέσσερις οθόνες λεπτομέρειας περνούν στο κοινό κέλυφος (#109) — τιμολόγιο,
+  // lead, αίτημα γυρίσματος, και τα δύο φυλασσόμενα δέντρα γύρω τους.
+  'src/app/admin/invoices',
+  'src/app/admin/leads',
+  'src/app/admin/filming-requests',
+  'src/components/admin/invoices',
+  'src/components/admin/leads',
 ];
 
 // Αρχεία μέσα σε καλυμμένους φακέλους που όντως γράφουν ακόμα ωμό χρώμα.
 // Κάθε επόμενη φέτα αφαιρεί από εδώ ό,τι μεταναστεύει. Μπαίνει εδώ μόνο
 // ό,τι πραγματικά παραβιάζει — ένα καθαρό αρχείο δεν έχει λόγο να εξαιρεθεί.
 //
-// ΤΟ `lines` ΕΙΝΑΙ ΤΟ ΧΡΕΟΣ, και ο φύλακας απαιτεί να ταιριάζει ΑΚΡΙΒΩΣ.
-// Χωρίς αυτόν τον αριθμό η λίστα ήταν ανοιχτή πόρτα: μια εγγραφή εξαιρούσε
-// ΤΟ ΑΡΧΕΙΟ, όχι τις γνωστές του παραβιάσεις, οπότε ένα ήδη εκκρεμές αρχείο
-// μπορούσε να μαζέψει όσα καινούργια ωμά χρώματα ήθελε και ο έλεγχος
-// «παραβιάζει ακόμα;» απαντούσε ναι και σιωπούσε. Το απέδειξε ο τελικός
-// έλεγχος της #108 βάζοντας άσχετη παραβίαση σε εκκρεμές αρχείο.
+// ΤΟ `colours` ΕΙΝΑΙ ΤΟ ΧΡΕΟΣ: ΠΟΙΑ ακριβώς χρώματα δικαιολογούνται, όχι
+// πόσα. Ο φύλακας συγκρίνει το ταξινομημένο σύνολο ακριβώς.
 //
-// Μεγαλώνει ο αριθμός → μπήκε νέο χρέος πίσω από παλιά εξαίρεση.
-// Μικραίνει → κάποιος πλήρωσε μέρος και δεν το είπε· γράψε τον νέο.
-// Μηδενίζεται → η εγγραφή φεύγει.
+// Δύο γενιές αυτού του ελέγχου ήταν ανοιχτές πόρτες, και τις δύο τις βρήκε
+// ανεξάρτητος έλεγχος βάζοντας παραβίαση, ποτέ διαβάζοντας:
+//   1η — η εγγραφή εξαιρούσε ΤΟ ΑΡΧΕΙΟ. Ένα εκκρεμές αρχείο μάζευε όσα νέα
+//        χρώματα ήθελε· ο έλεγχος ρωτούσε «παραβιάζει ακόμα;», έπαιρνε ναι,
+//        και σιωπούσε.
+//   2η — η εγγραφή εξαιρούσε ΕΝΑΝ ΑΡΙΘΜΟ. Αντικατάστησε μια παραβίαση με
+//        άλλη, κράτα το σύνολο ίδιο, και ο φύλακας μένει πράσινος. Ένα
+//        `text-red-500` γίνεται `bg-purple-700` και κανείς δεν το μαθαίνει.
+// Το σύνολο κλείνει και τις δύο: αλλάζει οτιδήποτε, το build πέφτει.
+//
+// Και έχει ένα δεύτερο κέρδος: διαβάζεται. Ο επόμενος βλέπει ΤΙ χρωστά το
+// αρχείο χωρίς να το ανοίξει, αντί για έναν αριθμό που δεν λέει τίποτα.
 // (Ο πρώτος αριθμός που γράφτηκε εδώ ως σχόλιο ήταν ήδη λάθος: έλεγε
-// δεκαπέντε για ένα αρχείο με δεκαεπτά. Γι' αυτό τον μετράει ο φύλακας.)
+// δεκαπέντε για ένα αρχείο με δεκαεπτά γραμμές και είκοσι δύο χρώματα.)
 const PENDING = [
-  { file: 'src/components/admin/dashboard/production/crew-load-heatmap.tsx', lines: 3 },
-  { file: 'src/components/admin/dashboard/risk/risk-panel.tsx', lines: 1 },
-  { file: 'src/components/admin/dashboard/sales/revenue-forecast-card.tsx', lines: 1 },
+  {
+    file: 'src/components/admin/dashboard/production/crew-load-heatmap.tsx',
+    colours: [
+      'bg-emerald-200',
+      'bg-red-400',
+      'bg-yellow-300',
+      'text-emerald-900',
+      'text-red-900',
+      'text-yellow-900',
+    ],
+  },
+  { file: 'src/components/admin/dashboard/risk/risk-panel.tsx', colours: ['text-red-500'] },
+  {
+    file: 'src/components/admin/dashboard/sales/revenue-forecast-card.tsx',
+    colours: ['bg-emerald-500'],
+  },
   // Η λίστα έργων του portal πελάτη — και δεν είναι οθόνη λεπτομέρειας:
   // μπήκε στην κάλυψη μαζί με τον φάκελό της, δεν την ανέλαβε η #106.
-  { file: 'src/components/client/projects/projects-list.tsx', lines: 17 },
+  {
+    file: 'src/components/client/projects/projects-list.tsx',
+    colours: [
+      'bg-amber-500',
+      'bg-amber-500',
+      'bg-amber-500',
+      'bg-amber-500',
+      'bg-amber-500',
+      'bg-amber-500',
+      'bg-emerald-500',
+      'rgba(234,179,8,0.2)',
+      'rgba(234,179,8,0.2)',
+      'rgba(234,179,8,0.4)',
+      'rgba(234,179,8,0.4)',
+      'text-amber-400',
+      'text-amber-400',
+      'text-amber-500',
+      'text-amber-500',
+      'text-amber-500',
+      'text-amber-600',
+      'text-amber-600',
+      'text-emerald-400',
+      'text-emerald-500',
+      'text-emerald-500',
+      'text-emerald-600',
+    ],
+  },
+  // Η αναφορά πωλήσεων της περιοχής Interest — CHART_COLORS και τα
+  // text-green-600/text-red-600 της. Ήδη στο TABLE_PENDING ως έργο περιοχής
+  // για επόμενη φέτα· ίδιος λόγος εδώ. Δεν είναι ότι τα χρώματα γραφήματος
+  // δεν μπορούν να γίνουν tokens — τα --chart-1..5 υπάρχουν ήδη στο
+  // globals.css. Είναι θέμα εμβέλειας: η οθόνη ανήκει σε επόμενη φέτα.
+  {
+    file: 'src/components/admin/leads/sales-report.tsx',
+    colours: [
+      '#06b6d4',
+      '#10b981',
+      '#3b82f6',
+      '#3b82f6',
+      '#8b5cf6',
+      '#ec4899',
+      '#ef4444',
+      '#f59e0b',
+      'text-green-600',
+      'text-red-600',
+    ],
+  },
+  // Εύρημα εκτός σχεδίου της #109: η κάρτα ανά πελάτη μέσα στη λίστα
+  // τιμολογίων ζωγραφίζει ακόμα text-green-600 (πληρωμένο) και
+  // text-orange-600 (υπόλοιπο) στο χέρι. Ο πίνακας εδώ ήδη μετανάστευσε
+  // (#104, βλ. TABLE_DETAIL_EXEMPT) αλλά το χρώμα ξέφυγε επειδή το
+  // src/app/admin/invoices δεν ήταν καλυμμένο για χρώμα μέχρι αυτή τη φέτα.
+  // Θέμα εμβέλειας, όχι αδυναμίας — το χρέος προϋπάρχει της #109 και δεν
+  // ήταν κάτι που τα Tasks 1-6 ανέλαβαν να καθαρίσουν.
+  {
+    file: 'src/app/admin/invoices/invoices-content.tsx',
+    colours: ['text-green-600', 'text-green-600', 'text-orange-600', 'text-orange-600'],
+  },
 ];
 
 // ΠΡΟΣΟΧΗ στα όρια λέξης. Το Tailwind γράφει τα κενά μιας αυθαίρετης τιμής ως
@@ -127,8 +209,25 @@ const PENDING = [
 // πριν» — που δέχεται την κάτω παύλα του Tailwind αλλά κόβει το `borgb(` μέσα
 // σε λέξη. Σκέτη αφαίρεση του `\b` έδινε ψευδώς θετικά, και την έπιασε ο
 // επανέλεγχος. Για το hex, «όχι κι άλλο δεκαεξαδικό ψηφίο από πίσω».
+// Η συνάρτηση χρώματος πιάνεται ΜΕ ΤΑ ΟΡΙΣΜΑΤΑ ΤΗΣ. Πρώτη γραφή σταματούσε
+// στο `rgba(`, οπότε στο σύνολο του εκκρεμούς καταγραφόταν μόνο η λέξη —
+// και `rgba(234,179,8,.2)` → `rgba(0,0,255,.9)` περνούσε πράσινο. Έκλεινε η
+// αντικατάσταση για τις κλάσεις Tailwind και έμενε ανοιχτή ακριβώς δίπλα.
+// Η παρένθεση κλεισίματος είναι ΠΡΟΑΙΡΕΤΙΚΗ επίτηδες: ο έλεγχος γίνεται ανά
+// γραμμή, και μια κλήση σπασμένη σε δύο γραμμές δεν πρέπει να πάψει να
+// ανιχνεύεται επειδή το `)` της έμεινε παρακάτω.
+//
+// Τα ονόματα των συναρτήσεων γράφονται γράμμα-γράμμα σε πεζό/κεφαλαίο. Η CSS
+// ΔΕΝ ξεχωρίζει πεζά από κεφαλαία στα ονόματα συναρτήσεων — το `RGBA(255,0,0,.9)`
+// βάφει ακριβώς όπως το `rgba(...)`, και περνούσε ολόκληρο μπροστά από τον
+// φύλακα. Δεν μπαίνει σκέτο `i` σε όλη την έκφραση: το hex το χειρίζεται ήδη
+// μόνο του, και οι κλάσεις Tailwind ΕΙΝΑΙ πεζές — ένα καθολικό `i` θα άρχιζε να
+// πιάνει ταυτόχρονα και συμβολοσειρές σαν `TEXT-RED` που δεν είναι χρώματα.
 const RAW_COLOUR =
-  /#[0-9a-fA-F]{3,8}(?![0-9a-fA-F])|(?<![a-zA-Z0-9])(?:rgb|rgba|hsl|hsla|oklch)\s*\(|\b(?:bg|text|border|ring|fill|stroke|from|via|to|divide|outline|shadow|decoration|accent|caret)-(?:white|black|red|orange|amber|yellow|lime|green|emerald|teal|cyan|sky|blue|indigo|violet|purple|fuchsia|pink|rose|slate|gray|grey|zinc|neutral|stone)(?:-\d{2,3})?\b/;
+  /#[0-9a-fA-F]{3,8}(?![0-9a-fA-F])|(?<![a-zA-Z0-9])(?:[rR][gG][bB][aA]?|[hH][sS][lL][aA]?|[oO][kK][lL][cC][hH])\s*\([^)]*\)?|\b(?:bg|text|border|ring|fill|stroke|from|via|to|divide|outline|shadow|decoration|accent|caret)-(?:white|black|red|orange|amber|yellow|lime|green|emerald|teal|cyan|sky|blue|indigo|violet|purple|fuchsia|pink|rose|slate|gray|grey|zinc|neutral|stone)(?:-\d{2,3})?\b/;
+
+/** Το ίδιο, με `g`: για να μετρηθεί ΤΙ παραβιάζει ένα εκκρεμές, όχι μόνο ΑΝ. */
+const RAW_COLOUR_ALL = new RegExp(RAW_COLOUR.source, 'g');
 
 function walk(target, out = []) {
   let stat;
@@ -158,7 +257,18 @@ function stripComments(line) {
   return i === -1 ? line : line.slice(0, i);
 }
 
-const pendingDebt = new Map(PENDING.map((p) => [p.file.replaceAll('\\', '/'), p.lines]));
+const pendingDebt = new Map(
+  PENDING.map((p) => [p.file.replaceAll('\\', '/'), [...p.colours].sort()]),
+);
+
+/** Τι ακριβώς παραβιάζει το αρχείο, ταξινομημένο, με τις επαναλήψεις του. */
+function colourMultiset(source) {
+  const found = [];
+  for (const line of source.split('\n')) {
+    for (const m of stripComments(line).matchAll(RAW_COLOUR_ALL)) found.push(m[0]);
+  }
+  return found.sort();
+}
 
 const files = new Set();
 for (const target of COVERED) {
@@ -180,10 +290,15 @@ for (const file of files) {
   if (pendingDebt.has(file)) {
     if (offending.length === 0) {
       stalePendingColours.push(file);
-    } else if (offending.length !== pendingDebt.get(file)) {
-      // Η εξαίρεση καλύπτει ΣΥΓΚΕΚΡΙΜΕΝΟ χρέος, όχι το αρχείο. Ό,τι δεν
-      // ταιριάζει με τον δηλωμένο αριθμό δεν είναι το χρέος που εξαιρέθηκε.
-      changedPendingDebt.push({ file, declared: pendingDebt.get(file), found: offending });
+    } else {
+      // Η εξαίρεση καλύπτει ΣΥΓΚΕΚΡΙΜΕΝΑ χρώματα, όχι το αρχείο και όχι έναν
+      // αριθμό. Αντικατάσταση ενός χρώματος με άλλο κρατά το πλήθος και
+      // περνούσε — δεν περνά πια.
+      const declared = pendingDebt.get(file);
+      const found = colourMultiset(readFileSync(file, 'utf8'));
+      if (declared.join(' ') !== found.join(' ')) {
+        changedPendingDebt.push({ file, declared, found });
+      }
     }
     continue;
   }
@@ -206,9 +321,6 @@ const HEADING_EXEMPT = [
 // σημείο επιστροφής. Κάθε επόμενη φέτα αφαιρεί από εδώ — η λίστα μόνο μικραίνει.
 const HEADING_PENDING = [
   'src/app/book/page.tsx', // δημόσια σελίδα με δικό της κέλυφος
-  'src/app/admin/invoices/[invoiceId]/invoice-detail.tsx', // → #109
-  'src/components/admin/filming-requests/filming-request-detail.tsx', // → #109
-  'src/components/client/invoices/invoice-detail.tsx', // → #109
 ];
 
 const HEADING_IMPORT = /['"][^'"]*\/shared\/page-header['"]/;
@@ -267,7 +379,9 @@ const strippedOf = (f) => sourceOf.get(f).split('\n').map(stripComments).join('\
 
 const IMPORT_SPEC = /from\s+'(@\/[^']+|\.[^']*)'/g;
 const RENDERS_HEADING = /<PageHeading[\s/>]/;
+const RENDERS_HEADING_ALL = /<PageHeading[\s/>]/g;
 const RENDERS_DETAIL_SHELL = /<DetailShell[\s/>]/;
+const RENDERS_DETAIL_SHELL_ALL = /<DetailShell[\s/>]/g;
 
 // Τα δύο components των οποίων η ΔΟΥΛΕΙΑ είναι να γράψουν τον τίτλο. Χωρίς
 // αυτή την εξαίρεση, ο έλεγχος διπλού τίτλου θα κατήγγειλλε το ίδιο το κέλυφος
@@ -307,6 +421,21 @@ const hubs = allTsxFiles.filter(
 
 const doubleTitles = new Map();
 for (const hub of hubs) {
+  // Ο κόμβος ΕΛΕΓΧΕΤΑΙ ΚΑΙ ΓΙΑ ΤΟΝ ΕΑΥΤΟ ΤΟΥ. Ο βρόχος από κάτω ξεκινούσε από
+  // τις ΕΙΣΑΓΩΓΕΣ του, οπότε ο πιο προφανής τρόπος να σπάσει ο κανόνας —
+  // δύο επικεφαλίδες γραμμένες στο ίδιο αρχείο — περνούσε καθαρός. Και οι
+  // τέσσερις οθόνες λεπτομέρειας της #109 είναι μονοαρχεία, δηλαδή ο κανόνας
+  // ήταν τυφλός ακριβώς εκεί που μόλις είχε επεκταθεί. Το βρήκε το αρνητικό
+  // τεστ της Task 7, εισάγοντας παραβίαση και βλέποντας τον φύλακα πράσινο.
+  const own = strippedOf(hub);
+  const ownTitles =
+    (own.match(RENDERS_HEADING_ALL) ?? []).length +
+    (own.match(RENDERS_DETAIL_SHELL_ALL) ?? []).length;
+  if (ownTitles > 1) {
+    if (!doubleTitles.has(hub)) doubleTitles.set(hub, new Set());
+    doubleTitles.get(hub).add(hub);
+  }
+
   const seen = new Set();
   const queue = [...strippedOf(hub).matchAll(IMPORT_SPEC)]
     .map((m) => resolveImport(m[1], hub))
@@ -373,9 +502,11 @@ const TABLE_GUARDED_AREAS = [
 const TABLE_DETAIL_EXEMPT = [
   'src/app/admin/invoices/invoices-content.tsx', // λίστα τιμολογίων μέσα σε ανοιγμένο πελάτη
   // Οι γραμμές ενός παραστατικού είναι το ίδιο το περιεχόμενο του εγγράφου:
-  // λίγες, σταθερές, χωρίς νόημα να αναζητηθούν ή να σελιδοποιηθούν. Η οθόνη
-  // αυτή ανασχεδιάζεται ούτως ή άλλως στη #109.
+  // λίγες, σταθερές, χωρίς νόημα να αναζητηθούν ή να σελιδοποιηθούν. Ισχύει
+  // εξίσου και για τις δύο πλευρές — η admin οθόνη λεπτομέρειας τιμολογίου
+  // και η αντίστοιχη client (Ruling B, #109).
   'src/app/admin/invoices/[invoiceId]/invoice-detail.tsx',
+  'src/components/client/invoices/invoice-detail.tsx',
 ];
 
 // Πίνακες της περιοχής που ΔΕΝ έχουν μεταναστεύσει ακόμα, με ρητό λόγο και
@@ -400,9 +531,6 @@ const TABLE_PENDING = [
   'src/components/admin/leads/sales-report.tsx',
   // Ο πίνακας γνώσης του chatbot — έργο περιοχής για επόμενη φέτα.
   'src/components/admin/chatbot/knowledge-table.tsx',
-  // Ο πίνακας χτισμένος στο χέρι από τα ωμά primitives· ο δικός του ωμός τίτλος
-  // ζει ήδη στο HEADING_PENDING για τον ίδιο λόγο — το ίδιο ξαναγράψιμο, #109.
-  'src/components/client/invoices/invoice-detail.tsx',
 ];
 
 // Δύο μορφές, γιατί και οι δύο φτιάχνουν πίνακα στο χέρι: εισαγωγή των ωμών
@@ -507,17 +635,31 @@ if (
   }
   if (changedPendingDebt.length > 0) {
     console.error(
-      `\ncheck:design — ${changedPendingDebt.length} PENDING entr${changedPendingDebt.length === 1 ? 'y whose' : 'ies whose'} colour debt changed. A PENDING entry excuses a KNOWN number of raw colours, not the file:\n`,
+      `\ncheck:design — ${changedPendingDebt.length} PENDING entr${changedPendingDebt.length === 1 ? 'y whose' : 'ies whose'} colour debt changed. A PENDING entry excuses NAMED raw colours — not the file, and not a count:\n`,
     );
     for (const { file, declared, found } of changedPendingDebt) {
-      console.error(
-        `  ${file} — declared ${declared}, found ${found.length}. ${
-          found.length > declared
-            ? 'New raw colour went in behind an old exception. Remove it, or raise the number and say why.'
-            : 'Some of it was paid. Lower the number to what is left.'
-        }`,
-      );
-      for (const line of found) console.error(`      ${line}`);
+      // Ποια ακριβώς μπήκαν και ποια έφυγαν — με τις επαναλήψεις τους, ώστε
+      // «τρία amber έγιναν τέσσερα» να μη διαβάζεται ως «κανένα αλλαγμένο».
+      const remaining = [...declared];
+      const added = [];
+      for (const c of found) {
+        const at = remaining.indexOf(c);
+        if (at === -1) added.push(c);
+        else remaining.splice(at, 1);
+      }
+      console.error(`  ${file}`);
+      if (added.length > 0) {
+        console.error(
+          `      NEW behind the exception: ${added.join(', ')}\n` +
+            '      Remove it, or add it to the entry and say why it is owed.',
+        );
+      }
+      if (remaining.length > 0) {
+        console.error(
+          `      no longer present: ${remaining.join(', ')}\n` +
+            '      Paid, apparently. Drop it from the entry.',
+        );
+      }
     }
   }
   if (headingViolations.length > 0) {
@@ -536,7 +678,15 @@ if (
       `\ncheck:design — ${doubleTitles.size} file(s) render a second page title inside a hub:\n`,
     );
     for (const [file, insideHubs] of doubleTitles) {
-      console.error(`  ${file}\n      mounted by ${[...insideHubs].join(', ')}`);
+      const others = [...insideHubs].filter((h) => h !== file);
+      // Δύο διαφορετικά σφάλματα, δύο διαφορετικές προτάσεις. Το «mounted by
+      // τον εαυτό του» δεν λέει τίποτα σε όποιον το διαβάζει στις έξι το πρωί.
+      if (insideHubs.has(file)) {
+        console.error(`  ${file}\n      renders more than one page title in its own body`);
+      }
+      if (others.length > 0) {
+        console.error(`  ${file}\n      mounted by ${others.join(', ')}`);
+      }
     }
     console.error('\nThe hub owns the page title. A tab body must not render its own PageHeading.');
   }

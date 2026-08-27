@@ -475,7 +475,10 @@ test.describe('design identity — detail screens', () => {
 
     await expect(page.locator('[data-slot="page-heading"]')).toHaveCount(1);
     await expect(page.locator('[role="tablist"]')).toHaveCount(1);
-    await expect(page.locator('a[href="/admin/projects"]')).toBeVisible();
+    // Ο προορισμός, όχι το stub. Το `/admin/projects` ανακατευθύνει εδώ — ο
+    // σύνδεσμος δούλευε και πλήρωνε μια αναπήδηση, και αυτό ακριβώς έπιασε
+    // αυτό το test όταν διορθώθηκε ο σύνδεσμος.
+    await expect(page.locator('a[href="/admin/productions?tab=all"]')).toBeVisible();
   });
 
   test('a deep link into a tab resolves to that tab', async ({ page }) => {
@@ -581,6 +584,102 @@ test.describe('design identity — productions', () => {
     // Το ριζικό στοιχείο του FullCalendar — αποδεικνύει ότι η βιβλιοθήκη
     // πραγματικά mount-άρισε, όχι μόνο ότι η σελίδα φόρτωσε.
     await expect(page.locator('.fc').first()).toBeVisible();
+  });
+});
+
+test.describe('design identity — detail folders', () => {
+  /**
+   * Τέσσερις ακόμα οθόνες λεπτομέρειας περνούν στο κοινό `DetailShell` (#109):
+   * τιμολόγιο, lead, αίτημα γυρίσματος. Κάθε test φτάνει στην εγγραφή
+   * πλοηγώντας από την πραγματική λίστα, ποτέ με ένα id από seed file.
+   *
+   * Κανένα test δεν ολοκληρώνει τον διάλογο ελέγχου, εγκρίνει, απορρίπτει ή
+   * μετατρέπει — αυτές οι ενέργειες γράφουν εγγραφές και η σουίτα δεν έχει
+   * fixtures ούτε teardown (#119). Το άνοιγμα του διαλόγου είναι η επιβεβαίωση·
+   * το κλείσιμό του είναι η καθαριότητα.
+   */
+
+  test('an admin invoice: exactly one page heading and the back-link resolves to the finance hub', async ({
+    page,
+  }) => {
+    test.skip(!process.env.E2E_TEST_USERS_READY, 'Test users not configured in database');
+    await loginAsAdmin(page);
+    await page.goto('/admin/finance?tab=invoices');
+    await expect(page).toHaveURL(/\/admin\/finance\?tab=invoices/);
+
+    // Η προεπιλογή ομαδοποιεί τα τιμολόγια ανά πελάτη, κλειστά — ο σύνδεσμος
+    // προς ένα πραγματικό τιμολόγιο ζει μέσα στην αναπτυγμένη κάρτα.
+    const firstGroup = page.locator('[data-slot="card"]').first();
+    await firstGroup.locator('button').first().click();
+    const firstInvoiceLink = firstGroup.locator('a[href^="/admin/invoices/"]').first();
+    await firstInvoiceLink.click();
+    await expect(page).toHaveURL(/\/admin\/invoices\/[^/]+$/);
+
+    await expect(page.locator('[data-slot="page-heading"]')).toHaveCount(1);
+    // Ο προορισμός, όχι το stub — το `/admin/invoices` ανακατευθύνει εδώ.
+    await expect(page.locator('a[href="/admin/finance?tab=invoices"]')).toBeVisible();
+  });
+
+  test('a lead: the activities tab is selected from the URL, not reset', async ({ page }) => {
+    test.skip(!process.env.E2E_TEST_USERS_READY, 'Test users not configured in database');
+    await loginAsAdmin(page);
+    await page.goto('/admin/clients?tab=interest');
+    await expect(page).toHaveURL(/\/admin\/clients\?tab=interest/);
+
+    const firstLeadLink = page
+      .locator('table tbody tr')
+      .first()
+      .locator('a[href^="/admin/leads/"]')
+      .first();
+    await firstLeadLink.click();
+    await expect(page).toHaveURL(/\/admin\/leads\/[^/]+$/);
+
+    // Βαθύ σύνδεσμο απευθείας πάνω στην ίδια οθόνη λεπτομέρειας.
+    await page.goto(`${page.url()}?tab=activities`);
+    await expect(page).toHaveURL(/\/admin\/leads\/[^/]+\?tab=activities/);
+
+    const activitiesTab = page.locator('a[role="tab"][href*="tab=activities"]');
+    await expect(activitiesTab).toHaveAttribute('aria-selected', 'true');
+  });
+
+  test('a filming request: one page heading and the review dialog opens', async ({ page }) => {
+    test.skip(!process.env.E2E_TEST_USERS_READY, 'Test users not configured in database');
+    await loginAsAdmin(page);
+    await page.goto('/admin/productions?tab=requests');
+    await expect(page).toHaveURL(/\/admin\/productions\?tab=requests/);
+
+    const firstRequestLink = page
+      .locator('table tbody tr')
+      .first()
+      .locator('a[href^="/admin/filming-requests/"]')
+      .first();
+
+    // Χωρίς αιτήματα δεν υπάρχει οθόνη λεπτομέρειας να ελεγχθεί. Η σουίτα δεν
+    // έχει fixtures (#119), οπότε το περιεχόμενο της βάσης δεν είναι δεδομένο.
+    test.skip((await firstRequestLink.count()) === 0, 'No filming request in this database');
+
+    await firstRequestLink.click();
+    await expect(page).toHaveURL(/\/admin\/filming-requests\/[^/]+$/);
+
+    await expect(page.locator('[data-slot="page-heading"]')).toHaveCount(1);
+
+    // Το κουμπί υπάρχει μόνο σε αίτημα που δεν έχει κριθεί ακόμα, και η λίστα
+    // ΔΕΝ ταξινομεί κατά κατάσταση — η πρώτη γραμμή μπορεί κάλλιστα να είναι
+    // ήδη εγκεκριμένη. Πριν από αυτόν τον έλεγχο το test κλικάριζε στα τυφλά
+    // και θα κοκκίνιζε ανάλογα με το τι έτυχε να είναι πρώτο.
+    const accept = page.getByRole('button', { name: /Αποδοχή|Accept/ });
+    test.skip(
+      (await accept.count()) === 0,
+      'Newest request is already reviewed — no dialog to open',
+    );
+
+    // Το άνοιγμα είναι η επιβεβαίωση — κανένα submit, κανένα approve/reject/convert.
+    await accept.click();
+    const dialog = page.getByRole('dialog');
+    await expect(dialog).toBeVisible();
+
+    await page.keyboard.press('Escape');
+    await expect(dialog).not.toBeVisible();
   });
 });
 
