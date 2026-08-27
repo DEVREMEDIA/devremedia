@@ -791,7 +791,11 @@
     "deleteTaskConfirm": "Είστε σίγουροι ότι θέλετε να διαγράψετε αυτή την εργασία; Η ενέργεια δεν μπορεί να αναιρεθεί.",
     "subtasksHeading": "Υπο-εργασίες",
     "noSubtasksYet": "Δεν υπάρχουν υπο-εργασίες. Κάντε κλικ στο Προσθήκη.",
-    "subtaskTitlePlaceholder": "Τίτλος υπο-εργασίας..."
+    "subtaskTitlePlaceholder": "Τίτλος υπο-εργασίας...",
+    "filterTodo": "Προς Υλοποίηση",
+    "filterInProgress": "Σε Εξέλιξη",
+    "filterReview": "Σε Αξιολόγηση",
+    "filterDone": "Ολοκληρωμένα"
   },
 
   "invoices": {

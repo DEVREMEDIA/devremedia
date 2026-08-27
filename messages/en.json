@@ -791,7 +791,11 @@
     "deleteTaskConfirm": "Are you sure you want to delete this task? This action cannot be undone.",
     "subtasksHeading": "Sub-tasks",
     "noSubtasksYet": "No sub-tasks yet. Click Add to create one.",
-    "subtaskTitlePlaceholder": "Sub-task title..."
+    "subtaskTitlePlaceholder": "Sub-task title...",
+    "filterTodo": "To Do",
+    "filterInProgress": "In Progress",
+    "filterReview": "Review",
+    "filterDone": "Done"
   },
 
   "invoices": {

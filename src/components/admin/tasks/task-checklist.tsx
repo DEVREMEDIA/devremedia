@@ -1,6 +1,9 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { useForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
+import type { z } from 'zod';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Checkbox } from '@/components/ui/checkbox';
@@ -12,19 +15,25 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import {
-  Dialog,
-  DialogContent,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from '@/components/ui/dialog';
-import { Label } from '@/components/ui/label';
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from '@/components/ui/form';
 import { Textarea } from '@/components/ui/textarea';
-import { Badge } from '@/components/ui/badge';
+import { FormDialog } from '@/components/shared/form-dialog';
+import { StatGrid } from '@/components/shared/stat-grid';
+import { StatCard } from '@/components/shared/stat-card';
+import { ToneChip } from '@/components/shared/tone-chip';
+import { statusTone } from '@/lib/status-tone';
 import { Plus, Calendar, User, Filter, ListChecks } from 'lucide-react';
 import { createTask, updateTaskStatus } from '@/lib/actions/tasks';
 import { getTeamMembers } from '@/lib/actions/team';
+import { createTaskSchema } from '@/lib/schemas/task';
+import { PRIORITIES } from '@/lib/constants';
+import { cn } from '@/lib/utils';
 import { toast } from 'sonner';
 import { useTranslations } from 'next-intl';
 import { format } from 'date-fns';
@@ -36,37 +45,38 @@ interface TaskChecklistProps {
   onRefresh: () => void;
 }
 
-const PRIORITY_STYLES: Record<string, string> = {
-  urgent:
-    'bg-red-100 text-red-700 border-red-200 dark:bg-red-950 dark:text-red-400 dark:border-red-900',
-  high: 'bg-orange-100 text-orange-700 border-orange-200 dark:bg-orange-950 dark:text-orange-400 dark:border-orange-900',
-  medium:
-    'bg-blue-100 text-blue-700 border-blue-200 dark:bg-blue-950 dark:text-blue-400 dark:border-blue-900',
-  low: 'bg-slate-100 text-slate-600 border-slate-200 dark:bg-slate-800 dark:text-slate-400 dark:border-slate-700',
-};
+// project_id/status/sort_order aren't fields the user edits here — the first
+// is fixed by the parent, the second is always 'todo' on create, the third
+// isn't set on create at all. The visible form validates only what it shows.
+const taskFormSchema = createTaskSchema.omit({
+  project_id: true,
+  status: true,
+  sort_order: true,
+});
+type TaskFormValues = z.input<typeof taskFormSchema>;
 
-const PRIORITY_LABELS: Record<string, string> = {
-  urgent: 'Urgent',
-  high: 'High',
-  medium: 'Medium',
-  low: 'Low',
-};
+type StatFilter = 'todo' | 'in_progress' | 'review' | 'done';
 
 export function TaskChecklist({ projectId, tasks, onRefresh }: TaskChecklistProps) {
   const t = useTranslations('tasks');
   const tc = useTranslations('common');
+  const tPriority = useTranslations('statuses.priority');
   const [teamMembers, setTeamMembers] = useState<UserProfile[]>([]);
   const [dialogOpen, setDialogOpen] = useState(false);
   const [filter, setFilter] = useState<
     'all' | 'todo' | 'in_progress' | 'review' | 'done' | 'pending'
   >('all');
 
-  const [title, setTitle] = useState('');
-  const [description, setDescription] = useState('');
-  const [assignedTo, setAssignedTo] = useState<string>('');
-  const [priority, setPriority] = useState<string>('medium');
-  const [dueDate, setDueDate] = useState('');
-  const [isSubmitting, setIsSubmitting] = useState(false);
+  const form = useForm<TaskFormValues>({
+    resolver: zodResolver(taskFormSchema),
+    defaultValues: {
+      title: '',
+      description: '',
+      assigned_to: undefined,
+      priority: 'medium',
+      due_date: undefined,
+    },
+  });
 
   useEffect(() => {
     getTeamMembers().then((result) => {
@@ -74,34 +84,30 @@ export function TaskChecklist({ projectId, tasks, onRefresh }: TaskChecklistProp
     });
   }, []);
 
-  const handleCreateTask = async () => {
-    if (!title.trim()) {
-      toast.error(t('taskName'));
-      return;
-    }
-    setIsSubmitting(true);
+  const handleCreateTask = async (values: TaskFormValues) => {
     const result = await createTask({
-      title: title.trim(),
-      description: description.trim() || undefined,
+      title: values.title.trim(),
+      description: values.description?.trim() || undefined,
       project_id: projectId,
-      assigned_to: assignedTo || undefined,
-      priority,
-      due_date: dueDate || undefined,
+      assigned_to: values.assigned_to || undefined,
+      priority: values.priority,
+      due_date: values.due_date || undefined,
       status: 'todo',
     });
     if (result.error) {
       toast.error(result.error);
-    } else {
-      toast.success(t('taskCreated'));
-      setTitle('');
-      setDescription('');
-      setAssignedTo('');
-      setPriority('medium');
-      setDueDate('');
-      setDialogOpen(false);
-      onRefresh();
+      return;
     }
-    setIsSubmitting(false);
+    toast.success(t('taskCreated'));
+    form.reset({
+      title: '',
+      description: '',
+      assigned_to: undefined,
+      priority: 'medium',
+      due_date: undefined,
+    });
+    setDialogOpen(false);
+    onRefresh();
   };
 
   const handleToggle = async (task: Task) => {
@@ -120,10 +126,17 @@ export function TaskChecklist({ projectId, tasks, onRefresh }: TaskChecklistProp
     return task.status === filter;
   });
 
-  const todoCount = tasks.filter((t) => t.status === 'todo').length;
-  const inProgressCount = tasks.filter((t) => t.status === 'in_progress').length;
-  const reviewCount = tasks.filter((t) => t.status === 'review').length;
-  const doneCount = tasks.filter((t) => t.status === 'done').length;
+  const todoCount = tasks.filter((tk) => tk.status === 'todo').length;
+  const inProgressCount = tasks.filter((tk) => tk.status === 'in_progress').length;
+  const reviewCount = tasks.filter((tk) => tk.status === 'review').length;
+  const doneCount = tasks.filter((tk) => tk.status === 'done').length;
+
+  const statTiles: { key: StatFilter; label: string; value: number }[] = [
+    { key: 'todo', label: t('filterTodo'), value: todoCount },
+    { key: 'in_progress', label: t('filterInProgress'), value: inProgressCount },
+    { key: 'review', label: t('filterReview'), value: reviewCount },
+    { key: 'done', label: t('filterDone'), value: doneCount },
+  ];
 
   const assigneeName = (userId: string | null) => {
     if (!userId) return null;
@@ -137,79 +150,85 @@ export function TaskChecklist({ projectId, tasks, onRefresh }: TaskChecklistProp
 
   return (
     <div className="space-y-4">
-      {/* Status counters */}
-      <div className="grid grid-cols-4 gap-3">
-        <button
-          onClick={() => setFilter(filter === 'todo' ? 'all' : ('todo' as typeof filter))}
-          className={`rounded-lg border p-3 text-center transition-colors ${filter === 'todo' ? 'ring-2 ring-blue-500' : 'hover:bg-accent/50'}`}
-        >
-          <div className="text-2xl font-bold text-blue-600">{todoCount}</div>
-          <div className="text-[11px] text-muted-foreground">Προς Υλοποίηση</div>
-        </button>
-        <button
-          onClick={() =>
-            setFilter(filter === 'in_progress' ? 'all' : ('in_progress' as typeof filter))
-          }
-          className={`rounded-lg border p-3 text-center transition-colors ${filter === 'in_progress' ? 'ring-2 ring-amber-500' : 'hover:bg-accent/50'}`}
-        >
-          <div className="text-2xl font-bold text-amber-600">{inProgressCount}</div>
-          <div className="text-[11px] text-muted-foreground">Σε Εξέλιξη</div>
-        </button>
-        <button
-          onClick={() => setFilter(filter === 'review' ? 'all' : ('review' as typeof filter))}
-          className={`rounded-lg border p-3 text-center transition-colors ${filter === 'review' ? 'ring-2 ring-purple-500' : 'hover:bg-accent/50'}`}
-        >
-          <div className="text-2xl font-bold text-purple-600">{reviewCount}</div>
-          <div className="text-[11px] text-muted-foreground">Σε Αξιολόγηση</div>
-        </button>
-        <button
-          onClick={() => setFilter(filter === 'done' ? 'all' : ('done' as typeof filter))}
-          className={`rounded-lg border p-3 text-center transition-colors ${filter === 'done' ? 'ring-2 ring-emerald-500' : 'hover:bg-accent/50'}`}
-        >
-          <div className="text-2xl font-bold text-emerald-600">{doneCount}</div>
-          <div className="text-[11px] text-muted-foreground">Ολοκληρωμένα</div>
-        </button>
-      </div>
+      {/* Status counters — also double as filters */}
+      <StatGrid columns={4}>
+        {statTiles.map((tile) => (
+          <button
+            key={tile.key}
+            type="button"
+            onClick={() => setFilter(filter === tile.key ? 'all' : tile.key)}
+            aria-pressed={filter === tile.key}
+            className={cn('text-left', filter === tile.key && 'ring-2 ring-inset ring-ring')}
+          >
+            <StatCard label={tile.label} value={tile.value} tone={statusTone(tile.key)} />
+          </button>
+        ))}
+      </StatGrid>
 
       {/* Header */}
       <div className="flex items-center justify-between">
-        <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
-          <DialogTrigger asChild>
-            <Button size="sm">
-              <Plus className="h-4 w-4 mr-1" />
-              {t('addTask')}
-            </Button>
-          </DialogTrigger>
-          <DialogContent>
-            <DialogHeader>
-              <DialogTitle>{t('addTask')}</DialogTitle>
-            </DialogHeader>
-            <div className="space-y-4 py-2">
-              <div className="space-y-2">
-                <Label>{t('taskName')}</Label>
-                <Input
-                  value={title}
-                  onChange={(e) => setTitle(e.target.value)}
-                  placeholder={t('taskName')}
-                  onKeyDown={(e) => e.key === 'Enter' && !isSubmitting && handleCreateTask()}
-                />
-              </div>
-              <div className="space-y-2">
-                <Label>{tc('description')}</Label>
-                <Textarea
-                  value={description}
-                  onChange={(e) => setDescription(e.target.value)}
-                  rows={2}
-                  placeholder={t('description')}
-                />
-              </div>
-              <div className="grid grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <Label>{t('assignee')}</Label>
-                  <Select value={assignedTo} onValueChange={setAssignedTo}>
-                    <SelectTrigger>
-                      <SelectValue placeholder={t('assignee')} />
-                    </SelectTrigger>
+        <Button size="sm" onClick={() => setDialogOpen(true)}>
+          <Plus className="h-4 w-4 mr-1" />
+          {t('addTask')}
+        </Button>
+      </div>
+
+      <FormDialog
+        open={dialogOpen}
+        onOpenChange={setDialogOpen}
+        title={t('addTask')}
+        onSubmit={form.handleSubmit(handleCreateTask)}
+        submitLabel={form.formState.isSubmitting ? tc('saving') : tc('create')}
+        cancelLabel={tc('cancel')}
+        submitting={form.formState.isSubmitting}
+      >
+        <Form {...form}>
+          <FormField
+            control={form.control}
+            name="title"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>{t('taskName')}</FormLabel>
+                <FormControl>
+                  <Input placeholder={t('taskName')} {...field} />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+
+          <FormField
+            control={form.control}
+            name="description"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>{tc('description')}</FormLabel>
+                <FormControl>
+                  <Textarea
+                    rows={2}
+                    placeholder={t('description')}
+                    {...field}
+                    value={field.value ?? ''}
+                  />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+
+          <div className="grid grid-cols-2 gap-4">
+            <FormField
+              control={form.control}
+              name="assigned_to"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>{t('assignee')}</FormLabel>
+                  <Select value={field.value ?? ''} onValueChange={field.onChange}>
+                    <FormControl>
+                      <SelectTrigger>
+                        <SelectValue placeholder={t('assignee')} />
+                      </SelectTrigger>
+                    </FormControl>
                     <SelectContent>
                       {teamMembers.map((m) => (
                         <SelectItem key={m.id} value={m.id}>
@@ -218,44 +237,62 @@ export function TaskChecklist({ projectId, tasks, onRefresh }: TaskChecklistProp
                       ))}
                     </SelectContent>
                   </Select>
-                </div>
-                <div className="space-y-2">
-                  <Label>{tc('priority')}</Label>
-                  <Select value={priority} onValueChange={setPriority}>
-                    <SelectTrigger>
-                      <SelectValue />
-                    </SelectTrigger>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            <FormField
+              control={form.control}
+              name="priority"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>{tc('priority')}</FormLabel>
+                  <Select value={field.value ?? 'medium'} onValueChange={field.onChange}>
+                    <FormControl>
+                      <SelectTrigger>
+                        <SelectValue />
+                      </SelectTrigger>
+                    </FormControl>
                     <SelectContent>
-                      <SelectItem value="low">Low</SelectItem>
-                      <SelectItem value="medium">Medium</SelectItem>
-                      <SelectItem value="high">High</SelectItem>
-                      <SelectItem value="urgent">Urgent</SelectItem>
+                      {PRIORITIES.map((priority) => (
+                        <SelectItem key={priority} value={priority}>
+                          {tPriority(priority)}
+                        </SelectItem>
+                      ))}
                     </SelectContent>
                   </Select>
-                </div>
-              </div>
-              <div className="space-y-2">
-                <Label>{t('dueDate')}</Label>
-                <Input type="date" value={dueDate} onChange={(e) => setDueDate(e.target.value)} />
-              </div>
-            </div>
-            <DialogFooter>
-              <Button variant="outline" onClick={() => setDialogOpen(false)}>
-                {tc('cancel')}
-              </Button>
-              <Button onClick={handleCreateTask} disabled={isSubmitting || !title.trim()}>
-                {isSubmitting ? tc('saving') : tc('create')}
-              </Button>
-            </DialogFooter>
-          </DialogContent>
-        </Dialog>
-      </div>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+          </div>
+
+          <FormField
+            control={form.control}
+            name="due_date"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>{t('dueDate')}</FormLabel>
+                <FormControl>
+                  <Input
+                    type="date"
+                    value={field.value ?? ''}
+                    onChange={(e) => field.onChange(e.target.value || undefined)}
+                  />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+        </Form>
+      </FormDialog>
 
       {/* Progress bar */}
       {tasks.length > 0 && (
         <div className="h-1.5 bg-secondary rounded-full overflow-hidden">
           <div
-            className="h-full bg-emerald-500 transition-all duration-500"
+            className="h-full bg-tone-positive transition-all duration-500"
             style={{ width: `${(doneCount / tasks.length) * 100}%` }}
           />
         </div>
@@ -310,7 +347,7 @@ export function TaskChecklist({ projectId, tasks, onRefresh }: TaskChecklistProp
                       <span
                         className={`inline-flex items-center gap-1 text-[11px] rounded-full px-2 py-0.5 ${
                           overdue
-                            ? 'bg-red-100 text-red-700 dark:bg-red-950 dark:text-red-400'
+                            ? 'bg-tone-critical-bg text-tone-critical'
                             : 'bg-secondary text-secondary-foreground'
                         }`}
                       >
@@ -318,12 +355,7 @@ export function TaskChecklist({ projectId, tasks, onRefresh }: TaskChecklistProp
                         {format(new Date(task.due_date), 'dd/MM/yy')}
                       </span>
                     )}
-                    <Badge
-                      variant="outline"
-                      className={`text-[10px] px-1.5 py-0 h-5 ${PRIORITY_STYLES[task.priority] ?? ''}`}
-                    >
-                      {PRIORITY_LABELS[task.priority] ?? task.priority}
-                    </Badge>
+                    <ToneChip tone={statusTone(task.priority)}>{tPriority(task.priority)}</ToneChip>
                   </div>
                 </div>
               </div>
