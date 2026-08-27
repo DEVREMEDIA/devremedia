@@ -2,13 +2,7 @@
 
 import * as React from 'react';
 import { Button } from '@/components/ui/button';
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogFooter,
-} from '@/components/ui/dialog';
+import { FormDialog } from '@/components/shared/form-dialog';
 import {
   Select,
   SelectContent,
@@ -74,7 +68,7 @@ export function PaymentActions({ invoice, onStatusChange }: PaymentActionsProps)
   if (invoice.status === 'paid') {
     return (
       <div className="flex items-center gap-2 text-sm text-muted-foreground">
-        <CheckCircle2 className="h-4 w-4 text-green-600" />
+        <CheckCircle2 className="h-4 w-4 text-tone-positive" />
         <span>{t('paymentReceived')}</span>
       </div>
     );
@@ -95,50 +89,39 @@ export function PaymentActions({ invoice, onStatusChange }: PaymentActionsProps)
         </>
       )}
 
-      <Dialog open={paymentDialogOpen} onOpenChange={setPaymentDialogOpen}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>{t('recordManualPayment')}</DialogTitle>
-          </DialogHeader>
-          <div className="space-y-4 py-4">
-            <div className="space-y-2">
-              <Label htmlFor="payment-method">{t('paymentMethod')}</Label>
-              <Select value={paymentMethod} onValueChange={setPaymentMethod}>
-                <SelectTrigger id="payment-method">
-                  <SelectValue placeholder={t('selectPaymentMethod')} />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="bank_transfer">{t('bankTransfer')}</SelectItem>
-                  <SelectItem value="cash">{t('cash')}</SelectItem>
-                  <SelectItem value="check">{t('checkPayment')}</SelectItem>
-                  <SelectItem value="other">{t('otherPayment')}</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="payment-date">{t('paymentDate')}</Label>
-              <Input
-                id="payment-date"
-                type="date"
-                value={paymentDate}
-                onChange={(e) => setPaymentDate(e.target.value)}
-              />
-            </div>
-          </div>
-          <DialogFooter>
-            <Button
-              variant="outline"
-              onClick={() => setPaymentDialogOpen(false)}
-              disabled={isUpdating}
-            >
-              {tc('cancel')}
-            </Button>
-            <Button onClick={handleRecordPayment} disabled={isUpdating}>
-              {isUpdating ? t('recording') : t('recordPayment')}
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+      <FormDialog
+        open={paymentDialogOpen}
+        onOpenChange={setPaymentDialogOpen}
+        title={t('recordManualPayment')}
+        onSubmit={handleRecordPayment}
+        submitLabel={isUpdating ? t('recording') : t('recordPayment')}
+        cancelLabel={tc('cancel')}
+        submitting={isUpdating}
+      >
+        <div className="space-y-2">
+          <Label htmlFor="payment-method">{t('paymentMethod')}</Label>
+          <Select value={paymentMethod} onValueChange={setPaymentMethod}>
+            <SelectTrigger id="payment-method">
+              <SelectValue placeholder={t('selectPaymentMethod')} />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="bank_transfer">{t('bankTransfer')}</SelectItem>
+              <SelectItem value="cash">{t('cash')}</SelectItem>
+              <SelectItem value="check">{t('checkPayment')}</SelectItem>
+              <SelectItem value="other">{t('otherPayment')}</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
+        <div className="space-y-2">
+          <Label htmlFor="payment-date">{t('paymentDate')}</Label>
+          <Input
+            id="payment-date"
+            type="date"
+            value={paymentDate}
+            onChange={(e) => setPaymentDate(e.target.value)}
+          />
+        </div>
+      </FormDialog>
     </>
   );
 }
