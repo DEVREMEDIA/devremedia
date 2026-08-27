@@ -50,7 +50,7 @@ export function NotificationBell() {
           <Bell className="h-5 w-5" aria-hidden="true" />
           {unreadCount > 0 && (
             <span
-              className="absolute -top-0.5 -right-0.5 flex h-4 w-4 items-center justify-center rounded-full bg-tone-critical text-[10px] font-bold text-primary-foreground"
+              className="absolute -top-0.5 -right-0.5 flex h-4 w-4 items-center justify-center rounded-full bg-tone-critical text-[10px] font-bold text-destructive-foreground"
               aria-hidden="true"
             >
               {unreadCount > 9 ? '9+' : unreadCount}

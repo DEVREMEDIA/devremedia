@@ -285,8 +285,20 @@ const PENDING = [
 // κανονικότατο χρώμα, άρα το `;` από πίσω δεν κάνει για κριτήριο.
 // Το βρήκε implementer μετρώντας το χρέος ενός αρχείου, όχι έλεγχος: η
 // μέτρηση έβγαινε έξι παραπάνω απ' όσα χρώματα υπήρχαν στ' αλήθεια.
+// Ο τέταρτος κλάδος προστέθηκε αφού μια ανεξάρτητη εξέταση απέδειξε ότι το ωμό
+// χρώμα ξαναμπαίνει από την πιο συνηθισμένη πόρτα και ο φύλακας τύπωνε «ok»:
+// ένα `style={{ color: 'white' }}` ή ένα `fill="white"` σε SVG δεν ταίριαζε σε
+// κανέναν από τους τρεις πρώτους. Δεν ήταν επίθεση — έτσι γράφει κανείς ένα
+// εικονίδιο.
+//
+// Πιάνει ΜΟΝΟ ονόματα χρωμάτων σε θέση που πραγματικά βάφει, δηλαδή μετά από
+// γνωστή ιδιότητα χρώματος. Αυτό κρατά έξω τα `fill="none"`,
+// `stroke="currentColor"`, `fill="url(#grad)"` και `color: 'inherit'`, που
+// είναι όλα θεμιτά και συχνά. Η λίστα ονομάτων είναι τα χρώματα που πληκτρολογεί
+// στην πράξη ένας άνθρωπος· δεν είναι και τα 148 της προδιαγραφής, και δεν
+// προσποιείται ότι είναι — ένα `whitesmoke` περνάει ακόμη.
 const RAW_COLOUR =
-  /(?<!&)#[0-9a-fA-F]{3,8}(?![0-9a-fA-F])|(?<![a-zA-Z0-9])(?:[rR][gG][bB][aA]?|[hH][sS][lL][aA]?|[oO][kK][lL][cC][hH])\s*\([^)]*\)?|\b(?:bg|text|border|ring|fill|stroke|from|via|to|divide|outline|shadow|decoration|accent|caret)-(?:white|black|red|orange|amber|yellow|lime|green|emerald|teal|cyan|sky|blue|indigo|violet|purple|fuchsia|pink|rose|slate|gray|grey|zinc|neutral|stone)(?:-\d{2,3})?\b/;
+  /(?<!&)#[0-9a-fA-F]{3,8}(?![0-9a-fA-F])|(?<![a-zA-Z0-9])(?:[rR][gG][bB][aA]?|[hH][sS][lL][aA]?|[oO][kK][lL][cC][hH])\s*\([^)]*\)?|\b(?:bg|text|border|ring|fill|stroke|from|via|to|divide|outline|shadow|decoration|accent|caret)-(?:white|black|red|orange|amber|yellow|lime|green|emerald|teal|cyan|sky|blue|indigo|violet|purple|fuchsia|pink|rose|slate|gray|grey|zinc|neutral|stone)(?:-\d{2,3})?\b|\b(?:fill|stroke|stop-?[cC]olor|flood-?[cC]olor|color|background|background-?[cC]olor|border-?[cC]olor|outline-?[cC]olor|caret-?[cC]olor|text-?[dD]ecoration-?[cC]olor)\s*[:=]\s*['"`]?(?:white|black|red|green|blue|yellow|orange|purple|pink|gray|grey|brown|cyan|magenta|lime|navy|teal|olive|maroon|silver|gold|beige|ivory|khaki|salmon|coral|crimson|indigo|violet|turquoise|aqua|fuchsia)\b/;
 
 /** Το ίδιο, με `g`: για να μετρηθεί ΤΙ παραβιάζει ένα εκκρεμές, όχι μόνο ΑΝ. */
 const RAW_COLOUR_ALL = new RegExp(RAW_COLOUR.source, 'g');
