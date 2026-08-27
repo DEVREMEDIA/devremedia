@@ -221,17 +221,17 @@ At the top level of `project-detail.tsx`, above the component, add:
 
 ```tsx
 /** Οι καρτέλες με τη σειρά τους. Το `page.tsx` επικυρώνει το `?tab=` πάνω σε αυτή. */
-export const PROJECT_TABS = [
+export const PROJECT_TABS: readonly string[] = [
   'overview',
   'tasks',
   'deliverables',
   'messages',
   'invoices',
   'contracts',
-] as const satisfies readonly string[];
+];
 ```
 
-Note it is exported as a readonly tuple; `PROJECT_TABS.includes(tab ?? '')` in `page.tsx` needs the `satisfies readonly string[]` so `includes` accepts a plain string.
+The annotation is `readonly string[]`, **not** `as const`. On an `as const` tuple, `includes` narrows its parameter to the literal union and rejects a plain `string` — and `satisfies` does not widen it back. The array is read once, by `.includes`, so the literal types buy nothing here.
 
 - [ ] **Step 3: Delete the hand-rolled sync**
 
@@ -489,15 +489,17 @@ At the top level of `client-detail.tsx`:
 
 ```tsx
 /** Οι καρτέλες με τη σειρά τους. Το `page.tsx` επικυρώνει το `?tab=` πάνω σε αυτή. */
-export const CLIENT_TABS = [
+export const CLIENT_TABS: readonly string[] = [
   'overview',
   'projects',
   'invoices',
   'contracts',
   'agreement',
   'activity',
-] as const satisfies readonly string[];
+];
 ```
+
+The annotation is `readonly string[]`, **not** `as const`: on an `as const` tuple, `includes` narrows its parameter to the literal union and rejects a plain `string`, and `satisfies` does not widen it back. Task 2 hit exactly this and it does not type-check.
 
 - [ ] **Step 3: Take the tab out of state**
 
@@ -618,7 +620,18 @@ Same shape as Tasks 2 and 4: add `searchParams: Promise<{ tab?: string }>` to th
 
 - [ ] **Step 2: Export the tab list and delete the hand-rolled sync**
 
-Export `CLIENT_PROJECT_TABS` as a readonly tuple in the same style. Remove `useSearchParams`, the `activeTab` state, the syncing `useEffect` and `handleTabChange`, plus every import they leave unused.
+Export the tab list in the same style Tasks 2 and 4 used:
+
+```tsx
+/** Οι καρτέλες με τη σειρά τους. Το `page.tsx` επικυρώνει το `?tab=` πάνω σε αυτή. */
+export const CLIENT_PROJECT_TABS: readonly string[] = [
+  /* the same keys the TabsTrigger values use today, in the same order */
+];
+```
+
+The annotation is `readonly string[]`, **not** `as const` — on an `as const` tuple, `includes` rejects a plain `string`, and `satisfies` does not widen it back.
+
+Remove `useSearchParams`, the `activeTab` state, the syncing `useEffect` and `handleTabChange`, plus every import they leave unused.
 
 `router` may still be needed — check before deleting `useRouter`. The back link no longer uses `router.back()`: `DetailShell` takes an explicit `backHref` of `/client/projects`, because a browser-history back button is not a navigation the page controls and lands somewhere different depending on how you arrived.
 
