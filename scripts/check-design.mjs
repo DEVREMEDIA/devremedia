@@ -224,8 +224,15 @@ const PENDING = [
 // φύλακα. Δεν μπαίνει σκέτο `i` σε όλη την έκφραση: το hex το χειρίζεται ήδη
 // μόνο του, και οι κλάσεις Tailwind ΕΙΝΑΙ πεζές — ένα καθολικό `i` θα άρχιζε να
 // πιάνει ταυτόχρονα και συμβολοσειρές σαν `TEXT-RED` που δεν είναι χρώματα.
+// Και μια αριθμητική οντότητα HTML ΔΕΝ είναι χρώμα. Το `&#10005;` (σταυρός)
+// έχει πέντε ψηφία που τυχαίνει να είναι όλα έγκυρα δεκαεξαδικά, οπότε το
+// `#10005` ταίριαζε και ο φύλακας κατήγγειλλε ένα γλυφικό. Το `&` από πριν
+// είναι το μόνο που ξεχωρίζει τα δύο — ένα `#fff;` μέσα σε CSS είναι
+// κανονικότατο χρώμα, άρα το `;` από πίσω δεν κάνει για κριτήριο.
+// Το βρήκε implementer μετρώντας το χρέος ενός αρχείου, όχι έλεγχος: η
+// μέτρηση έβγαινε έξι παραπάνω απ' όσα χρώματα υπήρχαν στ' αλήθεια.
 const RAW_COLOUR =
-  /#[0-9a-fA-F]{3,8}(?![0-9a-fA-F])|(?<![a-zA-Z0-9])(?:[rR][gG][bB][aA]?|[hH][sS][lL][aA]?|[oO][kK][lL][cC][hH])\s*\([^)]*\)?|\b(?:bg|text|border|ring|fill|stroke|from|via|to|divide|outline|shadow|decoration|accent|caret)-(?:white|black|red|orange|amber|yellow|lime|green|emerald|teal|cyan|sky|blue|indigo|violet|purple|fuchsia|pink|rose|slate|gray|grey|zinc|neutral|stone)(?:-\d{2,3})?\b/;
+  /(?<!&)#[0-9a-fA-F]{3,8}(?![0-9a-fA-F])|(?<![a-zA-Z0-9])(?:[rR][gG][bB][aA]?|[hH][sS][lL][aA]?|[oO][kK][lL][cC][hH])\s*\([^)]*\)?|\b(?:bg|text|border|ring|fill|stroke|from|via|to|divide|outline|shadow|decoration|accent|caret)-(?:white|black|red|orange|amber|yellow|lime|green|emerald|teal|cyan|sky|blue|indigo|violet|purple|fuchsia|pink|rose|slate|gray|grey|zinc|neutral|stone)(?:-\d{2,3})?\b/;
 
 /** Το ίδιο, με `g`: για να μετρηθεί ΤΙ παραβιάζει ένα εκκρεμές, όχι μόνο ΑΝ. */
 const RAW_COLOUR_ALL = new RegExp(RAW_COLOUR.source, 'g');
