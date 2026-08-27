@@ -670,7 +670,12 @@
       "project": "Project",
       "amount": "Ποσό",
       "dueDate": "Ημ. Λήξης",
-      "summary": "Σύνοψη"
+      "summary": "Σύνοψη",
+      "invoiceNumber": "Αριθμός Τιμολογίου",
+      "markAsPaid": "Σήμανση ως Πληρωμένο",
+      "markAsUnpaid": "Σήμανση ως Μη Πληρωμένο",
+      "markedAsPaid": "Το τιμολόγιο σημειώθηκε ως πληρωμένο",
+      "markedAsUnpaid": "Το τιμολόγιο σημειώθηκε ως μη πληρωμένο"
     },
     "contracts": {
       "noContracts": "Δεν υπάρχουν συμβόλαια",

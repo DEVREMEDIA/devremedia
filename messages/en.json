@@ -670,7 +670,12 @@
       "project": "Project",
       "amount": "Amount",
       "dueDate": "Due Date",
-      "summary": "Summary"
+      "summary": "Summary",
+      "invoiceNumber": "Invoice Number",
+      "markAsPaid": "Mark as Paid",
+      "markAsUnpaid": "Mark as Unpaid",
+      "markedAsPaid": "Invoice marked as paid",
+      "markedAsUnpaid": "Invoice marked as unpaid"
     },
     "contracts": {
       "noContracts": "No contracts yet",
