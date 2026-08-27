@@ -10,9 +10,27 @@
 import { createClient } from '@supabase/supabase-js';
 import { randomUUID } from 'crypto';
 
-// Cloud Supabase credentials
-const SUPABASE_URL = 'https://vzibwaihgmtiotjnjlbs.supabase.co';
-const SUPABASE_SERVICE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZ6aWJ3YWloZ210aW90am5qbGJzIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc3MDgxOTYxMSwiZXhwIjoyMDg2Mzk1NjExfQ.ftaiFhun9tW01mKtkPHkHshEa3u-E9DK50sRpPTj56g';
+// This script used to carry a service_role key as a string literal, in a public
+// repository, from the very first commit. A service_role key bypasses RLS
+// entirely — it is read and write on every table, unconditionally. It never
+// belongs in a file. The key that was here has been rotated; do not paste
+// another one in its place.
+const SUPABASE_URL = process.env.SUPABASE_URL ?? process.env.NEXT_PUBLIC_SUPABASE_URL;
+const SUPABASE_SERVICE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY;
+
+if (!SUPABASE_URL || !SUPABASE_SERVICE_KEY) {
+  console.error(
+    'seed-cloud — refusing to run without credentials in the environment.\n' +
+      '  SUPABASE_URL (or NEXT_PUBLIC_SUPABASE_URL) and SUPABASE_SERVICE_ROLE_KEY must be set.\n' +
+      '  They live in .env.local, which is gitignored. Never hardcode them here.',
+  );
+  process.exit(1);
+}
+
+// This writes demo data with a key that ignores every access rule. Name the
+// project it is about to touch, so nobody discovers afterwards that it was
+// pointed at production.
+console.log(`seed-cloud — target: ${SUPABASE_URL}`);
 
 // Existing admin user ID
 const ADMIN_USER_ID = '28c1112b-c764-4a46-84a4-446e5dc30d35';
@@ -54,9 +72,17 @@ async function seed() {
     // ========================================
     log('\n👤 Creating client auth user...');
 
+    // A password written here is a password published. It comes from the
+    // environment, or this script does not create an account at all.
+    const seedPassword = process.env.SEED_CLIENT_PASSWORD;
+    if (!seedPassword) {
+      log('   SEED_CLIENT_PASSWORD is not set — refusing to create an account.', 'error');
+      process.exit(1);
+    }
+
     const { data: authData, error: authError } = await supabase.auth.admin.createUser({
       email: 'client@demo.gr',
-      password: 'Client123!',
+      password: seedPassword,
       email_confirm: true,
       user_metadata: {
         display_name: 'Dimitris Papadopoulos'
@@ -2083,7 +2109,7 @@ Tourism Australia "Dundee" campaign - high production value</p>`,
 
     log('\n🔐 Login Credentials:');
     log(`   Admin: admin@devremedia.gr`);
-    log(`   Client: client@demo.gr / Client123!`);
+    log(`   Client: client@demo.gr / the SEED_CLIENT_PASSWORD you supplied`);
 
     log('\n✅ Your cloud database is now populated with realistic demo data!');
 

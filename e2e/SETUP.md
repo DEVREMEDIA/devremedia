@@ -20,33 +20,38 @@ This will install Chromium, Firefox, and WebKit browsers.
 
 ## Test Users Setup
 
-Before running authenticated tests, you need to create test users in your local Supabase database.
+Before running authenticated tests, you need to create test users in the database the suite points at.
 
-### Create Admin User
+> **This repository is public.** Test passwords used to be string literals in `e2e/helpers/auth.ts`, which meant an account with the admin role had a password anyone could read — so it could never safely exist on a real system. Passwords now come from the environment and have **no defaults**. Generate them; do not invent a memorable one and do not write it down anywhere git can see.
 
-1. Navigate to http://localhost:54323 (Supabase Studio)
-2. Go to Authentication > Users
-3. Create a new user:
-   - Email: `admin@devre.test`
-   - Password: `Admin123!`
-4. Update the user's role in the `profiles` table to `admin` or `super_admin`
+### Create the users
 
-### Create Client User
-
-1. In Supabase Studio, create another user:
-   - Email: `client@devre.test`
-   - Password: `Client123!`
-2. Update the user's role in the `profiles` table to `client`
-
-### Enable Test Users
-
-Create a `.env.test.local` file (or add to `.env.local`):
+1. In Supabase Studio, create two users with confirmed emails:
+   - `admin@devre.test` — then set their role in `user_profiles` to `admin` or `super_admin`
+   - `client@devre.test` — then set their role to `client`
+2. Use passwords you generate. Put them in `.env.local`, which is gitignored:
 
 ```env
-E2E_TEST_USERS_READY=1
+E2E_ADMIN_EMAIL=admin@devre.test
+E2E_ADMIN_PASSWORD=<generated>
+E2E_CLIENT_EMAIL=client@devre.test
+E2E_CLIENT_PASSWORD=<generated>
 ```
 
-This tells the tests that authenticated test users are ready.
+With no password set, `login()` throws with an explanation rather than silently trying a known-public one.
+
+### The two gates
+
+```env
+E2E_TEST_USERS_READY=1   # may log in and read
+E2E_WRITE_TESTS=1        # may create, modify and delete records
+```
+
+They are separate deliberately. Four specs write: `booking-slot.spec.ts` creates Holds, and `hold-resolution.spec.ts` opens the **newest request in the admin list** and presses Approve or Reject. Against a real database that is a real customer's booking, and there is no undo for approving it.
+
+The suite has no fixtures and no teardown — see issue #119 — so leave `E2E_WRITE_TESTS` unset unless you are pointing at a database you are willing to lose.
+
+`.env.test.example` still lists the old literal passwords in a comment. They are dead defaults; ignore them.
 
 ## Running Tests
 

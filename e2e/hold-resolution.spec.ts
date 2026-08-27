@@ -41,6 +41,12 @@ async function openLatestHold(page: import('@playwright/test').Page) {
 test.describe('Hold resolution - Admin', () => {
   test.beforeEach(async ({ page }) => {
     test.skip(!process.env.E2E_TEST_USERS_READY, 'Test users not configured in database');
+    // The most dangerous specs in the suite. `openLatestHold` below clicks the
+    // NEWEST request in the admin list and presses Approve or Reject — against
+    // a real database that is a real customer's booking, and approving it
+    // creates a Production while rejecting it tells them no. Neither is a row
+    // you can delete afterwards. Reading is gated above; this gates acting.
+    test.skip(!process.env.E2E_WRITE_TESTS, 'Write tests not enabled (E2E_WRITE_TESTS)');
   });
 
   test('book → admin approves → confirmed Filming (Production) is created', async ({ page }) => {

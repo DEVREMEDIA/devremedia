@@ -21,6 +21,10 @@ const SECOND_CLIENT = {
 test.describe('Book a slot - Client', () => {
   test.beforeEach(async ({ page }) => {
     test.skip(!process.env.E2E_TEST_USERS_READY, 'Test users not configured in database');
+    // These tests CREATE Holds. `E2E_TEST_USERS_READY` means "may log in and
+    // read"; writing needs its own, explicit opt-in, because the suite has no
+    // fixtures and no teardown (#119) and may be pointed at a real database.
+    test.skip(!process.env.E2E_WRITE_TESTS, 'Write tests not enabled (E2E_WRITE_TESTS)');
     await login(page, TEST_USERS.client.email, TEST_USERS.client.password);
   });
 
