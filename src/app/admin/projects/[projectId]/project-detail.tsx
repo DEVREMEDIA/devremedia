@@ -253,7 +253,7 @@ export function ProjectDetail({
                         daysUntilDeadline < 0
                           ? 'text-destructive'
                           : daysUntilDeadline <= 7
-                            ? 'text-amber-600'
+                            ? 'text-tone-caution'
                             : 'text-muted-foreground'
                       }`}
                     >

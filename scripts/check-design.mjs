@@ -56,6 +56,13 @@ const COVERED = [
   // ξεριζώθηκε.
   'src/app/admin/proposals',
   'src/app/admin/contracts/contracts-list-page.tsx',
+  // Οι τρεις οθόνες λεπτομέρειας περνούν στο κοινό κέλυφος (#106) — ο σύνδεσμος
+  // επιστροφής, ο ένας τίτλος και οι καρτέλες οδηγούμενες από το URL ζουν εδώ.
+  'src/components/shared/detail-shell.tsx',
+  // Το σκελετικό φόρτωσης του κελύφους — καμία δικαιολογία να ζωγραφίσει ωμό χρώμα.
+  'src/components/shell-v2/detail-skeleton.tsx',
+  'src/app/admin/projects/[projectId]',
+  'src/app/client/projects/[projectId]',
 ];
 
 // Αρχεία μέσα σε καλυμμένους φακέλους που όντως γράφουν ακόμα ωμό χρώμα.
@@ -127,7 +134,6 @@ const HEADING_EXEMPT = [
 const HEADING_PENDING = [
   'src/app/book/page.tsx', // δημόσια σελίδα με δικό της κέλυφος
   'src/app/admin/invoices/[invoiceId]/invoice-detail.tsx', // → #109
-  'src/app/client/projects/[projectId]/client-project-detail.tsx', // → #106
   'src/components/admin/filming-requests/filming-request-detail.tsx', // → #109
   'src/components/client/invoices/invoice-detail.tsx', // → #109
 ];
@@ -248,6 +254,11 @@ const TABLE_GUARDED_AREAS = [
   'src/components/admin/contracts/',
   'src/components/admin/leads/',
   'src/components/admin/chatbot/',
+  // Οι τρεις οθόνες λεπτομέρειας (#106): ο πίνακας τιμολογίων και η λίστα
+  // συμβολαίων μέσα στη λεπτομέρεια έργου, και ό,τι δείχνει η πλευρά του πελάτη.
+  'src/app/admin/projects/',
+  'src/app/client/projects/',
+  'src/components/client/projects/',
 ];
 
 // Λίστες λεπτομέρειας μέσα σε ήδη ανοιγμένη γραμμή. Δεν είναι το θέμα της
@@ -279,10 +290,6 @@ const TABLE_PENDING_UNDETECTABLE = [
 ];
 
 const TABLE_PENDING = [
-  // Η καρτέλα τιμολογίων μέσα στη λεπτομέρεια πελάτη — οφείλεται στην #106.
-  'src/components/admin/clients/client-invoices-tab.tsx',
-  // Η λίστα συμβολαίων μέσα στη λεπτομέρεια πελάτη — οφείλεται στην #106.
-  'src/components/admin/contracts/contract-list.tsx',
   // Η αναφορά πωλήσεων της περιοχής Interest — έργο περιοχής για επόμενη φέτα.
   'src/components/admin/leads/sales-report.tsx',
   // Ο πίνακας γνώσης του chatbot — έργο περιοχής για επόμενη φέτα.
