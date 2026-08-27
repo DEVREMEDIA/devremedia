@@ -206,7 +206,6 @@ const HEADING_EXEMPT = [
 // σημείο επιστροφής. Κάθε επόμενη φέτα αφαιρεί από εδώ — η λίστα μόνο μικραίνει.
 const HEADING_PENDING = [
   'src/app/book/page.tsx', // δημόσια σελίδα με δικό της κέλυφος
-  'src/components/admin/filming-requests/filming-request-detail.tsx', // → #109
 ];
 
 const HEADING_IMPORT = /['"][^'"]*\/shared\/page-header['"]/;

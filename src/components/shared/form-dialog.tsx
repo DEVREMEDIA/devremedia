@@ -27,6 +27,8 @@ interface FormDialogProps {
   submitting?: boolean;
   /** Πλάτος, όταν η προεπιλογή δεν φτάνει. */
   className?: string;
+  /** Όταν η υποβολή καταστρέφει κάτι. Το κέλυφος δεν αλλάζει, η σημασία αλλάζει. */
+  submitVariant?: 'default' | 'destructive';
 }
 
 /**
@@ -37,6 +39,12 @@ interface FormDialogProps {
  * πλάτος ανά βήμα, δεν είναι επιλογέας, δεν είναι οθόνη ανάγνωσης. Αυτά
  * υπάρχουν στην περιοχή και μένουν όπως είναι — ένα κέλυφος που τα καταπίνει
  * όλα αποκτά ένα prop για το καθένα και παύει να είναι κέλυφος.
+ *
+ * Εξαίρεση: `submitVariant`. Δεν είναι μια ακόμα ιδιότητα μιας συγκεκριμένης
+ * φόρμας — είναι ιδιότητα του υποσέλιδου που το κέλυφος ήδη κατέχει. "Αυτή η
+ * υποβολή καταστρέφει κάτι" περιγράφει φόρμες γενικά, όχι μία περίπτωση, γι'
+ * αυτό επιτράπηκε. Δεν είναι το πρώτο βήμα μιας λίστας — αν χρειαστεί μια
+ * δεύτερη τέτοια ιδιότητα, ξανασκέψου το σχήμα, μην προσθέσεις απλώς άλλο prop.
  */
 export function FormDialog({
   open,
@@ -49,6 +57,7 @@ export function FormDialog({
   cancelLabel,
   submitting = false,
   className,
+  submitVariant = 'default',
 }: FormDialogProps) {
   return (
     <Dialog open={open} onOpenChange={(next) => !submitting && onOpenChange(next)}>
@@ -90,7 +99,7 @@ export function FormDialog({
              * χάνει τον δείκτη προόδου που είχε και μένει με ένα απλώς
              * απενεργοποιημένο κουμπί.
              */}
-            <Button type="submit" disabled={submitting}>
+            <Button type="submit" variant={submitVariant} disabled={submitting}>
               {submitting ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
               {submitLabel}
             </Button>
