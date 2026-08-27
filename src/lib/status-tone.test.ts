@@ -45,6 +45,16 @@ describe('statusTone', () => {
     expect(statusTone('declined')).toBe('critical');
   });
 
+  it('leaves a cancelled status neutral, because nobody has to act on it', () => {
+    expect(statusTone('cancelled')).toBe('neutral');
+    expect(statusTone('canceled')).toBe('neutral');
+  });
+
+  it('keeps rejected and declined critical, where somebody else said no', () => {
+    expect(statusTone('rejected')).toBe('critical');
+    expect(statusTone('declined')).toBe('critical');
+  });
+
   it('maps a revision_requested status to caution', () => {
     expect(statusTone('revision_requested')).toBe('caution');
   });
