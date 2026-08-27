@@ -31,10 +31,11 @@ const COVERED = [
   // πλέγμα αριθμών σε αρχείο εκτός λίστας — ούτε ένα που είναι γραμμένο
   // αποκλειστικά με tokens. Ο φύλακας φυλάει το χρώμα, όχι τη σύνθεση.
   //
-  // Σημείωση: src/components/salesman/dashboard/pipeline-summary.tsx μένει
-  // εκτός για άλλο λόγο πια — το panel «Pipeline by Stage» πέρασε στο κοινό
-  // πλέγμα σε αυτή τη φέτα και δεν γράφει πια ωμό χρώμα. Δεν μπήκε στο
-  // COVERED εδώ· η ένταξη ολόκληρου του φακέλου salesman ανήκει σε άλλο task.
+  // Το pipeline-summary.tsx του πωλητή ήταν εδώ γραμμένο ως εξαίρεση «οφειλόμενη
+  // σε επόμενη φέτα». Η φέτα ήρθε (#110): το panel «Pipeline by Stage» πέρασε
+  // στο κοινό πλέγμα, και το αρχείο φυλάσσεται πλέον από το ολόκληρο
+  // 'src/components/salesman' πιο κάτω. Το σχόλιο μένει μόνο ως ιστορία —
+  // η εξαίρεση δεν υπάρχει πια.
   'src/components/admin/chatbot/chatbot-stats.tsx',
   'src/components/admin/calendar/calendar-stats.tsx',
   'src/components/employee/dashboard/task-stats.tsx',

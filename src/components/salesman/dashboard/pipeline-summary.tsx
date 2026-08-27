@@ -47,8 +47,13 @@ export function PipelineSummary({ summary, pipelineValue }: PipelineSummaryProps
       </StatGrid>
 
       {/* Pipeline by Stage */}
-      <div className="rounded-xl border bg-card">
-        <div className="px-5 py-4 border-b border-border/50">
+      {/* Το StatGrid φέρνει το ΔΙΚΟ του περίγραμμα. Χωρίς `overflow-hidden` οι
+          ορθές γωνίες του ξεπετάγονται έξω από την καμπύλη της κάρτας, και ένα
+          `border-b` εδώ θα ζωγράφιζε δεύτερη τρίχινη γραμμή ακριβώς πάνω στην
+          πρώτη του πλέγματος. Ο διαχωρισμός της επικεφαλίδας γίνεται από το
+          πλέγμα, μία φορά. */}
+      <div className="rounded-xl border bg-card overflow-hidden">
+        <div className="px-5 py-4">
           <h2 className="text-lg font-semibold">{t('pipelineByStage')}</h2>
           <p className="text-xs text-muted-foreground mt-0.5">{t('pipelineBreakdown')}</p>
         </div>
