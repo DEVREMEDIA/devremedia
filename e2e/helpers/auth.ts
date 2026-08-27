@@ -11,17 +11,26 @@ export const ADMIN_STORAGE_STATE = path.join(__dirname, '../.auth/admin.json');
 export const CLIENT_STORAGE_STATE = path.join(__dirname, '../.auth/client.json');
 
 /**
- * Default test credentials
- * Note: These should match users in your Supabase local database
+ * Test credentials, from the environment.
+ *
+ * These used to be string literals — `Admin123!` for an account with the admin
+ * role — in a public repository. Anyone who could read the repo could read the
+ * password, so the account could never safely exist anywhere real. Passwords
+ * now come from `.env.local`, which is gitignored, and the emails keep their
+ * old defaults because an address is not a secret.
+ *
+ * Nothing here has a password fallback on purpose: with none set, the login
+ * helper fails loudly rather than silently trying a known-public password.
+ * The specs skip without `E2E_TEST_USERS_READY` anyway.
  */
 export const TEST_USERS = {
   admin: {
-    email: 'admin@devre.test',
-    password: 'Admin123!',
+    email: process.env.E2E_ADMIN_EMAIL ?? 'admin@devre.test',
+    password: process.env.E2E_ADMIN_PASSWORD ?? '',
   },
   client: {
-    email: 'client@devre.test',
-    password: 'Client123!',
+    email: process.env.E2E_CLIENT_EMAIL ?? 'client@devre.test',
+    password: process.env.E2E_CLIENT_PASSWORD ?? '',
   },
 };
 
@@ -48,6 +57,13 @@ export async function loginAsClient(page: Page) {
  * @param password - User password
  */
 export async function login(page: Page, email: string, password: string) {
+  if (!password) {
+    throw new Error(
+      `No password configured for ${email}. Set E2E_ADMIN_PASSWORD / E2E_CLIENT_PASSWORD in .env.local. ` +
+        'They are deliberately not committed — see TEST_USERS above.',
+    );
+  }
+
   // Navigate to login page
   await page.goto('/login');
 
