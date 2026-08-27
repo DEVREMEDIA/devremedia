@@ -346,6 +346,7 @@
       "sent": "Sent",
       "viewed": "Viewed",
       "signed": "Signed",
+      "pending_review": "Pending Review",
       "expired": "Expired",
       "cancelled": "Cancelled"
     },
