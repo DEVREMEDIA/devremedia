@@ -3,7 +3,8 @@
 import { Button } from '@/components/ui/button';
 import { EmptyState } from '@/components/shared/empty-state';
 import { ToneChip } from '@/components/shared/tone-chip';
-import { statusTone, type Tone } from '@/lib/status-tone';
+import { ToneIcon } from '@/components/shared/tone-icon';
+import { statusTone } from '@/lib/status-tone';
 import { format } from 'date-fns';
 import { Receipt, CreditCard, ArrowRight, CheckCircle2, Clock, AlertTriangle } from 'lucide-react';
 import { useRouter } from 'next/navigation';
@@ -23,17 +24,11 @@ const STATUS_ICONS: Record<string, typeof CheckCircle2> = {
   cancelled: AlertTriangle,
 };
 
-// Ίδια λογική με το ToneChip: 4 κάδοι τόνου, όχι ένας ανά κατάσταση.
-const TONE_ICON_STYLES: Record<Tone, { bg: string; text: string }> = {
-  critical: { bg: 'bg-tone-critical-bg', text: 'text-tone-critical' },
-  caution: { bg: 'bg-tone-caution-bg', text: 'text-tone-caution' },
-  positive: { bg: 'bg-tone-positive-bg', text: 'text-tone-positive' },
-  neutral: { bg: 'bg-tone-neutral-bg', text: 'text-tone-neutral' },
-};
 
 export function InvoicesList({ invoices }: InvoicesListProps) {
   const router = useRouter();
   const t = useTranslations('invoices');
+  const tStatus = useTranslations('statuses.invoiceStatus');
 
   if (invoices.length === 0) {
     return (
@@ -51,7 +46,6 @@ export function InvoicesList({ invoices }: InvoicesListProps) {
     <div className="space-y-3">
       {invoices.map((invoice) => {
         const tone = statusTone(invoice.status);
-        const toneStyle = TONE_ICON_STYLES[tone];
         const StatusIcon = STATUS_ICONS[invoice.status] ?? Clock;
         const isPaid = invoice.status === 'paid';
         const isCancelled = invoice.status === 'cancelled';
@@ -61,15 +55,15 @@ export function InvoicesList({ invoices }: InvoicesListProps) {
             key={invoice.id}
             className={cn(
               'group rounded-xl border bg-card p-4 cursor-pointer transition-all duration-300',
-              'hover:shadow-[0_8px_30px_-4px_rgba(234,179,8,0.15)] hover:-translate-y-0.5',
+              'hover:shadow-[0_8px_30px_-4px_color-mix(in_srgb,var(--primary)_15%,transparent)] hover:-translate-y-0.5',
             )}
             onClick={() => router.push(`/client/invoices/${invoice.id}`)}
           >
             <div className="flex items-center gap-4">
               {/* Icon */}
-              <div className={cn('p-2.5 rounded-xl shrink-0', toneStyle.bg)}>
-                <StatusIcon className={cn('h-5 w-5', toneStyle.text)} />
-              </div>
+              <ToneIcon tone={tone}>
+                <StatusIcon className="h-5 w-5" />
+              </ToneIcon>
 
               {/* Info */}
               <div className="flex-1 min-w-0">
@@ -80,7 +74,9 @@ export function InvoicesList({ invoices }: InvoicesListProps) {
                       ? t('paid')
                       : invoice.status === 'overdue'
                         ? t('overdue')
-                        : t('pending')}
+                        : invoice.status === 'cancelled'
+                          ? tStatus('cancelled')
+                          : t('pending')}
                   </ToneChip>
                 </div>
                 <div className="flex items-center gap-3 mt-1 text-xs text-muted-foreground">

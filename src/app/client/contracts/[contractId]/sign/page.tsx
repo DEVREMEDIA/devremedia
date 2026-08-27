@@ -10,6 +10,9 @@ interface SignContractPageProps {
 export default async function SignContractPage({ params }: SignContractPageProps) {
   const { contractId } = await params;
   const t = await getTranslations('contracts');
+  // Η ίδια πηγή ετικετών που χρησιμοποιεί ήδη η λίστα συμβολαίων. Χωρίς αυτήν,
+  // ο πελάτης διάβαζε «Κατάσταση: expired».
+  const tStatus = await getTranslations('statuses.contractStatus');
 
   const result = await getContract(contractId);
 
@@ -39,7 +42,7 @@ export default async function SignContractPage({ params }: SignContractPageProps
         <div className="text-center">
           <p className="text-lg font-semibold">{t('notAvailableForSigning')}</p>
           <p className="text-muted-foreground mt-2">
-            {t('status')}: {contract.status}
+            {t('status')}: {tStatus(contract.status)}
           </p>
         </div>
       </div>

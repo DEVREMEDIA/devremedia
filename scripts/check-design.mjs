@@ -92,8 +92,15 @@ const PENDING = [
   'src/components/client/projects/deliverable-detail-view.tsx',
 ];
 
+// ΠΡΟΣΟΧΗ στα όρια λέξης. Το Tailwind γράφει τα κενά μιας αυθαίρετης τιμής ως
+// κάτω παύλα — `shadow-[0_8px_30px_-4px_rgba(234,179,8,.15)]` — και η κάτω
+// παύλα είναι χαρακτήρας ΛΕΞΗΣ. Ένα `\b` πριν από το `rgba` δεν ταιριάζει ποτέ
+// εκεί, οπότε ο φύλακας τύπωνε «καθόλου ωμά χρώματα» ενώ ένα σταθερό κεχριμπάρι
+// καθόταν μέσα σε καλυμμένο αρχείο. Το ίδιο ίσχυε για hex ακολουθούμενο από
+// κάτω παύλα. Αντί για `\b`: καθόλου φράχτης μπροστά από τη συνάρτηση χρώματος,
+// και για το hex ένας έλεγχος ότι δεν ακολουθεί κι άλλο δεκαεξαδικό ψηφίο.
 const RAW_COLOUR =
-  /#[0-9a-fA-F]{3,8}\b|\b(?:rgb|rgba|hsl|hsla|oklch)\s*\(|\b(?:bg|text|border|ring|fill|stroke|from|via|to|divide|outline|shadow|decoration|accent|caret)-(?:white|black|red|orange|amber|yellow|lime|green|emerald|teal|cyan|sky|blue|indigo|violet|purple|fuchsia|pink|rose|slate|gray|grey|zinc|neutral|stone)(?:-\d{2,3})?\b/;
+  /#[0-9a-fA-F]{3,8}(?![0-9a-fA-F])|(?:rgb|rgba|hsl|hsla|oklch)\s*\(|\b(?:bg|text|border|ring|fill|stroke|from|via|to|divide|outline|shadow|decoration|accent|caret)-(?:white|black|red|orange|amber|yellow|lime|green|emerald|teal|cyan|sky|blue|indigo|violet|purple|fuchsia|pink|rose|slate|gray|grey|zinc|neutral|stone)(?:-\d{2,3})?\b/;
 
 function walk(target, out = []) {
   let stat;
@@ -251,10 +258,16 @@ function resolveImport(spec, fromFile) {
 // ένας έλεγχος που ψάχνει μόνο «page.tsx που λέει SectionTabs» δεν έβλεπε
 // καμία από τις τρεις οθόνες λεπτομέρειας. Το εντόπισε ο τελικός έλεγχος της
 // #106 βάζοντας δεύτερο `PageHeading` σε σώμα καρτέλας και βλέποντας πράσινο.
+// Ρίζα ελέγχου είναι ΚΑΘΕ αρχείο που γράφει το ίδιο τον τίτλο μιας οθόνης —
+// είτε απευθείας με `PageHeading`, είτε μέσα από το `DetailShell`. Ο παλιός
+// ορισμός ήταν «page.tsx που αναφέρει SectionTabs», δηλαδή μόνο κόμβοι: η
+// αρχική του πελάτη δεν ήταν τίποτα από τα δύο, και η φέτα #107 μόλις την
+// έσπασε σε οκτώ components — το πιθανότερο σημείο του προϊόντος να ξεφύγει
+// ένας δεύτερος τίτλος ήταν ακριβώς αυτό που κανείς δεν κοίταζε.
 const hubs = allTsxFiles.filter(
   (f) =>
-    (f.endsWith('/page.tsx') && sourceOf.get(f).includes('SectionTabs')) ||
-    RENDERS_DETAIL_SHELL.test(strippedOf(f)),
+    !TITLE_OWNERS.has(f) &&
+    (RENDERS_HEADING.test(strippedOf(f)) || RENDERS_DETAIL_SHELL.test(strippedOf(f))),
 );
 
 const doubleTitles = new Map();
