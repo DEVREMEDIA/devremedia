@@ -22,9 +22,23 @@ for (const p of pages) {
   }
 }
 
+/**
+ * Το μονοπάτι όπως το βλέπει ο router: χωρίς query, χωρίς άγκυρα, χωρίς τελική
+ * κάθετο. Ο πίνακας των stubs χτίζεται από ονόματα αρχείων, άρα τα κλειδιά του
+ * είναι πάντα στην κανονική μορφή — ενώ ο κώδικας γράφει ό,τι του φανεί.
+ * `/admin/leads/` και `/admin/leads#tab` οδηγούν στην ΙΔΙΑ σελίδα με το
+ * `/admin/leads`, όμως το `stubs.has()` τα αστοχούσε και ο φύλακας τύπωνε «ok»
+ * για προορισμό που ανακατευθύνει. Η κανονικοποίηση μπαίνει σε ΚΑΘΕ αναζήτηση,
+ * όχι μόνο εκεί που βρέθηκε η τρύπα.
+ */
+function normaliseRoute(href) {
+  const path = href.split('?')[0].split('#')[0];
+  return path.length > 1 ? path.replace(/\/+$/, '') : path;
+}
+
 const errors = [];
 for (const [route, target] of stubs) {
-  const clean = target.split('?')[0];
+  const clean = normaliseRoute(target);
   const targetPage = join('src/app', clean === '/' ? '' : clean, 'page.tsx');
   if (!existsSync(targetPage)) errors.push(`stub ${route} -> ${target}: target page missing`);
 }
@@ -38,7 +52,9 @@ for (const f of files) {
   // θεμιτά, οπότε το «κλείσε προς τα μέσα» θα έριχνε το build για κανονικό
   // κώδικα. Γραμμένο εδώ ώστε το κενό να είναι δηλωμένο, όχι υπονοούμενο.
   for (const m of src.matchAll(/revalidatePath\(\s*'([^']+)'/g)) {
-    if (stubs.has(m[1])) errors.push(`${f}: revalidatePath('${m[1]}') targets a stub (use ${stubs.get(m[1]).split('?')[0]})`);
+    const route = normaliseRoute(m[1]);
+    if (stubs.has(route))
+      errors.push(`${f}: revalidatePath('${m[1]}') targets a stub (use ${normaliseRoute(stubs.get(route))})`);
   }
   // Ο κανόνας κλείνει ΠΡΟΣ ΤΑ ΜΕΣΑ. Πρώτη γραφή έπιανε μόνο `backHref="..."`,
   // οπότε ένα template literal ή μια σταθερά περνούσαν αόρατα — έδινε
@@ -58,7 +74,7 @@ for (const f of files) {
       );
       continue;
     }
-    const route = m[2].split('?')[0];
+    const route = normaliseRoute(m[2]);
     if (stubs.has(route)) errors.push(`${f}: backHref="${m[2]}" targets a stub (use ${stubs.get(route)})`);
   }
 }

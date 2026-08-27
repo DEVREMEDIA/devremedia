@@ -216,8 +216,15 @@ const PENDING = [
 // Η παρένθεση κλεισίματος είναι ΠΡΟΑΙΡΕΤΙΚΗ επίτηδες: ο έλεγχος γίνεται ανά
 // γραμμή, και μια κλήση σπασμένη σε δύο γραμμές δεν πρέπει να πάψει να
 // ανιχνεύεται επειδή το `)` της έμεινε παρακάτω.
+//
+// Τα ονόματα των συναρτήσεων γράφονται γράμμα-γράμμα σε πεζό/κεφαλαίο. Η CSS
+// ΔΕΝ ξεχωρίζει πεζά από κεφαλαία στα ονόματα συναρτήσεων — το `RGBA(255,0,0,.9)`
+// βάφει ακριβώς όπως το `rgba(...)`, και περνούσε ολόκληρο μπροστά από τον
+// φύλακα. Δεν μπαίνει σκέτο `i` σε όλη την έκφραση: το hex το χειρίζεται ήδη
+// μόνο του, και οι κλάσεις Tailwind ΕΙΝΑΙ πεζές — ένα καθολικό `i` θα άρχιζε να
+// πιάνει ταυτόχρονα και συμβολοσειρές σαν `TEXT-RED` που δεν είναι χρώματα.
 const RAW_COLOUR =
-  /#[0-9a-fA-F]{3,8}(?![0-9a-fA-F])|(?<![a-zA-Z0-9])(?:rgb|rgba|hsl|hsla|oklch)\s*\([^)]*\)?|\b(?:bg|text|border|ring|fill|stroke|from|via|to|divide|outline|shadow|decoration|accent|caret)-(?:white|black|red|orange|amber|yellow|lime|green|emerald|teal|cyan|sky|blue|indigo|violet|purple|fuchsia|pink|rose|slate|gray|grey|zinc|neutral|stone)(?:-\d{2,3})?\b/;
+  /#[0-9a-fA-F]{3,8}(?![0-9a-fA-F])|(?<![a-zA-Z0-9])(?:[rR][gG][bB][aA]?|[hH][sS][lL][aA]?|[oO][kK][lL][cC][hH])\s*\([^)]*\)?|\b(?:bg|text|border|ring|fill|stroke|from|via|to|divide|outline|shadow|decoration|accent|caret)-(?:white|black|red|orange|amber|yellow|lime|green|emerald|teal|cyan|sky|blue|indigo|violet|purple|fuchsia|pink|rose|slate|gray|grey|zinc|neutral|stone)(?:-\d{2,3})?\b/;
 
 /** Το ίδιο, με `g`: για να μετρηθεί ΤΙ παραβιάζει ένα εκκρεμές, όχι μόνο ΑΝ. */
 const RAW_COLOUR_ALL = new RegExp(RAW_COLOUR.source, 'g');
