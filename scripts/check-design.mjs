@@ -148,10 +148,10 @@ const PENDING = [
       'bg-amber-500',
       'bg-amber-500',
       'bg-emerald-500',
-      'rgba(',
-      'rgba(',
-      'rgba(',
-      'rgba(',
+      'rgba(234,179,8,0.2)',
+      'rgba(234,179,8,0.2)',
+      'rgba(234,179,8,0.4)',
+      'rgba(234,179,8,0.4)',
       'text-amber-400',
       'text-amber-400',
       'text-amber-500',
@@ -209,8 +209,15 @@ const PENDING = [
 // πριν» — που δέχεται την κάτω παύλα του Tailwind αλλά κόβει το `borgb(` μέσα
 // σε λέξη. Σκέτη αφαίρεση του `\b` έδινε ψευδώς θετικά, και την έπιασε ο
 // επανέλεγχος. Για το hex, «όχι κι άλλο δεκαεξαδικό ψηφίο από πίσω».
+// Η συνάρτηση χρώματος πιάνεται ΜΕ ΤΑ ΟΡΙΣΜΑΤΑ ΤΗΣ. Πρώτη γραφή σταματούσε
+// στο `rgba(`, οπότε στο σύνολο του εκκρεμούς καταγραφόταν μόνο η λέξη —
+// και `rgba(234,179,8,.2)` → `rgba(0,0,255,.9)` περνούσε πράσινο. Έκλεινε η
+// αντικατάσταση για τις κλάσεις Tailwind και έμενε ανοιχτή ακριβώς δίπλα.
+// Η παρένθεση κλεισίματος είναι ΠΡΟΑΙΡΕΤΙΚΗ επίτηδες: ο έλεγχος γίνεται ανά
+// γραμμή, και μια κλήση σπασμένη σε δύο γραμμές δεν πρέπει να πάψει να
+// ανιχνεύεται επειδή το `)` της έμεινε παρακάτω.
 const RAW_COLOUR =
-  /#[0-9a-fA-F]{3,8}(?![0-9a-fA-F])|(?<![a-zA-Z0-9])(?:rgb|rgba|hsl|hsla|oklch)\s*\(|\b(?:bg|text|border|ring|fill|stroke|from|via|to|divide|outline|shadow|decoration|accent|caret)-(?:white|black|red|orange|amber|yellow|lime|green|emerald|teal|cyan|sky|blue|indigo|violet|purple|fuchsia|pink|rose|slate|gray|grey|zinc|neutral|stone)(?:-\d{2,3})?\b/;
+  /#[0-9a-fA-F]{3,8}(?![0-9a-fA-F])|(?<![a-zA-Z0-9])(?:rgb|rgba|hsl|hsla|oklch)\s*\([^)]*\)?|\b(?:bg|text|border|ring|fill|stroke|from|via|to|divide|outline|shadow|decoration|accent|caret)-(?:white|black|red|orange|amber|yellow|lime|green|emerald|teal|cyan|sky|blue|indigo|violet|purple|fuchsia|pink|rose|slate|gray|grey|zinc|neutral|stone)(?:-\d{2,3})?\b/;
 
 /** Το ίδιο, με `g`: για να μετρηθεί ΤΙ παραβιάζει ένα εκκρεμές, όχι μόνο ΑΝ. */
 const RAW_COLOUR_ALL = new RegExp(RAW_COLOUR.source, 'g');

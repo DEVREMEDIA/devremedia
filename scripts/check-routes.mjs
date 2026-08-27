@@ -48,7 +48,9 @@ for (const f of files) {
   // να σιωπήσει. Και οι τέσσερις σημερινοί είναι κυριολεξίες, άρα σήμερα
   // δεν κοστίζει τίποτα· την ημέρα που κάποιος χρειαστεί δυναμικό προορισμό,
   // το θέλουμε να είναι απόφαση, όχι παράπλευρη απώλεια.
-  for (const m of src.matchAll(/backHref=(["']([^"']+)["']|\{)/g)) {
+  // Τα κενά γύρω από το ίσον είναι έγκυρη JSX και η πρώτη γραφή τα έχανε:
+  // `backHref = "/admin/chatbot"` περνούσε ολόκληρο, stub και όλα.
+  for (const m of src.matchAll(/backHref\s*=\s*(["']([^"']+)["']|\{)/g)) {
     if (m[1] === '{') {
       errors.push(
         `${f}: backHref={...} is not a plain literal, so it cannot be checked against the ${stubs.size} redirect stubs. ` +
