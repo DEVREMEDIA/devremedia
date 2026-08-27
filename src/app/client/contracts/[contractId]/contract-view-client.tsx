@@ -59,8 +59,8 @@ export function ContractViewClient({ contract }: ContractViewClientProps) {
       }
       toast.success(t('uploadSuccess'));
       router.refresh();
-    } catch (err) {
-      toast.error(err instanceof Error ? err.message : t('uploadFailed'));
+    } catch {
+      toast.error(t('uploadFailed'));
     } finally {
       setIsUploading(false);
     }

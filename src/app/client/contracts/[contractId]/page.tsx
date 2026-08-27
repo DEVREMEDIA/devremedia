@@ -1,5 +1,6 @@
 import { getContract } from '@/lib/actions/contracts';
 import { notFound } from 'next/navigation';
+import { getTranslations } from 'next-intl/server';
 import { ContractViewClient } from './contract-view-client';
 
 interface ClientContractPageProps {
@@ -9,12 +10,13 @@ interface ClientContractPageProps {
 export async function generateMetadata({ params }: ClientContractPageProps) {
   const { contractId } = await params;
   const result = await getContract(contractId);
+  const t = await getTranslations('contracts');
 
   if (result.error) {
-    return { title: 'Contract Not Found' };
+    return { title: t('notFoundTitle') };
   }
 
-  return { title: result.data?.title || 'Contract' };
+  return { title: result.data?.title || t('defaultTitle') };
 }
 
 export default async function ClientContractPage({ params }: ClientContractPageProps) {

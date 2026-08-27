@@ -1033,7 +1033,11 @@
     "selectClient": "Επιλέξτε πελάτη",
     "selectProject": "Σύνδεση με παραγωγή (προαιρετικό)",
     "noProject": "Χωρίς παραγωγή",
-    "creating": "Δημιουργία..."
+    "creating": "Δημιουργία...",
+    "failedToLoadContract": "Αποτυχία φόρτωσης συμβολαίου: {error}",
+    "notAvailableForSigning": "Αυτό το συμβόλαιο δεν είναι πλέον διαθέσιμο για υπογραφή.",
+    "notFoundTitle": "Το συμβόλαιο δεν βρέθηκε",
+    "defaultTitle": "Συμβόλαιο"
   },
 
   "deliverables": {
