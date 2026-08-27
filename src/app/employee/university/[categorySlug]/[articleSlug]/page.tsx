@@ -1,6 +1,7 @@
 import { notFound } from 'next/navigation';
 import Link from 'next/link';
 import { ChevronRight } from 'lucide-react';
+import { getTranslations } from 'next-intl/server';
 import { PageHeading } from '@/components/shared/page-heading';
 import { ArticleContent } from '@/components/shared/article-content';
 import { getKbCategoryBySlug } from '@/lib/actions/kb-categories';
@@ -15,6 +16,7 @@ interface ArticlePageProps {
 
 export default async function ArticlePage({ params }: ArticlePageProps) {
   const { categorySlug, articleSlug } = await params;
+  const t = await getTranslations('university');
 
   const categoryResult = await getKbCategoryBySlug(categorySlug);
   if (categoryResult.error || !categoryResult.data) {
@@ -47,7 +49,7 @@ export default async function ArticlePage({ params }: ArticlePageProps) {
       {/* Breadcrumb */}
       <div className="flex items-center gap-2 text-sm text-muted-foreground">
         <Link href="/employee/university" className="hover:text-foreground">
-          DMS University
+          {t('title')}
         </Link>
         <ChevronRight className="h-4 w-4" />
         <Link href={`/employee/university/${categorySlug}`} className="hover:text-foreground">

@@ -1899,6 +1899,11 @@
       "stageReview": "Review",
       "stageRevisions": "Revisions",
       "stageDelivered": "Delivered"
+    },
+    "knowledge": {
+      "subtitle": "Browse knowledge base articles and learn about DMS",
+      "emptyTitle": "No content available",
+      "emptyDescription": "The knowledge base is being set up. Check back soon!"
     }
   },
 

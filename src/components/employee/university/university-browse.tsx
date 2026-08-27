@@ -51,10 +51,10 @@ export function UniversityBrowse({ categories }: UniversityBrowseProps) {
               )}
             >
               <div className="flex items-start justify-between mb-3">
-                <div className="p-2.5 rounded-xl bg-amber-500/10">
-                  <BookOpen className="h-5 w-5 text-amber-500" />
+                <div className="p-2.5 rounded-xl bg-tone-caution/10">
+                  <BookOpen className="h-5 w-5 text-tone-caution" />
                 </div>
-                <ChevronRight className="h-5 w-5 text-muted-foreground/40 group-hover:text-amber-500 transition-colors" />
+                <ChevronRight className="h-5 w-5 text-muted-foreground/40 group-hover:text-tone-caution transition-colors" />
               </div>
               <h3 className="font-semibold text-base mb-1.5">{category.title}</h3>
               {category.description && (
