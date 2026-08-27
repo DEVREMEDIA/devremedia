@@ -98,11 +98,7 @@ export function PublicBookingForm() {
       <BookingLocationBudgetSection register={register} watch={watch} setValue={setValue} />
 
       <div className="pt-4 space-y-3">
-        <Button
-          type="submit"
-          disabled={isSubmitting}
-          className="w-full bg-amber-500 hover:bg-amber-400 text-zinc-950 font-semibold py-6 text-lg"
-        >
+        <Button type="submit" disabled={isSubmitting} className="w-full font-semibold py-6 text-lg">
           {isSubmitting ? (
             <>
               <Loader2 className="mr-2 h-5 w-5 animate-spin" />
@@ -112,7 +108,11 @@ export function PublicBookingForm() {
             t('submitRequest')
           )}
         </Button>
-        <Button asChild variant="ghost" className="w-full text-zinc-400 hover:text-white">
+        <Button
+          asChild
+          variant="ghost"
+          className="w-full text-muted-foreground hover:text-foreground"
+        >
           <Link href="/">
             <ArrowLeft className="mr-2 h-4 w-4" />
             {t('backToHome')}
