@@ -21,6 +21,7 @@ import { cn } from '@/lib/utils';
 import { assignProject } from '@/lib/actions/projects';
 import { toast } from 'sonner';
 import { useTranslations } from 'next-intl';
+import { statusTone, type Tone } from '@/lib/status-tone';
 
 interface ProjectCardProps {
   project: ProjectWithClient;
@@ -28,18 +29,20 @@ interface ProjectCardProps {
   teamMembers?: UserProfile[];
 }
 
-const PRIORITY_BORDER: Record<string, string> = {
-  urgent: 'border-l-red-500',
-  high: 'border-l-orange-500',
-  medium: 'border-l-amber-400',
-  low: 'border-l-blue-400',
+// Tailwind δεν βλέπει δυναμικά χτισμένα class names, οπότε ο χάρτης μένει
+// στατικός — αλλά τώρα έχει 4 γραμμές (τόνος) αντί για 4 x 2 (προτεραιότητα).
+const TONE_BORDER: Record<Tone, string> = {
+  critical: 'border-l-tone-critical',
+  caution: 'border-l-tone-caution',
+  positive: 'border-l-tone-positive',
+  neutral: 'border-l-tone-neutral',
 };
 
-const PRIORITY_DOT: Record<string, string> = {
-  urgent: 'bg-red-500',
-  high: 'bg-orange-500',
-  medium: 'bg-amber-400',
-  low: 'bg-blue-400',
+const TONE_DOT: Record<Tone, string> = {
+  critical: 'bg-tone-critical',
+  caution: 'bg-tone-caution',
+  positive: 'bg-tone-positive',
+  neutral: 'bg-tone-neutral',
 };
 
 export function ProjectCard({ project, isOverlay, teamMembers }: ProjectCardProps) {
@@ -47,6 +50,7 @@ export function ProjectCard({ project, isOverlay, teamMembers }: ProjectCardProp
   const { attributes, listeners, setNodeRef, isDragging } = useDraggable({
     id: project.id,
   });
+  const priorityBorder = TONE_BORDER[statusTone(project.priority)];
 
   const handleClick = () => {
     if (!isDragging) {
@@ -57,7 +61,7 @@ export function ProjectCard({ project, isOverlay, teamMembers }: ProjectCardProp
   if (isOverlay) {
     return (
       <Card
-        className={`p-2.5 shadow-2xl border-l-[3px] w-[200px] bg-background rotate-[2deg] ${PRIORITY_BORDER[project.priority] || 'border-l-transparent'}`}
+        className={`p-2.5 shadow-2xl border-l-[3px] w-[200px] bg-background rotate-[2deg] ${priorityBorder}`}
       >
         <CardInner project={project} teamMembers={teamMembers} />
       </Card>
@@ -75,7 +79,7 @@ export function ProjectCard({ project, isOverlay, teamMembers }: ProjectCardProp
       <Card
         className={`
           border-l-[3px] p-2.5
-          ${PRIORITY_BORDER[project.priority] || 'border-l-transparent'}
+          ${priorityBorder}
           hover:shadow-md transition-shadow duration-200
         `}
       >
@@ -93,6 +97,7 @@ function CardInner({
   teamMembers?: UserProfile[];
 }) {
   const t = useTranslations('projects');
+  const tPriority = useTranslations('statuses.priority');
   const [open, setOpen] = useState(false);
   const [assignedTo, setAssignedTo] = useState(project.assigned_to);
   const assignee = teamMembers?.find((m) => m.id === assignedTo);
@@ -124,10 +129,8 @@ function CardInner({
 
       <div className="flex items-center justify-between gap-1">
         <div className="flex items-center gap-1">
-          <div
-            className={`w-1.5 h-1.5 rounded-full ${PRIORITY_DOT[project.priority] || 'bg-gray-400'}`}
-          />
-          <span className="text-[10px] text-muted-foreground capitalize">{project.priority}</span>
+          <div className={`w-1.5 h-1.5 rounded-full ${TONE_DOT[statusTone(project.priority)]}`} />
+          <span className="text-[10px] text-muted-foreground">{tPriority(project.priority)}</span>
         </div>
 
         <div className="flex items-center gap-1">
