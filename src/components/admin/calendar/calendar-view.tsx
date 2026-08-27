@@ -15,18 +15,12 @@ import { EventDialog } from './event-dialog';
 import { CalendarStats } from './calendar-stats';
 import { UpcomingEvents } from './upcoming-events';
 import { CalendarEventForm } from './calendar-event-form';
+import { EVENT_FILTER_COLORS, type EventFilterType } from './event-filter-colors';
 import type { CalendarEvent } from '@/lib/queries/calendar';
 import type { EventClickArg } from '@fullcalendar/core';
 import type { DateClickArg } from '@fullcalendar/interaction';
 
-type FilterType = 'project' | 'task' | 'invoice' | 'custom';
-
-const FILTER_COLORS: Record<FilterType, string> = {
-  project: 'var(--primary)',
-  task: 'hsl(142 76% 36%)',
-  invoice: 'hsl(25 95% 53%)',
-  custom: 'hsl(280 60% 55%)',
-};
+type FilterType = EventFilterType;
 
 const FILTER_KEYS: Record<FilterType, string> = {
   project: 'projects',
@@ -118,7 +112,7 @@ export function CalendarView({ events }: CalendarViewProps) {
                 >
                   <span
                     className="h-2.5 w-2.5 rounded-full"
-                    style={{ backgroundColor: FILTER_COLORS[filter] }}
+                    style={{ backgroundColor: EVENT_FILTER_COLORS[filter] }}
                   />
                   {t(FILTER_KEYS[filter])}
                 </Button>

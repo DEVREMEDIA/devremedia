@@ -12,15 +12,7 @@ import { createCalendarEvent, updateCalendarEvent } from '@/lib/actions/calendar
 import { getTeamMembers } from '@/lib/actions/team';
 import { CALENDAR_EVENT_TYPES } from '@/lib/constants';
 import type { UserProfile } from '@/types';
-import { Button } from '@/components/ui/button';
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from '@/components/ui/dialog';
+import { FormDialog } from '@/components/shared/form-dialog';
 import {
   Form,
   FormControl,
@@ -41,7 +33,6 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { toast } from 'sonner';
-import { LoadingSpinner } from '@/components/shared/loading-spinner';
 import { EVENT_TYPE_KEYS } from '@/lib/constants';
 import type { CalendarEventRecord } from '@/types';
 
@@ -194,48 +185,103 @@ export function CalendarEventForm({
     onSuccess();
   };
 
+  const submitLabel = isSubmitting
+    ? isEditing
+      ? t('saving')
+      : t('creating')
+    : isEditing
+      ? t('editEvent')
+      : t('addEvent');
+
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-lg">
-        <DialogHeader>
-          <DialogTitle>{isEditing ? t('editEvent') : t('addEvent')}</DialogTitle>
-          <DialogDescription className="sr-only">
-            {isEditing ? t('editEvent') : t('addEvent')}
-          </DialogDescription>
-        </DialogHeader>
+    <FormDialog
+      open={open}
+      onOpenChange={onOpenChange}
+      title={isEditing ? t('editEvent') : t('addEvent')}
+      onSubmit={form.handleSubmit(onSubmit)}
+      submitLabel={submitLabel}
+      cancelLabel={tc('cancel')}
+      submitting={isSubmitting}
+    >
+      <Form {...form}>
+        <div className="space-y-4">
+          <FormField
+            control={form.control}
+            name="title"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>{t('eventTitle')}</FormLabel>
+                <FormControl>
+                  <Input placeholder={t('eventTitle')} {...field} />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
 
-        <Form {...form}>
-          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-            <FormField
-              control={form.control}
-              name="title"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>{t('eventTitle')}</FormLabel>
+          <FormField
+            control={form.control}
+            name="event_type"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>{t('eventTypeLabel')}</FormLabel>
+                <Select onValueChange={field.onChange} value={field.value}>
                   <FormControl>
-                    <Input placeholder={t('eventTitle')} {...field} />
+                    <SelectTrigger>
+                      <SelectValue />
+                    </SelectTrigger>
                   </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
+                  <SelectContent>
+                    {CALENDAR_EVENT_TYPES.map((type) => (
+                      <SelectItem key={type} value={type}>
+                        {t(EVENT_TYPE_KEYS[type])}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
 
+          <FormField
+            control={form.control}
+            name="all_day"
+            render={({ field }) => (
+              <FormItem className="flex items-center justify-between rounded-lg border p-3">
+                <FormLabel className="cursor-pointer">{t('eventAllDay')}</FormLabel>
+                <FormControl>
+                  <Switch checked={field.value} onCheckedChange={field.onChange} />
+                </FormControl>
+              </FormItem>
+            )}
+          />
+
+          {isFilming && (
             <FormField
               control={form.control}
-              name="event_type"
+              name="assigned_to"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>{t('eventTypeLabel')}</FormLabel>
-                  <Select onValueChange={field.onChange} value={field.value}>
+                  <FormLabel>{t('eventAssignedTo')}</FormLabel>
+                  <Select
+                    onValueChange={(v) => field.onChange(v === '__none__' ? null : v)}
+                    value={field.value ?? '__none__'}
+                    disabled={isLoadingTeam}
+                  >
                     <FormControl>
                       <SelectTrigger>
-                        <SelectValue />
+                        <SelectValue
+                          placeholder={isLoadingTeam ? tc('loading') : t('selectAssignee')}
+                        />
                       </SelectTrigger>
                     </FormControl>
                     <SelectContent>
-                      {CALENDAR_EVENT_TYPES.map((type) => (
-                        <SelectItem key={type} value={type}>
-                          {t(EVENT_TYPE_KEYS[type])}
+                      <SelectItem value="__none__">{t('unassigned')}</SelectItem>
+                      {teamMembers.map((m) => (
+                        <SelectItem key={m.id} value={m.id}>
+                          {m.display_name ?? m.id.slice(0, 8)}
+                          {m.role !== 'employee' ? ` (${m.role})` : ''}
                         </SelectItem>
                       ))}
                     </SelectContent>
@@ -244,105 +290,20 @@ export function CalendarEventForm({
                 </FormItem>
               )}
             />
+          )}
 
+          <div className="space-y-4">
             <FormField
               control={form.control}
-              name="all_day"
-              render={({ field }) => (
-                <FormItem className="flex items-center justify-between rounded-lg border p-3">
-                  <FormLabel className="cursor-pointer">{t('eventAllDay')}</FormLabel>
-                  <FormControl>
-                    <Switch checked={field.value} onCheckedChange={field.onChange} />
-                  </FormControl>
-                </FormItem>
-              )}
-            />
-
-            {isFilming && (
-              <FormField
-                control={form.control}
-                name="assigned_to"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>{t('eventAssignedTo')}</FormLabel>
-                    <Select
-                      onValueChange={(v) => field.onChange(v === '__none__' ? null : v)}
-                      value={field.value ?? '__none__'}
-                      disabled={isLoadingTeam}
-                    >
-                      <FormControl>
-                        <SelectTrigger>
-                          <SelectValue
-                            placeholder={isLoadingTeam ? tc('loading') : t('selectAssignee')}
-                          />
-                        </SelectTrigger>
-                      </FormControl>
-                      <SelectContent>
-                        <SelectItem value="__none__">{t('unassigned')}</SelectItem>
-                        {teamMembers.map((m) => (
-                          <SelectItem key={m.id} value={m.id}>
-                            {m.display_name ?? m.id.slice(0, 8)}
-                            {m.role !== 'employee' ? ` (${m.role})` : ''}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-            )}
-
-            <div className="space-y-4">
-              <FormField
-                control={form.control}
-                name="start_date"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>{t('eventStartDate')}</FormLabel>
-                    <FormControl>
-                      <DateTimePicker
-                        mode={isAllDay ? 'date' : 'datetime'}
-                        value={field.value}
-                        onChange={field.onChange}
-                      />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-
-              <FormField
-                control={form.control}
-                name="end_date"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>{t('eventEndDate')}</FormLabel>
-                    <FormControl>
-                      <DateTimePicker
-                        mode={isAllDay ? 'date' : 'datetime'}
-                        value={field.value}
-                        onChange={field.onChange}
-                      />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-            </div>
-
-            <FormField
-              control={form.control}
-              name="description"
+              name="start_date"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>{t('eventDescription')}</FormLabel>
+                  <FormLabel>{t('eventStartDate')}</FormLabel>
                   <FormControl>
-                    <Textarea
-                      rows={3}
-                      placeholder={t('eventDescription')}
-                      {...field}
-                      value={field.value ?? ''}
+                    <DateTimePicker
+                      mode={isAllDay ? 'date' : 'datetime'}
+                      value={field.value}
+                      onChange={field.onChange}
                     />
                   </FormControl>
                   <FormMessage />
@@ -350,31 +311,45 @@ export function CalendarEventForm({
               )}
             />
 
-            <DialogFooter>
-              <Button
-                type="button"
-                variant="outline"
-                onClick={() => onOpenChange(false)}
-                disabled={isSubmitting}
-              >
-                {tc('cancel')}
-              </Button>
-              <Button type="submit" disabled={isSubmitting}>
-                {isSubmitting ? (
-                  <div className="flex items-center gap-2">
-                    <LoadingSpinner size="sm" />
-                    <span>{isEditing ? t('saving') : t('creating')}</span>
-                  </div>
-                ) : isEditing ? (
-                  t('editEvent')
-                ) : (
-                  t('addEvent')
-                )}
-              </Button>
-            </DialogFooter>
-          </form>
-        </Form>
-      </DialogContent>
-    </Dialog>
+            <FormField
+              control={form.control}
+              name="end_date"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>{t('eventEndDate')}</FormLabel>
+                  <FormControl>
+                    <DateTimePicker
+                      mode={isAllDay ? 'date' : 'datetime'}
+                      value={field.value}
+                      onChange={field.onChange}
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+          </div>
+
+          <FormField
+            control={form.control}
+            name="description"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>{t('eventDescription')}</FormLabel>
+                <FormControl>
+                  <Textarea
+                    rows={3}
+                    placeholder={t('eventDescription')}
+                    {...field}
+                    value={field.value ?? ''}
+                  />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+        </div>
+      </Form>
+    </FormDialog>
   );
 }

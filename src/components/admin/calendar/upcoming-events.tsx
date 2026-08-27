@@ -6,18 +6,12 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Clock } from 'lucide-react';
 import { format } from 'date-fns';
+import { EVENT_FILTER_COLORS } from './event-filter-colors';
 import type { CalendarEvent } from '@/lib/queries/calendar';
 
 interface UpcomingEventsProps {
   events: CalendarEvent[];
 }
-
-const TYPE_COLORS: Record<string, string> = {
-  project: 'var(--primary)',
-  task: 'hsl(142 76% 36%)',
-  invoice: 'hsl(25 95% 53%)',
-  custom: 'hsl(280 70% 50%)',
-};
 
 const TYPE_KEYS: Record<string, string> = {
   project: 'filterProject',
@@ -53,7 +47,7 @@ export function UpcomingEvents({ events }: UpcomingEventsProps) {
             <div key={event.id} className="flex items-start gap-3">
               <span
                 className="mt-1.5 h-2 w-2 shrink-0 rounded-full"
-                style={{ backgroundColor: TYPE_COLORS[event.type] }}
+                style={{ backgroundColor: EVENT_FILTER_COLORS[event.type] }}
               />
               <div className="min-w-0 flex-1">
                 <p className="truncate text-sm font-medium">{event.title}</p>
