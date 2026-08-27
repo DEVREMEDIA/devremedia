@@ -285,7 +285,9 @@ const strippedOf = (f) => sourceOf.get(f).split('\n').map(stripComments).join('\
 
 const IMPORT_SPEC = /from\s+'(@\/[^']+|\.[^']*)'/g;
 const RENDERS_HEADING = /<PageHeading[\s/>]/;
+const RENDERS_HEADING_ALL = /<PageHeading[\s/>]/g;
 const RENDERS_DETAIL_SHELL = /<DetailShell[\s/>]/;
+const RENDERS_DETAIL_SHELL_ALL = /<DetailShell[\s/>]/g;
 
 // Τα δύο components των οποίων η ΔΟΥΛΕΙΑ είναι να γράψουν τον τίτλο. Χωρίς
 // αυτή την εξαίρεση, ο έλεγχος διπλού τίτλου θα κατήγγειλλε το ίδιο το κέλυφος
@@ -325,6 +327,21 @@ const hubs = allTsxFiles.filter(
 
 const doubleTitles = new Map();
 for (const hub of hubs) {
+  // Ο κόμβος ΕΛΕΓΧΕΤΑΙ ΚΑΙ ΓΙΑ ΤΟΝ ΕΑΥΤΟ ΤΟΥ. Ο βρόχος από κάτω ξεκινούσε από
+  // τις ΕΙΣΑΓΩΓΕΣ του, οπότε ο πιο προφανής τρόπος να σπάσει ο κανόνας —
+  // δύο επικεφαλίδες γραμμένες στο ίδιο αρχείο — περνούσε καθαρός. Και οι
+  // τέσσερις οθόνες λεπτομέρειας της #109 είναι μονοαρχεία, δηλαδή ο κανόνας
+  // ήταν τυφλός ακριβώς εκεί που μόλις είχε επεκταθεί. Το βρήκε το αρνητικό
+  // τεστ της Task 7, εισάγοντας παραβίαση και βλέποντας τον φύλακα πράσινο.
+  const own = strippedOf(hub);
+  const ownTitles =
+    (own.match(RENDERS_HEADING_ALL) ?? []).length +
+    (own.match(RENDERS_DETAIL_SHELL_ALL) ?? []).length;
+  if (ownTitles > 1) {
+    if (!doubleTitles.has(hub)) doubleTitles.set(hub, new Set());
+    doubleTitles.get(hub).add(hub);
+  }
+
   const seen = new Set();
   const queue = [...strippedOf(hub).matchAll(IMPORT_SPEC)]
     .map((m) => resolveImport(m[1], hub))
@@ -553,7 +570,15 @@ if (
       `\ncheck:design — ${doubleTitles.size} file(s) render a second page title inside a hub:\n`,
     );
     for (const [file, insideHubs] of doubleTitles) {
-      console.error(`  ${file}\n      mounted by ${[...insideHubs].join(', ')}`);
+      const others = [...insideHubs].filter((h) => h !== file);
+      // Δύο διαφορετικά σφάλματα, δύο διαφορετικές προτάσεις. Το «mounted by
+      // τον εαυτό του» δεν λέει τίποτα σε όποιον το διαβάζει στις έξι το πρωί.
+      if (insideHubs.has(file)) {
+        console.error(`  ${file}\n      renders more than one page title in its own body`);
+      }
+      if (others.length > 0) {
+        console.error(`  ${file}\n      mounted by ${others.join(', ')}`);
+      }
     }
     console.error('\nThe hub owns the page title. A tab body must not render its own PageHeading.');
   }
