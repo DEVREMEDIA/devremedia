@@ -101,10 +101,14 @@ const PENDING = [
 // παύλα είναι χαρακτήρας ΛΕΞΗΣ. Ένα `\b` πριν από το `rgba` δεν ταιριάζει ποτέ
 // εκεί, οπότε ο φύλακας τύπωνε «καθόλου ωμά χρώματα» ενώ ένα σταθερό κεχριμπάρι
 // καθόταν μέσα σε καλυμμένο αρχείο. Το ίδιο ίσχυε για hex ακολουθούμενο από
-// κάτω παύλα. Αντί για `\b`: καθόλου φράχτης μπροστά από τη συνάρτηση χρώματος,
-// και για το hex ένας έλεγχος ότι δεν ακολουθεί κι άλλο δεκαεξαδικό ψηφίο.
+// κάτω παύλα.
+//
+// Ο φράχτης δεν φεύγει, ΑΛΛΑΖΕΙ: αντί για `\b` μπαίνει «όχι γράμμα ή ψηφίο από
+// πριν» — που δέχεται την κάτω παύλα του Tailwind αλλά κόβει το `borgb(` μέσα
+// σε λέξη. Σκέτη αφαίρεση του `\b` έδινε ψευδώς θετικά, και την έπιασε ο
+// επανέλεγχος. Για το hex, «όχι κι άλλο δεκαεξαδικό ψηφίο από πίσω».
 const RAW_COLOUR =
-  /#[0-9a-fA-F]{3,8}(?![0-9a-fA-F])|(?:rgb|rgba|hsl|hsla|oklch)\s*\(|\b(?:bg|text|border|ring|fill|stroke|from|via|to|divide|outline|shadow|decoration|accent|caret)-(?:white|black|red|orange|amber|yellow|lime|green|emerald|teal|cyan|sky|blue|indigo|violet|purple|fuchsia|pink|rose|slate|gray|grey|zinc|neutral|stone)(?:-\d{2,3})?\b/;
+  /#[0-9a-fA-F]{3,8}(?![0-9a-fA-F])|(?<![a-zA-Z0-9])(?:rgb|rgba|hsl|hsla|oklch)\s*\(|\b(?:bg|text|border|ring|fill|stroke|from|via|to|divide|outline|shadow|decoration|accent|caret)-(?:white|black|red|orange|amber|yellow|lime|green|emerald|teal|cyan|sky|blue|indigo|violet|purple|fuchsia|pink|rose|slate|gray|grey|zinc|neutral|stone)(?:-\d{2,3})?\b/;
 
 function walk(target, out = []) {
   let stat;
