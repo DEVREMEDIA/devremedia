@@ -12,7 +12,8 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { StatusBadge } from '@/components/shared/status-badge';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { DetailShell } from '@/components/shared/detail-shell';
+import type { SectionTab } from '@/components/shell-v2/section-tabs';
 import { LEAD_SOURCE_LABELS } from '@/lib/constants';
 import { updateLead } from '@/lib/actions/leads';
 import { toast } from 'sonner';
@@ -57,7 +58,11 @@ type AdminLeadDetailProps = {
   lead: LeadData;
   activities: ActivityData[];
   salesmen: { id: string; display_name: string | null }[];
+  activeTab: string;
 };
+
+/** Οι καρτέλες με τη σειρά τους. Το `page.tsx` επικυρώνει το `?tab=` πάνω σε αυτή. */
+export const LEAD_TABS: readonly string[] = ['info', 'activities'];
 
 const ACTIVITY_ICONS: Record<string, LucideIcon> = {
   call: Phone,
@@ -68,9 +73,10 @@ const ACTIVITY_ICONS: Record<string, LucideIcon> = {
   other: MoreHorizontal,
 };
 
-export function AdminLeadDetail({ lead, activities, salesmen }: AdminLeadDetailProps) {
+export function AdminLeadDetail({ lead, activities, salesmen, activeTab }: AdminLeadDetailProps) {
   const router = useRouter();
   const t = useTranslations('leads');
+  const tClients = useTranslations('shellV2.pages.adminClients');
   const tToast = useTranslations('toast');
   const [reassigning, setReassigning] = useState(false);
 
@@ -86,130 +92,136 @@ export function AdminLeadDetail({ lead, activities, salesmen }: AdminLeadDetailP
     setReassigning(false);
   };
 
+  const TABS: SectionTab[] = [
+    { key: 'info', label: t('info') },
+    { key: 'activities', label: t('activities'), count: activities.length },
+  ];
+
   return (
-    <Tabs defaultValue="info" className="space-y-6">
-      <TabsList>
-        <TabsTrigger value="info">{t('info')}</TabsTrigger>
-        <TabsTrigger value="activities">
-          {t('activities')} ({activities.length})
-        </TabsTrigger>
-      </TabsList>
-
-      <TabsContent value="info" className="space-y-6">
-        <div className="grid gap-6 md:grid-cols-2">
-          <Card>
-            <CardHeader>
-              <CardTitle className="text-lg">{t('contactInfo')}</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-3">
-              <div className="flex items-center gap-2">
-                <User className="h-4 w-4 text-muted-foreground" />
-                <span className="font-medium">{lead.contact_name}</span>
-              </div>
-              <div className="flex items-center gap-2">
-                <Mail className="h-4 w-4 text-muted-foreground" />
-                <a href={`mailto:${lead.email}`} className="text-blue-600 hover:underline">
-                  {lead.email}
-                </a>
-              </div>
-              {lead.phone && (
+    <DetailShell
+      backHref="/admin/clients?tab=interest"
+      backLabel={tClients('title')}
+      title={lead.contact_name}
+      meta={lead.company_name ?? lead.email}
+      tabs={{ items: TABS, active: activeTab, basePath: `/admin/leads/${lead.id}` }}
+    >
+      {activeTab === 'info' && (
+        <div className="space-y-6">
+          <div className="grid gap-6 md:grid-cols-2">
+            <Card>
+              <CardHeader>
+                <CardTitle className="text-lg">{t('contactInfo')}</CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-3">
                 <div className="flex items-center gap-2">
-                  <Phone className="h-4 w-4 text-muted-foreground" />
-                  <span>{lead.phone}</span>
+                  <User className="h-4 w-4 text-muted-foreground" />
+                  <span className="font-medium">{lead.contact_name}</span>
                 </div>
-              )}
-              {lead.company_name && (
                 <div className="flex items-center gap-2">
-                  <Building2 className="h-4 w-4 text-muted-foreground" />
-                  <span>{lead.company_name}</span>
+                  <Mail className="h-4 w-4 text-muted-foreground" />
+                  <a href={`mailto:${lead.email}`} className="text-primary hover:underline">
+                    {lead.email}
+                  </a>
                 </div>
-              )}
-            </CardContent>
-          </Card>
+                {lead.phone && (
+                  <div className="flex items-center gap-2">
+                    <Phone className="h-4 w-4 text-muted-foreground" />
+                    <span>{lead.phone}</span>
+                  </div>
+                )}
+                {lead.company_name && (
+                  <div className="flex items-center gap-2">
+                    <Building2 className="h-4 w-4 text-muted-foreground" />
+                    <span>{lead.company_name}</span>
+                  </div>
+                )}
+              </CardContent>
+            </Card>
 
-          <Card>
-            <CardHeader>
-              <CardTitle className="text-lg">{t('dealInfo')}</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-3">
-              <div className="flex items-center justify-between">
-                <span className="text-sm text-muted-foreground">{t('stage')}</span>
-                <StatusBadge status={lead.stage} />
-              </div>
-              <div className="flex items-center justify-between">
-                <span className="text-sm text-muted-foreground">{t('source')}</span>
-                <Badge variant="outline">
-                  {LEAD_SOURCE_LABELS[lead.source as keyof typeof LEAD_SOURCE_LABELS] ??
-                    lead.source}
-                </Badge>
-              </div>
-              <div className="flex items-center justify-between">
-                <span className="text-sm text-muted-foreground">{t('dealValue')}</span>
-                <span className="font-medium">
-                  {lead.deal_value != null ? `€${Number(lead.deal_value).toLocaleString()}` : '-'}
-                </span>
-              </div>
-              <div className="flex items-center justify-between">
-                <span className="text-sm text-muted-foreground">{t('probability')}</span>
-                <span>{lead.probability}%</span>
-              </div>
-              {lead.expected_close_date && (
+            <Card>
+              <CardHeader>
+                <CardTitle className="text-lg">{t('dealInfo')}</CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-3">
                 <div className="flex items-center justify-between">
-                  <span className="text-sm text-muted-foreground">{t('expectedCloseDate')}</span>
-                  <span>
-                    {new Date(lead.expected_close_date).toLocaleDateString(undefined, {
-                      year: 'numeric',
-                      month: 'short',
-                      day: 'numeric',
-                    })}
+                  <span className="text-sm text-muted-foreground">{t('stage')}</span>
+                  <StatusBadge status={lead.stage} />
+                </div>
+                <div className="flex items-center justify-between">
+                  <span className="text-sm text-muted-foreground">{t('source')}</span>
+                  <Badge variant="outline">
+                    {LEAD_SOURCE_LABELS[lead.source as keyof typeof LEAD_SOURCE_LABELS] ??
+                      lead.source}
+                  </Badge>
+                </div>
+                <div className="flex items-center justify-between">
+                  <span className="text-sm text-muted-foreground">{t('dealValue')}</span>
+                  <span className="font-medium">
+                    {lead.deal_value != null ? `€${Number(lead.deal_value).toLocaleString()}` : '-'}
                   </span>
                 </div>
-              )}
-            </CardContent>
-          </Card>
-        </div>
+                <div className="flex items-center justify-between">
+                  <span className="text-sm text-muted-foreground">{t('probability')}</span>
+                  <span>{lead.probability}%</span>
+                </div>
+                {lead.expected_close_date && (
+                  <div className="flex items-center justify-between">
+                    <span className="text-sm text-muted-foreground">{t('expectedCloseDate')}</span>
+                    <span>
+                      {new Date(lead.expected_close_date).toLocaleDateString(undefined, {
+                        year: 'numeric',
+                        month: 'short',
+                        day: 'numeric',
+                      })}
+                    </span>
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+          </div>
 
-        {/* Reassign */}
-        <Card>
-          <CardHeader>
-            <CardTitle className="text-lg">{t('assignment')}</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="flex items-center gap-4">
-              <span className="text-sm text-muted-foreground">{t('assignedTo')}:</span>
-              <Select
-                value={lead.assigned_to}
-                onValueChange={handleReassign}
-                disabled={reassigning}
-              >
-                <SelectTrigger className="w-[250px]">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  {salesmen.map((s) => (
-                    <SelectItem key={s.id} value={s.id}>
-                      {s.display_name ?? t('unassigned')}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-          </CardContent>
-        </Card>
-
-        {lead.notes && (
+          {/* Reassign */}
           <Card>
             <CardHeader>
-              <CardTitle className="text-lg">{t('notes')}</CardTitle>
+              <CardTitle className="text-lg">{t('assignment')}</CardTitle>
             </CardHeader>
             <CardContent>
-              <p className="text-sm whitespace-pre-wrap">{lead.notes}</p>
+              <div className="flex items-center gap-4">
+                <span className="text-sm text-muted-foreground">{t('assignedTo')}:</span>
+                <Select
+                  value={lead.assigned_to}
+                  onValueChange={handleReassign}
+                  disabled={reassigning}
+                >
+                  <SelectTrigger className="w-[250px]">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {salesmen.map((s) => (
+                      <SelectItem key={s.id} value={s.id}>
+                        {s.display_name ?? t('unassigned')}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
             </CardContent>
           </Card>
-        )}
-      </TabsContent>
 
-      <TabsContent value="activities">
+          {lead.notes && (
+            <Card>
+              <CardHeader>
+                <CardTitle className="text-lg">{t('notes')}</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <p className="text-sm whitespace-pre-wrap">{lead.notes}</p>
+              </CardContent>
+            </Card>
+          )}
+        </div>
+      )}
+
+      {activeTab === 'activities' && (
         <Card>
           <CardHeader>
             <CardTitle className="text-lg">{t('activityHistory')}</CardTitle>
@@ -247,7 +259,7 @@ export function AdminLeadDetail({ lead, activities, salesmen }: AdminLeadDetailP
             )}
           </CardContent>
         </Card>
-      </TabsContent>
-    </Tabs>
+      )}
+    </DetailShell>
   );
 }
