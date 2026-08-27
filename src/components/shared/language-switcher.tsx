@@ -35,7 +35,7 @@ export function LanguageSwitcher() {
       <Button
         variant="ghost"
         size="icon"
-        className="text-zinc-400 hover:text-white hover:bg-white/10 h-12 w-12"
+        className="text-muted-foreground hover:text-accent-foreground hover:bg-accent h-12 w-12"
       >
         <Globe className="h-4 w-4" aria-hidden="true" />
         <span className="sr-only">Switch language</span>
@@ -50,7 +50,7 @@ export function LanguageSwitcher() {
           variant="ghost"
           size="icon"
           disabled={isPending}
-          className="text-zinc-400 hover:text-white hover:bg-white/10 h-12 w-12"
+          className="text-muted-foreground hover:text-accent-foreground hover:bg-accent h-12 w-12"
         >
           <Globe className="h-4 w-4" aria-hidden="true" />
           <span className="sr-only">Switch language</span>

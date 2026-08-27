@@ -50,7 +50,7 @@ export function NotificationBell() {
           <Bell className="h-5 w-5" aria-hidden="true" />
           {unreadCount > 0 && (
             <span
-              className="absolute -top-0.5 -right-0.5 flex h-4 w-4 items-center justify-center rounded-full bg-red-500 text-[10px] font-bold text-white"
+              className="absolute -top-0.5 -right-0.5 flex h-4 w-4 items-center justify-center rounded-full bg-tone-critical text-[10px] font-bold text-primary-foreground"
               aria-hidden="true"
             >
               {unreadCount > 9 ? '9+' : unreadCount}
@@ -89,7 +89,7 @@ export function NotificationBell() {
               >
                 <div className="flex w-full items-start gap-2">
                   {!notification.read && (
-                    <span className="mt-1.5 h-2 w-2 shrink-0 rounded-full bg-blue-500" />
+                    <span className="mt-1.5 h-2 w-2 shrink-0 rounded-full bg-primary" />
                   )}
                   <div className="flex-1 min-w-0">
                     <p className="text-sm font-medium leading-tight truncate">
