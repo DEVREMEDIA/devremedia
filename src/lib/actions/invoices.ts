@@ -1,5 +1,6 @@
 'use server';
 
+import { cache } from 'react';
 import { createClient } from '@/lib/supabase/server';
 import { requireUser } from '@/lib/auth-helpers';
 import { createInvoiceSchema, updateInvoiceSchema, type LineItem } from '@/lib/schemas/invoice';
@@ -61,7 +62,11 @@ export async function getInvoices(
   }
 }
 
-export async function getInvoice(id: string): Promise<ActionResult<InvoiceWithRelations>> {
+// `getInvoice` is called twice within one request on the admin detail route
+// (once in `generateMetadata`, once for the page body). `cache()` — React's
+// per-request memoisation, not `unstable_cache` — makes the second call reuse
+// the first call's result instead of round-tripping to the database again.
+export const getInvoice = cache(async (id: string): Promise<ActionResult<InvoiceWithRelations>> => {
   try {
     const { supabase, error: authError } = await requireUser();
     if (authError) return { data: null, error: authError };
@@ -78,7 +83,7 @@ export async function getInvoice(id: string): Promise<ActionResult<InvoiceWithRe
   } catch (err: unknown) {
     return { data: null, error: err instanceof Error ? err.message : 'Failed to fetch invoice' };
   }
-}
+});
 
 export async function getNextInvoiceNumber(): Promise<string> {
   try {
