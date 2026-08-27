@@ -43,6 +43,38 @@ export async function getDeliverablesByProject(
   }
 }
 
+/**
+ * Τα παραδοτέα πολλών έργων με ΕΝΑ ερώτημα. Η αρχική του πελάτη ζητούσε ένα
+ * ανά έργο — παράλληλα μεν, αλλά πέντε ταξίδια και πέντε ελέγχους ταυτότητας
+ * για κάτι που είναι ένα `in`.
+ */
+export async function getDeliverablesByProjects(
+  projectIds: string[],
+): Promise<ActionResult<Deliverable[]>> {
+  if (projectIds.length === 0) return { data: [], error: null };
+
+  try {
+    const { supabase, error: authError } = await requireUser();
+    if (authError) return { data: null, error: authError };
+
+    const { data, error } = await supabase
+      .from('deliverables')
+      .select(
+        'id, project_id, title, description, file_path, file_size, file_type, version, status, uploaded_by, download_count, expires_at, created_at',
+      )
+      .in('project_id', projectIds)
+      .order('created_at', { ascending: false });
+
+    if (error) return { data: null, error: error.message };
+    return { data, error: null };
+  } catch (err: unknown) {
+    return {
+      data: null,
+      error: err instanceof Error ? err.message : 'Failed to fetch deliverables',
+    };
+  }
+}
+
 export async function getDeliverable(id: string): Promise<ActionResult<Deliverable>> {
   try {
     const { supabase, error: authError } = await requireUser();

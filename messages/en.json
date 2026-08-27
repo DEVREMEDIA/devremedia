@@ -346,6 +346,7 @@
       "sent": "Sent",
       "viewed": "Viewed",
       "signed": "Signed",
+      "pending_review": "Pending Review",
       "expired": "Expired",
       "cancelled": "Cancelled"
     },
@@ -1032,7 +1033,11 @@
     "selectClient": "Select a client",
     "selectProject": "Link to project (optional)",
     "noProject": "No project",
-    "creating": "Creating..."
+    "creating": "Creating...",
+    "failedToLoadContract": "Failed to load contract: {error}",
+    "notAvailableForSigning": "This contract is no longer available for signing.",
+    "notFoundTitle": "Contract Not Found",
+    "defaultTitle": "Contract"
   },
 
   "deliverables": {

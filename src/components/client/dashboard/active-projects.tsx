@@ -33,7 +33,7 @@ export function ActiveProjects({ projects }: ActiveProjectsProps) {
     return (
       <div className="rounded-xl border bg-card p-6">
         <div className="flex items-center gap-2 mb-4">
-          <Clapperboard className="h-5 w-5 text-amber-500" />
+          <Clapperboard className="h-5 w-5 text-primary" />
           <h2 className="text-lg font-semibold">{t('activeProjects')}</h2>
         </div>
         <EmptyState
@@ -52,7 +52,7 @@ export function ActiveProjects({ projects }: ActiveProjectsProps) {
   return (
     <div>
       <div className="flex items-center gap-2 mb-4">
-        <Clapperboard className="h-5 w-5 text-amber-500" />
+        <Clapperboard className="h-5 w-5 text-primary" />
         <h2 className="text-lg font-semibold">{t('activeProjects')}</h2>
       </div>
       <div className="grid gap-4 md:grid-cols-2">
@@ -66,7 +66,7 @@ export function ActiveProjects({ projects }: ActiveProjectsProps) {
               key={project.id}
               className={cn(
                 'group cursor-pointer border bg-card transition-all duration-300',
-                'hover:shadow-[0_8px_30px_-4px_rgba(234,179,8,0.2)] hover:-translate-y-0.5',
+                'hover:shadow-[0_8px_30px_-4px_color-mix(in_srgb,var(--primary)_20%,transparent)] hover:-translate-y-0.5',
               )}
               onClick={() => router.push(`/client/projects/${project.id}`)}
             >
@@ -74,7 +74,7 @@ export function ActiveProjects({ projects }: ActiveProjectsProps) {
               <div className="p-5 pb-3">
                 <div className="flex items-start justify-between gap-3">
                   <h3 className="font-semibold text-base line-clamp-2 flex-1">{project.title}</h3>
-                  <ArrowRight className="h-5 w-5 text-muted-foreground/40 group-hover:text-amber-500 transition-colors shrink-0 mt-0.5" />
+                  <ArrowRight className="h-5 w-5 text-muted-foreground/40 group-hover:text-primary transition-colors shrink-0 mt-0.5" />
                 </div>
               </div>
 
@@ -88,14 +88,14 @@ export function ActiveProjects({ projects }: ActiveProjectsProps) {
                         className={cn(
                           'h-2 flex-1 rounded-full transition-all relative',
                           i < stageIndex
-                            ? 'bg-amber-500/70'
+                            ? 'bg-primary/70'
                             : i === stageIndex
-                              ? 'bg-amber-500 shadow-[0_0_8px_rgba(234,179,8,0.4)]'
+                              ? 'bg-primary shadow-[0_0_8px_color-mix(in_srgb,var(--primary)_40%,transparent)]'
                               : 'bg-muted-foreground/10',
                         )}
                       >
                         {i === stageIndex && (
-                          <div className="absolute inset-0 rounded-full bg-amber-500 animate-pulse opacity-40" />
+                          <div className="absolute inset-0 rounded-full bg-primary animate-pulse opacity-40" />
                         )}
                       </div>
                     ))}
@@ -107,7 +107,7 @@ export function ActiveProjects({ projects }: ActiveProjectsProps) {
                         className={cn(
                           'flex-1 text-center text-[10px] leading-tight',
                           i === stageIndex
-                            ? 'text-amber-600 dark:text-amber-400 font-semibold'
+                            ? 'text-primary font-semibold'
                             : i < stageIndex
                               ? 'text-muted-foreground/60'
                               : 'text-muted-foreground/30',

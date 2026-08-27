@@ -1,4 +1,5 @@
 import { redirect } from 'next/navigation';
+import { getTranslations } from 'next-intl/server';
 import { getContract } from '@/lib/actions/contracts';
 import { SignContractClient } from './sign-client';
 
@@ -8,14 +9,18 @@ interface SignContractPageProps {
 
 export default async function SignContractPage({ params }: SignContractPageProps) {
   const { contractId } = await params;
+  const t = await getTranslations('contracts');
+  // Η ίδια πηγή ετικετών που χρησιμοποιεί ήδη η λίστα συμβολαίων. Χωρίς αυτήν,
+  // ο πελάτης διάβαζε «Κατάσταση: expired».
+  const tStatus = await getTranslations('statuses.contractStatus');
 
   const result = await getContract(contractId);
 
   if (result.error) {
     return (
-      <div className="container mx-auto px-4 py-6 sm:px-6 max-w-4xl">
-        <div className="text-center text-red-600">
-          <p>Failed to load contract: {result.error}</p>
+      <div className="max-w-4xl mx-auto">
+        <div className="text-center text-tone-critical">
+          <p>{t('failedToLoadContract', { error: result.error })}</p>
         </div>
       </div>
     );
@@ -33,17 +38,19 @@ export default async function SignContractPage({ params }: SignContractPageProps
 
   if (contract.status === 'expired' || contract.status === 'cancelled') {
     return (
-      <div className="container mx-auto px-4 py-6 sm:px-6 max-w-4xl">
+      <div className="max-w-4xl mx-auto">
         <div className="text-center">
-          <p className="text-lg font-semibold">This contract is no longer available for signing.</p>
-          <p className="text-muted-foreground mt-2">Status: {contract.status}</p>
+          <p className="text-lg font-semibold">{t('notAvailableForSigning')}</p>
+          <p className="text-muted-foreground mt-2">
+            {t('status')}: {tStatus(contract.status)}
+          </p>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="container mx-auto px-4 py-6 sm:px-6 max-w-4xl">
+    <div className="max-w-4xl mx-auto">
       <SignContractClient contract={contract} />
     </div>
   );

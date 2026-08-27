@@ -24,7 +24,7 @@ export function CompletedProjects({ projects }: CompletedProjectsProps) {
   return (
     <div className="rounded-xl border bg-card">
       <div className="flex items-center gap-2 px-5 py-4 border-b border-border/50">
-        <Trophy className="h-5 w-5 text-emerald-500" />
+        <Trophy className="h-5 w-5 text-tone-positive" />
         <h2 className="text-lg font-semibold">{t('completedProjectsTitle')}</h2>
         <Badge variant="secondary" className="text-xs">
           {projects.length}
@@ -36,13 +36,13 @@ export function CompletedProjects({ projects }: CompletedProjectsProps) {
             key={project.id}
             className={cn(
               'flex items-center justify-between p-3 rounded-lg cursor-pointer transition-all duration-200',
-              'border border-border/50 hover:border-emerald-500/30 hover:bg-emerald-500/5',
+              'border border-border/50 hover:border-primary/30 hover:bg-primary/5',
             )}
             onClick={() => router.push(`/client/projects/${project.id}`)}
           >
             <div className="flex items-center gap-3 flex-1 min-w-0">
-              <div className="p-2 rounded-lg bg-emerald-500/10">
-                <CheckCircle2 className="h-4 w-4 text-emerald-500" />
+              <div className="p-2 rounded-lg bg-tone-positive-bg">
+                <CheckCircle2 className="h-4 w-4 text-tone-positive" />
               </div>
               <div className="flex-1 min-w-0">
                 <div className="font-medium text-sm line-clamp-1">{project.title}</div>

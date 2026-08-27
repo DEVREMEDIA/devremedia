@@ -1,7 +1,9 @@
 'use client';
 
-import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
+import { ToneChip } from '@/components/shared/tone-chip';
+import { ToneIcon } from '@/components/shared/tone-icon';
+import { statusTone } from '@/lib/status-tone';
 import { format } from 'date-fns';
 import { Receipt, ArrowRight, CheckCircle2, Clock, AlertTriangle } from 'lucide-react';
 import { useRouter } from 'next/navigation';
@@ -13,17 +15,19 @@ interface InvoicesSummaryProps {
   invoices: InvoiceWithRelations[];
 }
 
-const STATUS_CONFIG: Record<string, { icon: typeof CheckCircle2; color: string; bg: string }> = {
-  paid: { icon: CheckCircle2, color: 'text-emerald-500', bg: 'bg-emerald-500/10' },
-  sent: { icon: Clock, color: 'text-amber-500', bg: 'bg-amber-500/10' },
-  viewed: { icon: Clock, color: 'text-amber-500', bg: 'bg-amber-500/10' },
-  overdue: { icon: AlertTriangle, color: 'text-red-500', bg: 'bg-red-500/10' },
-  cancelled: { icon: AlertTriangle, color: 'text-muted-foreground', bg: 'bg-muted' },
+const STATUS_ICONS: Record<string, typeof CheckCircle2> = {
+  paid: CheckCircle2,
+  sent: Clock,
+  viewed: Clock,
+  overdue: AlertTriangle,
+  cancelled: AlertTriangle,
 };
+
 
 export function InvoicesSummary({ invoices }: InvoicesSummaryProps) {
   const router = useRouter();
   const t = useTranslations('client.dashboard');
+  const tStatus = useTranslations('statuses.invoiceStatus');
 
   if (invoices.length === 0) {
     return null;
@@ -45,13 +49,13 @@ export function InvoicesSummary({ invoices }: InvoicesSummaryProps) {
     <div className="rounded-xl border bg-card">
       <div className="flex items-center justify-between px-5 py-4 border-b border-border/50">
         <div className="flex items-center gap-2">
-          <Receipt className="h-5 w-5 text-amber-500" />
+          <Receipt className="h-5 w-5 text-primary" />
           <h2 className="text-lg font-semibold">{t('invoicesTitle')}</h2>
         </div>
         <Button
           variant="ghost"
           size="sm"
-          className="gap-1 text-xs text-muted-foreground hover:text-amber-500"
+          className="gap-1 text-xs text-muted-foreground hover:text-primary"
           onClick={() => router.push('/client/invoices')}
         >
           {t('viewAll')}
@@ -63,7 +67,7 @@ export function InvoicesSummary({ invoices }: InvoicesSummaryProps) {
       <div className="grid grid-cols-2 gap-4 px-5 py-4 border-b border-border/50">
         <div>
           <p className="text-xs text-muted-foreground">{t('totalPaid')}</p>
-          <p className="text-2xl font-bold text-emerald-500 mt-0.5">
+          <p className="text-2xl font-bold text-tone-positive mt-0.5">
             {paidTotal.toLocaleString('el-GR', { minimumFractionDigits: 2 })}&euro;
           </p>
         </div>
@@ -72,7 +76,7 @@ export function InvoicesSummary({ invoices }: InvoicesSummaryProps) {
           <p
             className={cn(
               'text-2xl font-bold mt-0.5',
-              pendingTotal > 0 ? 'text-amber-500' : 'text-muted-foreground',
+              pendingTotal > 0 ? 'text-tone-caution' : 'text-muted-foreground',
             )}
           >
             {pendingTotal.toLocaleString('el-GR', { minimumFractionDigits: 2 })}&euro;
@@ -83,22 +87,22 @@ export function InvoicesSummary({ invoices }: InvoicesSummaryProps) {
       {/* Recent invoices list */}
       <div className="p-5 space-y-2">
         {recentInvoices.map((invoice) => {
-          const config = STATUS_CONFIG[invoice.status] ?? STATUS_CONFIG.sent;
-          const StatusIcon = config.icon;
+          const tone = statusTone(invoice.status);
+          const StatusIcon = STATUS_ICONS[invoice.status] ?? Clock;
 
           return (
             <div
               key={invoice.id}
               className={cn(
                 'flex items-center justify-between p-3 rounded-lg cursor-pointer transition-all duration-200',
-                'border border-border/50 hover:border-amber-500/30 hover:bg-amber-500/5',
+                'border border-border/50 hover:border-primary/30 hover:bg-primary/5',
               )}
               onClick={() => router.push(`/client/invoices/${invoice.id}`)}
             >
               <div className="flex items-center gap-3 flex-1 min-w-0">
-                <div className={cn('p-2 rounded-lg', config.bg)}>
-                  <StatusIcon className={cn('h-4 w-4', config.color)} />
-                </div>
+                <ToneIcon tone={tone} className="rounded-lg p-2">
+                  <StatusIcon className="h-4 w-4" />
+                </ToneIcon>
                 <div className="flex-1 min-w-0">
                   <div className="font-medium text-sm">{invoice.invoice_number}</div>
                   <div className="text-xs text-muted-foreground">
@@ -110,24 +114,15 @@ export function InvoicesSummary({ invoices }: InvoicesSummaryProps) {
                 <span className="font-semibold text-sm">
                   {(invoice.total ?? 0).toLocaleString('el-GR', { minimumFractionDigits: 2 })}&euro;
                 </span>
-                <Badge
-                  variant="outline"
-                  className={cn(
-                    'text-[10px]',
-                    invoice.status === 'paid' &&
-                      'border-emerald-500/40 text-emerald-600 dark:text-emerald-400',
-                    invoice.status === 'overdue' &&
-                      'border-red-500/40 text-red-600 dark:text-red-400',
-                    (invoice.status === 'sent' || invoice.status === 'viewed') &&
-                      'border-amber-500/40 text-amber-600 dark:text-amber-400',
-                  )}
-                >
+                <ToneChip tone={tone}>
                   {invoice.status === 'paid'
                     ? t('paid')
                     : invoice.status === 'overdue'
                       ? t('overdue')
-                      : t('pending')}
-                </Badge>
+                      : invoice.status === 'cancelled'
+                        ? tStatus('cancelled')
+                        : t('pending')}
+                </ToneChip>
               </div>
             </div>
           );

@@ -27,7 +27,7 @@ export default async function ClientSettingsPage() {
     .single();
 
   return (
-    <div className="container mx-auto px-4 py-6 sm:px-6 space-y-6">
+    <div className="space-y-6">
       <PageHeading title={t('title')} subtitle={t('description')} />
 
       <Tabs defaultValue="profile" className="space-y-6">

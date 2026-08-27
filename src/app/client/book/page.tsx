@@ -12,7 +12,7 @@ export default async function ClientBookingPage() {
   const { data: availability } = await getMyAvailability();
 
   return (
-    <div className="container mx-auto space-y-6 px-4 py-6 sm:px-6">
+    <div className="space-y-6">
       <PageHeading title={t('title')} subtitle={t('description')} />
 
       {availability ? (

@@ -1,8 +1,10 @@
 'use client';
 
-import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { EmptyState } from '@/components/shared/empty-state';
+import { ToneChip } from '@/components/shared/tone-chip';
+import { ToneIcon } from '@/components/shared/tone-icon';
+import { statusTone } from '@/lib/status-tone';
 import { format } from 'date-fns';
 import { Receipt, CreditCard, ArrowRight, CheckCircle2, Clock, AlertTriangle } from 'lucide-react';
 import { useRouter } from 'next/navigation';
@@ -14,45 +16,19 @@ interface InvoicesListProps {
   invoices: InvoiceWithRelations[];
 }
 
-const STATUS_CONFIG: Record<
-  string,
-  { icon: typeof CheckCircle2; color: string; bg: string; badge: string }
-> = {
-  paid: {
-    icon: CheckCircle2,
-    color: 'text-emerald-500',
-    bg: 'bg-emerald-500/10',
-    badge: 'border-emerald-500/40 text-emerald-600 dark:text-emerald-400',
-  },
-  sent: {
-    icon: Clock,
-    color: 'text-amber-500',
-    bg: 'bg-amber-500/10',
-    badge: 'border-amber-500/40 text-amber-600 dark:text-amber-400',
-  },
-  viewed: {
-    icon: Clock,
-    color: 'text-amber-500',
-    bg: 'bg-amber-500/10',
-    badge: 'border-amber-500/40 text-amber-600 dark:text-amber-400',
-  },
-  overdue: {
-    icon: AlertTriangle,
-    color: 'text-red-500',
-    bg: 'bg-red-500/10',
-    badge: 'border-red-500/40 text-red-600 dark:text-red-400',
-  },
-  cancelled: {
-    icon: AlertTriangle,
-    color: 'text-muted-foreground',
-    bg: 'bg-muted',
-    badge: 'border-muted-foreground/40 text-muted-foreground',
-  },
+const STATUS_ICONS: Record<string, typeof CheckCircle2> = {
+  paid: CheckCircle2,
+  sent: Clock,
+  viewed: Clock,
+  overdue: AlertTriangle,
+  cancelled: AlertTriangle,
 };
+
 
 export function InvoicesList({ invoices }: InvoicesListProps) {
   const router = useRouter();
   const t = useTranslations('invoices');
+  const tStatus = useTranslations('statuses.invoiceStatus');
 
   if (invoices.length === 0) {
     return (
@@ -69,8 +45,8 @@ export function InvoicesList({ invoices }: InvoicesListProps) {
   return (
     <div className="space-y-3">
       {invoices.map((invoice) => {
-        const config = STATUS_CONFIG[invoice.status] ?? STATUS_CONFIG.sent;
-        const StatusIcon = config.icon;
+        const tone = statusTone(invoice.status);
+        const StatusIcon = STATUS_ICONS[invoice.status] ?? Clock;
         const isPaid = invoice.status === 'paid';
         const isCancelled = invoice.status === 'cancelled';
 
@@ -79,27 +55,29 @@ export function InvoicesList({ invoices }: InvoicesListProps) {
             key={invoice.id}
             className={cn(
               'group rounded-xl border bg-card p-4 cursor-pointer transition-all duration-300',
-              'hover:shadow-[0_8px_30px_-4px_rgba(234,179,8,0.15)] hover:-translate-y-0.5',
+              'hover:shadow-[0_8px_30px_-4px_color-mix(in_srgb,var(--primary)_15%,transparent)] hover:-translate-y-0.5',
             )}
             onClick={() => router.push(`/client/invoices/${invoice.id}`)}
           >
             <div className="flex items-center gap-4">
               {/* Icon */}
-              <div className={cn('p-2.5 rounded-xl shrink-0', config.bg)}>
-                <StatusIcon className={cn('h-5 w-5', config.color)} />
-              </div>
+              <ToneIcon tone={tone}>
+                <StatusIcon className="h-5 w-5" />
+              </ToneIcon>
 
               {/* Info */}
               <div className="flex-1 min-w-0">
                 <div className="flex items-center gap-2.5">
                   <span className="font-semibold text-sm">{invoice.invoice_number}</span>
-                  <Badge variant="outline" className={cn('text-[10px]', config.badge)}>
+                  <ToneChip tone={tone}>
                     {invoice.status === 'paid'
                       ? t('paid')
                       : invoice.status === 'overdue'
                         ? t('overdue')
-                        : t('pending')}
-                  </Badge>
+                        : invoice.status === 'cancelled'
+                          ? tStatus('cancelled')
+                          : t('pending')}
+                  </ToneChip>
                 </div>
                 <div className="flex items-center gap-3 mt-1 text-xs text-muted-foreground">
                   {invoice.project?.title && (
@@ -129,7 +107,7 @@ export function InvoicesList({ invoices }: InvoicesListProps) {
                     <span className="hidden sm:inline">{t('payNow')}</span>
                   </Button>
                 ) : (
-                  <ArrowRight className="h-5 w-5 text-muted-foreground/40 group-hover:text-amber-500 transition-colors" />
+                  <ArrowRight className="h-5 w-5 text-muted-foreground/40 group-hover:text-primary transition-colors" />
                 )}
               </div>
             </div>

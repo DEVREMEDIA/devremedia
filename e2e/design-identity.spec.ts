@@ -1,5 +1,5 @@
 import { expect, test, type Page } from '@playwright/test';
-import { loginAsAdmin } from './helpers/auth';
+import { loginAsAdmin, loginAsClient } from './helpers/auth';
 
 /**
  * Invariants του design-identity layer. Κάθε assertion υπάρχει επειδή βρέθηκε
@@ -527,6 +527,65 @@ test.describe('design identity — detail screens', () => {
 
     await page.locator('a[role="tab"][href*="tab=contracts"]').click();
     expect(page.url()).toContain('tab=contracts');
+  });
+});
+
+test.describe('design identity — client portal', () => {
+  /**
+   * Η φέτα #107 πέρασε το portal πελάτη στη νέα γλώσσα και σταμάτησε την αρχική
+   * του να περιμένει ολόκληρο το query πριν ζωγραφίσει τίποτα. Εδώ χρησιμοποιείται
+   * `loginAsClient`, όχι `loginAsAdmin`: ο middleware αφήνει έναν admin να μπει
+   * και στο `/client/*`, αλλά χωρίς γραμμή στο `clients` οι νέοι cached readers
+   * γυρνούν άδειο πίνακα — ένας admin θα έβλεπε άδειο portal και ο έλεγχος δεν
+   * θα επιβεβαίωνε τίποτα. Ο πελάτης είναι επίσης ο μόνος ρόλος που περνά από
+   * το RLS που εξαρτώνται αυτές οι σελίδες.
+   */
+
+  test('/client/home renders exactly one page heading and the stat strip', async ({ page }) => {
+    test.skip(!process.env.E2E_TEST_USERS_READY, 'Test users not configured in database');
+    await loginAsClient(page);
+    await page.goto('/client/home');
+    await expect(page).toHaveURL(/\/client\/home/);
+
+    await expect(page.locator('[data-slot="page-heading"]')).toHaveCount(1);
+
+    // Το πλέγμα στατιστικών ήταν η ενότητα που περίμενε πριν όλες τις υπόλοιπες
+    // ερωτήσεις της αρχικής — τώρα ζει στο δικό της Suspense boundary.
+    await expect(page.locator('[data-slot="stat-grid"]').first()).toBeVisible();
+  });
+
+  test('/client/documents?tab=invoices — tab is selected and its body renders', async ({
+    page,
+  }) => {
+    test.skip(!process.env.E2E_TEST_USERS_READY, 'Test users not configured in database');
+    await loginAsClient(page);
+    await page.goto('/client/documents?tab=invoices');
+    // Καρφιτσωμένο ρητά: το hub ανοίγει στα συμβόλαια, κάθε άλλη καρτέλα θέλει
+    // το δικό της `?tab=`.
+    await expect(page).toHaveURL(/\/client\/documents\?tab=invoices/);
+
+    const invoicesTab = page.locator('a[role="tab"][href*="tab=invoices"]');
+    await expect(invoicesTab).toHaveAttribute('aria-selected', 'true');
+
+    // Το σώμα της καρτέλας είναι είτε η λίστα τιμολογίων (ποσό σε ευρώ πάνω σε
+    // κάθε γραμμή) είτε η κενή κατάσταση — ποτέ η ίδια η ετικέτα της καρτέλας.
+    const invoicesBody = page
+      .getByText('€')
+      .or(page.getByRole('heading', { name: /Δεν υπάρχουν τιμολόγια|No invoices yet/ }));
+    await expect(invoicesBody.first()).toBeVisible();
+  });
+
+  test('/client/home at 390px wide does not scroll sideways', async ({ page }) => {
+    test.skip(!process.env.E2E_TEST_USERS_READY, 'Test users not configured in database');
+    await loginAsClient(page);
+    await page.setViewportSize({ width: 390, height: 844 });
+    await page.goto('/client/home');
+    await expect(page).toHaveURL(/\/client\/home/);
+
+    const fitsWithoutSidewaysScroll = await page.evaluate(
+      () => document.scrollingElement!.scrollWidth <= document.scrollingElement!.clientWidth + 1,
+    );
+    expect(fitsWithoutSidewaysScroll).toBe(true);
   });
 });
 

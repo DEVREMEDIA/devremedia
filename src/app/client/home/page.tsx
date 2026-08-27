@@ -1,10 +1,14 @@
-import { createClient } from '@/lib/supabase/server';
-import { getProjects } from '@/lib/actions/projects';
-import { getInvoices } from '@/lib/actions/invoices';
-import { getDeliverablesByProject } from '@/lib/actions/deliverables';
-import { getMyContracts } from '@/lib/actions/contracts';
-import { getMyAgreement } from '@/lib/actions/my-agreement';
+import { Suspense } from 'react';
 import { redirect } from 'next/navigation';
+import { getTranslations } from 'next-intl/server';
+import { requireUser } from '@/lib/auth-helpers';
+import {
+  getClientProjects,
+  getClientInvoices,
+  getClientContracts,
+  getClientAgreement,
+  getClientRecentDeliverables,
+} from '@/lib/queries/client-portal';
 import { MyAgreementCard } from '@/components/client/dashboard/my-agreement-card';
 import { ActiveProjects } from '@/components/client/dashboard/active-projects';
 import { PendingActions } from '@/components/client/dashboard/pending-actions';
@@ -14,122 +18,122 @@ import { DashboardStats } from '@/components/client/dashboard/dashboard-stats';
 import { InvoicesSummary } from '@/components/client/dashboard/invoices-summary';
 import { CompletedProjects } from '@/components/client/dashboard/completed-projects';
 import { PageHeading } from '@/components/shared/page-heading';
-import { getTranslations } from 'next-intl/server';
-import type { DeliverableWithProject } from '@/types';
+import { CardSkeleton, KpiStripSkeleton } from '@/components/admin/dashboard/shared/card-skeletons';
 
-export default async function ClientDashboardPage() {
-  const t = await getTranslations('client.dashboard');
-  const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-
-  if (!user) {
-    redirect('/login');
-  }
-
-  // Get client record for this user
-  const { data: clientRecord } = await supabase
-    .from('clients')
-    .select('id')
-    .eq('user_id', user.id)
-    .single();
-
-  const clientId = clientRecord?.id;
-
-  // Fetch client's data — filtered by client_id
-  const projectsResult = await getProjects({ client_id: clientId });
-  const projects = projectsResult.data ?? [];
-
-  const invoicesResult = await getInvoices({
-    status: ['sent', 'viewed', 'overdue', 'paid', 'cancelled'],
-    ...(clientId && { client_id: clientId }),
-  });
-  const invoices = (invoicesResult.data ?? []) as import('@/types').InvoiceWithRelations[];
-
-  // Get recent deliverables from all projects
-  const deliverableResults = await Promise.all(
-    projects.slice(0, 5).map(async (project) => {
-      const result = await getDeliverablesByProject(project.id);
-      return (result.data ?? []).map((d) => ({
-        id: d.id,
-        title: d.title,
-        status: d.status,
-        version: d.version,
-        created_at: d.created_at,
-        project_id: d.project_id,
-        project: { title: project.title },
-      }));
-    }),
-  );
-  const allDeliverables: DeliverableWithProject[] = deliverableResults.flat();
-
-  const recentDeliverables = allDeliverables
-    .sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())
-    .slice(0, 5);
-
-  // Fetch client contracts
-  const contractsResult = await getMyContracts();
-  const contracts = contractsResult.data ?? [];
-
-  // Fetch the client's own Agreement (package, agreed price, remaining allowance)
-  const agreementResult = await getMyAgreement();
-  const agreement = agreementResult.data;
-
-  // Contracts awaiting signature
-  const unsignedContracts = contracts.filter((c) => c.status === 'sent' || c.status === 'viewed');
-
-  // Active projects (not archived or delivered)
+async function StatsSection() {
+  const [projects, invoices, contracts] = await Promise.all([
+    getClientProjects(),
+    getClientInvoices(),
+    getClientContracts(),
+  ]);
   const activeProjects = projects.filter(
     (p) => p.status !== 'archived' && p.status !== 'delivered',
   );
+  const pendingInvoices = invoices.filter((i) => i.status !== 'paid' && i.status !== 'cancelled');
+  const unsignedContracts = contracts.filter((c) => c.status === 'sent' || c.status === 'viewed');
 
-  // Completed projects
+  return (
+    <DashboardStats
+      activeProjectsCount={activeProjects.length}
+      pendingActionsCount={pendingInvoices.length + unsignedContracts.length}
+      upcomingFilmingsCount={
+        activeProjects.filter((p) => p.filming_date && new Date(p.filming_date) >= new Date())
+          .length
+      }
+    />
+  );
+}
+
+async function AgreementSection() {
+  const agreement = await getClientAgreement();
+  return <MyAgreementCard agreement={agreement} />;
+}
+
+async function ActiveProjectsSection() {
+  const projects = await getClientProjects();
+  const activeProjects = projects.filter(
+    (p) => p.status !== 'archived' && p.status !== 'delivered',
+  );
+  return <ActiveProjects projects={activeProjects} />;
+}
+
+async function PendingActionsSection() {
+  const [invoices, contracts] = await Promise.all([getClientInvoices(), getClientContracts()]);
+  const pendingInvoices = invoices.filter((i) => i.status !== 'paid' && i.status !== 'cancelled');
+  const unsignedContracts = contracts.filter((c) => c.status === 'sent' || c.status === 'viewed');
+  return <PendingActions invoices={pendingInvoices} unsignedContracts={unsignedContracts} />;
+}
+
+async function RecentDeliverablesSection() {
+  const deliverables = await getClientRecentDeliverables();
+  return <RecentDeliverables deliverables={deliverables} />;
+}
+
+async function InvoicesSummarySection() {
+  const invoices = await getClientInvoices();
+  return <InvoicesSummary invoices={invoices} />;
+}
+
+async function UpcomingFilmingsSection() {
+  const projects = await getClientProjects();
+  const activeProjects = projects.filter(
+    (p) => p.status !== 'archived' && p.status !== 'delivered',
+  );
+  return <UpcomingFilmings projects={activeProjects} />;
+}
+
+async function CompletedProjectsSection() {
+  const projects = await getClientProjects();
   const completedProjects = projects.filter(
     (p) => p.status === 'delivered' || p.status === 'archived',
   );
+  return <CompletedProjects projects={completedProjects} />;
+}
 
-  // Pending invoices (not paid)
-  const pendingInvoices = invoices.filter((i) => i.status !== 'paid' && i.status !== 'cancelled');
+export default async function ClientDashboardPage() {
+  const t = await getTranslations('client.dashboard');
+
+  // Ο έλεγχος ταυτότητας μένει στην κρίσιμη διαδρομή: μια σελίδα πελάτη δεν
+  // αρχίζει να ζωγραφίζει πριν ξέρουμε ότι υπάρχει πελάτης.
+  const { user } = await requireUser();
+  if (!user) redirect('/login');
 
   return (
-    <div className="container mx-auto px-4 py-6 sm:px-6 space-y-8">
-      {/* Welcome Header */}
+    <div className="space-y-8">
       <PageHeading title={t('title')} subtitle={t('description')} />
 
-      {/* Stat Cards */}
-      <DashboardStats
-        activeProjectsCount={activeProjects.length}
-        pendingActionsCount={pendingInvoices.length + unsignedContracts.length}
-        upcomingFilmingsCount={
-          activeProjects.filter((p) => p.filming_date && new Date(p.filming_date) >= new Date())
-            .length
-        }
-      />
+      <Suspense fallback={<KpiStripSkeleton />}>
+        <StatsSection />
+      </Suspense>
 
-      {/* My Agreement — package, agreed price, remaining allowance this month */}
-      <MyAgreementCard agreement={agreement} />
+      <Suspense fallback={<CardSkeleton rows={3} />}>
+        <AgreementSection />
+      </Suspense>
 
-      {/* Active Projects with timeline */}
-      <ActiveProjects projects={activeProjects} />
+      <Suspense fallback={<CardSkeleton rows={4} />}>
+        <ActiveProjectsSection />
+      </Suspense>
 
-      {/* Two Column Grid */}
       <div className="grid gap-6 lg:grid-cols-2">
-        {/* Pending Actions */}
-        <PendingActions invoices={pendingInvoices} unsignedContracts={unsignedContracts} />
-
-        {/* Recent Deliverables */}
-        <RecentDeliverables deliverables={recentDeliverables} />
+        <Suspense fallback={<CardSkeleton rows={4} />}>
+          <PendingActionsSection />
+        </Suspense>
+        <Suspense fallback={<CardSkeleton rows={4} />}>
+          <RecentDeliverablesSection />
+        </Suspense>
       </div>
 
-      {/* Invoices Summary */}
-      <InvoicesSummary invoices={invoices} />
+      <Suspense fallback={<CardSkeleton rows={4} />}>
+        <InvoicesSummarySection />
+      </Suspense>
 
-      {/* Upcoming Filmings */}
-      <UpcomingFilmings projects={activeProjects} />
+      <Suspense fallback={<CardSkeleton rows={3} />}>
+        <UpcomingFilmingsSection />
+      </Suspense>
 
-      {/* Completed Projects */}
-      <CompletedProjects projects={completedProjects} />
+      <Suspense fallback={<CardSkeleton rows={3} />}>
+        <CompletedProjectsSection />
+      </Suspense>
     </div>
   );
 }

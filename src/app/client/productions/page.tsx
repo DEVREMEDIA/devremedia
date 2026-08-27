@@ -33,7 +33,7 @@ export default async function ClientProjectsPage() {
   const filmingRequests = requestsResult.data ?? [];
 
   return (
-    <div className="container mx-auto px-4 py-6 sm:px-6 space-y-6">
+    <div className="space-y-6">
       <PageHeading title={t('title')} subtitle={t('description')} />
 
       <ProjectsList projects={projects} filmingRequests={filmingRequests} />

@@ -14,7 +14,11 @@ type AuthErr = {
   error: 'Unauthorized' | 'Forbidden: admin access required';
 };
 
-export async function requireUser(): Promise<AuthOk | AuthErr> {
+// Κάθε ενέργεια αυτού του προϊόντος περνά από εδώ, και μια σελίδα του πελάτη
+// καλεί πέντε ενέργειες — δηλαδή πέντε ταξίδια στον Auth για την ίδια απάντηση,
+// μέσα στο ίδιο αίτημα. Το `cache()` τα κάνει ένα. Ο `getAdminRole` από κάτω
+// είναι ήδη έτσι· αυτό απλώς έλειπε.
+export const requireUser = cache(async (): Promise<AuthOk | AuthErr> => {
   const supabase = await createClient();
   const {
     data: { user },
@@ -25,7 +29,7 @@ export async function requireUser(): Promise<AuthOk | AuthErr> {
   }
 
   return { supabase, user, error: null };
-}
+});
 
 export async function requireAdmin(): Promise<AuthOk | AuthErr> {
   const supabase = await createClient();

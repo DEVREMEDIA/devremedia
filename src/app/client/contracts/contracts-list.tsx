@@ -1,8 +1,10 @@
 'use client';
 
-import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { EmptyState } from '@/components/shared/empty-state';
+import { ToneChip } from '@/components/shared/tone-chip';
+import { ToneIcon } from '@/components/shared/tone-icon';
+import { statusTone } from '@/lib/status-tone';
 import {
   FileText,
   Download,
@@ -25,57 +27,21 @@ interface ContractsListProps {
   contracts: ContractWithProject[];
 }
 
-const STATUS_CONFIG: Record<
-  string,
-  { icon: typeof CheckCircle2; color: string; bg: string; badge: string }
-> = {
-  signed: {
-    icon: CheckCircle2,
-    color: 'text-emerald-500',
-    bg: 'bg-emerald-500/10',
-    badge: 'border-emerald-500/40 text-emerald-600 dark:text-emerald-400',
-  },
-  sent: {
-    icon: PenLine,
-    color: 'text-amber-500',
-    bg: 'bg-amber-500/10',
-    badge: 'border-amber-500/40 text-amber-600 dark:text-amber-400',
-  },
-  viewed: {
-    icon: Eye,
-    color: 'text-amber-500',
-    bg: 'bg-amber-500/10',
-    badge: 'border-amber-500/40 text-amber-600 dark:text-amber-400',
-  },
-  pending_review: {
-    icon: Clock,
-    color: 'text-blue-500',
-    bg: 'bg-blue-500/10',
-    badge: 'border-blue-500/40 text-blue-600 dark:text-blue-400',
-  },
-  draft: {
-    icon: FileText,
-    color: 'text-muted-foreground',
-    bg: 'bg-muted',
-    badge: 'border-muted-foreground/40 text-muted-foreground',
-  },
-  expired: {
-    icon: AlertTriangle,
-    color: 'text-red-500',
-    bg: 'bg-red-500/10',
-    badge: 'border-red-500/40 text-red-600 dark:text-red-400',
-  },
-  cancelled: {
-    icon: AlertTriangle,
-    color: 'text-muted-foreground',
-    bg: 'bg-muted',
-    badge: 'border-muted-foreground/40 text-muted-foreground',
-  },
+const STATUS_ICONS: Record<string, typeof CheckCircle2> = {
+  signed: CheckCircle2,
+  sent: PenLine,
+  viewed: Eye,
+  pending_review: Clock,
+  draft: FileText,
+  expired: AlertTriangle,
+  cancelled: AlertTriangle,
 };
+
 
 export function ContractsList({ contracts }: ContractsListProps) {
   const router = useRouter();
   const t = useTranslations('client.contracts');
+  const tStatus = useTranslations('statuses.contractStatus');
 
   if (contracts.length === 0) {
     return (
@@ -92,8 +58,8 @@ export function ContractsList({ contracts }: ContractsListProps) {
   return (
     <div className="space-y-3">
       {contracts.map((contract) => {
-        const config = STATUS_CONFIG[contract.status] ?? STATUS_CONFIG.draft;
-        const StatusIcon = config.icon;
+        const tone = statusTone(contract.status);
+        const StatusIcon = STATUS_ICONS[contract.status] ?? FileText;
         const signable = isContractSignable(contract.status);
 
         return (
@@ -101,26 +67,26 @@ export function ContractsList({ contracts }: ContractsListProps) {
             key={contract.id}
             className={cn(
               'group rounded-xl border bg-card p-4 transition-all duration-300',
-              'hover:shadow-[0_8px_30px_-4px_rgba(234,179,8,0.15)] hover:-translate-y-0.5',
+              'hover:shadow-[0_8px_30px_-4px_color-mix(in_srgb,var(--primary)_15%,transparent)] hover:-translate-y-0.5',
             )}
           >
             <div className="flex items-center gap-4">
               {/* Icon */}
-              <div className={cn('p-2.5 rounded-xl shrink-0', config.bg)}>
-                <StatusIcon className={cn('h-5 w-5', config.color)} />
-              </div>
+              <ToneIcon tone={tone}>
+                <StatusIcon className="h-5 w-5" />
+              </ToneIcon>
 
               {/* Info */}
               <div className="flex-1 min-w-0">
                 <div className="flex items-center gap-2.5">
                   <span className="font-semibold text-sm line-clamp-1">{contract.title}</span>
-                  <Badge variant="outline" className={cn('text-[10px] shrink-0', config.badge)}>
+                  <ToneChip tone={tone} className="shrink-0">
                     {contract.status === 'signed'
                       ? t('signed')
                       : signable
                         ? t('awaitingSignature')
-                        : contract.status}
-                  </Badge>
+                        : tStatus(contract.status)}
+                  </ToneChip>
                 </div>
                 <div className="flex items-center gap-3 mt-1 text-xs text-muted-foreground">
                   {contract.project?.title && (

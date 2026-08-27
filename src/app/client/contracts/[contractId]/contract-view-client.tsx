@@ -59,8 +59,8 @@ export function ContractViewClient({ contract }: ContractViewClientProps) {
       }
       toast.success(t('uploadSuccess'));
       router.refresh();
-    } catch (err) {
-      toast.error(err instanceof Error ? err.message : t('uploadFailed'));
+    } catch {
+      toast.error(t('uploadFailed'));
     } finally {
       setIsUploading(false);
     }
@@ -107,7 +107,7 @@ export function ContractViewClient({ contract }: ContractViewClientProps) {
       </div>
 
       {contract.status === 'pending_review' && (
-        <div className="mt-6 rounded-lg border border-yellow-500/30 bg-yellow-500/10 p-4 text-center text-sm">
+        <div className="mt-6 rounded-lg border border-tone-caution/30 bg-tone-caution-bg p-4 text-center text-sm">
           {t('pendingReviewMessage')}
         </div>
       )}

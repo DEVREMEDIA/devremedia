@@ -14,6 +14,10 @@ const COVERED = [
   // Εδώ ζει ΟΛΟΣ ο χάρτης τόνου→κλάσης. Αν ξεφύγει αυτό, ξεβάφει κάθε
   // πλακίδιο της μεταναστευμένης οθόνης — πρέπει να φυλάσσεται.
   'src/components/shared/tone-chip.tsx',
+  // Ο ίδιος χάρτης για άλλη γεωμετρία (πλακίδιο εικονιδίου). Μπαίνει δίπλα στο
+  // αδελφάκι του: ένα αρχείο που κρατά χάρτη τόνος→χρώμα και δεν φυλάσσεται
+  // είναι το ακριβώς σωστό σημείο για να ξαναγεννηθεί η ωμή παλέτα.
+  'src/components/shared/tone-icon.tsx',
   // Το κοινό πλέγμα αριθμών και το πλακίδιό του — η βάση όλης αυτής της φέτας.
   'src/components/shared/stat-grid.tsx',
   'src/components/shared/stat-card.tsx',
@@ -70,6 +74,10 @@ const COVERED = [
   // της. Ήταν στα φυλασσόμενα για πίνακες αλλά όχι για χρώμα — κάλυψη που
   // δηλωνόταν πιο φαρδιά απ' ό,τι δινόταν.
   'src/components/client/projects',
+  // Ολόκληρο το portal πελάτη περνάει στη νέα γλώσσα (#107) — δύο ολόκληρα
+  // δέντρα, ώστε ένα νέο component οπουδήποτε από κάτω να φυλάσσεται αυτόματα.
+  'src/app/client',
+  'src/components/client',
 ];
 
 // Αρχεία μέσα σε καλυμμένους φακέλους που όντως γράφουν ακόμα ωμό χρώμα.
@@ -88,8 +96,19 @@ const PENDING = [
   'src/components/client/projects/deliverable-detail-view.tsx',
 ];
 
+// ΠΡΟΣΟΧΗ στα όρια λέξης. Το Tailwind γράφει τα κενά μιας αυθαίρετης τιμής ως
+// κάτω παύλα — `shadow-[0_8px_30px_-4px_rgba(234,179,8,.15)]` — και η κάτω
+// παύλα είναι χαρακτήρας ΛΕΞΗΣ. Ένα `\b` πριν από το `rgba` δεν ταιριάζει ποτέ
+// εκεί, οπότε ο φύλακας τύπωνε «καθόλου ωμά χρώματα» ενώ ένα σταθερό κεχριμπάρι
+// καθόταν μέσα σε καλυμμένο αρχείο. Το ίδιο ίσχυε για hex ακολουθούμενο από
+// κάτω παύλα.
+//
+// Ο φράχτης δεν φεύγει, ΑΛΛΑΖΕΙ: αντί για `\b` μπαίνει «όχι γράμμα ή ψηφίο από
+// πριν» — που δέχεται την κάτω παύλα του Tailwind αλλά κόβει το `borgb(` μέσα
+// σε λέξη. Σκέτη αφαίρεση του `\b` έδινε ψευδώς θετικά, και την έπιασε ο
+// επανέλεγχος. Για το hex, «όχι κι άλλο δεκαεξαδικό ψηφίο από πίσω».
 const RAW_COLOUR =
-  /#[0-9a-fA-F]{3,8}\b|\b(?:rgb|rgba|hsl|hsla|oklch)\s*\(|\b(?:bg|text|border|ring|fill|stroke|from|via|to|divide|outline|shadow|decoration|accent|caret)-(?:white|black|red|orange|amber|yellow|lime|green|emerald|teal|cyan|sky|blue|indigo|violet|purple|fuchsia|pink|rose|slate|gray|grey|zinc|neutral|stone)(?:-\d{2,3})?\b/;
+  /#[0-9a-fA-F]{3,8}(?![0-9a-fA-F])|(?<![a-zA-Z0-9])(?:rgb|rgba|hsl|hsla|oklch)\s*\(|\b(?:bg|text|border|ring|fill|stroke|from|via|to|divide|outline|shadow|decoration|accent|caret)-(?:white|black|red|orange|amber|yellow|lime|green|emerald|teal|cyan|sky|blue|indigo|violet|purple|fuchsia|pink|rose|slate|gray|grey|zinc|neutral|stone)(?:-\d{2,3})?\b/;
 
 function walk(target, out = []) {
   let stat;
@@ -247,10 +266,16 @@ function resolveImport(spec, fromFile) {
 // ένας έλεγχος που ψάχνει μόνο «page.tsx που λέει SectionTabs» δεν έβλεπε
 // καμία από τις τρεις οθόνες λεπτομέρειας. Το εντόπισε ο τελικός έλεγχος της
 // #106 βάζοντας δεύτερο `PageHeading` σε σώμα καρτέλας και βλέποντας πράσινο.
+// Ρίζα ελέγχου είναι ΚΑΘΕ αρχείο που γράφει το ίδιο τον τίτλο μιας οθόνης —
+// είτε απευθείας με `PageHeading`, είτε μέσα από το `DetailShell`. Ο παλιός
+// ορισμός ήταν «page.tsx που αναφέρει SectionTabs», δηλαδή μόνο κόμβοι: η
+// αρχική του πελάτη δεν ήταν τίποτα από τα δύο, και η φέτα #107 μόλις την
+// έσπασε σε οκτώ components — το πιθανότερο σημείο του προϊόντος να ξεφύγει
+// ένας δεύτερος τίτλος ήταν ακριβώς αυτό που κανείς δεν κοίταζε.
 const hubs = allTsxFiles.filter(
   (f) =>
-    (f.endsWith('/page.tsx') && sourceOf.get(f).includes('SectionTabs')) ||
-    RENDERS_DETAIL_SHELL.test(strippedOf(f)),
+    !TITLE_OWNERS.has(f) &&
+    (RENDERS_HEADING.test(strippedOf(f)) || RENDERS_DETAIL_SHELL.test(strippedOf(f))),
 );
 
 const doubleTitles = new Map();
@@ -303,6 +328,10 @@ const TABLE_GUARDED_AREAS = [
   'src/app/admin/projects/',
   'src/app/client/projects/',
   'src/components/client/projects/',
+  // Ολόκληρο το portal πελάτη (#107) — δύο ολόκληρα δέντρα, όπως και για το
+  // χρώμα από πάνω.
+  'src/app/client/',
+  'src/components/client/',
 ];
 
 // Λίστες λεπτομέρειας μέσα σε ήδη ανοιγμένη γραμμή. Δεν είναι το θέμα της
@@ -338,6 +367,9 @@ const TABLE_PENDING = [
   'src/components/admin/leads/sales-report.tsx',
   // Ο πίνακας γνώσης του chatbot — έργο περιοχής για επόμενη φέτα.
   'src/components/admin/chatbot/knowledge-table.tsx',
+  // Ο πίνακας χτισμένος στο χέρι από τα ωμά primitives· ο δικός του ωμός τίτλος
+  // ζει ήδη στο HEADING_PENDING για τον ίδιο λόγο — το ίδιο ξαναγράψιμο, #109.
+  'src/components/client/invoices/invoice-detail.tsx',
 ];
 
 // Δύο μορφές, γιατί και οι δύο φτιάχνουν πίνακα στο χέρι: εισαγωγή των ωμών
