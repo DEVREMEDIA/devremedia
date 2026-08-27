@@ -12,19 +12,15 @@ export type Tone = 'critical' | 'caution' | 'positive' | 'neutral';
 
 export const TONE_RULES: ReadonlyArray<{ tone: Tone; match: readonly string[] }> = [
   {
+    // Κρίσιμο σημαίνει «κάτι πάει στραβά, κάποιος πρέπει να δράσει». Το
+    // `cancelled` ΔΕΝ είναι εδώ: ένα ακυρωμένο παραστατικό δεν ζητά τίποτα
+    // από κανέναν — κάποιος το έκλεισε επίτηδες, και η υπόθεση τελείωσε.
+    // Κόκκινο πάνω σε κλειστή υπόθεση εκπαιδεύει το μάτι να αγνοεί το
+    // κόκκινο, και τότε χάνονται και τα πραγματικά επείγοντα.
+    // Το `rejected` και το `declined` μένουν: εκεί κάποιος ΑΛΛΟΣ είπε όχι,
+    // και συνήθως θέλει απάντηση.
     tone: 'critical',
-    match: [
-      'overdue',
-      'failed',
-      'rejected',
-      'declined',
-      'cancelled',
-      'canceled',
-      'blocked',
-      'expired',
-      'urgent',
-      'danger',
-    ],
+    match: ['overdue', 'failed', 'rejected', 'declined', 'blocked', 'expired', 'urgent', 'danger'],
   },
   {
     tone: 'caution',
