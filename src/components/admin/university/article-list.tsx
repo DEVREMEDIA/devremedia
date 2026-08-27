@@ -1,18 +1,12 @@
 'use client';
 
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { Pencil, Trash2, Eye, EyeOff, ExternalLink } from 'lucide-react';
+import type { ColumnDef } from '@tanstack/react-table';
 import { Button } from '@/components/ui/button';
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from '@/components/ui/table';
+import { DataTable } from '@/components/shared/data-table';
 import {
   Select,
   SelectContent,
@@ -94,12 +88,82 @@ export function ArticleList({ articles, categories, onDelete }: ArticleListProps
     router.push(`/admin/university/articles/${articleId}/edit`);
   };
 
+  const columns: ColumnDef<Article>[] = useMemo(
+    () => [
+      {
+        accessorKey: 'title',
+        header: tc('title'),
+        cell: ({ row }) => (
+          <Link
+            href={`/admin/university/articles/${row.original.id}`}
+            className="font-medium hover:underline hover:text-primary"
+          >
+            {row.original.title}
+          </Link>
+        ),
+      },
+      {
+        id: 'category',
+        header: t('category'),
+        accessorFn: (row) => row.category.title,
+      },
+      {
+        id: 'status',
+        header: tc('status'),
+        cell: ({ row }) => (
+          <Badge variant={row.original.published ? 'default' : 'secondary'} className="gap-1">
+            {row.original.published ? (
+              <>
+                <Eye className="h-3 w-3" />
+                {t('published')}
+              </>
+            ) : (
+              <>
+                <EyeOff className="h-3 w-3" />
+                {t('draft')}
+              </>
+            )}
+          </Badge>
+        ),
+      },
+      {
+        accessorKey: 'sort_order',
+        header: t('sortOrder'),
+        meta: { numeric: true },
+      },
+      {
+        id: 'actions',
+        header: tc('actions'),
+        meta: { align: 'right' },
+        cell: ({ row }) => (
+          <div className="flex items-center justify-end gap-2">
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => router.push(`/admin/university/articles/${row.original.id}`)}
+              title={t('viewArticle')}
+            >
+              <ExternalLink className="h-4 w-4" />
+            </Button>
+            <Button variant="ghost" size="sm" onClick={() => handleEdit(row.original.id)}>
+              <Pencil className="h-4 w-4" />
+            </Button>
+            <Button variant="ghost" size="sm" onClick={() => handleDeleteClick(row.original.id)}>
+              <Trash2 className="h-4 w-4" />
+            </Button>
+          </div>
+        ),
+      },
+    ],
+    [t, tc, router],
+  );
+
   if (articles.length === 0) {
     return (
       <EmptyState
         icon={FileText}
         title={t('noArticles')}
-        description="Create your first knowledge base article to get started"
+        description={t('noArticlesDescription')}
       />
     );
   }
@@ -114,7 +178,7 @@ export function ArticleList({ articles, categories, onDelete }: ArticleListProps
                 <SelectValue placeholder={t('filterByCategory')} />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="all">All Categories</SelectItem>
+                <SelectItem value="all">{t('allCategories')}</SelectItem>
                 {categories.map((category) => (
                   <SelectItem key={category.id} value={category.slug}>
                     {category.title}
@@ -125,94 +189,18 @@ export function ArticleList({ articles, categories, onDelete }: ArticleListProps
           </div>
         </div>
 
-        <div className="rounded-md border">
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>Title</TableHead>
-                <TableHead>Category</TableHead>
-                <TableHead>Status</TableHead>
-                <TableHead>Sort Order</TableHead>
-                <TableHead className="text-right">Actions</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {filteredArticles.length === 0 ? (
-                <TableRow>
-                  <TableCell colSpan={5} className="text-center text-muted-foreground">
-                    {t('noArticlesInCategory')}
-                  </TableCell>
-                </TableRow>
-              ) : (
-                filteredArticles.map((article) => (
-                  <TableRow key={article.id}>
-                    <TableCell className="font-medium">
-                      <Link
-                        href={`/admin/university/articles/${article.id}`}
-                        className="hover:underline hover:text-primary"
-                      >
-                        {article.title}
-                      </Link>
-                    </TableCell>
-                    <TableCell>{article.category.title}</TableCell>
-                    <TableCell>
-                      <Badge
-                        variant={article.published ? 'default' : 'secondary'}
-                        className="gap-1"
-                      >
-                        {article.published ? (
-                          <>
-                            <Eye className="h-3 w-3" />
-                            Published
-                          </>
-                        ) : (
-                          <>
-                            <EyeOff className="h-3 w-3" />
-                            Draft
-                          </>
-                        )}
-                      </Badge>
-                    </TableCell>
-                    <TableCell>{article.sort_order}</TableCell>
-                    <TableCell className="text-right">
-                      <div className="flex items-center justify-end gap-2">
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          onClick={() => router.push(`/admin/university/articles/${article.id}`)}
-                          title={t('viewArticle')}
-                        >
-                          <ExternalLink className="h-4 w-4" />
-                        </Button>
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          onClick={() => handleEdit(article.id)}
-                        >
-                          <Pencil className="h-4 w-4" />
-                        </Button>
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          onClick={() => handleDeleteClick(article.id)}
-                        >
-                          <Trash2 className="h-4 w-4" />
-                        </Button>
-                      </div>
-                    </TableCell>
-                  </TableRow>
-                ))
-              )}
-            </TableBody>
-          </Table>
-        </div>
+        <DataTable
+          columns={columns}
+          data={filteredArticles}
+          emptyState={<span className="text-muted-foreground">{t('noArticlesInCategory')}</span>}
+        />
       </div>
 
       <ConfirmDialog
         open={deleteDialogOpen}
         onOpenChange={setDeleteDialogOpen}
         title={t('deleteArticleTitle')}
-        description="Are you sure you want to delete this article? This action cannot be undone."
+        description={`${t('deleteArticleConfirm')} ${tc('deleteConfirmation')}`}
         confirmLabel={tc('delete')}
         onConfirm={handleDeleteConfirm}
         destructive

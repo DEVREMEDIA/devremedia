@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useMemo } from 'react';
+import { useMemo, useState } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -12,14 +12,8 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from '@/components/ui/table';
+import type { ColumnDef } from '@tanstack/react-table';
+import { DataTable } from '@/components/shared/data-table';
 import { Badge } from '@/components/ui/badge';
 import {
   Dialog,
@@ -48,6 +42,7 @@ import {
 import { useRouter } from 'next/navigation';
 import { useTranslations } from 'next-intl';
 import { toast } from 'sonner';
+import { cn } from '@/lib/utils';
 import { USER_ROLE_LABELS } from '@/lib/constants';
 import type { UserWithEmail } from '@/types/entities';
 import type { UserRole } from '@/lib/constants';
@@ -169,6 +164,112 @@ export function UserManagement({ users }: UserManagementProps) {
   const isDeactivated = (user: UserWithEmail) =>
     (user.preferences as Record<string, unknown>)?.deactivated === true;
 
+  const columns: ColumnDef<UserWithEmail>[] = useMemo(
+    () => [
+      {
+        accessorKey: 'display_name',
+        header: tc('name'),
+        cell: ({ row }) => (
+          <span className={cn('font-medium', isDeactivated(row.original) && 'opacity-50')}>
+            {row.original.display_name || t('unnamedUser')}
+          </span>
+        ),
+      },
+      {
+        accessorKey: 'email',
+        header: t('email'),
+        cell: ({ row }) => (
+          <span
+            className={cn('text-muted-foreground', isDeactivated(row.original) && 'opacity-50')}
+          >
+            {row.original.email}
+          </span>
+        ),
+      },
+      {
+        accessorKey: 'role',
+        header: t('role'),
+        cell: ({ row }) => (
+          <Badge
+            variant={ROLE_BADGE_VARIANT[row.original.role] ?? 'secondary'}
+            className={cn(isDeactivated(row.original) && 'opacity-50')}
+          >
+            {USER_ROLE_LABELS[row.original.role]}
+          </Badge>
+        ),
+      },
+      {
+        id: 'status',
+        header: t('status'),
+        cell: ({ row }) =>
+          isDeactivated(row.original) ? (
+            <Badge variant="destructive">{t('deactivated')}</Badge>
+          ) : (
+            <Badge variant="outline">{t('active')}</Badge>
+          ),
+      },
+      {
+        accessorKey: 'created_at',
+        header: t('joined'),
+        cell: ({ row }) => (
+          <span className={cn(isDeactivated(row.original) && 'opacity-50')}>
+            {new Date(row.original.created_at).toLocaleDateString()}
+          </span>
+        ),
+        meta: { numeric: true, align: 'left' },
+      },
+      {
+        id: 'actions',
+        header: '',
+        meta: { align: 'right' },
+        cell: ({ row }) => {
+          const user = row.original;
+          const deactivated = isDeactivated(user);
+          return (
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="ghost" size="icon">
+                  <MoreHorizontal className="h-4 w-4" />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end">
+                <DropdownMenuItem onClick={() => handleChangeRole(user.id, 'client')}>
+                  {t('changeToClient')}
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={() => handleChangeRole(user.id, 'employee')}>
+                  {t('changeToEmployee')}
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={() => handleChangeRole(user.id, 'salesman')}>
+                  {t('changeToSalesman')}
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={() => handleChangeRole(user.id, 'admin')}>
+                  {t('changeToAdmin')}
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={() => handleChangeRole(user.id, 'super_admin')}>
+                  {t('changeToSuperAdmin')}
+                </DropdownMenuItem>
+                <DropdownMenuSeparator />
+                {deactivated ? (
+                  <DropdownMenuItem onClick={() => setReactivateUserId(user.id)}>
+                    {t('reactivate')}
+                  </DropdownMenuItem>
+                ) : (
+                  <DropdownMenuItem
+                    className="text-destructive"
+                    onClick={() => setDeactivateUserId(user.id)}
+                  >
+                    {t('deactivate')}
+                  </DropdownMenuItem>
+                )}
+              </DropdownMenuContent>
+            </DropdownMenu>
+          );
+        },
+      },
+    ],
+    [t],
+  );
+
   return (
     <>
       {/* Filters */}
@@ -189,11 +290,11 @@ export function UserManagement({ users }: UserManagementProps) {
             </SelectTrigger>
             <SelectContent>
               <SelectItem value="all">{t('allRoles')}</SelectItem>
-              <SelectItem value="super_admin">Super Admin</SelectItem>
-              <SelectItem value="admin">Admin</SelectItem>
-              <SelectItem value="employee">Employee</SelectItem>
-              <SelectItem value="salesman">Salesman</SelectItem>
-              <SelectItem value="client">Client</SelectItem>
+              <SelectItem value="super_admin">{t('superAdminRole')}</SelectItem>
+              <SelectItem value="admin">{t('adminRole')}</SelectItem>
+              <SelectItem value="employee">{t('employeeRole')}</SelectItem>
+              <SelectItem value="salesman">{t('salesmanRole')}</SelectItem>
+              <SelectItem value="client">{t('clientRole')}</SelectItem>
             </SelectContent>
           </Select>
         </div>
@@ -267,93 +368,7 @@ export function UserManagement({ users }: UserManagementProps) {
       {/* Users Table */}
       <Card>
         <CardContent className="p-0">
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>{tc('name')}</TableHead>
-                <TableHead>{t('email')}</TableHead>
-                <TableHead>{t('role')}</TableHead>
-                <TableHead>{t('status')}</TableHead>
-                <TableHead>{t('joined')}</TableHead>
-                <TableHead className="w-[50px]" />
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {filteredUsers.length === 0 ? (
-                <TableRow>
-                  <TableCell colSpan={6} className="text-center text-muted-foreground py-8">
-                    {t('noUsersFound')}
-                  </TableCell>
-                </TableRow>
-              ) : (
-                filteredUsers.map((user) => {
-                  const deactivated = isDeactivated(user);
-                  return (
-                    <TableRow key={user.id} className={deactivated ? 'opacity-50' : ''}>
-                      <TableCell className="font-medium">
-                        {user.display_name || t('unnamedUser')}
-                      </TableCell>
-                      <TableCell className="text-muted-foreground">{user.email}</TableCell>
-                      <TableCell>
-                        <Badge variant={ROLE_BADGE_VARIANT[user.role] ?? 'secondary'}>
-                          {USER_ROLE_LABELS[user.role]}
-                        </Badge>
-                      </TableCell>
-                      <TableCell>
-                        {deactivated ? (
-                          <Badge variant="destructive">{t('deactivated')}</Badge>
-                        ) : (
-                          <Badge variant="outline">{t('active')}</Badge>
-                        )}
-                      </TableCell>
-                      <TableCell>{new Date(user.created_at).toLocaleDateString()}</TableCell>
-                      <TableCell>
-                        <DropdownMenu>
-                          <DropdownMenuTrigger asChild>
-                            <Button variant="ghost" size="icon">
-                              <MoreHorizontal className="h-4 w-4" />
-                            </Button>
-                          </DropdownMenuTrigger>
-                          <DropdownMenuContent align="end">
-                            <DropdownMenuItem onClick={() => handleChangeRole(user.id, 'client')}>
-                              {t('changeToClient')}
-                            </DropdownMenuItem>
-                            <DropdownMenuItem onClick={() => handleChangeRole(user.id, 'employee')}>
-                              {t('changeToEmployee')}
-                            </DropdownMenuItem>
-                            <DropdownMenuItem onClick={() => handleChangeRole(user.id, 'salesman')}>
-                              {t('changeToSalesman')}
-                            </DropdownMenuItem>
-                            <DropdownMenuItem onClick={() => handleChangeRole(user.id, 'admin')}>
-                              {t('changeToAdmin')}
-                            </DropdownMenuItem>
-                            <DropdownMenuItem
-                              onClick={() => handleChangeRole(user.id, 'super_admin')}
-                            >
-                              {t('changeToSuperAdmin')}
-                            </DropdownMenuItem>
-                            <DropdownMenuSeparator />
-                            {deactivated ? (
-                              <DropdownMenuItem onClick={() => setReactivateUserId(user.id)}>
-                                {t('reactivate')}
-                              </DropdownMenuItem>
-                            ) : (
-                              <DropdownMenuItem
-                                className="text-destructive"
-                                onClick={() => setDeactivateUserId(user.id)}
-                              >
-                                {t('deactivate')}
-                              </DropdownMenuItem>
-                            )}
-                          </DropdownMenuContent>
-                        </DropdownMenu>
-                      </TableCell>
-                    </TableRow>
-                  );
-                })
-              )}
-            </TableBody>
-          </Table>
+          <DataTable columns={columns} data={filteredUsers} />
         </CardContent>
       </Card>
 
