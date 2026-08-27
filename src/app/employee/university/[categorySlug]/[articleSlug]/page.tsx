@@ -18,14 +18,17 @@ export default async function ArticlePage({ params }: ArticlePageProps) {
   const { categorySlug, articleSlug } = await params;
   const t = await getTranslations('university');
 
-  const categoryResult = await getKbCategoryBySlug(categorySlug);
+  const [categoryResult, articleResult] = await Promise.all([
+    getKbCategoryBySlug(categorySlug),
+    getKbArticleBySlug(articleSlug),
+  ]);
+
   if (categoryResult.error || !categoryResult.data) {
     notFound();
   }
 
   const category = categoryResult.data as import('@/types').KbCategory;
 
-  const articleResult = await getKbArticleBySlug(articleSlug);
   if (articleResult.error || !articleResult.data) {
     notFound();
   }

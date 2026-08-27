@@ -1,5 +1,6 @@
 'use server';
 
+import { cache } from 'react';
 import { createClient } from '@/lib/supabase/server';
 import { requireUser, requireAdmin } from '@/lib/auth-helpers';
 import { createProjectSchema, updateProjectSchema } from '@/lib/schemas/project';
@@ -62,7 +63,13 @@ export async function getProjects(
   }
 }
 
-export async function getProject(id: string): Promise<ActionResult<ProjectWithClient>> {
+// Κάθε άνοιγμα σελίδας έργου καλούσε αυτή τη συνάρτηση δύο φορές — μια στο
+// `generateMetadata` για τον τίτλο της καρτέλας, μια για το σώμα της σελίδας —
+// και έκανε δύο ταυτόσημα ταξίδια στη βάση. Το `cache()` είναι η ανά-αίτημα
+// απομνημόνευση του React (όχι το `unstable_cache`): η δεύτερη κλήση
+// επαναχρησιμοποιεί το αποτέλεσμα της πρώτης. Ίδιο μοτίβο με το `getInvoice`
+// στο invoices.ts, που το είχε ήδη λύσει για τα τιμολόγια.
+export const getProject = cache(async (id: string): Promise<ActionResult<ProjectWithClient>> => {
   try {
     const { supabase, error: authError } = await requireUser();
     if (authError) return { data: null, error: authError };
@@ -77,7 +84,7 @@ export async function getProject(id: string): Promise<ActionResult<ProjectWithCl
   } catch (err: unknown) {
     return { data: null, error: err instanceof Error ? err.message : 'Failed to fetch project' };
   }
-}
+});
 
 // Prepend "{Client} — " to a Production title unless it is already there, so
 // the client is always part of the name (see docs/adr/0001). Module-private.

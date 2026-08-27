@@ -1,5 +1,6 @@
 'use server';
 
+import { cache } from 'react';
 import { requireUser, requireAdmin } from '@/lib/auth-helpers';
 import {
   createContractSchema,
@@ -66,25 +67,31 @@ export async function getContractsByClient(
   }
 }
 
-export async function getContract(id: string): Promise<ActionResult<ContractWithRelations>> {
-  try {
-    const { supabase, error: authError } = await requireUser();
-    if (authError) return { data: null, error: authError };
+// Ίδιος λόγος με το `getProject` και το `getInvoice`: η σελίδα συμβολαίου την
+// καλεί δύο φορές σε κάθε άνοιγμα — μια στο `generateMetadata`, μια για το σώμα
+// — και έκανε δύο ταυτόσημα ταξίδια στη βάση. Ισχύει και για τις δύο σελίδες
+// συμβολαίου, του διαχειριστή και του πελάτη.
+export const getContract = cache(
+  async (id: string): Promise<ActionResult<ContractWithRelations>> => {
+    try {
+      const { supabase, error: authError } = await requireUser();
+      if (authError) return { data: null, error: authError };
 
-    const { data, error } = await supabase
-      .from('contracts')
-      .select(
-        'id, project_id, client_id, template_id, title, content, status, pdf_path, signature_data, sent_at, viewed_at, signed_at, expires_at, service_type, agreed_amount, payment_method, scope_description, special_terms, signed_pdf_path, locale, created_by, created_at, client:clients!inner(id, user_id, company_name, contact_name, email, phone, address, vat_number, avatar_url, notes, status, preferred_locale, created_at, updated_at), project:projects(id, client_id, title, description, project_type, status, priority, budget, deadline, start_date, created_at, updated_at)',
-      )
-      .eq('id', id)
-      .single();
+      const { data, error } = await supabase
+        .from('contracts')
+        .select(
+          'id, project_id, client_id, template_id, title, content, status, pdf_path, signature_data, sent_at, viewed_at, signed_at, expires_at, service_type, agreed_amount, payment_method, scope_description, special_terms, signed_pdf_path, locale, created_by, created_at, client:clients!inner(id, user_id, company_name, contact_name, email, phone, address, vat_number, avatar_url, notes, status, preferred_locale, created_at, updated_at), project:projects(id, client_id, title, description, project_type, status, priority, budget, deadline, start_date, created_at, updated_at)',
+        )
+        .eq('id', id)
+        .single();
 
-    if (error) return { data: null, error: error.message };
-    return { data: data as unknown as ContractWithRelations, error: null };
-  } catch (err: unknown) {
-    return { data: null, error: err instanceof Error ? err.message : 'Failed to fetch contract' };
-  }
-}
+      if (error) return { data: null, error: error.message };
+      return { data: data as unknown as ContractWithRelations, error: null };
+    } catch (err: unknown) {
+      return { data: null, error: err instanceof Error ? err.message : 'Failed to fetch contract' };
+    }
+  },
+);
 
 export async function getMyContracts(): Promise<ActionResult<ContractWithProject[]>> {
   try {
