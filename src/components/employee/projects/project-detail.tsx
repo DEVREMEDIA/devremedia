@@ -9,9 +9,9 @@ import { EmptyState } from '@/components/shared/empty-state';
 import { EmployeeDeliverables } from '@/components/employee/deliverables/deliverable-list';
 import { MessageThread } from '@/components/shared/message-thread';
 import { CheckSquare, Calendar, AlertCircle } from 'lucide-react';
-import { PRIORITY_LABELS } from '@/lib/constants';
 import { cn } from '@/lib/utils';
-import type { Task, Deliverable, Priority } from '@/types/index';
+import { formatDate } from '@/lib/format';
+import type { Task, Deliverable } from '@/types/index';
 
 interface ProjectDetailProps {
   project: {
@@ -27,13 +27,6 @@ interface ProjectDetailProps {
   currentUserId: string;
   projectId: string;
 }
-
-const priorityColorMap: Record<Priority, string> = {
-  low: 'text-blue-600',
-  medium: 'text-yellow-600',
-  high: 'text-orange-600',
-  urgent: 'text-red-600',
-};
 
 export function ProjectDetail({
   project,
@@ -81,28 +74,20 @@ export function ProjectDetail({
                         <StatusBadge status={task.status} />
                       </div>
                       <div className="flex flex-wrap items-center gap-2 mt-2">
-                        <span
-                          className={cn(
-                            'text-xs font-medium px-2 py-0.5 rounded-md bg-gray-100',
-                            priorityColorMap[task.priority],
-                          )}
-                        >
-                          {PRIORITY_LABELS[task.priority]}
-                        </span>
+                        <StatusBadge status={task.priority} />
                         {task.due_date && (
                           <div
                             className={cn(
                               'flex items-center gap-1 text-xs',
-                              isOverdue ? 'text-red-600 font-semibold' : 'text-muted-foreground',
+                              isOverdue
+                                ? 'text-tone-critical font-semibold'
+                                : 'text-muted-foreground',
                             )}
                           >
                             {isOverdue && <AlertCircle className="h-3 w-3" />}
                             <Calendar className="h-3 w-3" />
                             <span>
-                              {new Date(task.due_date).toLocaleDateString(undefined, {
-                                month: 'short',
-                                day: 'numeric',
-                              })}
+                              {formatDate(task.due_date, { month: 'short', day: 'numeric' })}
                             </span>
                           </div>
                         )}

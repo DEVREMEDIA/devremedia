@@ -17,6 +17,7 @@
     "saving": "Αποθήκευση...",
     "deleting": "Διαγραφή...",
     "noResults": "Δεν βρέθηκαν αποτελέσματα",
+    "tryAdjustingFilters": "Δοκιμάστε να αλλάξετε τα φίλτρα",
     "error": "Παρουσιάστηκε σφάλμα",
     "success": "Επιτυχία",
     "required": "Υποχρεωτικό",
@@ -24,6 +25,8 @@
     "actions": "Ενέργειες",
     "status": "Κατάσταση",
     "date": "Ημερομηνία",
+    "dueDate": "Προθεσμία",
+    "title": "Τίτλος",
     "name": "Όνομα",
     "email": "Email",
     "phone": "Τηλέφωνο",
@@ -1557,10 +1560,13 @@
     "tableView": "Πίνακας",
     "activity": "Δραστηριότητα",
     "addActivity": "Νέα Δραστηριότητα",
+    "recordActivity": "Καταγράψτε μια επαφή ή ενέργεια για αυτό το lead",
     "activityType": "Τύπος Δραστηριότητας",
     "activityNotes": "Σημειώσεις",
     "nextFollowUp": "Επόμενο Follow-up",
     "convertToClient": "Μετατροπή σε Πελάτη",
+    "convertDescription": "Το lead γίνεται πελάτης και φεύγει από το pipeline",
+    "confirmConvert": "Θα δημιουργηθεί νέος πελάτης με τα στοιχεία του lead. Το lead θα σημειωθεί ως κερδισμένο.",
     "leadCreated": "Το lead δημιουργήθηκε",
     "leadUpdated": "Το lead ενημερώθηκε",
     "leadDeleted": "Το lead διαγράφηκε",
@@ -1595,7 +1601,10 @@
     "notes": "Σημειώσεις",
     "activityHistory": "Ιστορικό Δραστηριοτήτων",
     "unknown": "Άγνωστο",
-    "lostReason": "Λόγος Απώλειας"
+    "lostReason": "Λόγος Απώλειας",
+    "backToPipeline": "Πίσω στο Pipeline",
+    "backToLead": "Πίσω στο Lead",
+    "editLeadDetailsFor": "Επεξεργασία στοιχείων για {name}"
   },
 
   "university": {
@@ -1610,6 +1619,7 @@
     "editArticle": "Επεξεργασία Άρθρου",
     "deleteArticle": "Διαγραφή Άρθρου",
     "categoryName": "Όνομα Κατηγορίας",
+    "noCategoriesMatching": "Καμία κατηγορία δεν ταιριάζει με «{query}»",
     "articleTitle": "Τίτλος Άρθρου",
     "articleContent": "Περιεχόμενο",
     "noCategories": "Δεν υπάρχουν κατηγορίες",
@@ -1869,7 +1879,8 @@
       "statusUpdated": "Η κατάσταση ενημερώθηκε",
       "statusUpdateFailed": "Αποτυχία ενημέρωσης κατάστασης",
       "taskDetail": "Λεπτομέρειες Εργασίας",
-      "subTasks": "Υπο-εργασίες"
+      "subTasks": "Υπο-εργασίες",
+      "unknownProject": "Άγνωστο Έργο"
     },
     "deliverables": {
       "title": "Παραδοτέα",
@@ -1898,6 +1909,11 @@
       "stageReview": "Αξιολόγηση",
       "stageRevisions": "Διορθώσεις",
       "stageDelivered": "Παραδόθηκε"
+    },
+    "knowledge": {
+      "subtitle": "Περιηγηθείτε στα άρθρα της βάσης γνώσεων και μάθετε για το DMS",
+      "emptyTitle": "Δεν υπάρχει διαθέσιμο περιεχόμενο",
+      "emptyDescription": "Η βάση γνώσεων βρίσκεται υπό διαμόρφωση. Ελέγξτε ξανά σύντομα!"
     }
   },
 
@@ -1914,7 +1930,8 @@
       "noFollowups": "Δεν υπάρχουν follow-ups σήμερα",
       "recentActivity": "Πρόσφατη Δραστηριότητα",
       "latestInteractions": "Οι πιο πρόσφατες αλληλεπιδράσεις σας",
-      "noRecentActivity": "Δεν υπάρχει πρόσφατη δραστηριότητα"
+      "noRecentActivity": "Δεν υπάρχει πρόσφατη δραστηριότητα",
+      "weighted": "Σταθμισμένο"
     },
     "leads": {
       "title": "Τα Leads Μου",

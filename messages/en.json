@@ -17,6 +17,7 @@
     "saving": "Saving...",
     "deleting": "Deleting...",
     "noResults": "No results found",
+    "tryAdjustingFilters": "Try adjusting your filters",
     "error": "An error occurred",
     "success": "Success",
     "required": "Required",
@@ -24,6 +25,8 @@
     "actions": "Actions",
     "status": "Status",
     "date": "Date",
+    "dueDate": "Due Date",
+    "title": "Title",
     "name": "Name",
     "email": "Email",
     "phone": "Phone",
@@ -1557,10 +1560,13 @@
     "tableView": "Table",
     "activity": "Activity",
     "addActivity": "Add Activity",
+    "recordActivity": "Record a contact or action for this lead",
     "activityType": "Activity Type",
     "activityNotes": "Notes",
     "nextFollowUp": "Next Follow-up",
     "convertToClient": "Convert to Client",
+    "convertDescription": "The lead becomes a client and leaves the pipeline",
+    "confirmConvert": "A new client will be created from the lead's details. The lead will be marked as won.",
     "leadCreated": "Lead created",
     "leadUpdated": "Lead updated",
     "leadDeleted": "Lead deleted",
@@ -1595,7 +1601,10 @@
     "notes": "Notes",
     "activityHistory": "Activity History",
     "unknown": "Unknown",
-    "lostReason": "Lost Reason"
+    "lostReason": "Lost Reason",
+    "backToPipeline": "Back to Pipeline",
+    "backToLead": "Back to Lead",
+    "editLeadDetailsFor": "Edit details for {name}"
   },
 
   "university": {
@@ -1610,6 +1619,7 @@
     "editArticle": "Edit Article",
     "deleteArticle": "Delete Article",
     "categoryName": "Category Name",
+    "noCategoriesMatching": "No categories match “{query}”",
     "articleTitle": "Article Title",
     "articleContent": "Content",
     "noCategories": "No categories yet",
@@ -1869,7 +1879,8 @@
       "statusUpdated": "Status updated successfully",
       "statusUpdateFailed": "Failed to update status",
       "taskDetail": "Task Detail",
-      "subTasks": "Sub-tasks"
+      "subTasks": "Sub-tasks",
+      "unknownProject": "Unknown Project"
     },
     "deliverables": {
       "title": "Deliverables",
@@ -1898,6 +1909,11 @@
       "stageReview": "Review",
       "stageRevisions": "Revisions",
       "stageDelivered": "Delivered"
+    },
+    "knowledge": {
+      "subtitle": "Browse knowledge base articles and learn about DMS",
+      "emptyTitle": "No content available",
+      "emptyDescription": "The knowledge base is being set up. Check back soon!"
     }
   },
 
@@ -1914,7 +1930,8 @@
       "noFollowups": "No follow-ups today",
       "recentActivity": "Recent Activity",
       "latestInteractions": "Your latest interactions",
-      "noRecentActivity": "No recent activity to show"
+      "noRecentActivity": "No recent activity to show",
+      "weighted": "Weighted"
     },
     "leads": {
       "title": "My Leads",

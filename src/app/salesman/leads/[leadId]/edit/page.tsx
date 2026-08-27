@@ -1,5 +1,6 @@
 import { createClient } from '@/lib/supabase/server';
 import { redirect, notFound } from 'next/navigation';
+import { getTranslations } from 'next-intl/server';
 import { getLead } from '@/lib/actions/leads';
 import { PageHeading } from '@/components/shared/page-heading';
 import { Card, CardContent } from '@/components/ui/card';
@@ -13,6 +14,7 @@ type PageProps = {
 };
 
 export default async function EditLeadPage({ params }: PageProps) {
+  const t = await getTranslations('leads');
   const supabase = await createClient();
   const {
     data: { user },
@@ -34,11 +36,14 @@ export default async function EditLeadPage({ params }: PageProps) {
 
   return (
     <div className="space-y-6">
-      <PageHeading title="Edit Lead" subtitle={`Edit details for ${lead.contact_name}`}>
+      <PageHeading
+        title={t('editLead')}
+        subtitle={t('editLeadDetailsFor', { name: lead.contact_name })}
+      >
         <Button variant="outline" asChild>
           <Link href={`/salesman/leads/${leadId}`}>
             <ArrowLeft className="mr-2 h-4 w-4" />
-            Back to Lead
+            {t('backToLead')}
           </Link>
         </Button>
       </PageHeading>

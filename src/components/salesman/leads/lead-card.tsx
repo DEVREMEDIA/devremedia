@@ -7,22 +7,12 @@ import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { LEAD_SOURCE_LABELS } from '@/lib/constants';
 import { useTranslations } from 'next-intl';
-import type { Lead, LeadSource } from '@/types';
+import type { Lead } from '@/types';
 
 type LeadCardProps = {
   lead: Lead;
   onClick: (lead: Lead) => void;
   isOverlay?: boolean;
-};
-
-const sourceColors: Record<LeadSource, string> = {
-  referral: 'bg-purple-100 text-purple-700 border-purple-300',
-  website: 'bg-blue-100 text-blue-700 border-blue-300',
-  social_media: 'bg-pink-100 text-pink-700 border-pink-300',
-  cold_call: 'bg-slate-100 text-slate-700 border-slate-300',
-  event: 'bg-green-100 text-green-700 border-green-300',
-  advertisement: 'bg-amber-100 text-amber-700 border-amber-300',
-  other: 'bg-gray-100 text-gray-700 border-gray-300',
 };
 
 export function LeadCard({ lead, onClick, isOverlay }: LeadCardProps) {
@@ -54,17 +44,14 @@ export function LeadCard({ lead, onClick, isOverlay }: LeadCardProps) {
           </div>
 
           {lead.deal_value !== null && lead.deal_value > 0 && (
-            <div className="flex items-center gap-1 text-xs font-semibold text-green-600">
+            <div className="flex items-center gap-1 text-xs font-semibold text-tone-positive">
               <DollarSign className="h-3 w-3" />
               <span>€{lead.deal_value.toLocaleString()}</span>
             </div>
           )}
 
           <div className="flex items-center gap-1.5 flex-wrap">
-            <Badge
-              variant="outline"
-              className={cn('text-[10px] px-1.5 py-0', sourceColors[lead.source])}
-            >
+            <Badge variant="outline" className="text-[10px] px-1.5 py-0">
               {LEAD_SOURCE_LABELS[lead.source]}
             </Badge>
 
@@ -72,7 +59,7 @@ export function LeadCard({ lead, onClick, isOverlay }: LeadCardProps) {
               <span
                 className={cn(
                   'text-xs',
-                  daysSinceContact > 7 ? 'text-red-600 font-medium' : 'text-muted-foreground',
+                  daysSinceContact > 7 ? 'text-tone-critical font-medium' : 'text-muted-foreground',
                 )}
               >
                 {daysSinceContact === 0

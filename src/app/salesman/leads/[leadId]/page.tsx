@@ -1,5 +1,6 @@
 import { createClient } from '@/lib/supabase/server';
 import { redirect, notFound } from 'next/navigation';
+import { getTranslations } from 'next-intl/server';
 import { getLead } from '@/lib/actions/leads';
 import { getLeadActivities } from '@/lib/actions/lead-activities';
 import { PageHeading } from '@/components/shared/page-heading';
@@ -13,6 +14,7 @@ type PageProps = {
 };
 
 export default async function LeadDetailPage({ params }: PageProps) {
+  const t = await getTranslations('leads');
   const supabase = await createClient();
   const {
     data: { user },
@@ -45,13 +47,13 @@ export default async function LeadDetailPage({ params }: PageProps) {
           <Button variant="outline" asChild>
             <Link href="/salesman/leads">
               <ArrowLeft className="mr-2 h-4 w-4" />
-              Back to Pipeline
+              {t('backToPipeline')}
             </Link>
           </Button>
           <Button asChild>
             <Link href={`/salesman/leads/${leadId}/edit`}>
               <Pencil className="mr-2 h-4 w-4" />
-              Edit Lead
+              {t('editLead')}
             </Link>
           </Button>
         </div>

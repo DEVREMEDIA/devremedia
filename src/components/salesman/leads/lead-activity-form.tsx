@@ -6,18 +6,11 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { useRouter } from 'next/navigation';
 import { toast } from 'sonner';
 import { useTranslations } from 'next-intl';
-import { Loader2, Plus } from 'lucide-react';
+import { Plus } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from '@/components/ui/dialog';
+import { FormDialog } from '@/components/shared/form-dialog';
 import {
   Form,
   FormControl,
@@ -89,96 +82,83 @@ export function LeadActivityForm({ leadId }: LeadActivityFormProps) {
   };
 
   return (
-    <Dialog open={isOpen} onOpenChange={setIsOpen}>
-      <DialogTrigger asChild>
-        <Button>
-          <Plus className="mr-2 h-4 w-4" />
-          {t('addActivity')}
-        </Button>
-      </DialogTrigger>
-      <DialogContent className="sm:max-w-[500px]">
-        <DialogHeader>
-          <DialogTitle>{t('addActivity')}</DialogTitle>
-          <DialogDescription>{t('recordActivity')}</DialogDescription>
-        </DialogHeader>
+    <>
+      <Button onClick={() => setIsOpen(true)}>
+        <Plus className="mr-2 h-4 w-4" />
+        {t('addActivity')}
+      </Button>
 
+      <FormDialog
+        open={isOpen}
+        onOpenChange={setIsOpen}
+        title={t('addActivity')}
+        description={t('recordActivity')}
+        onSubmit={form.handleSubmit(onSubmit)}
+        submitLabel={t('addActivity')}
+        cancelLabel={tCommon('cancel')}
+        submitting={isLoading}
+        className="sm:max-w-[500px]"
+      >
         <Form {...form}>
-          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-            <FormField
-              control={form.control}
-              name="activity_type"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>{t('activityType')}</FormLabel>
-                  <Select onValueChange={field.onChange} defaultValue={field.value}>
-                    <FormControl>
-                      <SelectTrigger>
-                        <SelectValue placeholder={t('activityType')} />
-                      </SelectTrigger>
-                    </FormControl>
-                    <SelectContent>
-                      {LEAD_ACTIVITY_TYPES.filter((type) => type !== 'stage_change').map((type) => (
-                        <SelectItem key={type} value={type}>
-                          {LEAD_ACTIVITY_TYPE_LABELS[type]}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-
-            <FormField
-              control={form.control}
-              name="title"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>{tCommon('title')}</FormLabel>
+          <FormField
+            control={form.control}
+            name="activity_type"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>{t('activityType')}</FormLabel>
+                <Select onValueChange={field.onChange} defaultValue={field.value}>
                   <FormControl>
-                    <Input placeholder={t('activityNotes')} {...field} />
+                    <SelectTrigger>
+                      <SelectValue placeholder={t('activityType')} />
+                    </SelectTrigger>
                   </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
+                  <SelectContent>
+                    {LEAD_ACTIVITY_TYPES.filter((type) => type !== 'stage_change').map((type) => (
+                      <SelectItem key={type} value={type}>
+                        {LEAD_ACTIVITY_TYPE_LABELS[type]}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
 
-            <FormField
-              control={form.control}
-              name="description"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>{tCommon('description')}</FormLabel>
-                  <FormControl>
-                    <Textarea
-                      placeholder={t('activityNotes')}
-                      className="min-h-[100px]"
-                      {...field}
-                      value={field.value ?? ''}
-                    />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
+          <FormField
+            control={form.control}
+            name="title"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>{tCommon('title')}</FormLabel>
+                <FormControl>
+                  <Input placeholder={t('activityNotes')} {...field} />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
 
-            <div className="flex justify-end gap-2">
-              <Button
-                type="button"
-                variant="outline"
-                onClick={() => setIsOpen(false)}
-                disabled={isLoading}
-              >
-                {tCommon('cancel')}
-              </Button>
-              <Button type="submit" disabled={isLoading}>
-                {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                {t('addActivity')}
-              </Button>
-            </div>
-          </form>
+          <FormField
+            control={form.control}
+            name="description"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>{tCommon('description')}</FormLabel>
+                <FormControl>
+                  <Textarea
+                    placeholder={t('activityNotes')}
+                    className="min-h-[100px]"
+                    {...field}
+                    value={field.value ?? ''}
+                  />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
         </Form>
-      </DialogContent>
-    </Dialog>
+      </FormDialog>
+    </>
   );
 }

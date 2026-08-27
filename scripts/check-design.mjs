@@ -31,9 +31,11 @@ const COVERED = [
   // πλέγμα αριθμών σε αρχείο εκτός λίστας — ούτε ένα που είναι γραμμένο
   // αποκλειστικά με tokens. Ο φύλακας φυλάει το χρώμα, όχι τη σύνθεση.
   //
-  // Εξαίρεση: src/components/salesman/dashboard/pipeline-summary.tsx μένει
-  // εκτός — το panel «Pipeline by Stage» κρατά ακόμα ωμά χρώματα, οφειλόμενο
-  // σε επόμενη φέτα.
+  // Το pipeline-summary.tsx του πωλητή ήταν εδώ γραμμένο ως εξαίρεση «οφειλόμενη
+  // σε επόμενη φέτα». Η φέτα ήρθε (#110): το panel «Pipeline by Stage» πέρασε
+  // στο κοινό πλέγμα, και το αρχείο φυλάσσεται πλέον από το ολόκληρο
+  // 'src/components/salesman' πιο κάτω. Το σχόλιο μένει μόνο ως ιστορία —
+  // η εξαίρεση δεν υπάρχει πια.
   'src/components/admin/chatbot/chatbot-stats.tsx',
   'src/components/admin/calendar/calendar-stats.tsx',
   'src/components/employee/dashboard/task-stats.tsx',
@@ -96,6 +98,13 @@ const COVERED = [
   'src/app/admin/filming-requests',
   'src/components/admin/invoices',
   'src/components/admin/leads',
+  // Οι περιοχές Εργαζομένων και Πωλητών περνούν στη νέα γλώσσα (#110) — δύο
+  // ολόκληρα δέντρα η καθεμία, ώστε ένα νέο component οπουδήποτε από κάτω να
+  // φυλάσσεται αυτόματα.
+  'src/app/employee',
+  'src/components/employee',
+  'src/app/salesman',
+  'src/components/salesman',
 ];
 
 // Αρχεία μέσα σε καλυμμένους φακέλους που όντως γράφουν ακόμα ωμό χρώμα.
@@ -196,6 +205,63 @@ const PENDING = [
     file: 'src/app/admin/invoices/invoices-content.tsx',
     colours: ['text-green-600', 'text-green-600', 'text-orange-600', 'text-orange-600'],
   },
+  // Το εγχειρίδιο πωλήσεων κρατά ωμό χρώμα μέσα στην ΠΕΡΙΟΧΗ ΠΕΡΙΕΧΟΜΕΝΟΥ —
+  // τα εννέα σώματα καρτελών με το εμπορικό κείμενο της εταιρείας. Ήταν
+  // συνειδητή εξαίρεση στο issue που υλοποιεί αυτή η φέτα (#110), όχι
+  // παράλειψη: αυτό είναι κείμενο που έγραψε η εταιρεία, ρητά εκτός εμβέλειας
+  // εδώ. Το #111 πρέπει να αποφασίσει την τύχη του — είναι η μόνη εγγραφή
+  // αυτής της λίστας χωρίς φέτα που να την αναλαμβάνει αυτή τη στιγμή.
+  {
+    file: 'src/components/salesman/handbook/sales-handbook.tsx',
+    colours: [
+      'bg-amber-50',
+      'bg-amber-950',
+      'bg-orange-100',
+      'bg-orange-900',
+      'border-amber-200',
+      'border-amber-200',
+      'border-amber-900',
+      'border-amber-900',
+      'border-blue-200',
+      'border-blue-900',
+      'border-gray-300',
+      'border-green-200',
+      'border-green-900',
+      'text-amber-600',
+      'text-blue-600',
+      'text-blue-600',
+      'text-green-500',
+      'text-green-500',
+      'text-green-500',
+      'text-green-500',
+      'text-green-500',
+      'text-green-500',
+      'text-green-500',
+      'text-green-500',
+      'text-green-500',
+      'text-green-500',
+      'text-green-500',
+      'text-green-500',
+      'text-green-500',
+      'text-green-500',
+      'text-green-500',
+      'text-green-500',
+      'text-green-500',
+      'text-green-500',
+      'text-green-500',
+      'text-green-500',
+      'text-green-500',
+      'text-green-500',
+      'text-green-500',
+      'text-green-500',
+      'text-green-500',
+      'text-green-600',
+      'text-green-600',
+      'text-green-600',
+      'text-orange-300',
+      'text-orange-700',
+    ],
+  },
 ];
 
 // ΠΡΟΣΟΧΗ στα όρια λέξης. Το Tailwind γράφει τα κενά μιας αυθαίρετης τιμής ως
@@ -223,8 +289,15 @@ const PENDING = [
 // φύλακα. Δεν μπαίνει σκέτο `i` σε όλη την έκφραση: το hex το χειρίζεται ήδη
 // μόνο του, και οι κλάσεις Tailwind ΕΙΝΑΙ πεζές — ένα καθολικό `i` θα άρχιζε να
 // πιάνει ταυτόχρονα και συμβολοσειρές σαν `TEXT-RED` που δεν είναι χρώματα.
+// Και μια αριθμητική οντότητα HTML ΔΕΝ είναι χρώμα. Το `&#10005;` (σταυρός)
+// έχει πέντε ψηφία που τυχαίνει να είναι όλα έγκυρα δεκαεξαδικά, οπότε το
+// `#10005` ταίριαζε και ο φύλακας κατήγγειλλε ένα γλυφικό. Το `&` από πριν
+// είναι το μόνο που ξεχωρίζει τα δύο — ένα `#fff;` μέσα σε CSS είναι
+// κανονικότατο χρώμα, άρα το `;` από πίσω δεν κάνει για κριτήριο.
+// Το βρήκε implementer μετρώντας το χρέος ενός αρχείου, όχι έλεγχος: η
+// μέτρηση έβγαινε έξι παραπάνω απ' όσα χρώματα υπήρχαν στ' αλήθεια.
 const RAW_COLOUR =
-  /#[0-9a-fA-F]{3,8}(?![0-9a-fA-F])|(?<![a-zA-Z0-9])(?:[rR][gG][bB][aA]?|[hH][sS][lL][aA]?|[oO][kK][lL][cC][hH])\s*\([^)]*\)?|\b(?:bg|text|border|ring|fill|stroke|from|via|to|divide|outline|shadow|decoration|accent|caret)-(?:white|black|red|orange|amber|yellow|lime|green|emerald|teal|cyan|sky|blue|indigo|violet|purple|fuchsia|pink|rose|slate|gray|grey|zinc|neutral|stone)(?:-\d{2,3})?\b/;
+  /(?<!&)#[0-9a-fA-F]{3,8}(?![0-9a-fA-F])|(?<![a-zA-Z0-9])(?:[rR][gG][bB][aA]?|[hH][sS][lL][aA]?|[oO][kK][lL][cC][hH])\s*\([^)]*\)?|\b(?:bg|text|border|ring|fill|stroke|from|via|to|divide|outline|shadow|decoration|accent|caret)-(?:white|black|red|orange|amber|yellow|lime|green|emerald|teal|cyan|sky|blue|indigo|violet|purple|fuchsia|pink|rose|slate|gray|grey|zinc|neutral|stone)(?:-\d{2,3})?\b/;
 
 /** Το ίδιο, με `g`: για να μετρηθεί ΤΙ παραβιάζει ένα εκκρεμές, όχι μόνο ΑΝ. */
 const RAW_COLOUR_ALL = new RegExp(RAW_COLOUR.source, 'g');
@@ -296,7 +369,7 @@ for (const file of files) {
       // περνούσε — δεν περνά πια.
       const declared = pendingDebt.get(file);
       const found = colourMultiset(readFileSync(file, 'utf8'));
-      if (declared.join(' ') !== found.join(' ')) {
+      if (declared.join('\u0000') !== found.join('\u0000')) {
         changedPendingDebt.push({ file, declared, found });
       }
     }
@@ -494,6 +567,15 @@ const TABLE_GUARDED_AREAS = [
   'src/components/admin/filming-prep/',
   'src/components/admin/deliverables/',
   'src/components/admin/tasks/',
+  // Οι περιοχές Εργαζομένων και Πωλητών (#110). Αυτό δεν πιάνει τίποτα σήμερα
+  // — καμία από τις δύο δεν είχε ποτέ πίνακα, κάθε λίστα και στις δύο είναι
+  // πλέγμα καρτών ή kanban board. Η εγγραφή κοιτάζει μπροστά: σταματάει έναν
+  // χειροποίητο πίνακα να εμφανιστεί εκεί στο μέλλον, δεν δηλώνει δουλειά που
+  // έγινε.
+  'src/app/employee/',
+  'src/components/employee/',
+  'src/app/salesman/',
+  'src/components/salesman/',
 ];
 
 // Λίστες λεπτομέρειας μέσα σε ήδη ανοιγμένη γραμμή. Δεν είναι το θέμα της

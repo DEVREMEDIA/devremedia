@@ -20,7 +20,7 @@ export function TodayTasks({ tasks }: TodayTasksProps) {
   return (
     <div className="rounded-xl border bg-card">
       <div className="flex items-center gap-2 px-5 py-4 border-b border-border/50">
-        <CalendarDays className="h-5 w-5 text-amber-500" />
+        <CalendarDays className="h-5 w-5 text-primary" />
         <h2 className="text-lg font-semibold">{t('todayTasks')}</h2>
         {tasks.length > 0 && (
           <Badge variant="secondary" className="text-xs">
@@ -41,7 +41,7 @@ export function TodayTasks({ tasks }: TodayTasksProps) {
                 key={task.id}
                 className={cn(
                   'flex items-start gap-3 p-3 rounded-lg transition-all duration-200',
-                  'border border-border/50 hover:border-amber-500/30 hover:bg-amber-500/5',
+                  'border border-border/50 hover:border-primary/30 hover:bg-primary/5',
                 )}
               >
                 <div className="flex-1 min-w-0">

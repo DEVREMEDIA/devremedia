@@ -6,10 +6,11 @@ import { useTranslations } from 'next-intl';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
+import { StatusBadge } from '@/components/shared/status-badge';
 import { LeadActivityFeed } from './lead-activity-feed';
 import { LeadActivityForm } from './lead-activity-form';
 import { LeadConvertDialog } from './lead-convert-dialog';
-import { LEAD_STAGE_LABELS, LEAD_SOURCE_LABELS } from '@/lib/constants';
+import { LEAD_SOURCE_LABELS } from '@/lib/constants';
 import type { Lead, LeadActivity } from '@/types';
 
 type LeadDetailProps = {
@@ -91,7 +92,7 @@ export function LeadDetail({ lead, activities }: LeadDetailProps) {
               <CardContent className="space-y-4">
                 <div>
                   <div className="text-sm text-muted-foreground mb-1">{t('stage')}</div>
-                  <Badge variant="outline">{LEAD_STAGE_LABELS[lead.stage]}</Badge>
+                  <StatusBadge status={lead.stage} />
                 </div>
 
                 <div>
@@ -103,8 +104,8 @@ export function LeadDetail({ lead, activities }: LeadDetailProps) {
                   <div>
                     <div className="text-sm text-muted-foreground mb-1">{t('dealValue')}</div>
                     <div className="flex items-center gap-2">
-                      <TrendingUp className="h-4 w-4 text-green-600" />
-                      <span className="font-semibold text-green-600">
+                      <TrendingUp className="h-4 w-4 text-tone-positive" />
+                      <span className="font-semibold text-tone-positive">
                         {lead.deal_value.toLocaleString()}
                       </span>
                     </div>
@@ -158,12 +159,12 @@ export function LeadDetail({ lead, activities }: LeadDetailProps) {
             )}
 
             {lead.lost_reason && lead.stage === 'lost' && (
-              <Card className="lg:col-span-2 border-red-200 bg-red-50">
+              <Card className="lg:col-span-2 border-tone-critical/30 bg-tone-critical-bg">
                 <CardHeader>
-                  <CardTitle className="text-red-900">{t('lostReason')}</CardTitle>
+                  <CardTitle className="text-tone-critical">{t('lostReason')}</CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <p className="text-sm text-red-800">{lead.lost_reason}</p>
+                  <p className="text-sm text-tone-critical">{lead.lost_reason}</p>
                 </CardContent>
               </Card>
             )}

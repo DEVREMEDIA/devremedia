@@ -12,16 +12,6 @@ type LeadColumnProps = {
   onLeadClick: (lead: Lead) => void;
 };
 
-const stageColors: Record<LeadStage, string> = {
-  new: 'bg-slate-50 border-slate-200',
-  contacted: 'bg-blue-50 border-blue-200',
-  qualified: 'bg-indigo-50 border-indigo-200',
-  proposal: 'bg-purple-50 border-purple-200',
-  negotiation: 'bg-amber-50 border-amber-200',
-  won: 'bg-green-50 border-green-200',
-  lost: 'bg-red-50 border-red-200',
-};
-
 export function LeadColumn({ stage, leads, onLeadClick }: LeadColumnProps) {
   const { setNodeRef, isOver } = useDroppable({
     id: stage,
@@ -33,8 +23,7 @@ export function LeadColumn({ stage, leads, onLeadClick }: LeadColumnProps) {
     <div
       ref={setNodeRef}
       className={cn(
-        'flex flex-col rounded-lg border-2 border-dashed p-3 min-h-[500px] transition-colors',
-        stageColors[stage],
+        'flex flex-col rounded-lg border-2 border-dashed border-border bg-muted/30 p-3 min-h-[500px] transition-colors',
         isOver && 'ring-2 ring-primary ring-offset-2',
       )}
     >

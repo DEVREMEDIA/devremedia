@@ -5,10 +5,11 @@ import { Calendar, AlertCircle, FileText, FolderKanban } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Checkbox } from '@/components/ui/checkbox';
+import { StatusBadge } from '@/components/shared/status-badge';
 import { TaskStatusUpdate } from './task-status-update';
-import { PRIORITY_LABELS } from '@/lib/constants';
-import type { Task, Priority } from '@/types/index';
+import type { Task } from '@/types/index';
 import { cn } from '@/lib/utils';
+import { formatDate } from '@/lib/format';
 
 interface SubTask {
   id: string;
@@ -22,13 +23,6 @@ interface TaskDetailProps {
     metadata?: Record<string, unknown>;
   };
 }
-
-const priorityColorMap: Record<Priority, string> = {
-  low: 'text-blue-600',
-  medium: 'text-yellow-600',
-  high: 'text-orange-600',
-  urgent: 'text-red-600',
-};
 
 export function TaskDetail({ task }: TaskDetailProps) {
   const t = useTranslations('employee.tasks');
@@ -89,14 +83,7 @@ export function TaskDetail({ task }: TaskDetailProps) {
             </div>
             <div className="space-y-2">
               <p className="text-sm font-medium text-muted-foreground">{tCommon('priority')}</p>
-              <span
-                className={cn(
-                  'inline-flex items-center text-sm font-medium px-3 py-1.5 rounded-md bg-gray-100',
-                  priorityColorMap[task.priority],
-                )}
-              >
-                {PRIORITY_LABELS[task.priority]}
-              </span>
+              <StatusBadge status={task.priority} />
             </div>
           </div>
 
@@ -107,13 +94,13 @@ export function TaskDetail({ task }: TaskDetailProps) {
               <div
                 className={cn(
                   'flex items-center gap-2 text-sm',
-                  isOverdue ? 'text-red-600 font-semibold' : 'text-foreground',
+                  isOverdue ? 'text-tone-critical font-semibold' : 'text-foreground',
                 )}
               >
                 {isOverdue && <AlertCircle className="h-4 w-4" />}
                 <Calendar className="h-4 w-4" />
                 <span>
-                  {new Date(task.due_date).toLocaleDateString('en-US', {
+                  {formatDate(task.due_date, {
                     weekday: 'long',
                     month: 'long',
                     day: 'numeric',

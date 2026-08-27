@@ -47,14 +47,14 @@ export function UniversityBrowse({ categories }: UniversityBrowseProps) {
             <div
               className={cn(
                 'group rounded-xl border bg-card p-5 h-full cursor-pointer transition-all duration-300',
-                'hover:shadow-[0_8px_30px_-4px_rgba(234,179,8,0.15)] hover:-translate-y-0.5',
+                'lift-on-hover',
               )}
             >
               <div className="flex items-start justify-between mb-3">
-                <div className="p-2.5 rounded-xl bg-amber-500/10">
-                  <BookOpen className="h-5 w-5 text-amber-500" />
+                <div className="p-2.5 rounded-xl bg-primary/10">
+                  <BookOpen className="h-5 w-5 text-primary" />
                 </div>
-                <ChevronRight className="h-5 w-5 text-muted-foreground/40 group-hover:text-amber-500 transition-colors" />
+                <ChevronRight className="h-5 w-5 text-muted-foreground/40 group-hover:text-primary transition-colors" />
               </div>
               <h3 className="font-semibold text-base mb-1.5">{category.title}</h3>
               {category.description && (

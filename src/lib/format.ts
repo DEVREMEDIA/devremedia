@@ -41,6 +41,24 @@ export function getInitials(name: string | null | undefined, fallback: string = 
   return (parts[0].charAt(0) + parts[parts.length - 1].charAt(0)).toUpperCase();
 }
 
+const dateFormatters = new Map<string, Intl.DateTimeFormat>();
+
+function dateFormatter(options: Intl.DateTimeFormatOptions): Intl.DateTimeFormat {
+  const key = JSON.stringify(options);
+  const cached = dateFormatters.get(key);
+  if (cached) return cached;
+  const fmt = new Intl.DateTimeFormat('el-GR', options);
+  dateFormatters.set(key, fmt);
+  return fmt;
+}
+
+export function formatDate(
+  date: string | number | Date,
+  options: Intl.DateTimeFormatOptions,
+): string {
+  return dateFormatter(options).format(new Date(date));
+}
+
 export function formatPathSegment(segment: string): string {
   return segment
     .split('-')

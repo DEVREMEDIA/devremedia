@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import { Download } from 'lucide-react';
+import { useTranslations } from 'next-intl';
 import { Button } from '@/components/ui/button';
 import { getSalesResourceDownloadUrl } from '@/lib/actions/sales-resources';
 import { toast } from 'sonner';
@@ -13,6 +14,7 @@ interface ResourceDownloadButtonProps {
 }
 
 export function ResourceDownloadButton({ filePath }: ResourceDownloadButtonProps) {
+  const t = useTranslations('common');
   const [isLoading, setIsLoading] = useState(false);
 
   const handleDownload = async () => {
@@ -36,12 +38,12 @@ export function ResourceDownloadButton({ filePath }: ResourceDownloadButtonProps
       {isLoading ? (
         <>
           <LoadingSpinner size="sm" className="mr-2" />
-          Loading...
+          {t('loading')}
         </>
       ) : (
         <>
           <Download className="h-4 w-4 mr-2" />
-          Download
+          {t('download')}
         </>
       )}
     </Button>
