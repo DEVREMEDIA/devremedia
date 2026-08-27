@@ -653,13 +653,28 @@ test.describe('design identity — detail folders', () => {
       .first()
       .locator('a[href^="/admin/filming-requests/"]')
       .first();
+
+    // Χωρίς αιτήματα δεν υπάρχει οθόνη λεπτομέρειας να ελεγχθεί. Η σουίτα δεν
+    // έχει fixtures (#119), οπότε το περιεχόμενο της βάσης δεν είναι δεδομένο.
+    test.skip((await firstRequestLink.count()) === 0, 'No filming request in this database');
+
     await firstRequestLink.click();
     await expect(page).toHaveURL(/\/admin\/filming-requests\/[^/]+$/);
 
     await expect(page.locator('[data-slot="page-heading"]')).toHaveCount(1);
 
+    // Το κουμπί υπάρχει μόνο σε αίτημα που δεν έχει κριθεί ακόμα, και η λίστα
+    // ΔΕΝ ταξινομεί κατά κατάσταση — η πρώτη γραμμή μπορεί κάλλιστα να είναι
+    // ήδη εγκεκριμένη. Πριν από αυτόν τον έλεγχο το test κλικάριζε στα τυφλά
+    // και θα κοκκίνιζε ανάλογα με το τι έτυχε να είναι πρώτο.
+    const accept = page.getByRole('button', { name: /Αποδοχή|Accept/ });
+    test.skip(
+      (await accept.count()) === 0,
+      'Newest request is already reviewed — no dialog to open',
+    );
+
     // Το άνοιγμα είναι η επιβεβαίωση — κανένα submit, κανένα approve/reject/convert.
-    await page.getByRole('button', { name: /Αποδοχή|Accept/ }).click();
+    await accept.click();
     const dialog = page.getByRole('dialog');
     await expect(dialog).toBeVisible();
 

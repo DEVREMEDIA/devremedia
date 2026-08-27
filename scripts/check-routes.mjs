@@ -32,12 +32,32 @@ for (const [route, target] of stubs) {
 const files = walk('src').filter((p) => /\.(ts|tsx)$/.test(p));
 for (const f of files) {
   const src = readFileSync(f, 'utf8');
+  // ΓΝΩΣΤΟ ΟΡΙΟ: πιάνει μόνο κυριολεκτικό μονό εισαγωγικό. Ένα
+  // revalidatePath(`/admin/${id}`) δεν ελέγχεται — και σε αντίθεση με το
+  // backHref από κάτω, τα δυναμικά μονοπάτια εδώ είναι συνηθισμένα και
+  // θεμιτά, οπότε το «κλείσε προς τα μέσα» θα έριχνε το build για κανονικό
+  // κώδικα. Γραμμένο εδώ ώστε το κενό να είναι δηλωμένο, όχι υπονοούμενο.
   for (const m of src.matchAll(/revalidatePath\(\s*'([^']+)'/g)) {
     if (stubs.has(m[1])) errors.push(`${f}: revalidatePath('${m[1]}') targets a stub (use ${stubs.get(m[1]).split('?')[0]})`);
   }
-  for (const m of src.matchAll(/backHref=["']([^"']+)["']/g)) {
-    const route = m[1].split('?')[0];
-    if (stubs.has(route)) errors.push(`${f}: backHref="${m[1]}" targets a stub (use ${stubs.get(route)})`);
+  // Ο κανόνας κλείνει ΠΡΟΣ ΤΑ ΜΕΣΑ. Πρώτη γραφή έπιανε μόνο `backHref="..."`,
+  // οπότε ένα template literal ή μια σταθερά περνούσαν αόρατα — έδινε
+  // περισσότερη βεβαιότητα απ' όση κέρδιζε, που είναι χειρότερο από το να
+  // μην υπάρχει. Τώρα κάθε `backHref=` εξετάζεται: αν δεν είναι απλή
+  // κυριολεξία, ο φύλακας ΔΕΝ μπορεί να την επαληθεύσει και το λέει, αντί
+  // να σιωπήσει. Και οι τέσσερις σημερινοί είναι κυριολεξίες, άρα σήμερα
+  // δεν κοστίζει τίποτα· την ημέρα που κάποιος χρειαστεί δυναμικό προορισμό,
+  // το θέλουμε να είναι απόφαση, όχι παράπλευρη απώλεια.
+  for (const m of src.matchAll(/backHref=(["']([^"']+)["']|\{)/g)) {
+    if (m[1] === '{') {
+      errors.push(
+        `${f}: backHref={...} is not a plain literal, so it cannot be checked against the ${stubs.size} redirect stubs. ` +
+          `Use a literal, or decide deliberately and exempt it here.`,
+      );
+      continue;
+    }
+    const route = m[2].split('?')[0];
+    if (stubs.has(route)) errors.push(`${f}: backHref="${m[2]}" targets a stub (use ${stubs.get(route)})`);
   }
 }
 
