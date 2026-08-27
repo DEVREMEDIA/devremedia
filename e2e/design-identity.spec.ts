@@ -500,9 +500,15 @@ test.describe('design identity — detail screens', () => {
 
     const invoicesTab = page.locator('a[role="tab"][href*="tab=invoices"]');
     await expect(invoicesTab).toHaveAttribute('aria-selected', 'true');
-    // «Τιμολόγια» (τίτλος με γραμμές) ή «Δεν υπάρχουν τιμολόγια» (κενή
-    // κατάσταση) — και τα δύο περιέχουν το ίδιο θέμα, ό,τι κι αν έχει το έργο.
-    await expect(page.getByText(/τιμολ/i).first()).toBeVisible();
+    // Το σώμα της καρτέλας, όχι ο σύνδεσμός της. Ένα σκέτο getByText(/τιμολ/i)
+    // θα έπιανε πρώτα την ίδια την ετικέτα «Τιμολόγια» πάνω στη γραμμή
+    // καρτελών, και θα περνούσε ακόμα και με τελείως άδεια καρτέλα. Το σώμα
+    // έχει δύο μόνο μορφές — πίνακα ή κενή κατάσταση — και καμία από τις δύο
+    // δεν είναι σύνδεσμος καρτέλας.
+    const invoicesBody = page
+      .locator('[data-slot="table-container"]')
+      .or(page.getByRole('heading', { name: /Δεν υπάρχουν τιμολόγια|No invoices yet/ }));
+    await expect(invoicesBody.first()).toBeVisible();
   });
 
   test("the client detail's tabs are in the URL", async ({ page }) => {
