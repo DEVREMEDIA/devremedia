@@ -54,7 +54,7 @@ export function ClientProjectDetail({
 
   return (
     <DetailShell
-      backHref="/client/projects"
+      backHref="/client/productions"
       backLabel={t('title')}
       title={project.title}
       meta={
