@@ -5,7 +5,8 @@ import { useRouter } from 'next/navigation';
 import { useTranslations } from 'next-intl';
 import { Client } from '@/types/index';
 import type { ClientDrawerMode, ProjectWithClient, InvoiceWithRelations } from '@/types/relations';
-import { PageHeading } from '@/components/shared/page-heading';
+import { DetailShell } from '@/components/shared/detail-shell';
+import type { SectionTab } from '@/components/shell-v2/section-tabs';
 import { StatusBadge } from '@/components/shared/status-badge';
 import { UserAvatar } from '@/components/shared/user-avatar';
 import { ConfirmDialog } from '@/components/shared/confirm-dialog';
@@ -18,13 +19,22 @@ import { ClientActivityTab } from '@/components/admin/clients/client-activity-ta
 import { ClientDrawer } from '@/components/admin/clients/client-drawer';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Pencil, Trash, Mail, ArrowLeft } from 'lucide-react';
+import { Pencil, Trash, Mail } from 'lucide-react';
 import Link from 'next/link';
 import { format } from 'date-fns';
 import { deleteClient } from '@/lib/actions/clients';
 import { inviteClient } from '@/lib/actions/auth';
 import { toast } from 'sonner';
+
+/** Οι καρτέλες με τη σειρά τους. Το `page.tsx` επικυρώνει το `?tab=` πάνω σε αυτή. */
+export const CLIENT_TABS: readonly string[] = [
+  'overview',
+  'projects',
+  'invoices',
+  'contracts',
+  'agreement',
+  'activity',
+];
 
 interface ClientDetailProps {
   client: Client;
@@ -35,6 +45,7 @@ interface ClientDetailProps {
   };
   initialProjects: ProjectWithClient[];
   initialInvoices: InvoiceWithRelations[];
+  activeTab: string;
 }
 
 export function ClientDetail({
@@ -42,13 +53,13 @@ export function ClientDetail({
   stats,
   initialProjects,
   initialInvoices,
+  activeTab,
 }: ClientDetailProps) {
   const t = useTranslations('clients');
   const tc = useTranslations('common');
   const router = useRouter();
 
   // Shell state
-  const [activeTab, setActiveTab] = useState('overview');
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
   const [isInviting, setIsInviting] = useState(false);
@@ -102,38 +113,52 @@ export function ClientDetail({
     }
   };
 
-  return (
-    <div className="space-y-6">
-      {/* Header */}
-      <PageHeading title={client.contact_name} subtitle={client.company_name || t('clientDetails')}>
-        <Button variant="outline" asChild>
-          <Link href="/admin/clients">
-            <ArrowLeft className="mr-2 h-4 w-4" />
-            {tc('back')}
-          </Link>
-        </Button>
-        <Button variant="outline" asChild>
-          <Link href={`/admin/clients/${client.id}/edit`}>
-            <Pencil className="mr-2 h-4 w-4" />
-            {tc('edit')}
-          </Link>
-        </Button>
-        {!client.user_id && (
-          <Button variant="outline" onClick={handleInvite} disabled={isInviting}>
-            <Mail className="mr-2 h-4 w-4" />
-            {t('inviteToPortal')}
-          </Button>
-        )}
-        <Button
-          variant="outline"
-          className="text-destructive hover:bg-destructive hover:text-destructive-foreground"
-          onClick={() => setDeleteDialogOpen(true)}
-        >
-          <Trash className="mr-2 h-4 w-4" />
-          {tc('delete')}
-        </Button>
-      </PageHeading>
+  const TABS: SectionTab[] = [
+    { key: 'overview', label: t('tabs.overview') },
+    { key: 'projects', label: t('tabs.projects') },
+    { key: 'invoices', label: t('tabs.invoices') },
+    { key: 'contracts', label: t('tabs.contracts') },
+    { key: 'agreement', label: t('tabs.agreement') },
+    { key: 'activity', label: t('tabs.activity') },
+  ];
 
+  return (
+    <DetailShell
+      backHref="/admin/clients"
+      backLabel={t('title')}
+      title={client.contact_name}
+      meta={
+        <span className="flex flex-wrap items-center gap-3">
+          <span>{client.company_name || t('clientDetails')}</span>
+          <StatusBadge status={client.status} />
+        </span>
+      }
+      actions={
+        <>
+          <Button variant="outline" asChild>
+            <Link href={`/admin/clients/${client.id}/edit`}>
+              <Pencil className="mr-2 h-4 w-4" />
+              {tc('edit')}
+            </Link>
+          </Button>
+          {!client.user_id && (
+            <Button variant="outline" onClick={handleInvite} disabled={isInviting}>
+              <Mail className="mr-2 h-4 w-4" />
+              {t('inviteToPortal')}
+            </Button>
+          )}
+          <Button
+            variant="outline"
+            className="text-destructive hover:bg-destructive hover:text-destructive-foreground"
+            onClick={() => setDeleteDialogOpen(true)}
+          >
+            <Trash className="mr-2 h-4 w-4" />
+            {tc('delete')}
+          </Button>
+        </>
+      }
+      tabs={{ items: TABS, active: activeTab, basePath: `/admin/clients/${client.id}` }}
+    >
       {/* Profile Card */}
       <Card>
         <CardContent className="pt-6">
@@ -147,7 +172,6 @@ export function ClientDetail({
                 )}
               </div>
               <div className="flex flex-wrap items-center gap-4">
-                <StatusBadge status={client.status} />
                 <span className="text-sm text-muted-foreground">
                   {t('created')} {format(new Date(client.created_at), 'MMM d, yyyy')}
                 </span>
@@ -157,61 +181,47 @@ export function ClientDetail({
         </CardContent>
       </Card>
 
-      {/* Tabs */}
-      <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
-        <div className="overflow-x-auto -mx-4 px-4 md:mx-0 md:px-0">
-          <TabsList className="inline-flex w-auto min-w-full sm:min-w-0">
-            <TabsTrigger value="overview">{t('tabs.overview')}</TabsTrigger>
-            <TabsTrigger value="projects">{t('tabs.projects')}</TabsTrigger>
-            <TabsTrigger value="invoices">{t('tabs.invoices')}</TabsTrigger>
-            <TabsTrigger value="contracts">{t('tabs.contracts')}</TabsTrigger>
-            <TabsTrigger value="agreement">{t('tabs.agreement')}</TabsTrigger>
-            <TabsTrigger value="activity">{t('tabs.activity')}</TabsTrigger>
-          </TabsList>
-        </div>
+      {activeTab === 'overview' && (
+        <ClientOverviewTab
+          client={client}
+          stats={stats}
+          onViewAllActivity={() => router.push(`/admin/clients/${client.id}?tab=activity`)}
+        />
+      )}
 
-        <TabsContent value="overview">
-          <ClientOverviewTab
-            client={client}
-            stats={stats}
-            onViewAllActivity={() => setActiveTab('activity')}
-          />
-        </TabsContent>
+      {activeTab === 'projects' && (
+        <ClientProjectsTab
+          clientId={client.id}
+          refreshKey={refreshKey}
+          onOpenDrawer={handleOpenDrawer}
+          initialProjects={initialProjects}
+        />
+      )}
 
-        <TabsContent value="projects">
-          <ClientProjectsTab
-            clientId={client.id}
-            refreshKey={refreshKey}
-            onOpenDrawer={handleOpenDrawer}
-            initialProjects={initialProjects}
-          />
-        </TabsContent>
+      {activeTab === 'invoices' && (
+        <ClientInvoicesTab
+          clientId={client.id}
+          refreshKey={refreshKey}
+          onOpenDrawer={handleOpenDrawer}
+          initialInvoices={initialInvoices}
+        />
+      )}
 
-        <TabsContent value="invoices">
-          <ClientInvoicesTab
-            clientId={client.id}
-            refreshKey={refreshKey}
-            onOpenDrawer={handleOpenDrawer}
-            initialInvoices={initialInvoices}
-          />
-        </TabsContent>
+      {activeTab === 'contracts' && (
+        <ClientContractsTab clientId={client.id} refreshKey={refreshKey} />
+      )}
 
-        <TabsContent value="contracts">
-          <ClientContractsTab clientId={client.id} refreshKey={refreshKey} />
-        </TabsContent>
+      {activeTab === 'agreement' && (
+        <ClientAgreementTab
+          clientId={client.id}
+          refreshKey={refreshKey}
+          onSaved={handleDrawerSuccess}
+        />
+      )}
 
-        <TabsContent value="agreement">
-          <ClientAgreementTab
-            clientId={client.id}
-            refreshKey={refreshKey}
-            onSaved={handleDrawerSuccess}
-          />
-        </TabsContent>
-
-        <TabsContent value="activity">
-          <ClientActivityTab clientId={client.id} refreshKey={refreshKey} />
-        </TabsContent>
-      </Tabs>
+      {activeTab === 'activity' && (
+        <ClientActivityTab clientId={client.id} refreshKey={refreshKey} />
+      )}
 
       {/* Drawer */}
       <ClientDrawer
@@ -233,6 +243,6 @@ export function ClientDetail({
         loading={isDeleting}
         destructive
       />
-    </div>
+    </DetailShell>
   );
 }
