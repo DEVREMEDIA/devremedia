@@ -1595,7 +1595,10 @@
     "notes": "Σημειώσεις",
     "activityHistory": "Ιστορικό Δραστηριοτήτων",
     "unknown": "Άγνωστο",
-    "lostReason": "Λόγος Απώλειας"
+    "lostReason": "Λόγος Απώλειας",
+    "backToPipeline": "Πίσω στο Pipeline",
+    "backToLead": "Πίσω στο Lead",
+    "editLeadDetailsFor": "Επεξεργασία στοιχείων για {name}"
   },
 
   "university": {

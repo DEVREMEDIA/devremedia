@@ -1595,7 +1595,10 @@
     "notes": "Notes",
     "activityHistory": "Activity History",
     "unknown": "Unknown",
-    "lostReason": "Lost Reason"
+    "lostReason": "Lost Reason",
+    "backToPipeline": "Back to Pipeline",
+    "backToLead": "Back to Lead",
+    "editLeadDetailsFor": "Edit details for {name}"
   },
 
   "university": {
