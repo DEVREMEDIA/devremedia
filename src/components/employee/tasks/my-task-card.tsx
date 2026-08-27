@@ -4,27 +4,12 @@ import Link from 'next/link';
 import { Calendar, AlertCircle, ArrowRight } from 'lucide-react';
 import { StatusBadge } from '@/components/shared/status-badge';
 import { TaskStatusUpdate } from './task-status-update';
-import { PRIORITY_LABELS } from '@/lib/constants';
-import type { Task, Priority } from '@/types/index';
+import type { Task } from '@/types/index';
 import { cn } from '@/lib/utils';
 
 interface MyTaskCardProps {
   task: Task & { project?: { title: string } | null };
 }
-
-const priorityColorMap: Record<Priority, string> = {
-  low: 'text-blue-600 dark:text-blue-400',
-  medium: 'text-amber-600 dark:text-amber-400',
-  high: 'text-orange-600 dark:text-orange-400',
-  urgent: 'text-red-600 dark:text-red-400',
-};
-
-const priorityBgMap: Record<Priority, string> = {
-  low: 'bg-blue-500/10',
-  medium: 'bg-amber-500/10',
-  high: 'bg-orange-500/10',
-  urgent: 'bg-red-500/10',
-};
 
 export function MyTaskCard({ task }: MyTaskCardProps) {
   const isOverdue = task.due_date && task.status !== 'done' && new Date(task.due_date) < new Date();
@@ -65,15 +50,7 @@ export function MyTaskCard({ task }: MyTaskCardProps) {
         {/* Badges and due date */}
         <div className="flex flex-wrap items-center gap-2">
           <StatusBadge status={task.status} />
-          <span
-            className={cn(
-              'text-xs font-medium px-2 py-1 rounded-md',
-              priorityBgMap[task.priority],
-              priorityColorMap[task.priority],
-            )}
-          >
-            {PRIORITY_LABELS[task.priority]}
-          </span>
+          <StatusBadge status={task.priority} />
 
           {task.due_date && (
             <div
