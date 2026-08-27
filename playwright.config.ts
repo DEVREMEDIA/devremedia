@@ -35,6 +35,16 @@ export default defineConfig({
   // Reporter to use
   reporter: [['html'], ['list']],
 
+  expect: {
+    // Same cold-compiler problem as the test timeout above, one layer in.
+    // `toHaveURL` passes the instant a client-side navigation changes the URL,
+    // and the very next assertion then waits on markup that Turbopack is still
+    // building. At the 5s default that reads as "the shared heading is missing
+    // from this screen" — which is exactly what it looked like on a project
+    // detail page whose heading is demonstrably there.
+    timeout: Number(process.env.E2E_EXPECT_TIMEOUT_MS ?? 15 * 1000),
+  },
+
   // Shared settings for all the projects below
   use: {
     // Base URL to use in actions like `await page.goto('/')`
