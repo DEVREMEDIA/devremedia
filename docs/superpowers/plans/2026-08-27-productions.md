@@ -418,7 +418,58 @@ git commit -m "feat(design): two more lists admit they are tables"
 
 ---
 
-### Task 8: Lock the area in
+### Task 8: The four files the inventory missed
+
+**Files:**
+- Modify: `src/components/admin/tasks/task-card.tsx`
+- Modify: `src/components/admin/tasks/task-column.tsx`
+- Modify: `src/components/admin/deliverables/version-history.tsx`
+- Modify: `src/components/admin/deliverables/deliverable-detail.tsx`
+
+**Context:** the inventory's colour table listed eight files. There are twelve. These four carry eighteen more raw colours between them, and the guard task after this one covers both of their folders whole — so without this task it fails.
+
+Two of them are the **task board**, and they are the same disease Task 2 cured on the project board: a card with a priority stripe and a column with a status accent, each painting itself. Two are **deliverables**, in the folder Task 4 already worked in.
+
+- [ ] **Step 1: Map each colour to a tone or a structural token**
+
+The tones, verified against the real resolver:
+
+| status / priority | tone |
+|---|---|
+| `urgent` | critical · `high` | caution · `medium`, `low` | **neutral** |
+| `todo`, `in_progress` | neutral · `review` | caution · `done` | positive |
+| `pending_review`, `revision_requested` | caution · `approved`, `final` | positive |
+
+Read Task 2's commit before starting — it solved the board-colour problem once already, including why the tone→class map has to stay a static object (Tailwind cannot see a dynamically built class name). Follow the shape it established rather than inventing a second one.
+
+Structural roles take `text-muted-foreground`, `bg-card`, `bg-muted`, `border-border`, `text-foreground`, `text-destructive`.
+
+**If a colour maps onto neither a tone nor a structural token, stop and report it.**
+
+- [ ] **Step 2: Any untranslated status or priority takes its label from the catalogues**
+
+`statuses.priority` and `statuses.taskStatus` already exist, fully translated. Reuse them; add nothing. Do **not** touch `PRIORITY_LABELS` in `src/lib/constants` — seventeen files outside this slice import it.
+
+- [ ] **Step 3: Verify**
+
+After the change both of these must return nothing:
+
+```bash
+grep -rnE "(text|bg|border|ring|fill|stroke|from|via|to)-(white|black|red|orange|amber|yellow|lime|green|emerald|teal|cyan|sky|blue|indigo|violet|purple|fuchsia|pink|rose|slate|gray|grey|zinc|neutral|stone)(-[0-9]{2,3})?\b|#[0-9a-fA-F]{3,8}|rgba?\(" src/components/admin/tasks/ src/components/admin/deliverables/
+```
+
+`pnpm type-check` → clean. `pnpm build` → succeeds with both guards `ok`. Lint: no new warnings, none in a file you touched.
+
+- [ ] **Step 4: Commit**
+
+```bash
+git add src/components/admin/tasks/ src/components/admin/deliverables/
+git commit -m "feat(design): the four files the inventory did not see"
+```
+
+---
+
+### Task 9: Lock the area in
 
 **Files:**
 - Modify: `scripts/check-design.mjs`
