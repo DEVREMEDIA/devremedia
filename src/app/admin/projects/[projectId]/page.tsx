@@ -24,29 +24,34 @@ export async function generateMetadata({ params }: ProjectDetailPageProps) {
 
 export default async function ProjectDetailPage({ params, searchParams }: ProjectDetailPageProps) {
   const { projectId } = await params;
-  const result = await getProject(projectId);
+
+  // Ο χρήστης διαβάζεται εδώ αντί για ένα useEffect μέσα στην οθόνη: η καρτέλα
+  // μηνυμάτων τον χρειάζεται για να ξέρει ποιος μιλά, και μέχρι τώρα έδειχνε
+  // κενή κατάσταση όσο περίμενε ένα δεύτερο ταξίδι στον διακομιστή.
+  const supabase = await createClient();
+
+  // Τρία ανεξάρτητα ταξίδια στον διακομιστή (project, contracts, user) γίνονταν
+  // το ένα μετά το άλλο· τώρα ταξιδεύουν μαζί. Κανένα δεν εξαρτάται από το
+  // αποτέλεσμα κάποιου άλλου — το contracts φιλτράρει με το projectId του route,
+  // όχι με δεδομένα του project, και ο δικός του requireUser() ελέγχει την
+  // εξουσιοδότηση μόνος του.
+  const [result, contractsResult, userResult] = await Promise.all([
+    getProject(projectId),
+    getContractsByProject(projectId),
+    supabase.auth.getUser(),
+  ]);
 
   if (result.error) {
     notFound();
   }
 
   const project = result.data as ProjectWithClient;
-
-  // Fetch contracts for this project
-  const contractsResult = await getContractsByProject(projectId);
   const contracts = contractsResult.data ?? [];
+  const user = userResult.data.user;
 
   // Άγνωστη καρτέλα πέφτει στην πρώτη, όπως ακριβώς κάνουν οι κόμβοι.
   const { tab } = await searchParams;
   const activeTab = PROJECT_TABS.includes(tab ?? '') ? (tab as string) : 'overview';
-
-  // Ο χρήστης διαβάζεται εδώ αντί για ένα useEffect μέσα στην οθόνη: η καρτέλα
-  // μηνυμάτων τον χρειάζεται για να ξέρει ποιος μιλά, και μέχρι τώρα έδειχνε
-  // κενή κατάσταση όσο περίμενε ένα δεύτερο ταξίδι στον διακομιστή.
-  const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
 
   return (
     <ProjectDetail

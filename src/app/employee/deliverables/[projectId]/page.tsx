@@ -29,23 +29,24 @@ export default async function EmployeeDeliverablesPage({
 
   if (!tasks || tasks.length === 0) notFound();
 
-  const { data: project } = await supabase
-    .from('projects')
-    .select('id, title, client:clients(id, company_name, contact_name)')
-    .eq('id', projectId)
-    .single();
+  const [{ data: project }, { data: deliverables }] = await Promise.all([
+    supabase
+      .from('projects')
+      .select('id, title, client:clients(id, company_name, contact_name)')
+      .eq('id', projectId)
+      .single(),
+    supabase
+      .from('deliverables')
+      .select('*')
+      .eq('project_id', projectId)
+      .order('created_at', { ascending: false }),
+  ]);
 
   if (!project) notFound();
 
   const client = Array.isArray(project.client) ? project.client[0] : project.client;
   const clientName = client?.company_name ?? client?.contact_name ?? undefined;
   const projectName = project.title;
-
-  const { data: deliverables } = await supabase
-    .from('deliverables')
-    .select('*')
-    .eq('project_id', projectId)
-    .order('created_at', { ascending: false });
 
   return (
     <div className="space-y-6">
