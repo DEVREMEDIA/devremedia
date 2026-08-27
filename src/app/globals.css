@@ -47,6 +47,7 @@
   --color-input: var(--input);
   --color-border: var(--border);
   --color-destructive: var(--destructive);
+  --color-destructive-foreground: var(--destructive-foreground);
   --color-accent-foreground: var(--accent-foreground);
   --color-accent: var(--accent);
   --color-muted-foreground: var(--muted-foreground);
@@ -86,6 +87,12 @@
   --accent: #f3efe3;
   --accent-foreground: #33312a;
   --destructive: #b04a32;
+  /* Το μελάνι που κάθεται πάνω σε καταστροφική επιφάνεια. Δεν είναι το
+     --primary-foreground: εκείνο ακολουθεί τον χρυσό, που στη σκοτεινή
+     έκδοση είναι ανοιχτός και άρα παίρνει σχεδόν μαύρο μελάνι — λάθος
+     πάνω σε κόκκινο. Κρέμα και στις δύο εκδόσεις, γιατί και οι δύο
+     αποχρώσεις του --destructive είναι μεσαίου τόνου. */
+  --destructive-foreground: #fffdf7;
   --border: #e3dfd3;
   --input: #dad5c7;
   --ring: #8a6d1f;
@@ -143,6 +150,10 @@
   --accent: #1c1a15;
   --accent-foreground: #ece9e2;
   --destructive: #d4674f;
+  /* Λίγο πιο σβηστό από την ανοιχτή έκδοση: εδώ το κουμπί βάφεται
+     `bg-destructive/60` πάνω σε σκοτεινό φόντο, οπότε η πραγματική
+     επιφάνεια είναι αρκετά πιο σκούρα από το ίδιο το --destructive. */
+  --destructive-foreground: #ece9e2;
   --border: rgba(236, 233, 226, 0.13);
   --input: rgba(236, 233, 226, 0.18);
   --ring: #c9a033;
@@ -189,6 +200,21 @@
     scroll-margin-top: 80px;
   }
 
+  /* Πάτωμα εστίασης — γράφεται σε box-shadow, όχι σε outline. 17 αρχεία
+     του προϊόντος βάζουν `outline-none`· μόνο 11 (τα ui primitives) το
+     αντισταθμίζουν με δικό τους focus-visible ring. Ένας γενικός κανόνας
+     πάνω σε `outline` θα χανόταν ακριβώς εκεί που τον έχουμε πιο πολύ
+     ανάγκη, γιατί το `outline-none` (utilities layer) νικά πάντα το δικό
+     μας layer, ό,τι κι αν γράψουμε — ασχέτως αν αντισταθμίζεται ή όχι.
+     Το box-shadow δεν το αγγίζει κανένα ασύζευκτο `outline-none`, οπότε
+     επιβιώνει ακριβώς εκεί. Και όπου ένα primitive ήδη σχεδιάζει δικό
+     του δακτύλιο σε box-shadow (ίδια ιδιότητα, ανώτερο layer), αυτό
+     κερδίζει αυτόματα — ένα πάτωμα, ποτέ δύο δακτύλιοι πάνω στο ίδιο
+     στοιχείο. */
+  :focus-visible {
+    outline: none;
+    box-shadow: 0 0 0 2px var(--background), 0 0 0 4px var(--ring);
+  }
 }
 
 /* ═══════════════════════════════════════════════════════════════
@@ -210,6 +236,33 @@
 @media (prefers-reduced-motion: reduce) {
   .lift-on-hover:hover {
     transform: none;
+  }
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   REDUCED MOTION — product-wide floor. Product-wide, not landing-only:
+   the block further down still owns its own named landing/cinematic
+   classes (kept as-is, not removed) — this is the general treatment
+   that reaches everything else, including shell-v2, dashboards, and
+   any component that transitions or animates without knowing this
+   preference exists.
+
+   Duration collapses to near-zero rather than `transition: none` /
+   `animation: none`, and on purpose: a transition or animation still
+   *runs* and still *finishes* — instantly instead of smoothly — so
+   anything that depends on it to become visible (e.g. an element that
+   starts at opacity: 0 and relies on a transition or keyframe to
+   reach opacity: 1) still arrives. Only the motion itself disappears;
+   nothing gets stuck at its starting, often-invisible, state.
+   ═══════════════════════════════════════════════════════════════ */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
   }
 }
 
