@@ -2,8 +2,18 @@ import { getProject } from '@/lib/actions/projects';
 import { getContractsByProject } from '@/lib/actions/contracts';
 import { createClient } from '@/lib/supabase/server';
 import { ProjectWithClient } from '@/types';
-import { ProjectDetail, PROJECT_TABS } from './project-detail';
+import { ProjectDetail } from './project-detail';
 import { notFound } from 'next/navigation';
+
+/** Οι καρτέλες με τη σειρά τους. Ο server επικυρώνει εδώ το `?tab=`· από αρχείο 'use client' θα ερχόταν ως client reference. */
+const PROJECT_TABS: readonly string[] = [
+  'overview',
+  'tasks',
+  'deliverables',
+  'messages',
+  'invoices',
+  'contracts',
+];
 
 interface ProjectDetailPageProps {
   params: Promise<{ projectId: string }>;

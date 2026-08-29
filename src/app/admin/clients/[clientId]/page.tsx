@@ -5,7 +5,17 @@ import { getClient } from '@/lib/actions/clients';
 import { getProjects } from '@/lib/actions/projects';
 import { getInvoices } from '@/lib/actions/invoices';
 import { Client } from '@/types/index';
-import { ClientDetail, CLIENT_TABS } from './client-detail';
+import { ClientDetail } from './client-detail';
+
+/** Οι καρτέλες με τη σειρά τους. Ο server επικυρώνει εδώ το `?tab=`· από αρχείο 'use client' θα ερχόταν ως client reference. */
+const CLIENT_TABS: readonly string[] = [
+  'overview',
+  'projects',
+  'invoices',
+  'contracts',
+  'agreement',
+  'activity',
+];
 
 interface ClientDetailPageProps {
   params: Promise<{

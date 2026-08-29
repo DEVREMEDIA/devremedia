@@ -14,9 +14,6 @@ import { cn } from '@/lib/utils';
 import { formatDate } from '@/lib/format';
 import type { Task, Deliverable } from '@/types/index';
 
-/** Οι καρτέλες με τη σειρά τους. Το `page.tsx` επικυρώνει το `?tab=` πάνω σε αυτή. */
-export const PROJECT_TABS: readonly string[] = ['tasks', 'deliverables', 'messages'];
-
 interface ProjectDetailProps {
   project: {
     id: string;

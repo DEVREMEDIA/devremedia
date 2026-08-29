@@ -26,16 +26,6 @@ import { deleteClient } from '@/lib/actions/clients';
 import { inviteClient } from '@/lib/actions/auth';
 import { toast } from 'sonner';
 
-/** Οι καρτέλες με τη σειρά τους. Το `page.tsx` επικυρώνει το `?tab=` πάνω σε αυτή. */
-export const CLIENT_TABS: readonly string[] = [
-  'overview',
-  'projects',
-  'invoices',
-  'contracts',
-  'agreement',
-  'activity',
-];
-
 interface ClientDetailProps {
   client: Client;
   stats: {
