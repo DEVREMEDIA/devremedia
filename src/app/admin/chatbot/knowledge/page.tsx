@@ -1,5 +1,6 @@
 import Link from 'next/link';
 import { ArrowLeft } from 'lucide-react';
+import { getTranslations } from 'next-intl/server';
 import { PageHeading } from '@/components/shared/page-heading';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -8,14 +9,11 @@ import { SeedKnowledgeButton } from '@/components/admin/chatbot/seed-knowledge-b
 import { getChatKnowledgeEntries } from '@/lib/queries/chatbot';
 
 export default async function KnowledgeBasePage() {
-  const entries = await getChatKnowledgeEntries();
+  const [entries, t] = await Promise.all([getChatKnowledgeEntries(), getTranslations('chatbot')]);
 
   return (
     <div className="space-y-6">
-      <PageHeading
-        title="Knowledge Base"
-        subtitle="Manage the chatbot's knowledge for RAG responses"
-      >
+      <PageHeading title={t('knowledgeBase')} subtitle={t('knowledgeBaseSubtitle')}>
         <div className="flex items-center gap-2">
           <SeedKnowledgeButton />
           <Link href="/admin/chatbot">

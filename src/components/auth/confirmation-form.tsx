@@ -70,7 +70,7 @@ export function ConfirmationForm({ details }: ConfirmationFormProps) {
 
       toast.success(t('confirmationComplete'));
       const role = result.data?.role ?? 'client';
-      router.push(ROLE_DASHBOARDS[role] ?? '/client/dashboard');
+      router.push(ROLE_DASHBOARDS[role] ?? '/client/home');
     } catch {
       toast.error(t('unexpectedError'));
     } finally {

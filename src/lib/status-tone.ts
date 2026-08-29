@@ -57,6 +57,7 @@ export const TONE_RULES: ReadonlyArray<{ tone: Tone; match: readonly string[] }>
       'final',
       'published',
       'success',
+      'won',
     ],
   },
 ];

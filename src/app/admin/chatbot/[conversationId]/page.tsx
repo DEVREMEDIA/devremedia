@@ -1,6 +1,7 @@
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import { ArrowLeft } from 'lucide-react';
+import { getTranslations } from 'next-intl/server';
 import { PageHeading } from '@/components/shared/page-heading';
 import { Button } from '@/components/ui/button';
 import { ConversationDetail } from '@/components/admin/chatbot/conversation-detail';
@@ -13,7 +14,10 @@ export default async function ConversationDetailPage({
   params: Promise<{ conversationId: string }>;
 }) {
   const { conversationId } = await params;
-  const conversation = await getChatConversation(conversationId);
+  const [conversation, t] = await Promise.all([
+    getChatConversation(conversationId),
+    getTranslations('chatbot'),
+  ]);
 
   if (!conversation) {
     notFound();
@@ -22,8 +26,8 @@ export default async function ConversationDetailPage({
   return (
     <div className="space-y-6">
       <PageHeading
-        title="Conversation Detail"
-        subtitle={`Session: ${conversation.session_id.slice(0, 12)}...`}
+        title={t('conversationDetail')}
+        subtitle={`${t('table.session')}: ${conversation.session_id.slice(0, 12)}...`}
       >
         <Link href="/admin/chatbot">
           <Button variant="outline" size="sm">

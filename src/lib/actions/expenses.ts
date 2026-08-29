@@ -83,7 +83,7 @@ export async function createExpense(input: unknown): Promise<ActionResult<Expens
 
     if (error) return { data: null, error: error.message };
 
-    revalidatePath('/admin/expenses');
+    revalidatePath('/admin/finance');
     if (validated.project_id) {
       revalidatePath(`/admin/projects/${validated.project_id}`);
     }
@@ -111,7 +111,7 @@ export async function updateExpense(id: string, input: unknown): Promise<ActionR
 
     if (error) return { data: null, error: error.message };
 
-    revalidatePath('/admin/expenses');
+    revalidatePath('/admin/finance');
     if (data?.project_id) {
       revalidatePath(`/admin/projects/${data.project_id}`);
     }
@@ -139,7 +139,7 @@ export async function deleteExpense(id: string): Promise<ActionResult<void>> {
 
     if (error) return { data: null, error: error.message };
 
-    revalidatePath('/admin/expenses');
+    revalidatePath('/admin/finance');
     if (expense?.project_id) {
       revalidatePath(`/admin/projects/${expense.project_id}`);
     }

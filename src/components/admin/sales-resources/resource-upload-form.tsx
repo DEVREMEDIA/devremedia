@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
@@ -36,13 +36,15 @@ import { toast } from 'sonner';
 import { useTranslations } from 'next-intl';
 import { LoadingSpinner } from '@/components/shared/loading-spinner';
 
-const uploadFormSchema = z.object({
-  category_id: z.string().uuid('Please select a category'),
-  title: z.string().min(1, 'Title is required').max(255),
-  description: z.string().max(1000).optional().nullable(),
-});
+function makeUploadFormSchema(t: (key: string) => string) {
+  return z.object({
+    category_id: z.string().uuid(t('categoryRequired')),
+    title: z.string().min(1, t('titleRequired')).max(255),
+    description: z.string().max(1000).optional().nullable(),
+  });
+}
 
-type UploadFormInput = z.input<typeof uploadFormSchema>;
+type UploadFormInput = z.input<ReturnType<typeof makeUploadFormSchema>>;
 
 interface Category {
   id: string;
@@ -66,6 +68,8 @@ export function ResourceUploadForm({
   const tToast = useTranslations('toast');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
+
+  const uploadFormSchema = useMemo(() => makeUploadFormSchema(t), [t]);
 
   const form = useForm<UploadFormInput>({
     resolver: zodResolver(uploadFormSchema),
@@ -109,7 +113,7 @@ export function ResourceUploadForm({
       const uploadJson = await uploadRes.json();
 
       if (!uploadRes.ok) {
-        toast.error(`Upload failed: ${uploadJson.error ?? 'Unknown error'}`);
+        toast.error(t('uploadFailedWithError', { error: uploadJson.error ?? t('unknownError') }));
         return;
       }
 
@@ -136,7 +140,7 @@ export function ResourceUploadForm({
       onSuccess();
     } catch (err) {
       console.error('Upload error:', err);
-      toast.error('Upload failed unexpectedly');
+      toast.error(t('uploadFailedUnexpectedly'));
     } finally {
       setIsSubmitting(false);
     }
@@ -146,8 +150,8 @@ export function ResourceUploadForm({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-2xl">
         <DialogHeader>
-          <DialogTitle>Upload Resource</DialogTitle>
-          <DialogDescription>Upload a new sales resource file</DialogDescription>
+          <DialogTitle>{t('addResource')}</DialogTitle>
+          <DialogDescription>{t('uploadResourceDescription')}</DialogDescription>
         </DialogHeader>
 
         <Form {...form}>

@@ -1,5 +1,6 @@
 'use client';
 
+import { useTranslations } from 'next-intl';
 import { Badge } from '@/components/ui/badge';
 import { DELIVERABLE_STATUS_LABELS } from '@/lib/constants';
 import type { DeliverableStatus } from '@/lib/constants';
@@ -40,6 +41,7 @@ const TONE_BADGE: Record<Tone, string> = {
 };
 
 export function VersionHistory({ deliverables, currentId }: VersionHistoryProps) {
+  const t = useTranslations('deliverables');
   const sortedDeliverables = [...deliverables].sort((a, b) => b.version - a.version);
 
   if (deliverables.length === 0) {
@@ -47,7 +49,7 @@ export function VersionHistory({ deliverables, currentId }: VersionHistoryProps)
       <div className="rounded-lg border border-dashed p-8">
         <div className="flex flex-col items-center justify-center text-center space-y-2">
           <FileVideo className="h-8 w-8 text-muted-foreground" />
-          <p className="text-sm text-muted-foreground">No version history</p>
+          <p className="text-sm text-muted-foreground">{t('noVersionHistory')}</p>
         </div>
       </div>
     );

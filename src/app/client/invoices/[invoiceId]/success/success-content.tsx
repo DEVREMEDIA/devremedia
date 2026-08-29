@@ -77,7 +77,7 @@ export function SuccessContent({ invoiceId, sessionId }: SuccessContentProps) {
                 <Link href="/client/invoices">{t('backToInvoices')}</Link>
               </Button>
               <Button variant="outline" asChild>
-                <Link href="/client/dashboard">{t('backToDashboard')}</Link>
+                <Link href="/client/home">{t('backToDashboard')}</Link>
               </Button>
             </div>
           )}

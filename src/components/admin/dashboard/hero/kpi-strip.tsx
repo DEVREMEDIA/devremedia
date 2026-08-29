@@ -80,7 +80,7 @@ export async function KpiStrip() {
       <StatCard
         label={t('atRisk')}
         value={fmtInt(hero.atRiskCount.value)}
-        href="/admin/dashboard/risk"
+        href="/admin/today"
         icon={AlertTriangle}
         deltaPct={hero.atRiskCount.deltaPct}
         sparkline={hero.atRiskCount.sparkline ?? []}

@@ -197,10 +197,10 @@ export function ResourceList({ resources, categories, onDelete }: ResourceListPr
                           variant="outline"
                           size="sm"
                           onClick={() => handleDownload(resource.file_path)}
-                          title="Download"
+                          title={tc('download')}
                         >
                           <Download className="h-4 w-4 sm:mr-2" />
-                          <span className="hidden sm:inline">Download</span>
+                          <span className="hidden sm:inline">{tc('download')}</span>
                         </Button>
                         <Button
                           variant="ghost"

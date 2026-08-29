@@ -155,7 +155,7 @@ export function ArticleList({ articles, categories, onDelete }: ArticleListProps
         ),
       },
     ],
-    [t, tc, router],
+    [t, tc, router, handleEdit, handleDeleteClick],
   );
 
   if (articles.length === 0) {

@@ -164,111 +164,106 @@ export function UserManagement({ users }: UserManagementProps) {
   const isDeactivated = (user: UserWithEmail) =>
     (user.preferences as Record<string, unknown>)?.deactivated === true;
 
-  const columns: ColumnDef<UserWithEmail>[] = useMemo(
-    () => [
-      {
-        accessorKey: 'display_name',
-        header: tc('name'),
-        cell: ({ row }) => (
-          <span className={cn('font-medium', isDeactivated(row.original) && 'opacity-50')}>
-            {row.original.display_name || t('unnamedUser')}
-          </span>
+  const columns: ColumnDef<UserWithEmail>[] = [
+    {
+      accessorKey: 'display_name',
+      header: tc('name'),
+      cell: ({ row }) => (
+        <span className={cn('font-medium', isDeactivated(row.original) && 'opacity-50')}>
+          {row.original.display_name || t('unnamedUser')}
+        </span>
+      ),
+    },
+    {
+      accessorKey: 'email',
+      header: t('email'),
+      cell: ({ row }) => (
+        <span className={cn('text-muted-foreground', isDeactivated(row.original) && 'opacity-50')}>
+          {row.original.email}
+        </span>
+      ),
+    },
+    {
+      accessorKey: 'role',
+      header: t('role'),
+      cell: ({ row }) => (
+        <Badge
+          variant={ROLE_BADGE_VARIANT[row.original.role] ?? 'secondary'}
+          className={cn(isDeactivated(row.original) && 'opacity-50')}
+        >
+          {USER_ROLE_LABELS[row.original.role]}
+        </Badge>
+      ),
+    },
+    {
+      id: 'status',
+      header: t('status'),
+      cell: ({ row }) =>
+        isDeactivated(row.original) ? (
+          <Badge variant="destructive">{t('deactivated')}</Badge>
+        ) : (
+          <Badge variant="outline">{t('active')}</Badge>
         ),
-      },
-      {
-        accessorKey: 'email',
-        header: t('email'),
-        cell: ({ row }) => (
-          <span
-            className={cn('text-muted-foreground', isDeactivated(row.original) && 'opacity-50')}
-          >
-            {row.original.email}
-          </span>
-        ),
-      },
-      {
-        accessorKey: 'role',
-        header: t('role'),
-        cell: ({ row }) => (
-          <Badge
-            variant={ROLE_BADGE_VARIANT[row.original.role] ?? 'secondary'}
-            className={cn(isDeactivated(row.original) && 'opacity-50')}
-          >
-            {USER_ROLE_LABELS[row.original.role]}
-          </Badge>
-        ),
-      },
-      {
-        id: 'status',
-        header: t('status'),
-        cell: ({ row }) =>
-          isDeactivated(row.original) ? (
-            <Badge variant="destructive">{t('deactivated')}</Badge>
-          ) : (
-            <Badge variant="outline">{t('active')}</Badge>
-          ),
-      },
-      {
-        accessorKey: 'created_at',
-        header: t('joined'),
-        cell: ({ row }) => (
-          <span className={cn(isDeactivated(row.original) && 'opacity-50')}>
-            {new Date(row.original.created_at).toLocaleDateString()}
-          </span>
-        ),
-        meta: { numeric: true, align: 'left' },
-      },
-      {
-        id: 'actions',
-        header: '',
-        meta: { align: 'right' },
-        cell: ({ row }) => {
-          const user = row.original;
-          const deactivated = isDeactivated(user);
-          return (
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button variant="ghost" size="icon">
-                  <MoreHorizontal className="h-4 w-4" />
-                </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align="end">
-                <DropdownMenuItem onClick={() => handleChangeRole(user.id, 'client')}>
-                  {t('changeToClient')}
+    },
+    {
+      accessorKey: 'created_at',
+      header: t('joined'),
+      cell: ({ row }) => (
+        <span className={cn(isDeactivated(row.original) && 'opacity-50')}>
+          {new Date(row.original.created_at).toLocaleDateString()}
+        </span>
+      ),
+      meta: { numeric: true, align: 'left' },
+    },
+    {
+      id: 'actions',
+      header: '',
+      meta: { align: 'right' },
+      cell: ({ row }) => {
+        const user = row.original;
+        const deactivated = isDeactivated(user);
+        return (
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant="ghost" size="icon">
+                <MoreHorizontal className="h-4 w-4" />
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end">
+              <DropdownMenuItem onClick={() => handleChangeRole(user.id, 'client')}>
+                {t('changeToClient')}
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={() => handleChangeRole(user.id, 'employee')}>
+                {t('changeToEmployee')}
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={() => handleChangeRole(user.id, 'salesman')}>
+                {t('changeToSalesman')}
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={() => handleChangeRole(user.id, 'admin')}>
+                {t('changeToAdmin')}
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={() => handleChangeRole(user.id, 'super_admin')}>
+                {t('changeToSuperAdmin')}
+              </DropdownMenuItem>
+              <DropdownMenuSeparator />
+              {deactivated ? (
+                <DropdownMenuItem onClick={() => setReactivateUserId(user.id)}>
+                  {t('reactivate')}
                 </DropdownMenuItem>
-                <DropdownMenuItem onClick={() => handleChangeRole(user.id, 'employee')}>
-                  {t('changeToEmployee')}
+              ) : (
+                <DropdownMenuItem
+                  className="text-destructive"
+                  onClick={() => setDeactivateUserId(user.id)}
+                >
+                  {t('deactivate')}
                 </DropdownMenuItem>
-                <DropdownMenuItem onClick={() => handleChangeRole(user.id, 'salesman')}>
-                  {t('changeToSalesman')}
-                </DropdownMenuItem>
-                <DropdownMenuItem onClick={() => handleChangeRole(user.id, 'admin')}>
-                  {t('changeToAdmin')}
-                </DropdownMenuItem>
-                <DropdownMenuItem onClick={() => handleChangeRole(user.id, 'super_admin')}>
-                  {t('changeToSuperAdmin')}
-                </DropdownMenuItem>
-                <DropdownMenuSeparator />
-                {deactivated ? (
-                  <DropdownMenuItem onClick={() => setReactivateUserId(user.id)}>
-                    {t('reactivate')}
-                  </DropdownMenuItem>
-                ) : (
-                  <DropdownMenuItem
-                    className="text-destructive"
-                    onClick={() => setDeactivateUserId(user.id)}
-                  >
-                    {t('deactivate')}
-                  </DropdownMenuItem>
-                )}
-              </DropdownMenuContent>
-            </DropdownMenu>
-          );
-        },
+              )}
+            </DropdownMenuContent>
+          </DropdownMenu>
+        );
       },
-    ],
-    [t],
-  );
+    },
+  ];
 
   return (
     <>

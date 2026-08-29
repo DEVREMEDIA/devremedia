@@ -1,3 +1,4 @@
+import { getTranslations } from 'next-intl/server';
 import { PageHeading } from '@/components/shared/page-heading';
 import { ArticleForm } from '@/components/admin/university/article-form';
 import { getKbCategories } from '@/lib/actions/kb-categories';
@@ -16,9 +17,10 @@ interface EditArticlePageProps {
 export default async function EditArticlePage({ params }: EditArticlePageProps) {
   const { articleId } = await params;
 
-  const [categoriesResult, articleResult] = await Promise.all([
+  const [categoriesResult, articleResult, t] = await Promise.all([
     getKbCategories(),
     getKbArticle(articleId),
+    getTranslations('university'),
   ]);
 
   if (categoriesResult.error) {
@@ -34,7 +36,7 @@ export default async function EditArticlePage({ params }: EditArticlePageProps) 
 
   return (
     <div className="flex flex-col gap-6">
-      <PageHeading title="Edit Article" subtitle="Update knowledge base article" />
+      <PageHeading title={t('editArticle')} subtitle={t('editArticleSubtitle')} />
 
       <ArticleForm article={article} categories={categories as ArticleFormProps['categories']} />
     </div>

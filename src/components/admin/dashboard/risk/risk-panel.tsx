@@ -34,7 +34,7 @@ export async function RiskPanel() {
             ))}
             {all.length > MAX_ITEMS && (
               <Link
-                href="/admin/dashboard/risk"
+                href="/admin/today"
                 className="block pt-2 text-center text-xs text-muted-foreground underline-offset-4 hover:underline"
               >
                 {t('viewAll')} ({all.length})

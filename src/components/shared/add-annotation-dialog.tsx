@@ -1,35 +1,35 @@
-'use client'
+'use client';
 
-import { useState } from 'react'
+import { useState } from 'react';
 import {
   Dialog,
   DialogContent,
   DialogHeader,
   DialogTitle,
   DialogFooter,
-} from '@/components/ui/dialog'
-import { Button } from '@/components/ui/button'
-import { Label } from '@/components/ui/label'
-import { Textarea } from '@/components/ui/textarea'
-import { Badge } from '@/components/ui/badge'
-import { createAnnotation } from '@/lib/actions/deliverables'
-import { toast } from 'sonner'
-import { Clock } from 'lucide-react'
-import { useTranslations } from 'next-intl'
+} from '@/components/ui/dialog';
+import { Button } from '@/components/ui/button';
+import { Label } from '@/components/ui/label';
+import { Textarea } from '@/components/ui/textarea';
+import { Badge } from '@/components/ui/badge';
+import { createAnnotation } from '@/lib/actions/deliverables';
+import { toast } from 'sonner';
+import { Clock } from 'lucide-react';
+import { useTranslations } from 'next-intl';
 
 type AddAnnotationDialogProps = {
-  open: boolean
-  onOpenChange: (open: boolean) => void
-  timestamp: number
-  deliverableId: string
-  onCreated: () => void
-}
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
+  timestamp: number;
+  deliverableId: string;
+  onCreated: () => void;
+};
 
 const formatTimestamp = (seconds: number) => {
-  const mins = Math.floor(seconds / 60)
-  const secs = Math.floor(seconds % 60)
-  return `${mins}:${secs.toString().padStart(2, '0')}`
-}
+  const mins = Math.floor(seconds / 60);
+  const secs = Math.floor(seconds % 60);
+  return `${mins}:${secs.toString().padStart(2, '0')}`;
+};
 
 export function AddAnnotationDialog({
   open,
@@ -40,48 +40,48 @@ export function AddAnnotationDialog({
 }: AddAnnotationDialogProps) {
   const t = useTranslations('deliverables');
   const tCommon = useTranslations('common');
-  const [content, setContent] = useState('')
-  const [isSubmitting, setIsSubmitting] = useState(false)
+  const [content, setContent] = useState('');
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const handleSubmit = async () => {
     if (!content.trim()) {
-      toast.error(t('pleaseEnterAnnotation'))
-      return
+      toast.error(t('pleaseEnterAnnotation'));
+      return;
     }
 
-    setIsSubmitting(true)
+    setIsSubmitting(true);
 
     try {
       const result = await createAnnotation({
         deliverable_id: deliverableId,
         timestamp_seconds: timestamp,
         content: content.trim(),
-      })
+      });
 
       if (result.error) {
-        throw new Error(result.error)
+        throw new Error(result.error);
       }
 
-      toast.success(t('annotationAdded'))
-      setContent('')
-      onOpenChange(false)
-      onCreated()
+      toast.success(t('annotationAdded'));
+      setContent('');
+      onOpenChange(false);
+      onCreated();
     } catch (error) {
-      console.error('Create annotation error:', error)
-      toast.error(error instanceof Error ? error.message : 'Failed to create annotation')
+      console.error('Create annotation error:', error);
+      toast.error(error instanceof Error ? error.message : t('failedToCreateAnnotation'));
     } finally {
-      setIsSubmitting(false)
+      setIsSubmitting(false);
     }
-  }
+  };
 
   const handleOpenChange = (newOpen: boolean) => {
     if (!isSubmitting) {
       if (!newOpen) {
-        setContent('')
+        setContent('');
       }
-      onOpenChange(newOpen)
+      onOpenChange(newOpen);
     }
-  }
+  };
 
   return (
     <Dialog open={open} onOpenChange={handleOpenChange}>
@@ -113,11 +113,7 @@ export function AddAnnotationDialog({
         </div>
 
         <DialogFooter>
-          <Button
-            variant="outline"
-            onClick={() => handleOpenChange(false)}
-            disabled={isSubmitting}
-          >
+          <Button variant="outline" onClick={() => handleOpenChange(false)} disabled={isSubmitting}>
             {tCommon('cancel')}
           </Button>
           <Button onClick={handleSubmit} disabled={isSubmitting || !content.trim()}>
@@ -126,5 +122,5 @@ export function AddAnnotationDialog({
         </DialogFooter>
       </DialogContent>
     </Dialog>
-  )
+  );
 }

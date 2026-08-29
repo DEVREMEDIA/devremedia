@@ -4,7 +4,7 @@ import { useState, useEffect, useCallback, useMemo } from 'react';
 import { MessageCircle, X } from 'lucide-react';
 import { useChat } from '@ai-sdk/react';
 import { DefaultChatTransport } from 'ai';
-import { useLocale } from 'next-intl';
+import { useLocale, useTranslations } from 'next-intl';
 import { ChatWindow } from './chat-window';
 
 function getSessionId(): string {
@@ -30,7 +30,7 @@ function ChatWidgetInner({ sessionId: initialSessionId }: { sessionId: string })
   const [inputValue, setInputValue] = useState('');
   const [sessionId, setSessionId] = useState(initialSessionId);
   const locale = useLocale();
-  const isGreek = locale === 'el';
+  const t = useTranslations('chatbot');
 
   const transport = useMemo(
     () =>
@@ -95,15 +95,7 @@ function ChatWidgetInner({ sessionId: initialSessionId }: { sessionId: string })
       <button
         onClick={() => setIsOpen(!isOpen)}
         className="fixed bottom-6 right-4 sm:right-6 z-50 h-14 w-14 rounded-full bg-gold-500 text-black flex items-center justify-center shadow-lg shadow-gold-500/20 hover:bg-gold-400 hover:shadow-gold-500/30 hover:scale-105 active:scale-95 transition-all duration-200 animate-glow-pulse"
-        aria-label={
-          isOpen
-            ? isGreek
-              ? 'Κλείσιμο συνομιλίας'
-              : 'Close chat'
-            : isGreek
-              ? 'Ανοιχτή συνομιλία'
-              : 'Open chat'
-        }
+        aria-label={isOpen ? t('closeChat') : t('openChat')}
         aria-expanded={isOpen}
       >
         {isOpen ? (

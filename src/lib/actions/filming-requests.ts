@@ -210,7 +210,7 @@ export async function reviewFilmingRequest(
           userId: clientUserId,
           type: NOTIFICATION_TYPES.FILMING_REQUEST_STATUS,
           title: `Filming request "${data.title}" ${validated.status}`,
-          actionUrl: '/client/dashboard',
+          actionUrl: '/client/home',
         });
       }
     }
@@ -547,7 +547,7 @@ async function notifyClientOfHoldOutcome(
     title: approved
       ? `Your booking "${title}" was confirmed`
       : `Your booking "${title}" was declined`,
-    actionUrl: '/client/dashboard',
+    actionUrl: '/client/home',
   });
 }
 

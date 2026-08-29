@@ -1,11 +1,12 @@
 'use client';
 
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { Loader2 } from 'lucide-react';
 import { toast } from 'sonner';
+import { useTranslations } from 'next-intl';
 
 import { FileUploadDropzone } from '@/components/shared/file-upload-dropzone';
 import { InvoiceReviewLayout } from '@/components/admin/invoices/invoice-review-layout';
@@ -20,25 +21,27 @@ interface InvoiceUploadFormProps {
   onStepChange?: (step: 'upload' | 'review') => void;
 }
 
-const reviewFormSchema = z.object({
-  issue_date: z.string().regex(/^\d{4}-\d{2}-\d{2}$/, 'YYYY-MM-DD'),
-  due_date: z.string().regex(/^\d{4}-\d{2}-\d{2}$/, 'YYYY-MM-DD'),
-  description: z.string().min(1, 'Description is required'),
-  net_amount: z.coerce.number().min(0),
-  vat_percent: z.coerce.number().min(0).max(100),
-  vat_amount: z.coerce.number().min(0),
-  total_amount: z.coerce.number().min(0),
-  project_id: z.string().uuid().optional().or(z.literal('')),
-  notes: z.string().max(2000).optional(),
-  invoice_number: z.string().optional(),
-  invoice_type: z.string().optional(),
-  mark: z.string().optional(),
-  issuer_name: z.string().optional(),
-  issuer_afm: z.string().optional(),
-});
+function makeReviewFormSchema(t: (key: string) => string) {
+  return z.object({
+    issue_date: z.string().regex(/^\d{4}-\d{2}-\d{2}$/, t('dateFormatHint')),
+    due_date: z.string().regex(/^\d{4}-\d{2}-\d{2}$/, t('dateFormatHint')),
+    description: z.string().min(1, t('descriptionRequired')),
+    net_amount: z.coerce.number().min(0),
+    vat_percent: z.coerce.number().min(0).max(100),
+    vat_amount: z.coerce.number().min(0),
+    total_amount: z.coerce.number().min(0),
+    project_id: z.string().uuid().optional().or(z.literal('')),
+    notes: z.string().max(2000).optional(),
+    invoice_number: z.string().optional(),
+    invoice_type: z.string().optional(),
+    mark: z.string().optional(),
+    issuer_name: z.string().optional(),
+    issuer_afm: z.string().optional(),
+  });
+}
 
 // Use output type (coerced numbers are `number`, not `unknown`)
-type ReviewFormValues = z.output<typeof reviewFormSchema>;
+type ReviewFormValues = z.output<ReturnType<typeof makeReviewFormSchema>>;
 
 /** Compute due_date as issue_date + 30 days */
 function addDays(dateStr: string, days: number): string {
@@ -53,10 +56,13 @@ export function InvoiceUploadForm({
   onSuccess,
   onStepChange,
 }: InvoiceUploadFormProps) {
+  const t = useTranslations('invoices');
   const [step, setStep] = useState<'upload' | 'review'>('upload');
   const [file, setFile] = useState<File | null>(null);
   const [isParsing, setIsParsing] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
+
+  const reviewFormSchema = useMemo(() => makeReviewFormSchema(t), [t]);
 
   const form = useForm<ReviewFormValues>({
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -104,7 +110,7 @@ export function InvoiceUploadForm({
       });
     } catch (err) {
       console.error('Parse error:', err);
-      toast.error(err instanceof Error ? err.message : 'Failed to parse invoice');
+      toast.error(err instanceof Error ? err.message : t('failedToParseInvoice'));
     } finally {
       setIsParsing(false);
       setStep('review');
@@ -130,7 +136,7 @@ export function InvoiceUploadForm({
 
         if (!uploadRes.ok) {
           const err = await uploadRes.json();
-          toast.error(`Upload failed: ${err.error}`);
+          toast.error(t('uploadFailed', { error: err.error }));
           return;
         }
 
@@ -171,11 +177,11 @@ export function InvoiceUploadForm({
           return;
         }
 
-        toast.success('Invoice created');
+        toast.success(t('invoiceCreated'));
         onSuccess();
       } catch (err) {
         console.error('Save error:', err);
-        toast.error('Failed to save invoice');
+        toast.error(t('failedToSaveInvoice'));
       } finally {
         setIsSaving(false);
       }

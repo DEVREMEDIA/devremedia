@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import { useTranslations } from 'next-intl';
 import { FileDown } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 
@@ -10,6 +11,7 @@ interface PdfPreviewProps {
 }
 
 export function PdfPreview({ file, className }: PdfPreviewProps) {
+  const t = useTranslations('invoices');
   const [blobUrl, setBlobUrl] = useState<string | null>(null);
 
   useEffect(() => {
@@ -25,7 +27,7 @@ export function PdfPreview({ file, className }: PdfPreviewProps) {
       <iframe
         src={blobUrl}
         className="h-full w-full rounded-md border"
-        title="Invoice PDF Preview"
+        title={t('previewFrameTitle')}
       />
       <div className="mt-2 text-center">
         <Button variant="outline" size="sm" asChild>

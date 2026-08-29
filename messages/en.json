@@ -842,6 +842,8 @@
     "expenseCategory": "Category",
     "expenseAmount": "Amount",
     "expenseDate": "Date",
+    "expenseDateFrom": "From date",
+    "expenseDateTo": "To date",
     "receipt": "Receipt",
     "uploadReceipt": "Upload Receipt",
     "noExpenses": "No expenses recorded",
@@ -886,6 +888,11 @@
     "pdfNotReady": "PDF not loaded yet",
     "previewTitle": "{number} — Preview",
     "previewFrameTitle": "Invoice Preview",
+    "dateFormatHint": "Format must be YYYY-MM-DD",
+    "descriptionRequired": "Description is required",
+    "failedToParseInvoice": "Failed to parse invoice",
+    "uploadFailed": "Upload failed: {error}",
+    "failedToSaveInvoice": "Failed to save invoice",
     "clientInfo": "Client Information",
     "clientName": "Client Name",
     "contact": "Contact",
@@ -1129,6 +1136,8 @@
     "resolved": "Resolved",
     "enterAnnotation": "Enter your annotation or feedback...",
     "pleaseEnterAnnotation": "Please enter annotation content",
+    "failedToCreateAnnotation": "Failed to create annotation",
+    "noVersionHistory": "No version history",
     "annotationAdded": "Annotation added successfully",
     "adding": "Adding...",
     "failedToLoadAnnotations": "Failed to load annotations",
@@ -1665,6 +1674,8 @@
     "addArticle": "New Article",
     "editArticle": "Edit Article",
     "deleteArticle": "Delete Article",
+    "newArticleSubtitle": "Create a new knowledge base article",
+    "editArticleSubtitle": "Update knowledge base article",
     "categoryName": "Category Name",
     "noCategoriesMatching": "No categories match “{query}”",
     "articleTitle": "Article Title",
@@ -1701,6 +1712,12 @@
     "title": "AI Chatbot",
     "description": "View chatbot conversations and manage knowledge base",
     "knowledgeBase": "Knowledge Base",
+    "knowledgeBaseSubtitle": "Manage the chatbot's knowledge for RAG responses",
+    "conversationDetail": "Conversation Detail",
+    "entryDeleted": "Entry deleted",
+    "seedFailed": "Failed to seed knowledge base",
+    "closeChat": "Close chat",
+    "openChat": "Open chat",
     "conversations": "Conversations",
     "totalConversations": "Total Conversations",
     "today": "Today",
@@ -1748,6 +1765,12 @@
     "deleteCategoryTitle": "Delete Category",
     "deleteCategoryConfirm": "Are you sure you want to delete this category?",
     "selectCategoryPlaceholder": "Select a category",
+    "categoryRequired": "Please select a category",
+    "titleRequired": "Title is required",
+    "uploadFailedWithError": "Upload failed: {error}",
+    "unknownError": "Unknown error",
+    "uploadFailedUnexpectedly": "Upload failed unexpectedly",
+    "uploadResourceDescription": "Upload a new sales resource file",
     "resourceDescriptionPlaceholder": "Brief description of this resource",
     "categoryDescriptionPlaceholder": "Brief description of this category",
     "noCategoriesCreateOne": "No categories yet. Create one to get started.",
@@ -1780,7 +1803,8 @@
     "enterMessageOrAttach": "Please enter a message or attach a file",
     "attachment": "(attachment)",
     "failedToSend": "Failed to send message",
-    "unknownUser": "Unknown User"
+    "unknownUser": "Unknown User",
+    "requestTimedOut": "Request timed out"
   },
 
   "booking": {
@@ -1905,7 +1929,17 @@
     "projectDescriptionHelper": "The more details you provide, the better we can understand your vision",
     "referenceLinksLabel": "Reference Links (Optional)",
     "referenceLinksHelper": "Share links to videos or content that inspire your project",
-    "addReferenceLink": "Add Reference Link"
+    "addReferenceLink": "Add Reference Link",
+    "projectTypeDescriptions": {
+      "corporate_video": "Corporate profiles, testimonials, annual videos",
+      "event_coverage": "On-the-spot coverage — openings, conferences, events",
+      "social_media_content": "Short-form content for social media",
+      "commercial": "Advertising and promotional videos",
+      "documentary": "Documentaries and long-form storytelling",
+      "music_video": "Music videos and performance recordings",
+      "podcast": "Professional podcast production",
+      "other": "Custom request — we'll send you a quote"
+    }
   },
 
   "employee": {
@@ -2194,7 +2228,9 @@
     "networkError": "Network error. Please try again.",
     "unauthorized": "You are not authorized to perform this action",
     "notFound": "Resource not found",
-    "validationError": "Please check your input and try again"
+    "validationError": "Please check your input and try again",
+    "done": "Done",
+    "actionFailed": "Action failed"
   },
 
   "validation": {
@@ -2525,7 +2561,8 @@
         "namePlaceholder": "e.g. Netflix, Adobe, Spotify",
         "nameRequired": "Name required",
         "parentLocked": "Cost is auto-computed from breakdown rows.",
-        "deltaWarning": "Delta: {delta}"
+        "deltaWarning": "Delta: {delta}",
+        "remove": "Remove"
       }
     },
     "category": {

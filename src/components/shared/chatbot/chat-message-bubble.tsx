@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import { useTranslations } from 'next-intl';
 import { Check, Copy } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
@@ -40,11 +41,17 @@ function renderContent(text: string, isUser: boolean) {
     if (listItems.length > 0 && listType) {
       const Tag = listType;
       elements.push(
-        <Tag key={`list-${elements.length}`} className={cn('text-sm space-y-0.5 my-1', listType === 'ul' ? 'list-disc pl-4' : 'list-decimal pl-4')}>
+        <Tag
+          key={`list-${elements.length}`}
+          className={cn(
+            'text-sm space-y-0.5 my-1',
+            listType === 'ul' ? 'list-disc pl-4' : 'list-decimal pl-4',
+          )}
+        >
           {listItems.map((item, i) => (
             <li key={i}>{formatInline(item)}</li>
           ))}
-        </Tag>
+        </Tag>,
       );
       listItems = [];
       listType = null;
@@ -67,7 +74,12 @@ function renderContent(text: string, isUser: boolean) {
     } else {
       flushList();
       if (line.trim()) {
-        elements.push(<span key={`line-${i}`}>{formatInline(line)}{i < lines.length - 1 ? '\n' : ''}</span>);
+        elements.push(
+          <span key={`line-${i}`}>
+            {formatInline(line)}
+            {i < lines.length - 1 ? '\n' : ''}
+          </span>,
+        );
       } else if (i < lines.length - 1) {
         elements.push(<span key={`br-${i}`} className="block h-2" />);
       }
@@ -90,13 +102,38 @@ function formatInline(text: string): React.ReactNode {
       parts.push(text.slice(lastIndex, match.index));
     }
     if (match[1]) {
-      parts.push(<strong key={match.index} className="font-semibold text-white">{match[2]}</strong>);
+      parts.push(
+        <strong key={match.index} className="font-semibold text-white">
+          {match[2]}
+        </strong>,
+      );
     } else if (match[3]) {
-      parts.push(<em key={match.index} className="italic">{match[4]}</em>);
+      parts.push(
+        <em key={match.index} className="italic">
+          {match[4]}
+        </em>,
+      );
     } else if (match[5]) {
-      parts.push(<code key={match.index} className="px-1 py-0.5 rounded bg-white/10 text-gold-400 text-xs font-mono">{match[6]}</code>);
+      parts.push(
+        <code
+          key={match.index}
+          className="px-1 py-0.5 rounded bg-white/10 text-gold-400 text-xs font-mono"
+        >
+          {match[6]}
+        </code>,
+      );
     } else if (match[7]) {
-      parts.push(<a key={match.index} href={match[9]} target="_blank" rel="noopener noreferrer" className="text-gold-400 underline underline-offset-2 hover:text-gold-300">{match[8]}</a>);
+      parts.push(
+        <a
+          key={match.index}
+          href={match[9]}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="text-gold-400 underline underline-offset-2 hover:text-gold-300"
+        >
+          {match[8]}
+        </a>,
+      );
     }
     lastIndex = regex.lastIndex;
   }
@@ -108,7 +145,13 @@ function formatInline(text: string): React.ReactNode {
   return parts.length === 1 ? parts[0] : parts;
 }
 
-export function ChatMessageBubble({ role, content, onSuggestionClick, isLatest }: ChatMessageBubbleProps) {
+export function ChatMessageBubble({
+  role,
+  content,
+  onSuggestionClick,
+  isLatest,
+}: ChatMessageBubbleProps) {
+  const tc = useTranslations('common');
   const [copied, setCopied] = useState(false);
   const isUser = role === 'user';
 
@@ -132,7 +175,7 @@ export function ChatMessageBubble({ role, content, onSuggestionClick, isLatest }
               'rounded-2xl px-4 py-2.5 text-sm leading-relaxed whitespace-pre-wrap',
               isUser
                 ? 'bg-gold-500 text-black rounded-br-sm'
-                : 'bg-white/[0.06] text-zinc-200 border border-white/[0.06] rounded-bl-sm'
+                : 'bg-white/[0.06] text-zinc-200 border border-white/[0.06] rounded-bl-sm',
             )}
           >
             {renderContent(message, isUser)}
@@ -144,9 +187,13 @@ export function ChatMessageBubble({ role, content, onSuggestionClick, isLatest }
               <button
                 onClick={handleCopy}
                 className="p-0.5 rounded text-zinc-500 hover:text-zinc-300 focus-visible:opacity-100 transition-colors"
-                aria-label={copied ? 'Copied' : 'Copy message'}
+                aria-label={copied ? tc('copied') : tc('copyToClipboard')}
               >
-                {copied ? <Check className="h-3 w-3 text-green-400" aria-hidden="true" /> : <Copy className="h-3 w-3" aria-hidden="true" />}
+                {copied ? (
+                  <Check className="h-3 w-3 text-green-400" aria-hidden="true" />
+                ) : (
+                  <Copy className="h-3 w-3" aria-hidden="true" />
+                )}
               </button>
             </div>
           )}

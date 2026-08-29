@@ -81,7 +81,7 @@ export function AuthHashHandler() {
           .eq('id', data.user.id)
           .single();
 
-        const dashboard = ROLE_DASHBOARDS[profile?.role ?? 'client'] ?? '/client/dashboard';
+        const dashboard = ROLE_DASHBOARDS[profile?.role ?? 'client'] ?? '/client/home';
         router.replace(dashboard);
       })
       .catch(() => {

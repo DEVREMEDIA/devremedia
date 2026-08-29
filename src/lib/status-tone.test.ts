@@ -118,6 +118,14 @@ describe('statusTone', () => {
     expect(statusTone('danger')).toBe('critical');
   });
 
+  it('maps a won status to positive, so the salesman feed gets its green back', () => {
+    expect(statusTone('won')).toBe('positive');
+  });
+
+  it('leaves a lost status neutral, the same reasoning as cancelled', () => {
+    expect(statusTone('lost')).toBe('neutral');
+  });
+
   it('gives in-flight states no alarm tone', () => {
     // Ήταν μπλε στον παλιό χάρτη. Το μπλε δεν ήταν ποτέ ένας από τους τέσσερις
     // τόνους — μια κατάσταση σε εξέλιξη δεν είναι συναγερμός.

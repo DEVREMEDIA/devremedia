@@ -184,14 +184,14 @@ export function ExpensesContent({ expenses: initialExpenses, projects }: Expense
 
           <Input
             type="date"
-            placeholder="From date"
+            placeholder={t('expenseDateFrom')}
             value={dateFrom}
             onChange={(e) => setDateFrom(e.target.value)}
             className="w-full lg:w-[180px]"
           />
           <Input
             type="date"
-            placeholder="To date"
+            placeholder={t('expenseDateTo')}
             value={dateTo}
             onChange={(e) => setDateTo(e.target.value)}
             className="w-full lg:w-[180px]"

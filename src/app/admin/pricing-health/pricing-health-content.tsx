@@ -50,6 +50,7 @@ export function PricingHealthContent({
   maxMultiplier,
 }: Props) {
   const t = useTranslations('pricingHealth');
+  const tc = useTranslations('common');
   const [search, setSearch] = useState('');
   const [filter, setFilter] = useState<string>('all');
   const [editing, setEditing] = useState<ProjectPricingAnalysis | null>(null);
@@ -152,7 +153,7 @@ export function PricingHealthContent({
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="all">all</SelectItem>
+                <SelectItem value="all">{tc('all')}</SelectItem>
                 {STATUS_ORDER.map((s) => (
                   <SelectItem key={s} value={s}>
                     {t(`status.${s}`)}
@@ -198,6 +199,8 @@ function ProjectRow({
   project: ProjectPricingAnalysis;
   onEdit: () => void;
 }) {
+  const t = useTranslations('pricingHealth');
+  const tc = useTranslations('common');
   return (
     <div className="rounded-lg border p-3 hover:bg-muted/30 transition-colors">
       <div className="flex items-start justify-between gap-3 mb-2">
@@ -213,7 +216,7 @@ function ProjectRow({
 
         <div className="flex items-center gap-2 flex-shrink-0">
           <HealthStatusBadge status={p.status} />
-          <Button variant="ghost" size="icon" onClick={onEdit} aria-label="Edit">
+          <Button variant="ghost" size="icon" onClick={onEdit} aria-label={tc('edit')}>
             <Pencil className="h-4 w-4" />
           </Button>
         </div>
@@ -230,12 +233,15 @@ function ProjectRow({
       />
 
       <div className="mt-2 grid grid-cols-2 md:grid-cols-5 gap-2 text-xs tabular-nums">
-        <MetaCell label="Hours" value={p.total_hours.toFixed(1)} />
-        <MetaCell label="Cost" value={fmtEUR(p.total_cost)} />
-        <MetaCell label="Target" value={fmtEUR(p.target_price)} />
-        <MetaCell label="Quoted" value={p.quoted_price != null ? fmtEUR(p.quoted_price) : '—'} />
+        <MetaCell label={t('table.hours')} value={p.total_hours.toFixed(1)} />
+        <MetaCell label={t('table.cost')} value={fmtEUR(p.total_cost)} />
+        <MetaCell label={t('edit.targetPrice')} value={fmtEUR(p.target_price)} />
         <MetaCell
-          label="Profit"
+          label={t('table.quoted')}
+          value={p.quoted_price != null ? fmtEUR(p.quoted_price) : '—'}
+        />
+        <MetaCell
+          label={t('table.profit')}
           value={p.profit_loss != null ? fmtEUR(p.profit_loss) : '—'}
           tone={p.profit_loss == null ? undefined : p.profit_loss >= 0 ? 'positive' : 'negative'}
         />

@@ -66,7 +66,7 @@ async function handleCron(request: NextRequest) {
         packageName: recipient.packageName,
         packageDeliverables: recipient.packageDeliverables,
         locale,
-        ctaUrl: `${APP_URL}/client/dashboard`,
+        ctaUrl: `${APP_URL}/client/home`,
       }),
       emailType: 'filming_reminder',
       clientId: recipient.clientId,

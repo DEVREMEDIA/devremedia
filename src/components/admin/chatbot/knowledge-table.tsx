@@ -1,6 +1,7 @@
 'use client';
 
 import { useRouter } from 'next/navigation';
+import { useTranslations } from 'next-intl';
 import { Trash2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
@@ -29,13 +30,14 @@ type KnowledgeTableProps = {
 
 export function KnowledgeTable({ entries }: KnowledgeTableProps) {
   const router = useRouter();
+  const t = useTranslations('chatbot');
 
   const handleDelete = async (id: string) => {
     const result = await deleteKnowledgeEntry(id);
     if (result.error) {
       toast.error(result.error);
     } else {
-      toast.success('Entry deleted');
+      toast.success(t('entryDeleted'));
       router.refresh();
     }
   };
@@ -43,7 +45,8 @@ export function KnowledgeTable({ entries }: KnowledgeTableProps) {
   if (entries.length === 0) {
     return (
       <div className="text-center py-12 text-muted-foreground">
-        No knowledge entries. Click &quot;Seed Knowledge Base&quot; to populate with default content.
+        No knowledge entries. Click &quot;Seed Knowledge Base&quot; to populate with default
+        content.
       </div>
     );
   }

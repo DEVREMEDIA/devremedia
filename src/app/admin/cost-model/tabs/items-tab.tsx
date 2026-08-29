@@ -631,6 +631,7 @@ interface BreakdownRowProps {
 }
 
 function BreakdownRow({ row, disabled, onSave, onRemove }: BreakdownRowProps) {
+  const tc = useTranslations('common');
   const [name, setName] = useState(row.name);
   const [cost, setCost] = useState(String(row.monthly_cost));
 
@@ -681,7 +682,7 @@ function BreakdownRow({ row, disabled, onSave, onRemove }: BreakdownRowProps) {
           onClick={onRemove}
           disabled={disabled}
           className="h-7 w-7"
-          aria-label="remove"
+          aria-label={tc('remove')}
         >
           <X className="h-3.5 w-3.5" />
         </Button>

@@ -129,7 +129,7 @@ export function BookingWizard() {
       toast.error(result.error);
     } else {
       toast.success(t('requestSubmitted'));
-      router.push('/client/dashboard');
+      router.push('/client/home');
     }
 
     setLoading(false);
