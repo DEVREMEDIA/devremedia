@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
 import { NOTIFICATION_TYPES } from '@/lib/notification-types';
-import { createNotificationForMany, getAdminUserIds } from '@/lib/actions/notifications';
+import { createNotificationForMany, getAdminUserIds } from '@/lib/notification-helpers';
 import { revalidatePath } from 'next/cache';
 
 export const dynamic = 'force-dynamic';

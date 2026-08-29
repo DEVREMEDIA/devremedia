@@ -2,7 +2,7 @@
 
 import { cache } from 'react';
 import { createClient } from '@/lib/supabase/server';
-import { requireUser } from '@/lib/auth-helpers';
+import { requireAdmin, requireUser } from '@/lib/auth-helpers';
 import { createInvoiceSchema, updateInvoiceSchema, type LineItem } from '@/lib/schemas/invoice';
 import type { ActionResult, Invoice, InvoiceWithRelations } from '@/types/index';
 import type { InvoiceStatus } from '@/lib/constants';
@@ -114,7 +114,7 @@ export async function getNextInvoiceNumber(): Promise<string> {
 export async function createInvoice(input: unknown): Promise<ActionResult<InvoiceWithRelations>> {
   try {
     const validated = createInvoiceSchema.parse(input);
-    const { supabase, user, error: authError } = await requireUser();
+    const { supabase, user, error: authError } = await requireAdmin();
     if (authError) return { data: null, error: authError };
 
     const invoiceNumber = await getNextInvoiceNumber();
@@ -175,7 +175,7 @@ export async function updateInvoice(
 ): Promise<ActionResult<InvoiceWithRelations>> {
   try {
     const validated = updateInvoiceSchema.parse(input);
-    const { supabase, error: authError } = await requireUser();
+    const { supabase, error: authError } = await requireAdmin();
     if (authError) return { data: null, error: authError };
 
     let updateData: Record<string, unknown> = { ...validated };
@@ -240,7 +240,7 @@ export async function updateInvoiceStatus(
   paymentMethod?: string,
 ): Promise<ActionResult<Invoice>> {
   try {
-    const { supabase, error: authError } = await requireUser();
+    const { supabase, error: authError } = await requireAdmin();
     if (authError) return { data: null, error: authError };
 
     const updateData = buildInvoiceStatusPayload(status, { paymentMethod });
@@ -280,7 +280,7 @@ export async function updateInvoiceStatus(
 
 export async function deleteInvoice(id: string): Promise<ActionResult<void>> {
   try {
-    const { supabase, error: authError } = await requireUser();
+    const { supabase, error: authError } = await requireAdmin();
     if (authError) return { data: null, error: authError };
 
     // Fetch file_path before deleting
@@ -318,7 +318,7 @@ export async function bulkUpdateInvoiceStatus(
   status: InvoiceStatus,
 ): Promise<ActionResult<{ succeeded: number; failed: number }>> {
   try {
-    const { supabase, error: authError } = await requireUser();
+    const { supabase, error: authError } = await requireAdmin();
     if (authError) return { data: null, error: authError };
 
     const updateData: Record<string, unknown> = { status };
@@ -373,7 +373,7 @@ export async function bulkDeleteInvoices(
   ids: string[],
 ): Promise<ActionResult<{ succeeded: number; failed: number }>> {
   try {
-    const { supabase, error: authError } = await requireUser();
+    const { supabase, error: authError } = await requireAdmin();
     if (authError) return { data: null, error: authError };
 
     // Fetch file_paths for Storage cleanup (one round-trip).

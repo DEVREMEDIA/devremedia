@@ -13,7 +13,7 @@ import type {
 } from '@/types/index';
 import type { DeliverableStatus } from '@/lib/constants';
 import { revalidatePath } from 'next/cache';
-import { createNotification, getClientUserIdFromProject } from '@/lib/actions/notifications';
+import { createNotification, getClientUserIdFromProject } from '@/lib/notification-helpers';
 import { applyStatusChange } from '@/lib/apply-status-change';
 import { NOTIFICATION_TYPES } from '@/lib/notification-types';
 import { requireUser } from '@/lib/auth-helpers';

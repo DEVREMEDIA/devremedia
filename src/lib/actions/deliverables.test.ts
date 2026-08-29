@@ -5,7 +5,7 @@ vi.mock('next/cache', () => ({ revalidatePath: vi.fn() }));
 vi.mock('@/lib/apply-status-change', () => ({
   applyStatusChange: vi.fn().mockResolvedValue(undefined),
 }));
-vi.mock('@/lib/actions/notifications', () => ({
+vi.mock('@/lib/notification-helpers', () => ({
   createNotification: vi.fn(),
   getClientUserIdFromProject: vi.fn().mockResolvedValue(null),
 }));

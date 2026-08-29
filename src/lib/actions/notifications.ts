@@ -1,10 +1,12 @@
 'use server';
 
-import { createAdminClient } from '@/lib/supabase/admin';
+// Every export of this file is a public Server Action endpoint, so each one must
+// authenticate. The admin-client notification helpers live in
+// `@/lib/notification-helpers` — a plain server module — for exactly that reason.
+
 import { requireUser } from '@/lib/auth-helpers';
 import type { ActionResult, Notification } from '@/types/index';
 import { revalidatePath } from 'next/cache';
-import { TYPE_TO_PREFERENCE } from '@/lib/notification-types';
 
 const NOTIFICATION_ROLES = ['admin', 'client', 'employee', 'salesman'] as const;
 
@@ -15,104 +17,6 @@ function revalidateNotificationSurfaces(): void {
     revalidatePath(`/${role}/dashboard`);
     revalidatePath(`/${role}/notifications`);
   }
-}
-
-// --- Helper functions ---
-
-export async function getClientUserIdFromProject(projectId: string): Promise<string | null> {
-  const supabase = createAdminClient();
-  const { data: project } = await supabase
-    .from('projects')
-    .select('client_id')
-    .eq('id', projectId)
-    .single();
-
-  if (!project?.client_id) return null;
-
-  return getClientUserIdFromClientId(project.client_id);
-}
-
-export async function getClientUserIdFromClientId(clientId: string): Promise<string | null> {
-  const supabase = createAdminClient();
-  const { data: client } = await supabase
-    .from('clients')
-    .select('user_id')
-    .eq('id', clientId)
-    .single();
-
-  return client?.user_id ?? null;
-}
-
-export async function getAdminUserIds(): Promise<string[]> {
-  const supabase = createAdminClient();
-  const { data } = await supabase
-    .from('user_profiles')
-    .select('id')
-    .in('role', ['super_admin', 'admin']);
-
-  return (data ?? []).map((p) => p.id);
-}
-
-// --- Core notification functions ---
-
-interface CreateNotificationInput {
-  userId: string;
-  type: string;
-  title: string;
-  body?: string;
-  actionUrl?: string;
-  actionType?: string;
-  actionData?: unknown;
-}
-
-export async function createNotification({
-  userId,
-  type,
-  title,
-  body,
-  actionUrl,
-  actionType,
-  actionData,
-}: CreateNotificationInput): Promise<void> {
-  try {
-    const supabase = createAdminClient();
-
-    // Check user preferences before creating notification
-    const preferenceKey = TYPE_TO_PREFERENCE[type];
-    if (preferenceKey) {
-      const { data: profile } = await supabase
-        .from('user_profiles')
-        .select('preferences')
-        .eq('id', userId)
-        .single();
-
-      const notifications = (profile?.preferences as Record<string, unknown>)?.notifications as
-        | Record<string, boolean>
-        | undefined;
-      if (notifications && notifications[preferenceKey] === false) {
-        return; // User has disabled this notification type
-      }
-    }
-
-    await supabase.from('notifications').insert({
-      user_id: userId,
-      type,
-      title,
-      body: body ?? null,
-      action_url: actionUrl ?? null,
-      action_type: actionType ?? null,
-      action_data: actionData ?? null,
-    });
-  } catch (err) {
-    console.error('Failed to create notification:', err);
-  }
-}
-
-export async function createNotificationForMany(
-  userIds: string[],
-  params: Omit<CreateNotificationInput, 'userId'>,
-): Promise<void> {
-  await Promise.all(userIds.map((userId) => createNotification({ ...params, userId })));
 }
 
 export async function getMyNotifications(): Promise<ActionResult<Notification[]>> {

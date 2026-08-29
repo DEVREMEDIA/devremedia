@@ -11,7 +11,10 @@ type AuthOk = {
 type AuthErr = {
   supabase: SupabaseClient;
   user: null;
-  error: 'Unauthorized' | 'Forbidden: admin access required';
+  error:
+    | 'Unauthorized'
+    | 'Forbidden: admin access required'
+    | 'Forbidden: insufficient permissions';
 };
 
 // Κάθε ενέργεια αυτού του προϊόντος περνά από εδώ, και μια σελίδα του πελάτη
@@ -49,6 +52,32 @@ export async function requireAdmin(): Promise<AuthOk | AuthErr> {
 
   if (!profile || !['super_admin', 'admin'].includes(profile.role)) {
     return { supabase, user: null, error: 'Forbidden: admin access required' };
+  }
+
+  return { supabase, user, error: null };
+}
+
+// Admins and super_admins pass every role check, so callers only list the extra
+// roles they want to allow (e.g. requireRole(['salesman'])).
+export async function requireRole(roles: readonly string[]): Promise<AuthOk | AuthErr> {
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
+  if (!user) {
+    return { supabase, user: null, error: 'Unauthorized' };
+  }
+
+  const { data: profile } = await supabase
+    .from('user_profiles')
+    .select('role')
+    .eq('id', user.id)
+    .single();
+
+  const allowed = ['super_admin', 'admin', ...roles];
+  if (!profile || !allowed.includes(profile.role)) {
+    return { supabase, user: null, error: 'Forbidden: insufficient permissions' };
   }
 
   return { supabase, user, error: null };
