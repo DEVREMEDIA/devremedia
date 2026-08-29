@@ -19,7 +19,6 @@ import {
   Dialog,
   DialogContent,
   DialogDescription,
-  DialogFooter,
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog';
@@ -36,9 +35,9 @@ import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { DataTable } from '@/components/shared/data-table';
 import { ConfirmDialog } from '@/components/shared/confirm-dialog';
+import { FormDialog } from '@/components/shared/form-dialog';
 import { toast } from 'sonner';
 import { useTranslations } from 'next-intl';
-import { LoadingSpinner } from '@/components/shared/loading-spinner';
 
 interface Category {
   id: string;
@@ -202,96 +201,71 @@ export function CategoryManage({ open, onOpenChange, categories, onSuccess }: Ca
       </Dialog>
 
       {/* Category Form Dialog */}
-      <Dialog open={formOpen} onOpenChange={setFormOpen}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>{editingCategory ? t('editCategory') : t('newCategory')}</DialogTitle>
-            <DialogDescription>
-              {editingCategory ? t('updateCategoryDetails') : t('createCategoryDescription')}
-            </DialogDescription>
-          </DialogHeader>
+      <FormDialog
+        open={formOpen}
+        onOpenChange={setFormOpen}
+        title={editingCategory ? t('editCategory') : t('newCategory')}
+        description={editingCategory ? t('updateCategoryDetails') : t('createCategoryDescription')}
+        onSubmit={form.handleSubmit(onSubmit)}
+        submitLabel={isSubmitting ? tc('saving') : editingCategory ? tc('update') : tc('create')}
+        cancelLabel={tc('cancel')}
+        submitting={isSubmitting}
+      >
+        <Form {...form}>
+          <FormField
+            control={form.control}
+            name="title"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>{tc('title')}</FormLabel>
+                <FormControl>
+                  <Input placeholder={t('titlePlaceholder')} {...field} />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
 
-          <Form {...form}>
-            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-              <FormField
-                control={form.control}
-                name="title"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>{tc('title')}</FormLabel>
-                    <FormControl>
-                      <Input placeholder={t('titlePlaceholder')} {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
+          <FormField
+            control={form.control}
+            name="description"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>{t('descriptionOptional')}</FormLabel>
+                <FormControl>
+                  <Textarea
+                    placeholder={t('categoryDescriptionPlaceholder')}
+                    {...field}
+                    value={field.value ?? ''}
+                  />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
 
-              <FormField
-                control={form.control}
-                name="description"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>{t('descriptionOptional')}</FormLabel>
-                    <FormControl>
-                      <Textarea
-                        placeholder={t('categoryDescriptionPlaceholder')}
-                        {...field}
-                        value={field.value ?? ''}
-                      />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-
-              <FormField
-                control={form.control}
-                name="sort_order"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>{t('sortOrder')}</FormLabel>
-                    <FormControl>
-                      <Input
-                        type="number"
-                        placeholder="0"
-                        {...field}
-                        value={field.value as number}
-                        onChange={(e) => field.onChange(parseInt(e.target.value) || 0)}
-                      />
-                    </FormControl>
-                    <FormDescription>{t('sortOrderHint')}</FormDescription>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-
-              <DialogFooter>
-                <Button
-                  type="button"
-                  variant="outline"
-                  onClick={() => setFormOpen(false)}
-                  disabled={isSubmitting}
-                >
-                  {tc('cancel')}
-                </Button>
-                <Button type="submit" disabled={isSubmitting}>
-                  {isSubmitting ? (
-                    <div className="flex items-center gap-2">
-                      <LoadingSpinner size="sm" />
-                      <span>{tc('saving')}</span>
-                    </div>
-                  ) : editingCategory ? (
-                    tc('update')
-                  ) : (
-                    tc('create')
-                  )}
-                </Button>
-              </DialogFooter>
-            </form>
-          </Form>
-        </DialogContent>
-      </Dialog>
+          <FormField
+            control={form.control}
+            name="sort_order"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>{t('sortOrder')}</FormLabel>
+                <FormControl>
+                  <Input
+                    type="number"
+                    placeholder="0"
+                    {...field}
+                    value={field.value as number}
+                    onChange={(e) => field.onChange(parseInt(e.target.value) || 0)}
+                  />
+                </FormControl>
+                <FormDescription>{t('sortOrderHint')}</FormDescription>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+        </Form>
+      </FormDialog>
 
       {/* Delete Confirmation Dialog */}
       <ConfirmDialog

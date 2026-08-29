@@ -4,14 +4,17 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { getCrewLoad } from '@/lib/queries/dashboard/production';
 import { cn } from '@/lib/utils';
 
+// Ένταση φόρτου, όχι απλή κατάσταση: 1 = άνετο (positive), 2 = γεμάτο
+// (caution), 3+ = υπερφορτωμένο (critical) — ίδιος χάρτης τόνου με το
+// StatusBadge/ToneIcon, εφαρμοσμένος σε αριθμό αντί για ενέργεια/κατάσταση.
 const cellTone = (n: number) =>
   n === 0
     ? 'bg-muted'
     : n === 1
-      ? 'bg-emerald-200 text-emerald-900'
+      ? 'bg-tone-positive-bg text-tone-positive'
       : n === 2
-        ? 'bg-yellow-300 text-yellow-900'
-        : 'bg-red-400 text-red-900';
+        ? 'bg-tone-caution-bg text-tone-caution'
+        : 'bg-tone-critical-bg text-tone-critical';
 
 export async function CrewLoadHeatmap() {
   const t = await getTranslations('dashboard.production');

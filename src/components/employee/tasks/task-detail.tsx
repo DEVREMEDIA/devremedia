@@ -6,6 +6,7 @@ import { useTranslations } from 'next-intl';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Checkbox } from '@/components/ui/checkbox';
 import { StatusBadge } from '@/components/shared/status-badge';
+import { DetailShell } from '@/components/shared/detail-shell';
 import { TaskStatusUpdate } from './task-status-update';
 import type { Task } from '@/types/index';
 import { cn } from '@/lib/utils';
@@ -32,18 +33,17 @@ export function TaskDetail({ task }: TaskDetailProps) {
   const subTasks = (task.metadata?.sub_tasks as SubTask[] | undefined) ?? [];
 
   return (
-    <div className="space-y-6">
-      {/* Task details card */}
+    <DetailShell
+      backHref="/employee/work?tab=tasks"
+      backLabel={t('title')}
+      title={task.title}
+      meta={`${tCommon('project')}: ${task.project?.title ?? t('unknownProject')}`}
+    >
       <Card>
         <CardHeader>
           <CardTitle>{t('taskDetail')}</CardTitle>
         </CardHeader>
         <CardContent className="space-y-6">
-          {/* Title */}
-          <div>
-            <h2 className="text-xl font-semibold">{task.title}</h2>
-          </div>
-
           {/* Project link */}
           {task.project && (
             <div className="space-y-2">
@@ -136,6 +136,6 @@ export function TaskDetail({ task }: TaskDetailProps) {
           )}
         </CardContent>
       </Card>
-    </div>
+    </DetailShell>
   );
 }

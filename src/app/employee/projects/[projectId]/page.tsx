@@ -1,13 +1,13 @@
 import { createClient } from '@/lib/supabase/server';
 import { redirect, notFound } from 'next/navigation';
-import { getTranslations } from 'next-intl/server';
-import { PageHeading } from '@/components/shared/page-heading';
-import { ProjectDetail } from '@/components/employee/projects/project-detail';
+import { ProjectDetail, PROJECT_TABS } from '@/components/employee/projects/project-detail';
 
 export default async function EmployeeProjectDetailPage({
   params,
+  searchParams,
 }: {
   params: Promise<{ projectId: string }>;
+  searchParams: Promise<{ tab?: string }>;
 }) {
   const { projectId } = await params;
   const supabase = await createClient();
@@ -33,8 +33,6 @@ export default async function EmployeeProjectDetailPage({
   ) {
     notFound();
   }
-
-  const t = await getTranslations('employee.projects');
 
   // Fetch project info, user's tasks, and deliverables in parallel
   const [projectResult, tasksResult, deliverablesResult] = await Promise.all([
@@ -62,16 +60,18 @@ export default async function EmployeeProjectDetailPage({
 
   if (!projectResult.data) notFound();
 
+  // Άγνωστη καρτέλα πέφτει στην πρώτη, όπως ακριβώς κάνουν οι κόμβοι.
+  const { tab } = await searchParams;
+  const activeTab = PROJECT_TABS.includes(tab ?? '') ? (tab as string) : 'tasks';
+
   return (
-    <div className="space-y-6">
-      <PageHeading title={projectResult.data.title} subtitle={t('description')} />
-      <ProjectDetail
-        project={projectResult.data}
-        tasks={tasksResult.data ?? []}
-        deliverables={deliverablesResult.data ?? []}
-        currentUserId={user.id}
-        projectId={projectId}
-      />
-    </div>
+    <ProjectDetail
+      project={projectResult.data}
+      tasks={tasksResult.data ?? []}
+      deliverables={deliverablesResult.data ?? []}
+      currentUserId={user.id}
+      projectId={projectId}
+      activeTab={activeTab}
+    />
   );
 }

@@ -59,6 +59,12 @@ const COLOUR_EXEMPT = [
   // η κύρια τιμή είναι ήδη το token (var(--background, ...)), το hex είναι
   // μόνο το fallback του ίδιου του CSS var(). Τεχνική ανάγκη, όχι οφειλή.
   'src/app/layout.tsx',
+
+  // Ruling G — δεδομένο, όχι χρώμα UI: το #000000 στο branding-settings.tsx
+  // είναι η προεπιλεγμένη τιμή του color picker (NO_BRAND_COLOR_SET), δηλαδή
+  // τιμή που διαλέγει ο χρήστης και αποθηκεύεται, όχι ζωγραφισμένη επιφάνεια.
+  // Το regex δεν ξεχωρίζει τα δύο· δεν «πληρώνεται» ποτέ με token.
+  'src/components/admin/settings/branding-settings.tsx',
 ];
 
 // Αρχεία μέσα σε καλυμμένους φακέλους που όντως γράφουν ακόμα ωμό χρώμα.
@@ -83,82 +89,6 @@ const COLOUR_EXEMPT = [
 // (Ο πρώτος αριθμός που γράφτηκε εδώ ως σχόλιο ήταν ήδη λάθος: έλεγε
 // δεκαπέντε για ένα αρχείο με δεκαεπτά γραμμές και είκοσι δύο χρώματα.)
 const PENDING = [
-  {
-    file: 'src/components/admin/dashboard/production/crew-load-heatmap.tsx',
-    colours: [
-      'bg-emerald-200',
-      'bg-red-400',
-      'bg-yellow-300',
-      'text-emerald-900',
-      'text-red-900',
-      'text-yellow-900',
-    ],
-  },
-  { file: 'src/components/admin/dashboard/risk/risk-panel.tsx', colours: ['text-red-500'] },
-  {
-    file: 'src/components/admin/dashboard/sales/revenue-forecast-card.tsx',
-    colours: ['bg-emerald-500'],
-  },
-  // Η λίστα έργων του portal πελάτη — και δεν είναι οθόνη λεπτομέρειας:
-  // μπήκε στην κάλυψη μαζί με τον φάκελό της, δεν την ανέλαβε η #106.
-  {
-    file: 'src/components/client/projects/projects-list.tsx',
-    colours: [
-      'bg-amber-500',
-      'bg-amber-500',
-      'bg-amber-500',
-      'bg-amber-500',
-      'bg-amber-500',
-      'bg-amber-500',
-      'bg-emerald-500',
-      'rgba(234,179,8,0.2)',
-      'rgba(234,179,8,0.2)',
-      'rgba(234,179,8,0.4)',
-      'rgba(234,179,8,0.4)',
-      'text-amber-400',
-      'text-amber-400',
-      'text-amber-500',
-      'text-amber-500',
-      'text-amber-500',
-      'text-amber-600',
-      'text-amber-600',
-      'text-emerald-400',
-      'text-emerald-500',
-      'text-emerald-500',
-      'text-emerald-600',
-    ],
-  },
-  // Η αναφορά πωλήσεων της περιοχής Interest — CHART_COLORS και τα
-  // text-green-600/text-red-600 της. Ήδη στο TABLE_PENDING ως έργο περιοχής
-  // για επόμενη φέτα· ίδιος λόγος εδώ. Δεν είναι ότι τα χρώματα γραφήματος
-  // δεν μπορούν να γίνουν tokens — τα --chart-1..5 υπάρχουν ήδη στο
-  // globals.css. Είναι θέμα εμβέλειας: η οθόνη ανήκει σε επόμενη φέτα.
-  {
-    file: 'src/components/admin/leads/sales-report.tsx',
-    colours: [
-      '#06b6d4',
-      '#10b981',
-      '#3b82f6',
-      '#3b82f6',
-      '#8b5cf6',
-      '#ec4899',
-      '#ef4444',
-      '#f59e0b',
-      'text-green-600',
-      'text-red-600',
-    ],
-  },
-  // Εύρημα εκτός σχεδίου της #109: η κάρτα ανά πελάτη μέσα στη λίστα
-  // τιμολογίων ζωγραφίζει ακόμα text-green-600 (πληρωμένο) και
-  // text-orange-600 (υπόλοιπο) στο χέρι. Ο πίνακας εδώ ήδη μετανάστευσε
-  // (#104, βλ. TABLE_DETAIL_EXEMPT) αλλά το χρώμα ξέφυγε επειδή το
-  // src/app/admin/invoices δεν ήταν καλυμμένο για χρώμα μέχρι αυτή τη φέτα.
-  // Θέμα εμβέλειας, όχι αδυναμίας — το χρέος προϋπάρχει της #109 και δεν
-  // ήταν κάτι που τα Tasks 1-6 ανέλαβαν να καθαρίσουν.
-  {
-    file: 'src/app/admin/invoices/invoices-content.tsx',
-    colours: ['text-green-600', 'text-green-600', 'text-orange-600', 'text-orange-600'],
-  },
   // Το εγχειρίδιο πωλήσεων κρατά ωμό χρώμα μέσα στην ΠΕΡΙΟΧΗ ΠΕΡΙΕΧΟΜΕΝΟΥ —
   // τα εννέα σώματα καρτελών με το εμπορικό κείμενο της εταιρείας. Ήταν
   // συνειδητή εξαίρεση στο issue που υλοποιεί αυτή η φέτα (#110), όχι
@@ -214,41 +144,6 @@ const PENDING = [
       'text-green-600',
       'text-orange-300',
       'text-orange-700',
-    ],
-  },
-  // Ψευδώς θετικό, όχι χρέος: το #000000 εδώ είναι προεπιλεγμένη τιμή για
-  // color picker και placeholder — δεδομένο που διαλέγει ο χρήστης, όχι
-  // ζωγραφισμένο UI. Το regex δεν ξεχωρίζει τα δύο. Δεν πρόκειται ποτέ να
-  // «πληρωθεί» με token, γιατί δεν είναι πραγματική οφειλή.
-  {
-    file: 'src/components/admin/settings/branding-settings.tsx',
-    colours: ['#000000', '#000000'],
-  },
-  // Media chrome — λευκά εικονίδια/κείμενο πάνω σε αυθαίρετο, αθεμάτιστο
-  // βίντεο ή φωτογραφία (video-player.tsx, message-attachment.tsx). Το
-  // foreground/muted-foreground αντιστρέφεται ανά έκδοση θέματος (σχεδόν
-  // μαύρο στο light mode) και θα έσπαγε την αντίθεση ακριβώς στη μισή
-  // περίπτωση. Καταγράφηκε συνειδητά εδώ ως PENDING, όχι μόνιμη εξαίρεση —
-  // βλ. lane-5-report.md: πληρώνεται μόλις υπάρξει token
-  // `--media-foreground` (σταθερό λευκό/σχεδόν-λευκό, ίδιο και στις δύο
-  // εκδόσεις) στο globals.css, αρχείο εκτός της κάλυψης αυτής της φέτας.
-  {
-    file: 'src/components/shared/message-attachment.tsx',
-    colours: ['bg-white', 'text-white'],
-  },
-  {
-    file: 'src/components/shared/video-player.tsx',
-    colours: [
-      'bg-white',
-      'bg-white',
-      'bg-white',
-      'bg-white',
-      'bg-white',
-      'bg-white',
-      'text-white',
-      'text-white',
-      'text-white',
-      'text-white',
     ],
   },
 ];
@@ -635,12 +530,10 @@ const TABLE_PENDING_UNDETECTABLE = [
   'src/app/admin/cost-model/tabs/items-tab.tsx',
 ];
 
-const TABLE_PENDING = [
-  // Η αναφορά πωλήσεων της περιοχής Interest — έργο περιοχής για επόμενη φέτα.
-  'src/components/admin/leads/sales-report.tsx',
-  // Ο πίνακας γνώσης του chatbot — έργο περιοχής για επόμενη φέτα.
-  'src/components/admin/chatbot/knowledge-table.tsx',
-];
+// Άδεια από το close-out της 2026-08-29: sales-report και knowledge-table
+// μετανάστευσαν στον κοινό DataTable. Η λίστα μένει ώστε ο επόμενος πίνακας
+// που θα καθυστερήσει να έχει πού να γραφτεί.
+const TABLE_PENDING = [];
 
 // Δύο μορφές, γιατί και οι δύο φτιάχνουν πίνακα στο χέρι: εισαγωγή των ωμών
 // primitives (με μονά ή διπλά εισαγωγικά, με alias ή σχετική διαδρομή), και

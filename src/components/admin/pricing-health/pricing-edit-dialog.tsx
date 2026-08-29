@@ -3,14 +3,7 @@
 import { useMemo, useState, useTransition } from 'react';
 import { useRouter } from 'next/navigation';
 import { useTranslations } from 'next-intl';
-import {
-  Dialog,
-  DialogContent,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from '@/components/ui/dialog';
-import { Button } from '@/components/ui/button';
+import { FormDialog } from '@/components/shared/form-dialog';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { toast } from 'sonner';
@@ -128,102 +121,92 @@ export function PricingEditDialog({
   }
 
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-2xl">
-        <DialogHeader>
-          <DialogTitle className="flex items-center gap-3">
-            {t('title')}
-            <HealthStatusBadge status={preview.status} />
-          </DialogTitle>
-          <p className="text-sm text-muted-foreground truncate">
-            {project.project_title}
-            {project.client_name ? ` · ${project.client_name}` : ''}
-          </p>
-        </DialogHeader>
+    <FormDialog
+      open={open}
+      onOpenChange={onOpenChange}
+      title={t('title')}
+      description={`${project.project_title}${project.client_name ? ` · ${project.client_name}` : ''}`}
+      onSubmit={save}
+      submitLabel={tc('save')}
+      cancelLabel={tc('cancel')}
+      submitting={isPending}
+      className="max-w-2xl"
+    >
+      <div className="flex justify-end">
+        <HealthStatusBadge status={preview.status} />
+      </div>
 
-        <div className="space-y-4 py-2">
-          <div className="grid grid-cols-3 gap-3">
-            <div className="space-y-2">
-              <Label htmlFor="pe-shoot">{t('shootingHours')}</Label>
-              <Input
-                id="pe-shoot"
-                inputMode="decimal"
-                value={shooting}
-                onChange={(e) => setShooting(e.target.value)}
-              />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="pe-edit">{t('editingHours')}</Label>
-              <Input
-                id="pe-edit"
-                inputMode="decimal"
-                value={editing}
-                onChange={(e) => setEditing(e.target.value)}
-              />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="pe-quoted">{t('quotedPrice')}</Label>
-              <Input
-                id="pe-quoted"
-                inputMode="decimal"
-                value={quoted}
-                onChange={(e) => setQuoted(e.target.value)}
-              />
-            </div>
-          </div>
+      <div className="grid grid-cols-3 gap-3">
+        <div className="space-y-2">
+          <Label htmlFor="pe-shoot">{t('shootingHours')}</Label>
+          <Input
+            id="pe-shoot"
+            inputMode="decimal"
+            value={shooting}
+            onChange={(e) => setShooting(e.target.value)}
+          />
+        </div>
+        <div className="space-y-2">
+          <Label htmlFor="pe-edit">{t('editingHours')}</Label>
+          <Input
+            id="pe-edit"
+            inputMode="decimal"
+            value={editing}
+            onChange={(e) => setEditing(e.target.value)}
+          />
+        </div>
+        <div className="space-y-2">
+          <Label htmlFor="pe-quoted">{t('quotedPrice')}</Label>
+          <Input
+            id="pe-quoted"
+            inputMode="decimal"
+            value={quoted}
+            onChange={(e) => setQuoted(e.target.value)}
+          />
+        </div>
+      </div>
 
-          {/* Computed row */}
-          <div className="rounded-lg border bg-muted/30 p-4 space-y-3">
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-3 text-sm">
-              <Stat label={t('totalHours')} value={`${preview.totalHours.toFixed(1)} h`} />
-              <Stat
-                label={t('costPerHour')}
-                value={fmtEUR(project.cost_per_hour)}
-                subtle={
-                  project.shooting_hours != null || project.editing_hours != null
-                    ? t('snapshot')
-                    : undefined
-                }
-              />
-              <Stat label={t('totalCost')} value={fmtEUR(preview.cost)} />
-              <Stat label={t('targetPrice')} value={fmtEUR(preview.target)} emphasized />
-            </div>
-
-            <PriceRangeBar
-              cost={preview.cost}
-              min={preview.min}
-              target={preview.target}
-              max={preview.max}
-              quoted={preview.quoted}
-              status={preview.status}
-            />
-
-            <p className="text-[11px] text-muted-foreground">{t('snapshotNote')}</p>
-          </div>
-
-          {project.has_snapshot && (
-            <button
-              type="button"
-              onClick={resetSnapshot}
-              disabled={isPending}
-              className="inline-flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground transition-colors"
-            >
-              <RotateCcw className="h-3 w-3" />
-              {t('resetSnapshot')}
-            </button>
-          )}
+      {/* Computed row */}
+      <div className="rounded-lg border bg-muted/30 p-4 space-y-3">
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-3 text-sm">
+          <Stat label={t('totalHours')} value={`${preview.totalHours.toFixed(1)} h`} />
+          <Stat
+            label={t('costPerHour')}
+            value={fmtEUR(project.cost_per_hour)}
+            subtle={
+              project.shooting_hours != null || project.editing_hours != null
+                ? t('snapshot')
+                : undefined
+            }
+          />
+          <Stat label={t('totalCost')} value={fmtEUR(preview.cost)} />
+          <Stat label={t('targetPrice')} value={fmtEUR(preview.target)} emphasized />
         </div>
 
-        <DialogFooter>
-          <Button variant="ghost" onClick={() => onOpenChange(false)}>
-            {tc('cancel')}
-          </Button>
-          <Button onClick={save} disabled={isPending}>
-            {tc('save')}
-          </Button>
-        </DialogFooter>
-      </DialogContent>
-    </Dialog>
+        <PriceRangeBar
+          cost={preview.cost}
+          min={preview.min}
+          target={preview.target}
+          max={preview.max}
+          quoted={preview.quoted}
+          status={preview.status}
+        />
+
+        <p className="text-[11px] text-muted-foreground">{t('snapshotNote')}</p>
+      </div>
+
+      {project.has_snapshot && (
+        <button
+          type="button"
+          onClick={resetSnapshot}
+          disabled={isPending}
+          className="inline-flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground transition-colors"
+        >
+          <RotateCcw className="h-3 w-3" />
+          {t('resetSnapshot')}
+        </button>
+      )}
+    </FormDialog>
   );
 }
 

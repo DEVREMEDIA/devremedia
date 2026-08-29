@@ -3,6 +3,8 @@
 import { Button } from '@/components/ui/button';
 import { ToneChip } from '@/components/shared/tone-chip';
 import { ToneIcon } from '@/components/shared/tone-icon';
+import { StatGrid } from '@/components/shared/stat-grid';
+import { StatCard } from '@/components/shared/stat-card';
 import { statusTone } from '@/lib/status-tone';
 import { format } from 'date-fns';
 import { Receipt, ArrowRight, CheckCircle2, Clock, AlertTriangle } from 'lucide-react';
@@ -22,7 +24,6 @@ const STATUS_ICONS: Record<string, typeof CheckCircle2> = {
   overdue: AlertTriangle,
   cancelled: AlertTriangle,
 };
-
 
 export function InvoicesSummary({ invoices }: InvoicesSummaryProps) {
   const router = useRouter();
@@ -64,25 +65,18 @@ export function InvoicesSummary({ invoices }: InvoicesSummaryProps) {
       </div>
 
       {/* Totals */}
-      <div className="grid grid-cols-2 gap-4 px-5 py-4 border-b border-border/50">
-        <div>
-          <p className="text-xs text-muted-foreground">{t('totalPaid')}</p>
-          <p className="text-2xl font-bold text-tone-positive mt-0.5">
-            {paidTotal.toLocaleString('el-GR', { minimumFractionDigits: 2 })}&euro;
-          </p>
-        </div>
-        <div>
-          <p className="text-xs text-muted-foreground">{t('totalPending')}</p>
-          <p
-            className={cn(
-              'text-2xl font-bold mt-0.5',
-              pendingTotal > 0 ? 'text-tone-caution' : 'text-muted-foreground',
-            )}
-          >
-            {pendingTotal.toLocaleString('el-GR', { minimumFractionDigits: 2 })}&euro;
-          </p>
-        </div>
-      </div>
+      <StatGrid columns={2}>
+        <StatCard
+          label={t('totalPaid')}
+          value={`${paidTotal.toLocaleString('el-GR', { minimumFractionDigits: 2 })}€`}
+          tone="positive"
+        />
+        <StatCard
+          label={t('totalPending')}
+          value={`${pendingTotal.toLocaleString('el-GR', { minimumFractionDigits: 2 })}€`}
+          tone={pendingTotal > 0 ? 'caution' : 'neutral'}
+        />
+      </StatGrid>
 
       {/* Recent invoices list */}
       <div className="p-5 space-y-2">

@@ -7,15 +7,28 @@ import { useTranslations } from 'next-intl';
 import { createExpenseSchema } from '@/lib/schemas/expense';
 import { createExpense } from '@/lib/actions/expenses';
 import { Button } from '@/components/ui/button';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
-import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
 import { toast } from 'sonner';
 import { z } from 'zod';
 import { EXPENSE_CATEGORIES, EXPENSE_CATEGORY_LABELS } from '@/lib/constants';
 import { Upload } from 'lucide-react';
+import { FormDialog } from '@/components/shared/form-dialog';
 
 type ProjectOption = {
   id: string;
@@ -63,146 +76,132 @@ export function ExpenseForm({ open, onOpenChange, projects, onSuccess }: Expense
   };
 
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-md">
-        <DialogHeader>
-          <DialogTitle>{t('addExpenseTitle')}</DialogTitle>
-        </DialogHeader>
-        <Form {...form}>
-          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-            <FormField
-              control={form.control}
-              name="category"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>{t('expenseCategory')}</FormLabel>
-                  <Select value={field.value} onValueChange={field.onChange}>
-                    <FormControl>
-                      <SelectTrigger>
-                        <SelectValue placeholder={t('selectCategory')} />
-                      </SelectTrigger>
-                    </FormControl>
-                    <SelectContent>
-                      {EXPENSE_CATEGORIES.map((category) => (
-                        <SelectItem key={category} value={category}>
-                          {EXPENSE_CATEGORY_LABELS[category]}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
+    <FormDialog
+      open={open}
+      onOpenChange={onOpenChange}
+      title={t('addExpenseTitle')}
+      onSubmit={form.handleSubmit(onSubmit)}
+      submitLabel={isSubmitting ? t('creating') : t('addExpense')}
+      cancelLabel={tc('cancel')}
+      submitting={isSubmitting}
+      className="max-w-md"
+    >
+      <Form {...form}>
+        <FormField
+          control={form.control}
+          name="category"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>{t('expenseCategory')}</FormLabel>
+              <Select value={field.value} onValueChange={field.onChange}>
+                <FormControl>
+                  <SelectTrigger>
+                    <SelectValue placeholder={t('selectCategory')} />
+                  </SelectTrigger>
+                </FormControl>
+                <SelectContent>
+                  {EXPENSE_CATEGORIES.map((category) => (
+                    <SelectItem key={category} value={category}>
+                      {EXPENSE_CATEGORY_LABELS[category]}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
 
-            <FormField
-              control={form.control}
-              name="description"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>{t('descriptionOptional')}</FormLabel>
-                  <FormControl>
-                    <Textarea
-                      placeholder={t('enterExpenseDescription')}
-                      className="min-h-[80px]"
-                      {...field}
-                    />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
+        <FormField
+          control={form.control}
+          name="description"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>{t('descriptionOptional')}</FormLabel>
+              <FormControl>
+                <Textarea
+                  placeholder={t('enterExpenseDescription')}
+                  className="min-h-[80px]"
+                  {...field}
+                />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
 
-            <FormField
-              control={form.control}
-              name="amount"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>{t('amountEur')}</FormLabel>
-                  <FormControl>
-                    <Input
-                      type="number"
-                      step="0.01"
-                      min="0.01"
-                      placeholder="0.00"
-                      {...field}
-                      onChange={(e) => field.onChange(parseFloat(e.target.value) || 0)}
-                    />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
+        <FormField
+          control={form.control}
+          name="amount"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>{t('amountEur')}</FormLabel>
+              <FormControl>
+                <Input
+                  type="number"
+                  step="0.01"
+                  min="0.01"
+                  placeholder="0.00"
+                  {...field}
+                  onChange={(e) => field.onChange(parseFloat(e.target.value) || 0)}
+                />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
 
-            <FormField
-              control={form.control}
-              name="date"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>{t('expenseDate')}</FormLabel>
-                  <FormControl>
-                    <Input type="date" {...field} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
+        <FormField
+          control={form.control}
+          name="date"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>{t('expenseDate')}</FormLabel>
+              <FormControl>
+                <Input type="date" {...field} />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
 
-            <FormField
-              control={form.control}
-              name="project_id"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>{t('projectOptional')}</FormLabel>
-                  <Select value={field.value} onValueChange={field.onChange}>
-                    <FormControl>
-                      <SelectTrigger>
-                        <SelectValue placeholder={t('selectProject')} />
-                      </SelectTrigger>
-                    </FormControl>
-                    <SelectContent>
-                      <SelectItem value="">{t('noProject')}</SelectItem>
-                      {projects.map((project) => (
-                        <SelectItem key={project.id} value={project.id}>
-                          {project.title}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
+        <FormField
+          control={form.control}
+          name="project_id"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>{t('projectOptional')}</FormLabel>
+              <Select value={field.value} onValueChange={field.onChange}>
+                <FormControl>
+                  <SelectTrigger>
+                    <SelectValue placeholder={t('selectProject')} />
+                  </SelectTrigger>
+                </FormControl>
+                <SelectContent>
+                  <SelectItem value="">{t('noProject')}</SelectItem>
+                  {projects.map((project) => (
+                    <SelectItem key={project.id} value={project.id}>
+                      {project.title}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
 
-            <div>
-              <FormLabel>{t('receiptUpload')}</FormLabel>
-              <div className="mt-2">
-                <Button type="button" variant="outline" disabled className="w-full">
-                  <Upload className="mr-2 h-4 w-4" />
-                  {t('uploadReceiptComingSoon')}
-                </Button>
-                <p className="text-xs text-muted-foreground mt-2">
-                  {t('receiptUploadAvailableSoon')}
-                </p>
-              </div>
-            </div>
-
-            <DialogFooter>
-              <Button
-                type="button"
-                variant="outline"
-                onClick={() => onOpenChange(false)}
-                disabled={isSubmitting}
-              >
-                {tc('cancel')}
-              </Button>
-              <Button type="submit" disabled={isSubmitting}>
-                {isSubmitting ? t('creating') : t('addExpense')}
-              </Button>
-            </DialogFooter>
-          </form>
-        </Form>
-      </DialogContent>
-    </Dialog>
+        <div>
+          <FormLabel>{t('receiptUpload')}</FormLabel>
+          <div className="mt-2">
+            <Button type="button" variant="outline" disabled className="w-full">
+              <Upload className="mr-2 h-4 w-4" />
+              {t('uploadReceiptComingSoon')}
+            </Button>
+            <p className="text-xs text-muted-foreground mt-2">{t('receiptUploadAvailableSoon')}</p>
+          </div>
+        </div>
+      </Form>
+    </FormDialog>
   );
 }

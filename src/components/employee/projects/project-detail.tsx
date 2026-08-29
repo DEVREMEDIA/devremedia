@@ -2,16 +2,20 @@
 
 import Link from 'next/link';
 import { useTranslations } from 'next-intl';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Card, CardContent } from '@/components/ui/card';
 import { StatusBadge } from '@/components/shared/status-badge';
 import { EmptyState } from '@/components/shared/empty-state';
 import { EmployeeDeliverables } from '@/components/employee/deliverables/deliverable-list';
 import { MessageThread } from '@/components/shared/message-thread';
+import { DetailShell } from '@/components/shared/detail-shell';
+import type { SectionTab } from '@/components/shell-v2/section-tabs';
 import { CheckSquare, Calendar, AlertCircle } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { formatDate } from '@/lib/format';
 import type { Task, Deliverable } from '@/types/index';
+
+/** Οι καρτέλες με τη σειρά τους. Το `page.tsx` επικυρώνει το `?tab=` πάνω σε αυτή. */
+export const PROJECT_TABS: readonly string[] = ['tasks', 'deliverables', 'messages'];
 
 interface ProjectDetailProps {
   project: {
@@ -26,6 +30,7 @@ interface ProjectDetailProps {
   deliverables: Deliverable[];
   currentUserId: string;
   projectId: string;
+  activeTab: string;
 }
 
 export function ProjectDetail({
@@ -34,19 +39,26 @@ export function ProjectDetail({
   deliverables,
   currentUserId,
   projectId,
+  activeTab,
 }: ProjectDetailProps) {
   const t = useTranslations('employee.projects');
 
-  return (
-    <Tabs defaultValue="tasks" className="space-y-4">
-      <TabsList>
-        <TabsTrigger value="tasks">{t('myTasks')}</TabsTrigger>
-        <TabsTrigger value="deliverables">{t('deliverables')}</TabsTrigger>
-        <TabsTrigger value="messages">{t('messages')}</TabsTrigger>
-      </TabsList>
+  const TABS: SectionTab[] = [
+    { key: 'tasks', label: t('myTasks') },
+    { key: 'deliverables', label: t('deliverables') },
+    { key: 'messages', label: t('messages') },
+  ];
 
-      <TabsContent value="tasks" className="space-y-4">
-        {tasks.length === 0 ? (
+  return (
+    <DetailShell
+      backHref="/employee/productions"
+      backLabel={t('title')}
+      title={project.title}
+      meta={<StatusBadge status={project.status} />}
+      tabs={{ items: TABS, active: activeTab, basePath: `/employee/projects/${projectId}` }}
+    >
+      {activeTab === 'tasks' &&
+        (tasks.length === 0 ? (
           <EmptyState
             icon={CheckSquare}
             title={t('noTasks')}
@@ -98,16 +110,15 @@ export function ProjectDetail({
               );
             })}
           </div>
-        )}
-      </TabsContent>
+        ))}
 
-      <TabsContent value="deliverables">
+      {activeTab === 'deliverables' && (
         <EmployeeDeliverables projectId={projectId} deliverables={deliverables} />
-      </TabsContent>
+      )}
 
-      <TabsContent value="messages">
+      {activeTab === 'messages' && (
         <MessageThread projectId={projectId} currentUserId={currentUserId} />
-      </TabsContent>
-    </Tabs>
+      )}
+    </DetailShell>
   );
 }

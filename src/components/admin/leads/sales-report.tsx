@@ -1,16 +1,24 @@
 'use client';
 
+import * as React from 'react';
+import { ColumnDef } from '@tanstack/react-table';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
+import { DataTable } from '@/components/shared/data-table';
+import { StatGrid } from '@/components/shared/stat-grid';
+import { StatCard } from '@/components/shared/stat-card';
 import { LEAD_STAGE_LABELS, LEAD_SOURCE_LABELS } from '@/lib/constants';
+import { formatEurInt } from '@/lib/format';
+import {
+  CHART_PRIMARY,
+  CHART_TOOLTIP_STYLE,
+  CHART_TOOLTIP_LABEL_STYLE,
+  CHART_TOOLTIP_ITEM_STYLE,
+  CHART_AXIS_TICK,
+  CHART_GRID_STROKE,
+  seriesColor,
+} from '@/lib/chart-colors';
+import { useTranslations } from 'next-intl';
 import {
   BarChart,
   Bar,
@@ -56,8 +64,6 @@ type SalesReportProps = {
   sourceData: SourceData[];
 };
 
-const CHART_COLORS = ['#3b82f6', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6', '#06b6d4', '#ec4899'];
-
 export function SalesReport({
   stageData,
   conversionRate,
@@ -65,6 +71,8 @@ export function SalesReport({
   salesmanData,
   sourceData,
 }: SalesReportProps) {
+  const t = useTranslations('leads');
+
   const pipelineChartData = Object.entries(stageData).map(([stage, count]) => ({
     name: LEAD_STAGE_LABELS[stage as keyof typeof LEAD_STAGE_LABELS] ?? stage,
     count,
@@ -79,51 +87,121 @@ export function SalesReport({
   const totalPipeline = forecast.reduce((sum, f) => sum + f.total, 0);
   const totalWeighted = forecast.reduce((sum, f) => sum + f.weighted, 0);
 
+  const forecastColumns: ColumnDef<ForecastItem>[] = React.useMemo(
+    () => [
+      {
+        accessorKey: 'stage',
+        header: t('stage'),
+        cell: ({ row }) => (
+          <Badge variant="outline">
+            {LEAD_STAGE_LABELS[row.original.stage as keyof typeof LEAD_STAGE_LABELS] ??
+              row.original.stage}
+          </Badge>
+        ),
+      },
+      {
+        accessorKey: 'count',
+        header: t('title'),
+        meta: { numeric: true },
+      },
+      {
+        accessorKey: 'total',
+        header: t('totalValue'),
+        cell: ({ row }) => formatEurInt(row.original.total),
+        meta: { numeric: true },
+      },
+      {
+        accessorKey: 'weighted',
+        header: t('weightedValue'),
+        cell: ({ row }) => formatEurInt(Math.round(row.original.weighted)),
+        meta: { numeric: true },
+      },
+    ],
+    [t],
+  );
+
+  const sortedSalesmanData = React.useMemo(
+    () => [...salesmanData].sort((a, b) => b.won - a.won),
+    [salesmanData],
+  );
+
+  const salesmanColumns: ColumnDef<SalesmanPerf>[] = React.useMemo(
+    () => [
+      {
+        accessorKey: 'name',
+        header: t('salesman'),
+        cell: ({ row }) => <span className="font-medium">{row.original.name}</span>,
+      },
+      {
+        accessorKey: 'total_leads',
+        header: t('totalLeads'),
+        meta: { numeric: true },
+      },
+      {
+        accessorKey: 'won',
+        header: LEAD_STAGE_LABELS.won,
+        cell: ({ row }) => <span className="text-tone-positive">{row.original.won}</span>,
+        meta: { numeric: true },
+      },
+      {
+        accessorKey: 'lost',
+        header: LEAD_STAGE_LABELS.lost,
+        cell: ({ row }) => <span className="text-tone-critical">{row.original.lost}</span>,
+        meta: { numeric: true },
+      },
+      {
+        accessorKey: 'active',
+        header: t('active'),
+        meta: { numeric: true },
+      },
+      {
+        accessorKey: 'total_value',
+        header: t('totalValue'),
+        cell: ({ row }) => formatEurInt(row.original.total_value),
+        meta: { numeric: true },
+      },
+      {
+        id: 'win_rate',
+        header: t('winRate'),
+        cell: ({ row }) => {
+          const { won, lost } = row.original;
+          return won + lost > 0 ? `${Math.round((won / (won + lost)) * 100)}%` : '-';
+        },
+        meta: { numeric: true },
+      },
+    ],
+    [t],
+  );
+
   return (
     <div className="space-y-6">
       {/* KPIs */}
-      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-        <Card>
-          <CardContent className="pt-6">
-            <p className="text-sm text-muted-foreground">Total Pipeline Value</p>
-            <p className="text-2xl font-bold">&euro;{totalPipeline.toLocaleString()}</p>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardContent className="pt-6">
-            <p className="text-sm text-muted-foreground">Weighted Pipeline</p>
-            <p className="text-2xl font-bold">&euro;{Math.round(totalWeighted).toLocaleString()}</p>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardContent className="pt-6">
-            <p className="text-sm text-muted-foreground">Conversion Rate</p>
-            <p className="text-2xl font-bold">{conversionRate}%</p>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardContent className="pt-6">
-            <p className="text-sm text-muted-foreground">Active Salesmen</p>
-            <p className="text-2xl font-bold">{salesmanData.length}</p>
-          </CardContent>
-        </Card>
-      </div>
+      <StatGrid columns={4}>
+        <StatCard label={t('totalPipelineValue')} value={formatEurInt(totalPipeline)} />
+        <StatCard label={t('weightedPipeline')} value={formatEurInt(Math.round(totalWeighted))} />
+        <StatCard label={t('conversionRate')} value={`${conversionRate}%`} />
+        <StatCard label={t('activeSalesmen')} value={salesmanData.length} />
+      </StatGrid>
 
       {/* Charts */}
       <div className="grid gap-6 md:grid-cols-2">
         <Card>
           <CardHeader>
-            <CardTitle className="text-lg">Pipeline by Stage</CardTitle>
+            <CardTitle className="text-lg">{t('pipelineByStage')}</CardTitle>
           </CardHeader>
           <CardContent>
             <div className="h-[300px]">
               <ResponsiveContainer width="100%" height="100%">
                 <BarChart data={pipelineChartData}>
-                  <CartesianGrid strokeDasharray="3 3" />
-                  <XAxis dataKey="name" fontSize={12} />
-                  <YAxis allowDecimals={false} />
-                  <Tooltip />
-                  <Bar dataKey="count" fill="#3b82f6" radius={[4, 4, 0, 0]} />
+                  <CartesianGrid strokeDasharray="3 3" stroke={CHART_GRID_STROKE} />
+                  <XAxis dataKey="name" tick={CHART_AXIS_TICK} />
+                  <YAxis allowDecimals={false} tick={CHART_AXIS_TICK} />
+                  <Tooltip
+                    contentStyle={CHART_TOOLTIP_STYLE}
+                    labelStyle={CHART_TOOLTIP_LABEL_STYLE}
+                    itemStyle={CHART_TOOLTIP_ITEM_STYLE}
+                  />
+                  <Bar dataKey="count" fill={CHART_PRIMARY} radius={[4, 4, 0, 0]} />
                 </BarChart>
               </ResponsiveContainer>
             </div>
@@ -132,7 +210,7 @@ export function SalesReport({
 
         <Card>
           <CardHeader>
-            <CardTitle className="text-lg">Leads by Source</CardTitle>
+            <CardTitle className="text-lg">{t('leadsBySource')}</CardTitle>
           </CardHeader>
           <CardContent>
             <div className="h-[300px]">
@@ -150,13 +228,14 @@ export function SalesReport({
                     }
                   >
                     {sourceChartData.map((_, index) => (
-                      <Cell
-                        key={`cell-${index}`}
-                        fill={CHART_COLORS[index % CHART_COLORS.length]}
-                      />
+                      <Cell key={`cell-${index}`} fill={seriesColor(index)} />
                     ))}
                   </Pie>
-                  <Tooltip />
+                  <Tooltip
+                    contentStyle={CHART_TOOLTIP_STYLE}
+                    labelStyle={CHART_TOOLTIP_LABEL_STYLE}
+                    itemStyle={CHART_TOOLTIP_ITEM_STYLE}
+                  />
                 </PieChart>
               </ResponsiveContainer>
             </div>
@@ -167,88 +246,28 @@ export function SalesReport({
       {/* Forecast Table */}
       <Card>
         <CardHeader>
-          <CardTitle className="text-lg">Pipeline Forecast</CardTitle>
+          <CardTitle className="text-lg">{t('pipelineForecast')}</CardTitle>
         </CardHeader>
         <CardContent>
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>Stage</TableHead>
-                <TableHead className="text-right">Leads</TableHead>
-                <TableHead className="text-right">Total Value</TableHead>
-                <TableHead className="text-right">Weighted Value</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {forecast.map((f) => (
-                <TableRow key={f.stage}>
-                  <TableCell>
-                    <Badge variant="outline">
-                      {LEAD_STAGE_LABELS[f.stage as keyof typeof LEAD_STAGE_LABELS] ?? f.stage}
-                    </Badge>
-                  </TableCell>
-                  <TableCell className="text-right">{f.count}</TableCell>
-                  <TableCell className="text-right">&euro;{f.total.toLocaleString()}</TableCell>
-                  <TableCell className="text-right">&euro;{Math.round(f.weighted).toLocaleString()}</TableCell>
-                </TableRow>
-              ))}
-              {forecast.length === 0 && (
-                <TableRow>
-                  <TableCell colSpan={4} className="text-center text-muted-foreground py-4">
-                    No active pipeline data
-                  </TableCell>
-                </TableRow>
-              )}
-            </TableBody>
-          </Table>
+          <DataTable
+            columns={forecastColumns}
+            data={forecast}
+            emptyState={<span className="text-muted-foreground">{t('noActivePipelineData')}</span>}
+          />
         </CardContent>
       </Card>
 
       {/* Salesman Leaderboard */}
       <Card>
         <CardHeader>
-          <CardTitle className="text-lg">Salesman Leaderboard</CardTitle>
+          <CardTitle className="text-lg">{t('salesmanLeaderboard')}</CardTitle>
         </CardHeader>
         <CardContent>
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>Salesman</TableHead>
-                <TableHead className="text-right">Total Leads</TableHead>
-                <TableHead className="text-right">Won</TableHead>
-                <TableHead className="text-right">Lost</TableHead>
-                <TableHead className="text-right">Active</TableHead>
-                <TableHead className="text-right">Total Value</TableHead>
-                <TableHead className="text-right">Win Rate</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {salesmanData
-                .sort((a, b) => b.won - a.won)
-                .map((s) => (
-                  <TableRow key={s.id}>
-                    <TableCell className="font-medium">{s.name}</TableCell>
-                    <TableCell className="text-right">{s.total_leads}</TableCell>
-                    <TableCell className="text-right text-green-600">{s.won}</TableCell>
-                    <TableCell className="text-right text-red-600">{s.lost}</TableCell>
-                    <TableCell className="text-right">{s.active}</TableCell>
-                    <TableCell className="text-right">&euro;{s.total_value.toLocaleString()}</TableCell>
-                    <TableCell className="text-right">
-                      {s.won + s.lost > 0
-                        ? `${Math.round((s.won / (s.won + s.lost)) * 100)}%`
-                        : '-'}
-                    </TableCell>
-                  </TableRow>
-                ))}
-              {salesmanData.length === 0 && (
-                <TableRow>
-                  <TableCell colSpan={7} className="text-center text-muted-foreground py-4">
-                    No salesman data available
-                  </TableCell>
-                </TableRow>
-              )}
-            </TableBody>
-          </Table>
+          <DataTable
+            columns={salesmanColumns}
+            data={sortedSalesmanData}
+            emptyState={<span className="text-muted-foreground">{t('noSalesmanData')}</span>}
+          />
         </CardContent>
       </Card>
     </div>

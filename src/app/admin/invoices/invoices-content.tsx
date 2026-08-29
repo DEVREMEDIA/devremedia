@@ -248,14 +248,14 @@ export function InvoicesContent({ invoices: initialInvoices }: InvoicesContentPr
                               </div>
                               <div>
                                 <p className="text-xs text-muted-foreground">{t('totalPaid')}</p>
-                                <p className="text-sm font-medium text-green-600">
+                                <p className="text-sm font-medium text-tone-positive">
                                   {formatCurrency(group.totalPaid)}
                                 </p>
                               </div>
                               <div>
                                 <p className="text-xs text-muted-foreground">{t('balance')}</p>
                                 <p
-                                  className={`text-sm font-bold ${group.balance > 0 ? 'text-orange-600' : 'text-muted-foreground'}`}
+                                  className={`text-sm font-bold ${group.balance > 0 ? 'text-tone-caution' : 'text-muted-foreground'}`}
                                 >
                                   {formatCurrency(group.balance)}
                                 </p>
@@ -279,14 +279,14 @@ export function InvoicesContent({ invoices: initialInvoices }: InvoicesContentPr
                           </div>
                           <div>
                             <p className="text-xs text-muted-foreground">{t('totalPaid')}</p>
-                            <p className="text-sm font-medium text-green-600">
+                            <p className="text-sm font-medium text-tone-positive">
                               {formatCurrency(group.totalPaid)}
                             </p>
                           </div>
                           <div>
                             <p className="text-xs text-muted-foreground">{t('balance')}</p>
                             <p
-                              className={`text-sm font-bold ${group.balance > 0 ? 'text-orange-600' : 'text-muted-foreground'}`}
+                              className={`text-sm font-bold ${group.balance > 0 ? 'text-tone-caution' : 'text-muted-foreground'}`}
                             >
                               {formatCurrency(group.balance)}
                             </p>

@@ -7,7 +7,8 @@ import { toast } from 'sonner';
 import { useTranslations } from 'next-intl';
 import { Button } from '@/components/ui/button';
 import { ContractView } from '@/components/shared/contract-view';
-import { PageHeading } from '@/components/shared/page-heading';
+import { DetailShell } from '@/components/shared/detail-shell';
+import { StatusBadge } from '@/components/shared/status-badge';
 import type { ContractWithRelations } from '@/types';
 
 interface ContractViewClientProps {
@@ -67,9 +68,13 @@ export function ContractViewClient({ contract }: ContractViewClientProps) {
   };
 
   return (
-    <>
-      <PageHeading title={contract.title}>
-        <div className="flex items-center gap-2">
+    <DetailShell
+      backHref="/client/documents?tab=contracts"
+      backLabel={t('title')}
+      title={contract.title}
+      meta={<StatusBadge status={contract.status} />}
+      actions={
+        <>
           {['sent', 'viewed', 'signed', 'pending_review'].includes(contract.status) && (
             <Button variant="outline" onClick={handleDownloadPDF}>
               <Download className="h-4 w-4 mr-2" />
@@ -99,18 +104,16 @@ export function ContractViewClient({ contract }: ContractViewClientProps) {
               </Button>
             </>
           )}
-        </div>
-      </PageHeading>
-
-      <div className="mt-6">
-        <ContractView contract={contract} />
-      </div>
+        </>
+      }
+    >
+      <ContractView contract={contract} />
 
       {contract.status === 'pending_review' && (
         <div className="mt-6 rounded-lg border border-tone-caution/30 bg-tone-caution-bg p-4 text-center text-sm">
           {t('pendingReviewMessage')}
         </div>
       )}
-    </>
+    </DetailShell>
   );
 }

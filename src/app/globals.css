@@ -30,6 +30,7 @@
   --color-tone-neutral: var(--tone-neutral);
   --color-tone-neutral-bg: var(--tone-neutral-bg);
   --color-media-surface: var(--media-surface);
+  --color-media-foreground: var(--media-foreground);
   --color-sidebar-ring: var(--sidebar-ring);
   --color-sidebar-border: var(--sidebar-border);
   --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
@@ -112,6 +113,11 @@
   /* Το έδαφος πίσω από βίντεο. Μαύρο και στις δύο εκδόσεις: το letterbox
      δεν ακολουθεί το θέμα, ακολουθεί το βίντεο. */
   --media-surface: #000000;
+  /* Το μελάνι πάνω στο --media-surface: εικονίδια/κείμενο ελέγχου βίντεο
+     πάνω σε αυθαίρετο, αθεμάτιστο πλάνο. Σχεδόν λευκό και στις δύο
+     εκδόσεις, για τον ίδιο λόγο που το --media-surface είναι πάντα μαύρο —
+     ακολουθεί το βίντεο, όχι το θέμα. */
+  --media-foreground: #f5f5f4;
   /* Τα χρώματα των τύπων συμβάντος του ημερολογίου. Το FullCalendar και η
      κουκκίδα των επερχόμενων τα γράφουν σε inline style, όχι σε class — άρα
      δεν γίνονται tone-class, γίνονται όμως μεταβλητές: ο ίδιος χάρτης ήδη
@@ -171,6 +177,7 @@
   --tone-neutral: #9a968c;
   --tone-neutral-bg: #171714;
   --media-surface: #000000;
+  --media-foreground: #f5f5f4;
   --event-meeting: hsl(262 83% 58%);
   --event-reminder: hsl(199 89% 48%);
   --event-task: hsl(142 76% 36%);
