@@ -82,8 +82,22 @@ export async function login(page: Page, email: string, password: string) {
   const submitButton = page.locator('button[type="submit"]').first();
   await submitButton.click();
 
-  // Wait for navigation to complete (either to the new role landing or error)
-  await page.waitForURL(/\/(admin|employee|salesman)\/today|\/client\/home/, { timeout: 10000 });
+  // Wait for navigation to complete (either to the new role landing or error).
+  //
+  // This was 10 seconds, and it made the whole credentialed suite look broken.
+  // The runner starts `pnpm dev`, and Turbopack compiles each route the first
+  // time it is requested — the landing pages take well over ten seconds cold.
+  // On the first run against a cold server, 30 of 45 tests failed here; on a
+  // second run against the same, now-warm server, 30 passed and the remaining
+  // 15 failed on exactly this line, all of them the first visit to a route
+  // nobody had opened yet. Nothing was wrong with the product: the login
+  // itself lands on /admin/today with a real session every time.
+  //
+  // A generous ceiling costs nothing when the page is warm — `waitForURL`
+  // returns the moment the URL matches — and it stops a cold compile from
+  // reading as a failure.
+  const timeout = Number(process.env.E2E_LOGIN_TIMEOUT_MS ?? 45000);
+  await page.waitForURL(/\/(admin|employee|salesman)\/today|\/client\/home/, { timeout });
 }
 
 /**

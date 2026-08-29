@@ -7,8 +7,18 @@ import { defineConfig, devices } from '@playwright/test';
 export default defineConfig({
   testDir: './e2e',
 
-  // Maximum time one test can run
-  timeout: 30 * 1000,
+  // Maximum time one test can run.
+  //
+  // The suite runs against `pnpm dev` (see webServer below), and Turbopack
+  // compiles a route the first time anything asks for it. A test whose first
+  // act is to open a page nobody has opened yet spends most of its budget
+  // waiting for a compiler, not for the app. At 30 seconds that read as a
+  // failing test; it was a cold cache.
+  //
+  // Raising this does not slow a passing run — every wait returns as soon as
+  // its condition is met. It only changes how long a genuinely stuck test
+  // takes to admit it.
+  timeout: Number(process.env.E2E_TEST_TIMEOUT_MS ?? 90 * 1000),
 
   // Run tests in files in parallel
   fullyParallel: true,
@@ -24,6 +34,16 @@ export default defineConfig({
 
   // Reporter to use
   reporter: [['html'], ['list']],
+
+  expect: {
+    // Same cold-compiler problem as the test timeout above, one layer in.
+    // `toHaveURL` passes the instant a client-side navigation changes the URL,
+    // and the very next assertion then waits on markup that Turbopack is still
+    // building. At the 5s default that reads as "the shared heading is missing
+    // from this screen" — which is exactly what it looked like on a project
+    // detail page whose heading is demonstrably there.
+    timeout: Number(process.env.E2E_EXPECT_TIMEOUT_MS ?? 15 * 1000),
+  },
 
   // Shared settings for all the projects below
   use: {
