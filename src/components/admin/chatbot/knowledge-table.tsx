@@ -1,17 +1,13 @@
 'use client';
 
+import * as React from 'react';
 import { useRouter } from 'next/navigation';
 import { useTranslations } from 'next-intl';
 import { Trash2 } from 'lucide-react';
+import { ColumnDef } from '@tanstack/react-table';
 import { Button } from '@/components/ui/button';
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from '@/components/ui/table';
+import { Badge } from '@/components/ui/badge';
+import { DataTable } from '@/components/shared/data-table';
 import { deleteKnowledgeEntry } from '@/lib/actions/chatbot';
 import { toast } from 'sonner';
 
@@ -32,60 +28,75 @@ export function KnowledgeTable({ entries }: KnowledgeTableProps) {
   const router = useRouter();
   const t = useTranslations('chatbot');
 
-  const handleDelete = async (id: string) => {
-    const result = await deleteKnowledgeEntry(id);
-    if (result.error) {
-      toast.error(result.error);
-    } else {
-      toast.success(t('entryDeleted'));
-      router.refresh();
-    }
-  };
+  const handleDelete = React.useCallback(
+    async (id: string) => {
+      const result = await deleteKnowledgeEntry(id);
+      if (result.error) {
+        toast.error(result.error);
+      } else {
+        toast.success(t('entryDeleted'));
+        router.refresh();
+      }
+    },
+    [router, t],
+  );
 
-  if (entries.length === 0) {
-    return (
-      <div className="text-center py-12 text-muted-foreground">
-        No knowledge entries. Click &quot;Seed Knowledge Base&quot; to populate with default
-        content.
-      </div>
-    );
-  }
+  const columns: ColumnDef<KnowledgeEntry>[] = React.useMemo(
+    () => [
+      {
+        accessorKey: 'category',
+        header: 'Category',
+        cell: ({ row }) => (
+          <Badge variant="secondary" className="capitalize">
+            {row.original.category.replace(/_/g, ' ')}
+          </Badge>
+        ),
+      },
+      {
+        accessorKey: 'title',
+        header: 'Title',
+        cell: ({ row }) => <span className="font-medium">{row.original.title}</span>,
+      },
+      {
+        id: 'preview',
+        header: 'Content Preview',
+        cell: ({ row }) => (
+          <span className="block max-w-[300px] truncate text-sm text-muted-foreground">
+            {row.original.content_en || row.original.content}
+          </span>
+        ),
+      },
+      {
+        id: 'actions',
+        header: '',
+        cell: ({ row }) => (
+          <Button
+            variant="ghost"
+            size="icon"
+            className="h-8 w-8 text-muted-foreground hover:text-destructive"
+            onClick={() => handleDelete(row.original.id)}
+          >
+            <Trash2 className="h-4 w-4" />
+          </Button>
+        ),
+        enableSorting: false,
+        meta: { width: 'w-[50px]' },
+      },
+    ],
+    [handleDelete],
+  );
 
   return (
-    <Table>
-      <TableHeader>
-        <TableRow>
-          <TableHead>Category</TableHead>
-          <TableHead>Title</TableHead>
-          <TableHead className="hidden md:table-cell">Content Preview</TableHead>
-          <TableHead className="w-[50px]" />
-        </TableRow>
-      </TableHeader>
-      <TableBody>
-        {entries.map((entry) => (
-          <TableRow key={entry.id}>
-            <TableCell>
-              <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-muted capitalize">
-                {entry.category.replace(/_/g, ' ')}
-              </span>
-            </TableCell>
-            <TableCell className="font-medium">{entry.title}</TableCell>
-            <TableCell className="hidden md:table-cell text-muted-foreground text-sm max-w-[300px] truncate">
-              {entry.content_en || entry.content}
-            </TableCell>
-            <TableCell>
-              <Button
-                variant="ghost"
-                size="icon"
-                className="h-8 w-8 text-muted-foreground hover:text-destructive"
-                onClick={() => handleDelete(entry.id)}
-              >
-                <Trash2 className="h-4 w-4" />
-              </Button>
-            </TableCell>
-          </TableRow>
-        ))}
-      </TableBody>
-    </Table>
+    <DataTable
+      columns={columns}
+      data={entries}
+      mobileHiddenColumns={['preview']}
+      emptyState={
+        <span className="text-muted-foreground">
+          No knowledge entries. Click &quot;Seed Knowledge Base&quot; to populate with default
+          content.
+        </span>
+      }
+    />
   );
 }

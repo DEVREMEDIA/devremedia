@@ -15,15 +15,6 @@ import {
 import type { ColumnDef } from '@tanstack/react-table';
 import { DataTable } from '@/components/shared/data-table';
 import { Badge } from '@/components/ui/badge';
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from '@/components/ui/dialog';
 import { UserPlus, MoreHorizontal, Search } from 'lucide-react';
 import {
   DropdownMenu,
@@ -33,6 +24,7 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { ConfirmDialog } from '@/components/shared/confirm-dialog';
+import { FormDialog } from '@/components/shared/form-dialog';
 import {
   inviteTeamMember,
   updateTeamMemberRole,
@@ -294,70 +286,59 @@ export function UserManagement({ users }: UserManagementProps) {
           </Select>
         </div>
 
-        <Dialog open={isInviteDialogOpen} onOpenChange={setIsInviteDialogOpen}>
-          <DialogTrigger asChild>
-            <Button>
-              <UserPlus className="mr-2 h-4 w-4" />
-              {t('inviteUser')}
-            </Button>
-          </DialogTrigger>
-          <DialogContent>
-            <DialogHeader>
-              <DialogTitle>{t('inviteNewUser')}</DialogTitle>
-              <DialogDescription>{t('inviteDescription')}</DialogDescription>
-            </DialogHeader>
-            <div className="space-y-4 py-4">
-              <div className="space-y-2">
-                <Label htmlFor="invite-email">{t('emailAddress')}</Label>
-                <Input
-                  id="invite-email"
-                  type="email"
-                  placeholder="user@example.com"
-                  value={inviteEmail}
-                  onChange={(e) => setInviteEmail(e.target.value)}
-                />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="invite-name">
-                  {t('fullName')} <span className="text-destructive">*</span>
-                </Label>
-                <Input
-                  id="invite-name"
-                  type="text"
-                  placeholder={t('displayNamePlaceholder')}
-                  value={inviteDisplayName}
-                  onChange={(e) => setInviteDisplayName(e.target.value)}
-                />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="invite-role">{t('role')}</Label>
-                <Select
-                  value={inviteRole}
-                  onValueChange={(value) => setInviteRole(value as UserRole)}
-                >
-                  <SelectTrigger>
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="client">{t('clientRole')}</SelectItem>
-                    <SelectItem value="employee">{t('employeeRole')}</SelectItem>
-                    <SelectItem value="salesman">{t('salesmanRole')}</SelectItem>
-                    <SelectItem value="admin">{t('adminRole')}</SelectItem>
-                    <SelectItem value="super_admin">{t('superAdminRole')}</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-            </div>
-            <DialogFooter>
-              <Button variant="outline" onClick={() => setIsInviteDialogOpen(false)}>
-                {tc('cancel')}
-              </Button>
-              <Button onClick={handleInvite} disabled={isSubmitting}>
-                {isSubmitting ? t('sending') : t('sendInvitation')}
-              </Button>
-            </DialogFooter>
-          </DialogContent>
-        </Dialog>
+        <Button onClick={() => setIsInviteDialogOpen(true)}>
+          <UserPlus className="mr-2 h-4 w-4" />
+          {t('inviteUser')}
+        </Button>
+
+        <FormDialog
+          open={isInviteDialogOpen}
+          onOpenChange={setIsInviteDialogOpen}
+          title={t('inviteNewUser')}
+          description={t('inviteDescription')}
+          onSubmit={handleInvite}
+          submitLabel={isSubmitting ? t('sending') : t('sendInvitation')}
+          cancelLabel={tc('cancel')}
+          submitting={isSubmitting}
+        >
+          <div className="space-y-2">
+            <Label htmlFor="invite-email">{t('emailAddress')}</Label>
+            <Input
+              id="invite-email"
+              type="email"
+              placeholder="user@example.com"
+              value={inviteEmail}
+              onChange={(e) => setInviteEmail(e.target.value)}
+            />
+          </div>
+          <div className="space-y-2">
+            <Label htmlFor="invite-name">
+              {t('fullName')} <span className="text-destructive">*</span>
+            </Label>
+            <Input
+              id="invite-name"
+              type="text"
+              placeholder={t('displayNamePlaceholder')}
+              value={inviteDisplayName}
+              onChange={(e) => setInviteDisplayName(e.target.value)}
+            />
+          </div>
+          <div className="space-y-2">
+            <Label htmlFor="invite-role">{t('role')}</Label>
+            <Select value={inviteRole} onValueChange={(value) => setInviteRole(value as UserRole)}>
+              <SelectTrigger>
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="client">{t('clientRole')}</SelectItem>
+                <SelectItem value="employee">{t('employeeRole')}</SelectItem>
+                <SelectItem value="salesman">{t('salesmanRole')}</SelectItem>
+                <SelectItem value="admin">{t('adminRole')}</SelectItem>
+                <SelectItem value="super_admin">{t('superAdminRole')}</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+        </FormDialog>
       </div>
 
       {/* Users Table */}

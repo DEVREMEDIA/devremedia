@@ -5,15 +5,6 @@ import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { createSalesResource } from '@/lib/actions/sales-resources';
-import { Button } from '@/components/ui/button';
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from '@/components/ui/dialog';
 import {
   Form,
   FormControl,
@@ -34,7 +25,7 @@ import {
 import { FileUploadDropzone } from '@/components/shared/file-upload-dropzone';
 import { toast } from 'sonner';
 import { useTranslations } from 'next-intl';
-import { LoadingSpinner } from '@/components/shared/loading-spinner';
+import { FormDialog } from '@/components/shared/form-dialog';
 
 function makeUploadFormSchema(t: (key: string) => string) {
   return z.object({
@@ -147,123 +138,101 @@ export function ResourceUploadForm({
   };
 
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-2xl">
-        <DialogHeader>
-          <DialogTitle>{t('addResource')}</DialogTitle>
-          <DialogDescription>{t('uploadResourceDescription')}</DialogDescription>
-        </DialogHeader>
+    <FormDialog
+      open={open}
+      onOpenChange={onOpenChange}
+      title={t('addResource')}
+      description={t('uploadResourceDescription')}
+      onSubmit={form.handleSubmit(onSubmit)}
+      submitLabel={isSubmitting ? 'Uploading...' : 'Upload'}
+      cancelLabel="Cancel"
+      submitting={isSubmitting}
+      className="max-w-2xl"
+    >
+      <Form {...form}>
+        <FormField
+          control={form.control}
+          name="category_id"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Category</FormLabel>
+              <Select onValueChange={field.onChange} value={field.value}>
+                <FormControl>
+                  <SelectTrigger>
+                    <SelectValue placeholder={t('selectCategoryPlaceholder')} />
+                  </SelectTrigger>
+                </FormControl>
+                <SelectContent>
+                  {categories.map((category) => (
+                    <SelectItem key={category.id} value={category.id}>
+                      {category.title}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
 
-        <Form {...form}>
-          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-            <FormField
-              control={form.control}
-              name="category_id"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Category</FormLabel>
-                  <Select onValueChange={field.onChange} value={field.value}>
-                    <FormControl>
-                      <SelectTrigger>
-                        <SelectValue placeholder={t('selectCategoryPlaceholder')} />
-                      </SelectTrigger>
-                    </FormControl>
-                    <SelectContent>
-                      {categories.map((category) => (
-                        <SelectItem key={category.id} value={category.id}>
-                          {category.title}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
+        <FormField
+          control={form.control}
+          name="title"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Title</FormLabel>
+              <FormControl>
+                <Input placeholder="e.g., Pricing Sheet" {...field} />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
 
-            <FormField
-              control={form.control}
-              name="title"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Title</FormLabel>
-                  <FormControl>
-                    <Input placeholder="e.g., Pricing Sheet" {...field} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
+        <FormField
+          control={form.control}
+          name="description"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Description (Optional)</FormLabel>
+              <FormControl>
+                <Textarea
+                  placeholder={t('resourceDescriptionPlaceholder')}
+                  {...field}
+                  value={field.value ?? ''}
+                />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
 
-            <FormField
-              control={form.control}
-              name="description"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Description (Optional)</FormLabel>
-                  <FormControl>
-                    <Textarea
-                      placeholder={t('resourceDescriptionPlaceholder')}
-                      {...field}
-                      value={field.value ?? ''}
-                    />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-
-            <div>
-              <FormLabel>File</FormLabel>
-              <FileUploadDropzone
-                accept={{
-                  'application/pdf': ['.pdf'],
-                  'application/msword': ['.doc'],
-                  'application/vnd.openxmlformats-officedocument.wordprocessingml.document': [
-                    '.docx',
-                  ],
-                  'application/vnd.ms-excel': ['.xls'],
-                  'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet': ['.xlsx'],
-                  'application/vnd.ms-powerpoint': ['.ppt'],
-                  'application/vnd.openxmlformats-officedocument.presentationml.presentation': [
-                    '.pptx',
-                  ],
-                  'image/*': ['.png', '.jpg', '.jpeg', '.gif'],
-                }}
-                maxSize={50 * 1024 * 1024} // 50MB
-                onFilesSelected={handleFilesSelected}
-                disabled={isSubmitting}
-              />
-              {selectedFile && (
-                <p className="text-sm text-muted-foreground mt-2">
-                  Selected: {selectedFile.name} ({(selectedFile.size / 1024 / 1024).toFixed(2)} MB)
-                </p>
-              )}
-            </div>
-
-            <DialogFooter>
-              <Button
-                type="button"
-                variant="outline"
-                onClick={() => onOpenChange(false)}
-                disabled={isSubmitting}
-              >
-                Cancel
-              </Button>
-              <Button type="submit" disabled={isSubmitting || !selectedFile}>
-                {isSubmitting ? (
-                  <div className="flex items-center gap-2">
-                    <LoadingSpinner size="sm" />
-                    <span>Uploading...</span>
-                  </div>
-                ) : (
-                  'Upload'
-                )}
-              </Button>
-            </DialogFooter>
-          </form>
-        </Form>
-      </DialogContent>
-    </Dialog>
+        <div>
+          <FormLabel>File</FormLabel>
+          <FileUploadDropzone
+            accept={{
+              'application/pdf': ['.pdf'],
+              'application/msword': ['.doc'],
+              'application/vnd.openxmlformats-officedocument.wordprocessingml.document': ['.docx'],
+              'application/vnd.ms-excel': ['.xls'],
+              'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet': ['.xlsx'],
+              'application/vnd.ms-powerpoint': ['.ppt'],
+              'application/vnd.openxmlformats-officedocument.presentationml.presentation': [
+                '.pptx',
+              ],
+              'image/*': ['.png', '.jpg', '.jpeg', '.gif'],
+            }}
+            maxSize={50 * 1024 * 1024} // 50MB
+            onFilesSelected={handleFilesSelected}
+            disabled={isSubmitting}
+          />
+          {selectedFile && (
+            <p className="text-sm text-muted-foreground mt-2">
+              Selected: {selectedFile.name} ({(selectedFile.size / 1024 / 1024).toFixed(2)} MB)
+            </p>
+          )}
+        </div>
+      </Form>
+    </FormDialog>
   );
 }

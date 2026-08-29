@@ -14,6 +14,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog';
+import { FormDialog } from '@/components/shared/form-dialog';
 import { Badge } from '@/components/ui/badge';
 import { Plus, Pencil, Trash2 } from 'lucide-react';
 import { toast } from 'sonner';
@@ -60,6 +61,7 @@ export function CostCategoriesTab({ initialCategories }: Props) {
   }
 
   function save() {
+    if (!name.trim()) return;
     startTransition(async () => {
       const payload = { name, sort_order: sortOrder, active };
       const res = editing
@@ -140,55 +142,43 @@ export function CostCategoriesTab({ initialCategories }: Props) {
       </CardContent>
 
       {/* Create / edit dialog */}
-      <Dialog open={open} onOpenChange={setOpen}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>{editing ? t('editCategory') : t('addCategory')}</DialogTitle>
-          </DialogHeader>
-          <div className="space-y-4 py-2">
-            <div className="space-y-2">
-              <Label htmlFor="cat-name">{t('name')}</Label>
-              <Input
-                id="cat-name"
-                value={name}
-                onChange={(e) => setName(e.target.value)}
-                autoFocus
-              />
-            </div>
-            <div className="grid grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <Label htmlFor="cat-sort">Sort</Label>
-                <Input
-                  id="cat-sort"
-                  type="number"
-                  value={sortOrder}
-                  onChange={(e) => setSortOrder(Number(e.target.value))}
-                />
-              </div>
-              <div className="space-y-2">
-                <Label className="block">Status</Label>
-                <label className="inline-flex items-center gap-2 pt-2 text-sm cursor-pointer">
-                  <input
-                    type="checkbox"
-                    checked={active}
-                    onChange={(e) => setActive(e.target.checked)}
-                    className="h-4 w-4"
-                  />
-                  Active
-                </label>
-              </div>
-            </div>
+      <FormDialog
+        open={open}
+        onOpenChange={setOpen}
+        title={editing ? t('editCategory') : t('addCategory')}
+        onSubmit={save}
+        submitLabel={tc('save')}
+        cancelLabel={tc('cancel')}
+        submitting={isPending}
+      >
+        <div className="space-y-2">
+          <Label htmlFor="cat-name">{t('name')}</Label>
+          <Input id="cat-name" value={name} onChange={(e) => setName(e.target.value)} autoFocus />
+        </div>
+        <div className="grid grid-cols-2 gap-4">
+          <div className="space-y-2">
+            <Label htmlFor="cat-sort">Sort</Label>
+            <Input
+              id="cat-sort"
+              type="number"
+              value={sortOrder}
+              onChange={(e) => setSortOrder(Number(e.target.value))}
+            />
           </div>
-          <DialogFooter>
-            <Button variant="ghost" onClick={() => setOpen(false)}>
-              {tc('cancel')}
-            </Button>
-            <Button onClick={save} disabled={isPending || !name.trim()}>
-              {tc('save')}
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+          <div className="space-y-2">
+            <Label className="block">Status</Label>
+            <label className="inline-flex items-center gap-2 pt-2 text-sm cursor-pointer">
+              <input
+                type="checkbox"
+                checked={active}
+                onChange={(e) => setActive(e.target.checked)}
+                className="h-4 w-4"
+              />
+              Active
+            </label>
+          </div>
+        </div>
+      </FormDialog>
 
       {/* Delete confirmation */}
       <Dialog open={!!confirmDelete} onOpenChange={(o) => !o && setConfirmDelete(null)}>

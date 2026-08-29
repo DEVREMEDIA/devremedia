@@ -63,7 +63,7 @@ export function ProjectsList({ projects, filmingRequests }: ProjectsListProps) {
       {pendingRequests.length > 0 && (
         <section className="space-y-4">
           <div className="flex items-center gap-2">
-            <Clock className="h-5 w-5 text-amber-500" />
+            <Clock className="h-5 w-5 text-tone-caution" />
             <h2 className="text-lg font-semibold">{t('bookingRequests')}</h2>
             <Badge variant="secondary" className="text-xs">
               {pendingRequests.length}
@@ -81,7 +81,7 @@ export function ProjectsList({ projects, filmingRequests }: ProjectsListProps) {
       {activeProjects.length > 0 && (
         <section className="space-y-4">
           <div className="flex items-center gap-2">
-            <Clapperboard className="h-5 w-5 text-amber-500" />
+            <Clapperboard className="h-5 w-5 text-tone-caution" />
             <h2 className="text-lg font-semibold">{t('activeProjects')}</h2>
             <Badge variant="secondary" className="text-xs">
               {activeProjects.length}
@@ -100,7 +100,7 @@ export function ProjectsList({ projects, filmingRequests }: ProjectsListProps) {
       {completedProjects.length > 0 && (
         <section className="space-y-4">
           <div className="flex items-center gap-2">
-            <CheckCircle2 className="h-5 w-5 text-emerald-500" />
+            <CheckCircle2 className="h-5 w-5 text-tone-positive" />
             <h2 className="text-lg font-semibold">{t('completedProjects')}</h2>
             <Badge variant="secondary" className="text-xs">
               {completedProjects.length}
@@ -133,7 +133,7 @@ function BookingRequestCard({ request }: { request: FilmingRequest }) {
     <Card
       className={cn(
         'group border bg-card transition-all duration-300',
-        'hover:shadow-[0_8px_30px_-4px_rgba(234,179,8,0.2)] hover:-translate-y-0.5',
+        'hover:shadow-[0_8px_30px_-4px_color-mix(in_srgb,var(--primary)_20%,transparent)] hover:-translate-y-0.5',
         declined && 'opacity-60',
       )}
     >
@@ -160,14 +160,14 @@ function BookingRequestCard({ request }: { request: FilmingRequest }) {
                   className={cn(
                     'h-2 flex-1 rounded-full transition-all relative',
                     i < stageIndex
-                      ? 'bg-amber-500/70'
+                      ? 'bg-tone-caution/70'
                       : i === stageIndex
-                        ? 'bg-amber-500 shadow-[0_0_8px_rgba(234,179,8,0.4)]'
+                        ? 'bg-tone-caution shadow-[0_0_8px_color-mix(in_srgb,var(--tone-caution)_40%,transparent)]'
                         : 'bg-muted-foreground/10',
                   )}
                 >
                   {i === stageIndex && (
-                    <div className="absolute inset-0 rounded-full bg-amber-500 animate-pulse opacity-40" />
+                    <div className="absolute inset-0 rounded-full bg-tone-caution animate-pulse opacity-40" />
                   )}
                 </div>
               ))}
@@ -179,7 +179,7 @@ function BookingRequestCard({ request }: { request: FilmingRequest }) {
                   className={cn(
                     'flex-1 text-center text-[10px] leading-tight',
                     i === stageIndex
-                      ? 'text-amber-600 dark:text-amber-400 font-semibold'
+                      ? 'text-tone-caution font-semibold'
                       : i < stageIndex
                         ? 'text-muted-foreground/60'
                         : 'text-muted-foreground/30',
@@ -224,7 +224,7 @@ function ProjectCard({ project, fromRequest }: { project: Project; fromRequest: 
     <Card
       className={cn(
         'group cursor-pointer border bg-card transition-all duration-300',
-        'hover:shadow-[0_8px_30px_-4px_rgba(234,179,8,0.2)] hover:-translate-y-0.5',
+        'hover:shadow-[0_8px_30px_-4px_color-mix(in_srgb,var(--primary)_20%,transparent)] hover:-translate-y-0.5',
       )}
       onClick={() => router.push(`/client/projects/${project.id}`)}
     >
@@ -237,7 +237,7 @@ function ProjectCard({ project, fromRequest }: { project: Project; fromRequest: 
               <span className="text-xs text-muted-foreground">{t('fromBooking')}</span>
             )}
           </div>
-          <ArrowRight className="h-5 w-5 text-muted-foreground/40 group-hover:text-amber-500 transition-colors shrink-0 mt-0.5" />
+          <ArrowRight className="h-5 w-5 text-muted-foreground/40 group-hover:text-tone-caution transition-colors shrink-0 mt-0.5" />
         </div>
       </div>
 
@@ -253,14 +253,14 @@ function ProjectCard({ project, fromRequest }: { project: Project; fromRequest: 
                   className={cn(
                     'h-2 flex-1 rounded-full transition-all relative',
                     i < stageIndex
-                      ? 'bg-amber-500/70'
+                      ? 'bg-tone-caution/70'
                       : i === stageIndex
-                        ? 'bg-amber-500 shadow-[0_0_8px_rgba(234,179,8,0.4)]'
+                        ? 'bg-tone-caution shadow-[0_0_8px_color-mix(in_srgb,var(--tone-caution)_40%,transparent)]'
                         : 'bg-muted-foreground/10',
                   )}
                 >
                   {i === stageIndex && (
-                    <div className="absolute inset-0 rounded-full bg-amber-500 animate-pulse opacity-40" />
+                    <div className="absolute inset-0 rounded-full bg-tone-caution animate-pulse opacity-40" />
                   )}
                 </div>
               ))}
@@ -273,7 +273,7 @@ function ProjectCard({ project, fromRequest }: { project: Project; fromRequest: 
                   className={cn(
                     'flex-1 text-center text-[10px] leading-tight',
                     i === stageIndex
-                      ? 'text-amber-600 dark:text-amber-400 font-semibold'
+                      ? 'text-tone-caution font-semibold'
                       : i < stageIndex
                         ? 'text-muted-foreground/60'
                         : 'text-muted-foreground/30',
@@ -289,14 +289,12 @@ function ProjectCard({ project, fromRequest }: { project: Project; fromRequest: 
           <div className="space-y-2">
             <div className="flex gap-1">
               {PROJECT_STAGES.map((_, i) => (
-                <div key={i} className="h-2 flex-1 rounded-full bg-emerald-500/70" />
+                <div key={i} className="h-2 flex-1 rounded-full bg-tone-positive/70" />
               ))}
             </div>
             <div className="flex items-center justify-center gap-1.5">
-              <CheckCircle2 className="h-4 w-4 text-emerald-500" />
-              <span className="text-sm font-medium text-emerald-600 dark:text-emerald-400">
-                {t('stageDelivered')}
-              </span>
+              <CheckCircle2 className="h-4 w-4 text-tone-positive" />
+              <span className="text-sm font-medium text-tone-positive">{t('stageDelivered')}</span>
             </div>
           </div>
         )}

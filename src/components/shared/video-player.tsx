@@ -141,7 +141,7 @@ export function VideoPlayer({
             {/* Seek Bar with Annotations */}
             <div className="relative">
               <div
-                className="h-2 bg-white/20 rounded-full cursor-pointer hover:h-3 transition-all"
+                className="h-2 bg-media-foreground/20 rounded-full cursor-pointer hover:h-3 transition-all"
                 onClick={handleSeek}
               >
                 <div
@@ -178,7 +178,7 @@ export function VideoPlayer({
                   size="icon-sm"
                   variant="ghost"
                   onClick={togglePlay}
-                  className="text-white hover:bg-white/20"
+                  className="text-media-foreground hover:bg-media-foreground/20"
                 >
                   {isPlaying ? <Pause className="h-4 w-4" /> : <Play className="h-4 w-4" />}
                 </Button>
@@ -188,7 +188,7 @@ export function VideoPlayer({
                     size="icon-sm"
                     variant="ghost"
                     onClick={toggleMute}
-                    className="text-white hover:bg-white/20"
+                    className="text-media-foreground hover:bg-media-foreground/20"
                   >
                     {isMuted ? <VolumeX className="h-4 w-4" /> : <Volume2 className="h-4 w-4" />}
                   </Button>
@@ -199,11 +199,11 @@ export function VideoPlayer({
                     step="0.1"
                     value={isMuted ? 0 : volume}
                     onChange={handleVolumeChange}
-                    className="w-20 h-1 bg-white/20 rounded-full appearance-none [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:w-3 [&::-webkit-slider-thumb]:h-3 [&::-webkit-slider-thumb]:bg-white [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:cursor-pointer"
+                    className="w-20 h-1 bg-media-foreground/20 rounded-full appearance-none [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:w-3 [&::-webkit-slider-thumb]:h-3 [&::-webkit-slider-thumb]:bg-media-foreground [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:cursor-pointer"
                   />
                 </div>
 
-                <span className="text-xs text-white font-medium">
+                <span className="text-xs text-media-foreground font-medium">
                   {formatTime(currentTime)} / {formatTime(duration)}
                 </span>
               </div>
@@ -212,7 +212,7 @@ export function VideoPlayer({
                 size="icon-sm"
                 variant="ghost"
                 onClick={toggleFullscreen}
-                className="text-white hover:bg-white/20"
+                className="text-media-foreground hover:bg-media-foreground/20"
               >
                 {isFullscreen ? <Minimize className="h-4 w-4" /> : <Maximize className="h-4 w-4" />}
               </Button>

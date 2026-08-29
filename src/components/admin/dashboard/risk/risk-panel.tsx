@@ -16,7 +16,7 @@ export async function RiskPanel() {
   return (
     <Card>
       <CardHeader className="flex flex-row items-center gap-2">
-        <ShieldAlert className="h-5 w-5 text-red-500" />
+        <ShieldAlert className="h-5 w-5 text-tone-critical" />
         <CardTitle className="text-lg">{t('title')}</CardTitle>
         {all.length > 0 && (
           <Badge variant="destructive" className="ml-auto">

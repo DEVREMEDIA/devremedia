@@ -2,9 +2,8 @@
 
 import { useState, useTransition } from 'react';
 import { useRouter } from 'next/navigation';
-import Link from 'next/link';
 import { useTranslations } from 'next-intl';
-import { PageHeading } from '@/components/shared/page-heading';
+import { DetailShell } from '@/components/shared/detail-shell';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { ToneChip } from '@/components/shared/tone-chip';
@@ -16,7 +15,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog';
-import { Download, Eye, Send, CheckCircle2, XCircle, Trash2, ArrowLeft } from 'lucide-react';
+import { Download, Eye, Send, CheckCircle2, XCircle, Trash2 } from 'lucide-react';
 import { toast } from 'sonner';
 import type { ProposalPackageWithPrice, ProposalWithRelations } from '@/types/index';
 import { deleteProposal, markProposalSent, setProposalResponse } from '@/lib/actions/proposals';
@@ -95,20 +94,12 @@ export function ProposalDetail({ proposal, packages }: Props) {
   }
 
   return (
-    <div className="space-y-6">
-      <div>
-        <Link
-          href="/admin/proposals"
-          className="inline-flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground mb-2"
-        >
-          <ArrowLeft className="h-4 w-4" />
-          {t('title')}
-        </Link>
-        <PageHeading title={proposal.client_name}>
-          <ToneChip tone={statusTone(proposal.status)}>{ts(proposal.status)}</ToneChip>
-        </PageHeading>
-      </div>
-
+    <DetailShell
+      backHref="/admin/clients?tab=proposals"
+      backLabel={t('title')}
+      title={proposal.client_name}
+      meta={<ToneChip tone={statusTone(proposal.status)}>{ts(proposal.status)}</ToneChip>}
+    >
       <div className="grid gap-6 lg:grid-cols-[minmax(0,2fr)_minmax(0,1fr)]">
         {/* LEFT */}
         <div className="space-y-4">
@@ -283,7 +274,7 @@ export function ProposalDetail({ proposal, packages }: Props) {
           </DialogFooter>
         </DialogContent>
       </Dialog>
-    </div>
+    </DetailShell>
   );
 }
 

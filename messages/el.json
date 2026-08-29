@@ -1644,7 +1644,22 @@
     "lostReason": "Λόγος Απώλειας",
     "backToPipeline": "Πίσω στο Pipeline",
     "backToLead": "Πίσω στο Lead",
-    "editLeadDetailsFor": "Επεξεργασία στοιχείων για {name}"
+    "editLeadDetailsFor": "Επεξεργασία στοιχείων για {name}",
+    "totalPipelineValue": "Συνολική Αξία Pipeline",
+    "weightedPipeline": "Σταθμισμένο Pipeline",
+    "activeSalesmen": "Ενεργοί Πωλητές",
+    "pipelineByStage": "Pipeline ανά Στάδιο",
+    "leadsBySource": "Leads ανά Πηγή",
+    "pipelineForecast": "Πρόβλεψη Pipeline",
+    "salesmanLeaderboard": "Κατάταξη Πωλητών",
+    "noActivePipelineData": "Δεν υπάρχουν δεδομένα ενεργού pipeline",
+    "noSalesmanData": "Δεν υπάρχουν δεδομένα πωλητών",
+    "totalValue": "Συνολική Αξία",
+    "weightedValue": "Σταθμισμένη Αξία",
+    "salesman": "Πωλητής",
+    "totalLeads": "Σύνολο Leads",
+    "active": "Ενεργά",
+    "winRate": "Ποσοστό Νίκης"
   },
 
   "university": {
@@ -1705,7 +1720,14 @@
     "filterByCategory": "Φιλτράρισμα ανά κατηγορία",
     "articlePreview": "Προεπισκόπηση Άρθρου",
     "viewArticle": "Προβολή Άρθρου",
-    "manageDescription": "Διαχείριση κατηγοριών και άρθρων βάσης γνώσεων"
+    "manageDescription": "Διαχείριση κατηγοριών και άρθρων βάσης γνώσεων",
+    "slug": "Slug",
+    "slugDescription": "Φιλικό προς URL αναγνωριστικό (πεζά γράμματα, παύλες μόνο)",
+    "parentCategoryOptional": "Γονική Κατηγορία (Προαιρετικό)",
+    "titlePlaceholderExample": "π.χ. Ξεκινώντας",
+    "sortOrderDescription": "Οι μικρότεροι αριθμοί εμφανίζονται πρώτοι",
+    "editCategoryDescription": "Ενημερώστε τα στοιχεία της κατηγορίας",
+    "newCategoryDescription": "Δημιουργήστε μια νέα κατηγορία βάσης γνώσεων"
   },
 
   "chatbot": {
@@ -1732,7 +1754,12 @@
       "deleted": "Η συνομιλία διαγράφηκε",
       "deleteTitle": "Διαγραφή συνομιλίας;",
       "deleteConfirm": "Η συνομιλία και τα μηνύματά της θα διαγραφούν οριστικά."
-    }
+    },
+    "conversationInfo": "Στοιχεία Συνομιλίας",
+    "pageUrl": "Διεύθυνση Σελίδας",
+    "started": "Ξεκίνησε",
+    "languageGreek": "Ελληνικά",
+    "languageEnglish": "Αγγλικά"
   },
 
   "salesResources": {

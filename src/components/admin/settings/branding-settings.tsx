@@ -15,12 +15,17 @@ type BrandingSettingsProps = {
   settings: CompanySettings;
 };
 
+// Δεδομένο, όχι σχεδιαστικό χρώμα: η αρχική τιμή του color picker όταν ο
+// πελάτης δεν έχει ορίσει ακόμα δικό του brand χρώμα. Ο χρήστης το αλλάζει
+// ελεύθερα — δεν υπάρχει token να το αντικαταστήσει, γιατί δεν είναι UI.
+const NO_BRAND_COLOR_SET = '#000000';
+
 export function BrandingSettings({ settings }: BrandingSettingsProps) {
   const router = useRouter();
   const tToast = useTranslations('toast');
   const t = useTranslations('settings');
   const tc = useTranslations('common');
-  const [primaryColor, setPrimaryColor] = useState(settings.primary_color || '#000000');
+  const [primaryColor, setPrimaryColor] = useState(settings.primary_color || NO_BRAND_COLOR_SET);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -46,9 +51,7 @@ export function BrandingSettings({ settings }: BrandingSettingsProps) {
     <Card>
       <CardHeader>
         <CardTitle>{t('branding')}</CardTitle>
-        <CardDescription>
-          {t('brandingDescription')}
-        </CardDescription>
+        <CardDescription>{t('brandingDescription')}</CardDescription>
       </CardHeader>
       <CardContent>
         <form onSubmit={handleSubmit} className="space-y-4">
@@ -66,24 +69,18 @@ export function BrandingSettings({ settings }: BrandingSettingsProps) {
                 type="text"
                 value={primaryColor}
                 onChange={(e) => setPrimaryColor(e.target.value)}
-                placeholder="#000000"
+                placeholder={NO_BRAND_COLOR_SET}
                 className="flex-1"
               />
             </div>
-            <p className="text-xs text-muted-foreground">
-              {t('primaryColorDescription')}
-            </p>
+            <p className="text-xs text-muted-foreground">{t('primaryColorDescription')}</p>
           </div>
 
           <div className="space-y-2">
             <Label>{t('logoUploadLabel')}</Label>
             <div className="border-2 border-dashed rounded-lg p-8 text-center">
-              <p className="text-sm text-muted-foreground">
-                {t('logoUploadSoon')}
-              </p>
-              <p className="text-xs text-muted-foreground mt-2">
-                {t('logoUploadNote')}
-              </p>
+              <p className="text-sm text-muted-foreground">{t('logoUploadSoon')}</p>
+              <p className="text-xs text-muted-foreground mt-2">{t('logoUploadNote')}</p>
             </div>
           </div>
 

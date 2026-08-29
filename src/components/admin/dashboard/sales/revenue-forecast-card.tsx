@@ -12,7 +12,7 @@ function ForecastBar({ label, value, max }: { label: string; value: number; max:
       </div>
       <div className="h-3 w-full overflow-hidden rounded-full bg-muted">
         <div
-          className="h-full bg-emerald-500 transition-all"
+          className="h-full bg-tone-positive transition-all"
           style={{ width: `${(value / max) * 100}%` }}
         />
       </div>

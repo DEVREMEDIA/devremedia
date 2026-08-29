@@ -1,5 +1,7 @@
 import { getTranslations } from 'next-intl/server';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { StatGrid } from '@/components/shared/stat-grid';
+import { StatCard } from '@/components/shared/stat-card';
 import { Check, FileText } from 'lucide-react';
 import { formatEur } from '@/lib/format';
 import type { MyAgreement } from '@/lib/actions/my-agreement';
@@ -70,21 +72,14 @@ export async function MyAgreementCard({ agreement }: MyAgreementCardProps) {
           </div>
         )}
 
-        <div className="grid gap-4 sm:grid-cols-2">
-          <div className="rounded-lg border p-4">
-            <p className="text-sm text-muted-foreground">{t('monthlyPrice')}</p>
-            <p className="mt-1 text-2xl font-bold">{formatEur(agreed_monthly_price)}</p>
-          </div>
-          <div className="rounded-lg border p-4">
-            <p className="text-sm text-muted-foreground">{t('remainingThisMonth')}</p>
-            <p className="mt-1 text-2xl font-bold">
-              {remaining_allowance}{' '}
-              <span className="text-base font-normal text-muted-foreground">
-                / {allowance.count} {unit}
-              </span>
-            </p>
-          </div>
-        </div>
+        <StatGrid columns={2}>
+          <StatCard label={t('monthlyPrice')} value={formatEur(agreed_monthly_price)} />
+          <StatCard
+            label={t('remainingThisMonth')}
+            value={remaining_allowance}
+            caption={`/ ${allowance.count} ${unit}`}
+          />
+        </StatGrid>
       </CardContent>
     </Card>
   );

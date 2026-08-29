@@ -49,13 +49,13 @@ export function MessageAttachment({ attachment, className }: MessageAttachmentPr
           onError={() => setImageError(true)}
         />
         <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-media-surface/60 to-transparent p-2">
-          <div className="flex items-center justify-between text-white text-xs">
+          <div className="flex items-center justify-between text-media-foreground text-xs">
             <span className="truncate flex-1">{attachment.file_name}</span>
             <Button
               variant="ghost"
               size="sm"
               onClick={handleDownload}
-              className="h-6 w-6 p-0 hover:bg-white/20"
+              className="h-6 w-6 p-0 hover:bg-media-foreground/20"
             >
               <Download className="h-3 w-3" />
             </Button>

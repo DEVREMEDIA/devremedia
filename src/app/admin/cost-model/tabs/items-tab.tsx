@@ -22,6 +22,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog';
+import { FormDialog } from '@/components/shared/form-dialog';
 import { Badge } from '@/components/ui/badge';
 import { Plus, Pencil, Trash2, ChevronRight, ChevronDown, X } from 'lucide-react';
 import { toast } from 'sonner';
@@ -331,110 +332,104 @@ export function CostItemsTab({ initialItems, categories, initialBreakdowns }: Pr
       )}
 
       {/* Create/edit dialog */}
-      <Dialog open={open} onOpenChange={setOpen}>
-        <DialogContent className="max-w-lg">
-          <DialogHeader>
-            <DialogTitle>{editing ? t('editItem') : t('addItem')}</DialogTitle>
-          </DialogHeader>
-          <div className="space-y-3 py-2">
-            <div className="space-y-2">
-              <Label>{t('category')}</Label>
-              <Select
-                value={form.category_id}
-                onValueChange={(v) => setForm({ ...form, category_id: v })}
-              >
-                <SelectTrigger>
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  {categories.map((c) => (
-                    <SelectItem key={c.id} value={c.id}>
-                      {c.name}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
+      <FormDialog
+        open={open}
+        onOpenChange={setOpen}
+        title={editing ? t('editItem') : t('addItem')}
+        onSubmit={save}
+        submitLabel={tc('save')}
+        cancelLabel={tc('cancel')}
+        submitting={isPending}
+        className="max-w-lg"
+      >
+        <div className="space-y-2">
+          <Label>{t('category')}</Label>
+          <Select
+            value={form.category_id}
+            onValueChange={(v) => setForm({ ...form, category_id: v })}
+          >
+            <SelectTrigger>
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              {categories.map((c) => (
+                <SelectItem key={c.id} value={c.id}>
+                  {c.name}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
 
-            <div className="grid grid-cols-2 gap-3">
-              <div className="space-y-2">
-                <Label htmlFor="it-sub">{t('subcategory')}</Label>
-                <Input
-                  id="it-sub"
-                  placeholder={t('subcategoryPlaceholder')}
-                  value={form.subcategory}
-                  onChange={(e) => setForm({ ...form, subcategory: e.target.value })}
-                />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="it-cost">{t('monthlyCost')}</Label>
-                <Input
-                  id="it-cost"
-                  inputMode="decimal"
-                  value={form.monthly_cost}
-                  onChange={(e) => setForm({ ...form, monthly_cost: e.target.value })}
-                  disabled={parentLocked}
-                />
-                {parentLocked ? (
-                  <p className="text-xs text-primary">{t('breakdown.parentLocked')}</p>
-                ) : null}
-              </div>
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="it-desc">{t('descriptionField')}</Label>
-              <Input
-                id="it-desc"
-                placeholder={t('descriptionPlaceholder')}
-                value={form.description}
-                onChange={(e) => setForm({ ...form, description: e.target.value })}
-              />
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="it-comments">{t('comments')}</Label>
-              <Textarea
-                id="it-comments"
-                rows={2}
-                value={form.comments}
-                onChange={(e) => setForm({ ...form, comments: e.target.value })}
-              />
-            </div>
-
-            <div className="grid grid-cols-2 gap-3">
-              <div className="space-y-2">
-                <Label htmlFor="it-sort">{t('sortOrder')}</Label>
-                <Input
-                  id="it-sort"
-                  type="number"
-                  value={form.sort_order}
-                  onChange={(e) => setForm({ ...form, sort_order: Number(e.target.value) })}
-                />
-              </div>
-              <div className="space-y-2">
-                <Label className="block">{t('active')}</Label>
-                <label className="inline-flex items-center gap-2 pt-2 text-sm cursor-pointer">
-                  <input
-                    type="checkbox"
-                    checked={form.active}
-                    onChange={(e) => setForm({ ...form, active: e.target.checked })}
-                    className="h-4 w-4"
-                  />
-                  {t('active')}
-                </label>
-              </div>
-            </div>
+        <div className="grid grid-cols-2 gap-3">
+          <div className="space-y-2">
+            <Label htmlFor="it-sub">{t('subcategory')}</Label>
+            <Input
+              id="it-sub"
+              placeholder={t('subcategoryPlaceholder')}
+              value={form.subcategory}
+              onChange={(e) => setForm({ ...form, subcategory: e.target.value })}
+            />
           </div>
-          <DialogFooter>
-            <Button variant="ghost" onClick={() => setOpen(false)}>
-              {tc('cancel')}
-            </Button>
-            <Button onClick={save} disabled={isPending}>
-              {tc('save')}
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+          <div className="space-y-2">
+            <Label htmlFor="it-cost">{t('monthlyCost')}</Label>
+            <Input
+              id="it-cost"
+              inputMode="decimal"
+              value={form.monthly_cost}
+              onChange={(e) => setForm({ ...form, monthly_cost: e.target.value })}
+              disabled={parentLocked}
+            />
+            {parentLocked ? (
+              <p className="text-xs text-primary">{t('breakdown.parentLocked')}</p>
+            ) : null}
+          </div>
+        </div>
+
+        <div className="space-y-2">
+          <Label htmlFor="it-desc">{t('descriptionField')}</Label>
+          <Input
+            id="it-desc"
+            placeholder={t('descriptionPlaceholder')}
+            value={form.description}
+            onChange={(e) => setForm({ ...form, description: e.target.value })}
+          />
+        </div>
+
+        <div className="space-y-2">
+          <Label htmlFor="it-comments">{t('comments')}</Label>
+          <Textarea
+            id="it-comments"
+            rows={2}
+            value={form.comments}
+            onChange={(e) => setForm({ ...form, comments: e.target.value })}
+          />
+        </div>
+
+        <div className="grid grid-cols-2 gap-3">
+          <div className="space-y-2">
+            <Label htmlFor="it-sort">{t('sortOrder')}</Label>
+            <Input
+              id="it-sort"
+              type="number"
+              value={form.sort_order}
+              onChange={(e) => setForm({ ...form, sort_order: Number(e.target.value) })}
+            />
+          </div>
+          <div className="space-y-2">
+            <Label className="block">{t('active')}</Label>
+            <label className="inline-flex items-center gap-2 pt-2 text-sm cursor-pointer">
+              <input
+                type="checkbox"
+                checked={form.active}
+                onChange={(e) => setForm({ ...form, active: e.target.checked })}
+                className="h-4 w-4"
+              />
+              {t('active')}
+            </label>
+          </div>
+        </div>
+      </FormDialog>
 
       {/* Delete confirm */}
       <Dialog open={!!confirmDelete} onOpenChange={(o) => !o && setConfirmDelete(null)}>
