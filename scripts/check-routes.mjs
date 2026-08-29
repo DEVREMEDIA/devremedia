@@ -43,6 +43,14 @@ for (const [route, target] of stubs) {
   if (!existsSync(targetPage)) errors.push(`stub ${route} -> ${target}: target page missing`);
 }
 
+// Η μέρα ήρθε: μία οθόνη έχει δυναμικό προορισμό επιστροφής, ΑΠΟΦΑΣΗ, όχι
+// παράπλευρη απώλεια. Το συμβόλαιο γυρίζει στην παραγωγή του
+// (`/admin/projects/${project_id}`) — πραγματική σελίδα, όχι stub, με το id
+// να έρχεται από τα δεδομένα. Κάθε νέα εγγραφή εδώ θέλει την ίδια αιτιολογία.
+const DYNAMIC_BACKHREF_DECIDED = new Set([
+  'src/app/admin/contracts/[contractId]/contract-view-page.tsx',
+]);
+
 const files = walk('src').filter((p) => /\.(ts|tsx)$/.test(p));
 for (const f of files) {
   const src = readFileSync(f, 'utf8');
@@ -67,6 +75,7 @@ for (const f of files) {
   // Τα κενά γύρω από το ίσον είναι έγκυρη JSX και η πρώτη γραφή τα έχανε:
   // `backHref = "/admin/chatbot"` περνούσε ολόκληρο, stub και όλα.
   for (const m of src.matchAll(/backHref\s*=\s*(["']([^"']+)["']|\{)/g)) {
+    if (m[1] === '{' && DYNAMIC_BACKHREF_DECIDED.has(f.replaceAll('\\', '/'))) continue;
     if (m[1] === '{') {
       errors.push(
         `${f}: backHref={...} is not a plain literal, so it cannot be checked against the ${stubs.size} redirect stubs. ` +

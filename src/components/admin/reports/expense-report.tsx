@@ -2,6 +2,8 @@
 
 import { useTranslations } from 'next-intl';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { StatGrid } from '@/components/shared/stat-grid';
+import { StatCard } from '@/components/shared/stat-card';
 import { PieChart, Pie, Cell, ResponsiveContainer, Legend, Tooltip } from 'recharts';
 import { TrendingUp, TrendingDown } from 'lucide-react';
 import type { ExpenseCategoryBreakdown } from '@/lib/queries/reports';
@@ -97,20 +99,10 @@ export function ExpenseReport({ expensesByCategory, profitData }: ExpenseReportP
           <CardDescription>Τζίρος, έξοδα και περιθώριο</CardDescription>
         </CardHeader>
         <CardContent className="space-y-6">
-          <div className="grid grid-cols-2 gap-4">
-            <div>
-              <p className="text-sm text-muted-foreground">{t('revenueTurnover')}</p>
-              <p className="text-2xl font-bold tabular-nums">
-                {formatCurrency(profitData.revenue)}
-              </p>
-            </div>
-            <div>
-              <p className="text-sm text-muted-foreground">{t('totalExpenses')}</p>
-              <p className="text-2xl font-bold tabular-nums">
-                {formatCurrency(profitData.expenses)}
-              </p>
-            </div>
-          </div>
+          <StatGrid columns={2}>
+            <StatCard label={t('revenueTurnover')} value={formatCurrency(profitData.revenue)} />
+            <StatCard label={t('totalExpenses')} value={formatCurrency(profitData.expenses)} />
+          </StatGrid>
 
           {/* Λωρίδα σύνθεσης: πόσο από τον τζίρο είναι έξοδα και πόσο μένει */}
           <div>

@@ -22,6 +22,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog';
+import { FormDialog } from '@/components/shared/form-dialog';
 import { Badge } from '@/components/ui/badge';
 import { Plus, Pencil, Trash2 } from 'lucide-react';
 import { toast } from 'sonner';
@@ -118,6 +119,7 @@ export function PackagesContent({ packages }: Props) {
   }
 
   function save() {
+    if (!form.name.trim()) return;
     startTransition(async () => {
       const payload = {
         name: form.name.trim(),
@@ -268,162 +270,153 @@ export function PackagesContent({ packages }: Props) {
       )}
 
       {/* Create/edit dialog */}
-      <Dialog open={open} onOpenChange={setOpen}>
-        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
-          <DialogHeader>
-            <DialogTitle>{editing ? t('editPackage') : t('addPackage')}</DialogTitle>
-          </DialogHeader>
-          <div className="space-y-3 py-2">
-            <div className="space-y-2">
-              <Label>{tf('name')}</Label>
-              <Input
-                value={form.name}
-                onChange={(e) => setForm({ ...form, name: e.target.value })}
-              />
-            </div>
+      <FormDialog
+        open={open}
+        onOpenChange={setOpen}
+        title={editing ? t('editPackage') : t('addPackage')}
+        onSubmit={save}
+        submitLabel={tc('save')}
+        cancelLabel={tc('cancel')}
+        submitting={isPending}
+        className="max-w-2xl max-h-[90vh] overflow-y-auto"
+      >
+        <div className="space-y-2">
+          <Label>{tf('name')}</Label>
+          <Input value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} />
+        </div>
 
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-              <div className="space-y-2">
-                <Label>{tf('videoCount')}</Label>
-                <Input
-                  inputMode="numeric"
-                  value={form.video_count}
-                  onChange={(e) => setForm({ ...form, video_count: e.target.value })}
-                />
-              </div>
-              <div className="space-y-2">
-                <Label>{tf('shootingDays')}</Label>
-                <Input
-                  inputMode="numeric"
-                  value={form.shooting_days}
-                  onChange={(e) => setForm({ ...form, shooting_days: e.target.value })}
-                />
-              </div>
-              <div className="space-y-2">
-                <Label>{tf('shootingHours')}</Label>
-                <Input
-                  inputMode="decimal"
-                  value={form.shooting_hours}
-                  onChange={(e) => setForm({ ...form, shooting_hours: e.target.value })}
-                />
-              </div>
-              <div className="space-y-2">
-                <Label>{tf('editingHours')}</Label>
-                <Input
-                  inputMode="decimal"
-                  value={form.editing_hours}
-                  onChange={(e) => setForm({ ...form, editing_hours: e.target.value })}
-                />
-              </div>
-            </div>
-
-            <div className="grid grid-cols-2 gap-3">
-              <div className="space-y-2">
-                <Label>{tf('allowanceCount')}</Label>
-                <Input
-                  inputMode="numeric"
-                  value={form.allowance_count}
-                  onChange={(e) => setForm({ ...form, allowance_count: e.target.value })}
-                />
-              </div>
-              <div className="space-y-2">
-                <Label>{tf('allowanceUnit')}</Label>
-                <Select
-                  value={form.allowance_unit}
-                  onValueChange={(v: 'days' | 'slots' | 'hours') =>
-                    setForm({ ...form, allowance_unit: v })
-                  }
-                >
-                  <SelectTrigger>
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="days">{tf('allowanceUnitDays')}</SelectItem>
-                    <SelectItem value="slots">{tf('allowanceUnitSlots')}</SelectItem>
-                    <SelectItem value="hours">{tf('allowanceUnitHours')}</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-            </div>
-
-            <div className="grid grid-cols-2 gap-3">
-              <div className="space-y-2">
-                <Label>{tf('priceMode')}</Label>
-                <Select
-                  value={form.price_mode}
-                  onValueChange={(v: 'manual' | 'auto') => setForm({ ...form, price_mode: v })}
-                >
-                  <SelectTrigger>
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="manual">{tf('priceModeManual')}</SelectItem>
-                    <SelectItem value="auto">{tf('priceModeAuto')}</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-              <div className="space-y-2">
-                <Label>{tf('manualPrice')}</Label>
-                <Input
-                  inputMode="decimal"
-                  disabled={form.price_mode === 'auto'}
-                  value={form.manual_price}
-                  onChange={(e) => setForm({ ...form, manual_price: e.target.value })}
-                />
-              </div>
-            </div>
-
-            <div className="space-y-2">
-              <Label>{tf('description')}</Label>
-              <Input
-                value={form.description}
-                onChange={(e) => setForm({ ...form, description: e.target.value })}
-              />
-            </div>
-
-            <div className="space-y-2">
-              <Label>{tf('inclusions')}</Label>
-              <Textarea
-                rows={4}
-                placeholder={tf('inclusionsPlaceholder')}
-                value={form.inclusions}
-                onChange={(e) => setForm({ ...form, inclusions: e.target.value })}
-              />
-            </div>
-
-            <div className="grid grid-cols-2 gap-3">
-              <div className="space-y-2">
-                <Label>{tf('sortOrder')}</Label>
-                <Input
-                  type="number"
-                  value={form.sort_order}
-                  onChange={(e) => setForm({ ...form, sort_order: Number(e.target.value) })}
-                />
-              </div>
-              <div className="space-y-2">
-                <Label className="block">{tf('active')}</Label>
-                <label className="inline-flex items-center gap-2 pt-2 text-sm cursor-pointer">
-                  <input
-                    type="checkbox"
-                    checked={form.active}
-                    onChange={(e) => setForm({ ...form, active: e.target.checked })}
-                    className="h-4 w-4"
-                  />
-                  {tf('active')}
-                </label>
-              </div>
-            </div>
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+          <div className="space-y-2">
+            <Label>{tf('videoCount')}</Label>
+            <Input
+              inputMode="numeric"
+              value={form.video_count}
+              onChange={(e) => setForm({ ...form, video_count: e.target.value })}
+            />
           </div>
-          <DialogFooter>
-            <Button variant="ghost" onClick={() => setOpen(false)}>
-              {tc('cancel')}
-            </Button>
-            <Button onClick={save} disabled={isPending || !form.name.trim()}>
-              {tc('save')}
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+          <div className="space-y-2">
+            <Label>{tf('shootingDays')}</Label>
+            <Input
+              inputMode="numeric"
+              value={form.shooting_days}
+              onChange={(e) => setForm({ ...form, shooting_days: e.target.value })}
+            />
+          </div>
+          <div className="space-y-2">
+            <Label>{tf('shootingHours')}</Label>
+            <Input
+              inputMode="decimal"
+              value={form.shooting_hours}
+              onChange={(e) => setForm({ ...form, shooting_hours: e.target.value })}
+            />
+          </div>
+          <div className="space-y-2">
+            <Label>{tf('editingHours')}</Label>
+            <Input
+              inputMode="decimal"
+              value={form.editing_hours}
+              onChange={(e) => setForm({ ...form, editing_hours: e.target.value })}
+            />
+          </div>
+        </div>
+
+        <div className="grid grid-cols-2 gap-3">
+          <div className="space-y-2">
+            <Label>{tf('allowanceCount')}</Label>
+            <Input
+              inputMode="numeric"
+              value={form.allowance_count}
+              onChange={(e) => setForm({ ...form, allowance_count: e.target.value })}
+            />
+          </div>
+          <div className="space-y-2">
+            <Label>{tf('allowanceUnit')}</Label>
+            <Select
+              value={form.allowance_unit}
+              onValueChange={(v: 'days' | 'slots' | 'hours') =>
+                setForm({ ...form, allowance_unit: v })
+              }
+            >
+              <SelectTrigger>
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="days">{tf('allowanceUnitDays')}</SelectItem>
+                <SelectItem value="slots">{tf('allowanceUnitSlots')}</SelectItem>
+                <SelectItem value="hours">{tf('allowanceUnitHours')}</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+        </div>
+
+        <div className="grid grid-cols-2 gap-3">
+          <div className="space-y-2">
+            <Label>{tf('priceMode')}</Label>
+            <Select
+              value={form.price_mode}
+              onValueChange={(v: 'manual' | 'auto') => setForm({ ...form, price_mode: v })}
+            >
+              <SelectTrigger>
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="manual">{tf('priceModeManual')}</SelectItem>
+                <SelectItem value="auto">{tf('priceModeAuto')}</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+          <div className="space-y-2">
+            <Label>{tf('manualPrice')}</Label>
+            <Input
+              inputMode="decimal"
+              disabled={form.price_mode === 'auto'}
+              value={form.manual_price}
+              onChange={(e) => setForm({ ...form, manual_price: e.target.value })}
+            />
+          </div>
+        </div>
+
+        <div className="space-y-2">
+          <Label>{tf('description')}</Label>
+          <Input
+            value={form.description}
+            onChange={(e) => setForm({ ...form, description: e.target.value })}
+          />
+        </div>
+
+        <div className="space-y-2">
+          <Label>{tf('inclusions')}</Label>
+          <Textarea
+            rows={4}
+            placeholder={tf('inclusionsPlaceholder')}
+            value={form.inclusions}
+            onChange={(e) => setForm({ ...form, inclusions: e.target.value })}
+          />
+        </div>
+
+        <div className="grid grid-cols-2 gap-3">
+          <div className="space-y-2">
+            <Label>{tf('sortOrder')}</Label>
+            <Input
+              type="number"
+              value={form.sort_order}
+              onChange={(e) => setForm({ ...form, sort_order: Number(e.target.value) })}
+            />
+          </div>
+          <div className="space-y-2">
+            <Label className="block">{tf('active')}</Label>
+            <label className="inline-flex items-center gap-2 pt-2 text-sm cursor-pointer">
+              <input
+                type="checkbox"
+                checked={form.active}
+                onChange={(e) => setForm({ ...form, active: e.target.checked })}
+                className="h-4 w-4"
+              />
+              {tf('active')}
+            </label>
+          </div>
+        </div>
+      </FormDialog>
 
       <Dialog open={!!confirmDelete} onOpenChange={(o) => !o && setConfirmDelete(null)}>
         <DialogContent>

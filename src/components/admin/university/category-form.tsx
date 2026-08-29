@@ -4,20 +4,8 @@ import { useEffect, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useTranslations } from 'next-intl';
-import {
-  createKbCategorySchema,
-  type CreateKbCategoryInput,
-} from '@/lib/schemas/kb-category';
+import { createKbCategorySchema, type CreateKbCategoryInput } from '@/lib/schemas/kb-category';
 import { createKbCategory, updateKbCategory } from '@/lib/actions/kb-categories';
-import { Button } from '@/components/ui/button';
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from '@/components/ui/dialog';
 import {
   Form,
   FormControl,
@@ -37,7 +25,7 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { toast } from 'sonner';
-import { LoadingSpinner } from '@/components/shared/loading-spinner';
+import { FormDialog } from '@/components/shared/form-dialog';
 
 interface Category {
   id: string;
@@ -64,6 +52,7 @@ export function CategoryForm({
   onSuccess,
 }: CategoryFormProps) {
   const t = useTranslations('university');
+  const tCommon = useTranslations('common');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const isEditing = !!category;
 
@@ -114,9 +103,10 @@ export function CategoryForm({
   const onSubmit = async (data: CreateKbCategoryInput) => {
     setIsSubmitting(true);
 
-    const result = isEditing && category
-      ? await updateKbCategory(category.id, data)
-      : await createKbCategory(data);
+    const result =
+      isEditing && category
+        ? await updateKbCategory(category.id, data)
+        : await createKbCategory(data);
 
     setIsSubmitting(false);
 
@@ -125,158 +115,128 @@ export function CategoryForm({
       return;
     }
 
-    toast.success(isEditing ? 'Category updated' : 'Category created');
+    toast.success(isEditing ? t('categoryUpdated') : t('categoryCreated'));
     onOpenChange(false);
     form.reset();
     onSuccess();
   };
 
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-2xl">
-        <DialogHeader>
-          <DialogTitle>
-            {isEditing ? 'Edit Category' : 'New Category'}
-          </DialogTitle>
-          <DialogDescription>
-            {isEditing
-              ? 'Update category details'
-              : 'Create a new knowledge base category'}
-          </DialogDescription>
-        </DialogHeader>
+    <FormDialog
+      open={open}
+      onOpenChange={onOpenChange}
+      title={isEditing ? t('editCategory') : t('addCategory')}
+      description={isEditing ? t('editCategoryDescription') : t('newCategoryDescription')}
+      onSubmit={form.handleSubmit(onSubmit)}
+      submitLabel={
+        isSubmitting ? tCommon('saving') : isEditing ? tCommon('update') : tCommon('create')
+      }
+      cancelLabel={tCommon('cancel')}
+      submitting={isSubmitting}
+      className="max-w-2xl"
+    >
+      <Form {...form}>
+        <FormField
+          control={form.control}
+          name="title"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>{tCommon('title')}</FormLabel>
+              <FormControl>
+                <Input placeholder={t('titlePlaceholderExample')} {...field} />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
 
-        <Form {...form}>
-          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-            <FormField
-              control={form.control}
-              name="title"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Title</FormLabel>
-                  <FormControl>
-                    <Input placeholder="e.g., Getting Started" {...field} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
+        <FormField
+          control={form.control}
+          name="slug"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>{t('slug')}</FormLabel>
+              <FormControl>
+                <Input placeholder="getting-started" {...field} />
+              </FormControl>
+              <FormDescription>{t('slugDescription')}</FormDescription>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
 
-            <FormField
-              control={form.control}
-              name="slug"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Slug</FormLabel>
-                  <FormControl>
-                    <Input placeholder="getting-started" {...field} />
-                  </FormControl>
-                  <FormDescription>
-                    URL-friendly identifier (lowercase, hyphens only)
-                  </FormDescription>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
+        <FormField
+          control={form.control}
+          name="description"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>{tCommon('description')}</FormLabel>
+              <FormControl>
+                <Textarea
+                  placeholder={t('categoryDescriptionPlaceholder')}
+                  {...field}
+                  value={field.value ?? ''}
+                />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
 
-            <FormField
-              control={form.control}
-              name="description"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Description</FormLabel>
-                  <FormControl>
-                    <Textarea
-                      placeholder={t('categoryDescriptionPlaceholder')}
-                      {...field}
-                      value={field.value ?? ''}
-                    />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-
-            <FormField
-              control={form.control}
-              name="parent_id"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Parent Category (Optional)</FormLabel>
-                  <Select
-                    onValueChange={(value) => field.onChange(value === 'none' ? null : value)}
-                    value={field.value ?? 'none'}
-                  >
-                    <FormControl>
-                      <SelectTrigger>
-                        <SelectValue placeholder={t('selectParentCategory')} />
-                      </SelectTrigger>
-                    </FormControl>
-                    <SelectContent>
-                      <SelectItem value="none">None</SelectItem>
-                      {categories
-                        .filter((c) => c.id !== category?.id)
-                        .map((c) => (
-                          <SelectItem key={c.id} value={c.id}>
-                            {c.title}
-                          </SelectItem>
-                        ))}
-                    </SelectContent>
-                  </Select>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-
-            <FormField
-              control={form.control}
-              name="sort_order"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Sort Order</FormLabel>
-                  <FormControl>
-                    <Input
-                      type="number"
-                      placeholder="0"
-                      name={field.name}
-                      onBlur={field.onBlur}
-                      ref={field.ref}
-                      value={field.value as number}
-                      onChange={(e) => field.onChange(parseInt(e.target.value) || 0)}
-                    />
-                  </FormControl>
-                  <FormDescription>
-                    Lower numbers appear first
-                  </FormDescription>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-
-            <DialogFooter>
-              <Button
-                type="button"
-                variant="outline"
-                onClick={() => onOpenChange(false)}
-                disabled={isSubmitting}
+        <FormField
+          control={form.control}
+          name="parent_id"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>{t('parentCategoryOptional')}</FormLabel>
+              <Select
+                onValueChange={(value) => field.onChange(value === 'none' ? null : value)}
+                value={field.value ?? 'none'}
               >
-                Cancel
-              </Button>
-              <Button type="submit" disabled={isSubmitting}>
-                {isSubmitting ? (
-                  <div className="flex items-center gap-2">
-                    <LoadingSpinner size="sm" />
-                    <span>Saving...</span>
-                  </div>
-                ) : isEditing ? (
-                  'Update'
-                ) : (
-                  'Create'
-                )}
-              </Button>
-            </DialogFooter>
-          </form>
-        </Form>
-      </DialogContent>
-    </Dialog>
+                <FormControl>
+                  <SelectTrigger>
+                    <SelectValue placeholder={t('selectParentCategory')} />
+                  </SelectTrigger>
+                </FormControl>
+                <SelectContent>
+                  <SelectItem value="none">{tCommon('none')}</SelectItem>
+                  {categories
+                    .filter((c) => c.id !== category?.id)
+                    .map((c) => (
+                      <SelectItem key={c.id} value={c.id}>
+                        {c.title}
+                      </SelectItem>
+                    ))}
+                </SelectContent>
+              </Select>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+
+        <FormField
+          control={form.control}
+          name="sort_order"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>{t('sortOrder')}</FormLabel>
+              <FormControl>
+                <Input
+                  type="number"
+                  placeholder="0"
+                  name={field.name}
+                  onBlur={field.onBlur}
+                  ref={field.ref}
+                  value={field.value as number}
+                  onChange={(e) => field.onChange(parseInt(e.target.value) || 0)}
+                />
+              </FormControl>
+              <FormDescription>{t('sortOrderDescription')}</FormDescription>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+      </Form>
+    </FormDialog>
   );
 }

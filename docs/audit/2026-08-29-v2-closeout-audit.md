@@ -47,7 +47,12 @@ Perf: **no real page-level waterfall remains** — #131's "52 pages" was a measu
 - Owner visual sign-off of both editions (PRD Ruling H) — not delegable.
 - E2E identity suite mostly credential-gated (`E2E_TEST_USERS_READY`).
 
-## Plan
-- Wave 1 (`feat/v2-closeout-wave1`): lint errors, route literals, 12 loading.tsx, #128, #126, i18n strings, pricing-health.
-- Wave 2 (`feat/v2-closeout-wave2`): 7 detail screens → DetailShell, 6 stat grids → StatGrid, colour debt (excl. handbook), 2 tables.
-- Wave 3 (later): 12 dialogs → FormDialog; guard rules for StatGrid/DetailShell/FormDialog.
+## Delivered
+- **Wave 1** (`feat/v2-closeout-wave1`): lint 0 errors, 26 route literals, 12 `loading.tsx`, #128, #126, 61 i18n strings, pricing-health concurrency.
+- **Wave 2** (`feat/v2-closeout-wave2`, stacked on wave 1): 7 detail screens → `DetailShell` (employee project/task, salesman lead, admin proposal/contract/chat conversation, client contract); 6 stat grids → `StatGrid`; colour debt paid in 8 files (new `--media-foreground` token for media chrome; branding-settings ruled a data default → `COLOUR_EXEMPT`); sales-report + knowledge-table → `DataTable` (`TABLE_PENDING` now empty); 11 add/edit dialogs → `FormDialog` (event-dialog is a read-only view, left); one deliberate dynamic `backHref` registered in `check-routes.mjs`.
+
+## Still open after both waves
+- Sales handbook raw colours (content, out of PRD scope — the only remaining colour `PENDING`).
+- `items-tab.tsx` editable grid (needs an editable-cell contract on `DataTable`).
+- Guard blind spots (StatGrid / DetailShell / FormDialog adoption not enforced) — worth a follow-up rule now that adoption is complete.
+- The five owner items listed above (#124 merge, #95 rebase, #119, visual sign-off, credentialed e2e).

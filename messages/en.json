@@ -1644,7 +1644,22 @@
     "lostReason": "Lost Reason",
     "backToPipeline": "Back to Pipeline",
     "backToLead": "Back to Lead",
-    "editLeadDetailsFor": "Edit details for {name}"
+    "editLeadDetailsFor": "Edit details for {name}",
+    "totalPipelineValue": "Total Pipeline Value",
+    "weightedPipeline": "Weighted Pipeline",
+    "activeSalesmen": "Active Salesmen",
+    "pipelineByStage": "Pipeline by Stage",
+    "leadsBySource": "Leads by Source",
+    "pipelineForecast": "Pipeline Forecast",
+    "salesmanLeaderboard": "Salesman Leaderboard",
+    "noActivePipelineData": "No active pipeline data",
+    "noSalesmanData": "No salesman data available",
+    "totalValue": "Total Value",
+    "weightedValue": "Weighted Value",
+    "salesman": "Salesman",
+    "totalLeads": "Total Leads",
+    "active": "Active",
+    "winRate": "Win Rate"
   },
 
   "university": {
@@ -1705,7 +1720,14 @@
     "filterByCategory": "Filter by category",
     "articlePreview": "Article Preview",
     "viewArticle": "View Article",
-    "manageDescription": "Manage knowledge base categories and articles"
+    "manageDescription": "Manage knowledge base categories and articles",
+    "slug": "Slug",
+    "slugDescription": "URL-friendly identifier (lowercase, hyphens only)",
+    "parentCategoryOptional": "Parent Category (Optional)",
+    "titlePlaceholderExample": "e.g., Getting Started",
+    "sortOrderDescription": "Lower numbers appear first",
+    "editCategoryDescription": "Update category details",
+    "newCategoryDescription": "Create a new knowledge base category"
   },
 
   "chatbot": {
@@ -1732,7 +1754,12 @@
       "deleted": "Conversation deleted",
       "deleteTitle": "Delete conversation?",
       "deleteConfirm": "The conversation and its messages will be permanently deleted."
-    }
+    },
+    "conversationInfo": "Conversation Info",
+    "pageUrl": "Page URL",
+    "started": "Started",
+    "languageGreek": "Greek",
+    "languageEnglish": "English"
   },
 
   "salesResources": {

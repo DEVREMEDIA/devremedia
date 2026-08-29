@@ -2,6 +2,8 @@
 
 import { useTranslations } from 'next-intl';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { StatGrid } from '@/components/shared/stat-grid';
+import { StatCard } from '@/components/shared/stat-card';
 import type { CostSummary } from '@/types/index';
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip } from 'recharts';
 import { Calculator, Clock, Euro } from 'lucide-react';
@@ -26,43 +28,23 @@ export function CostSummaryTab({ initialSummary }: Props) {
 
   return (
     <div className="space-y-6">
-      <div className="grid gap-4 md:grid-cols-3">
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between pb-2 space-y-0">
-            <CardTitle className="text-sm font-medium text-muted-foreground">
-              {t('totalMonthlyCost')}
-            </CardTitle>
-            <Euro className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-3xl font-bold">{fmtEUR(summary.total_monthly_cost)}</div>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between pb-2 space-y-0">
-            <CardTitle className="text-sm font-medium text-muted-foreground">
-              {t('expectedHours')}
-            </CardTitle>
-            <Clock className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-3xl font-bold">{summary.expected_monthly_hours.toFixed(0)} h</div>
-          </CardContent>
-        </Card>
-
-        <Card className="border-primary/40 bg-primary/5">
-          <CardHeader className="flex flex-row items-center justify-between pb-2 space-y-0">
-            <CardTitle className="text-sm font-medium text-muted-foreground">
-              {t('costPerHour')}
-            </CardTitle>
-            <Calculator className="h-4 w-4 text-primary" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-3xl font-bold text-primary">{fmtEUR(summary.cost_per_hour)}</div>
-          </CardContent>
-        </Card>
-      </div>
+      <StatGrid columns={3}>
+        <StatCard
+          label={t('totalMonthlyCost')}
+          value={fmtEUR(summary.total_monthly_cost)}
+          icon={Euro}
+        />
+        <StatCard
+          label={t('expectedHours')}
+          value={`${summary.expected_monthly_hours.toFixed(0)} h`}
+          icon={Clock}
+        />
+        <StatCard
+          label={t('costPerHour')}
+          value={fmtEUR(summary.cost_per_hour)}
+          icon={Calculator}
+        />
+      </StatGrid>
 
       <Card>
         <CardHeader>

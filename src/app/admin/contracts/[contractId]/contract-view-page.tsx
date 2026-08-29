@@ -1,13 +1,13 @@
 'use client';
 
-import { ArrowLeft, Check, Download, Send, Trash2, X } from 'lucide-react';
-import Link from 'next/link';
+import { Check, Download, Send, Trash2, X } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';
 import { toast } from 'sonner';
 import { useTranslations } from 'next-intl';
 import { Button } from '@/components/ui/button';
-import { PageHeading } from '@/components/shared/page-heading';
+import { DetailShell } from '@/components/shared/detail-shell';
+import { StatusBadge } from '@/components/shared/status-badge';
 import { ContractView } from '@/components/shared/contract-view';
 import { ConfirmDialog } from '@/components/shared/confirm-dialog';
 import { deleteContract, sendContract, reviewSignedContract } from '@/lib/actions/contracts';
@@ -109,51 +109,49 @@ export function ContractViewPage({ contract }: ContractViewPageProps) {
 
   return (
     <div className="max-w-4xl mx-auto">
-      <PageHeading title={contract.title}>
-        <div className="flex items-center gap-2">
-          <Button variant="outline" size="sm" asChild>
-            <Link href={`/admin/projects/${contract.project_id}`}>
-              <ArrowLeft className="h-4 w-4 mr-2" />
-              {t('backToProject')}
-            </Link>
-          </Button>
-          <Button size="sm" variant="outline" onClick={handleDownloadPDF}>
-            <Download className="h-4 w-4 mr-2" />
-            {t('downloadPdf')}
-          </Button>
-          {contract.status === 'draft' && (
-            <Button size="sm" onClick={handleSendToClient} disabled={isSending}>
-              <Send className="h-4 w-4 mr-2" />
-              {isSending ? t('sending') : t('sendToClient')}
+      <DetailShell
+        backHref={`/admin/projects/${contract.project_id}`}
+        backLabel={t('backToProject')}
+        title={contract.title}
+        meta={<StatusBadge status={contract.status} />}
+        actions={
+          <>
+            <Button size="sm" variant="outline" onClick={handleDownloadPDF}>
+              <Download className="h-4 w-4 mr-2" />
+              {t('downloadPdf')}
             </Button>
-          )}
-          {contract.status === 'pending_review' && (
-            <>
-              <Button size="sm" onClick={handleApprove} disabled={isApproving}>
-                <Check className="h-4 w-4 mr-2" />
-                {isApproving ? t('approving') : t('approveContract')}
+            {contract.status === 'draft' && (
+              <Button size="sm" onClick={handleSendToClient} disabled={isSending}>
+                <Send className="h-4 w-4 mr-2" />
+                {isSending ? t('sending') : t('sendToClient')}
               </Button>
-              <Button size="sm" variant="outline" onClick={handleReject} disabled={isRejecting}>
-                <X className="h-4 w-4 mr-2" />
-                {isRejecting ? t('rejecting') : t('rejectContract')}
-              </Button>
-            </>
-          )}
-          <Button
-            size="sm"
-            variant="outline"
-            onClick={() => setDeleteDialogOpen(true)}
-            className="text-destructive hover:bg-destructive/10 hover:text-destructive"
-          >
-            <Trash2 className="h-4 w-4 mr-2" />
-            {t('delete')}
-          </Button>
-        </div>
-      </PageHeading>
-
-      <div className="mt-6">
+            )}
+            {contract.status === 'pending_review' && (
+              <>
+                <Button size="sm" onClick={handleApprove} disabled={isApproving}>
+                  <Check className="h-4 w-4 mr-2" />
+                  {isApproving ? t('approving') : t('approveContract')}
+                </Button>
+                <Button size="sm" variant="outline" onClick={handleReject} disabled={isRejecting}>
+                  <X className="h-4 w-4 mr-2" />
+                  {isRejecting ? t('rejecting') : t('rejectContract')}
+                </Button>
+              </>
+            )}
+            <Button
+              size="sm"
+              variant="outline"
+              onClick={() => setDeleteDialogOpen(true)}
+              className="text-destructive hover:bg-destructive/10 hover:text-destructive"
+            >
+              <Trash2 className="h-4 w-4 mr-2" />
+              {t('delete')}
+            </Button>
+          </>
+        }
+      >
         <ContractView contract={contract} />
-      </div>
+      </DetailShell>
 
       <ConfirmDialog
         open={deleteDialogOpen}

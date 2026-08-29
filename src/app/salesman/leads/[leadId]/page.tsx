@@ -1,20 +1,15 @@
 import { createClient } from '@/lib/supabase/server';
 import { redirect, notFound } from 'next/navigation';
-import { getTranslations } from 'next-intl/server';
 import { getLead } from '@/lib/actions/leads';
 import { getLeadActivities } from '@/lib/actions/lead-activities';
-import { PageHeading } from '@/components/shared/page-heading';
-import { LeadDetail } from '@/components/salesman/leads/lead-detail';
-import { Button } from '@/components/ui/button';
-import Link from 'next/link';
-import { ArrowLeft, Pencil } from 'lucide-react';
+import { LeadDetail, LEAD_TABS } from '@/components/salesman/leads/lead-detail';
 
 type PageProps = {
   params: Promise<{ leadId: string }>;
+  searchParams: Promise<{ tab?: string }>;
 };
 
-export default async function LeadDetailPage({ params }: PageProps) {
-  const t = await getTranslations('leads');
+export default async function LeadDetailPage({ params, searchParams }: PageProps) {
   const supabase = await createClient();
   const {
     data: { user },
@@ -40,26 +35,9 @@ export default async function LeadDetailPage({ params }: PageProps) {
   };
   const activities = (activitiesResult.data ?? []) as import('@/types').LeadActivity[];
 
-  return (
-    <div className="space-y-6">
-      <PageHeading title={lead.contact_name} subtitle={lead.email}>
-        <div className="flex gap-2">
-          <Button variant="outline" asChild>
-            <Link href="/salesman/leads">
-              <ArrowLeft className="mr-2 h-4 w-4" />
-              {t('backToPipeline')}
-            </Link>
-          </Button>
-          <Button asChild>
-            <Link href={`/salesman/leads/${leadId}/edit`}>
-              <Pencil className="mr-2 h-4 w-4" />
-              {t('editLead')}
-            </Link>
-          </Button>
-        </div>
-      </PageHeading>
+  // Άγνωστη καρτέλα πέφτει στην πρώτη, όπως ακριβώς κάνουν οι κόμβοι.
+  const { tab } = await searchParams;
+  const activeTab = LEAD_TABS.includes(tab ?? '') ? (tab as string) : 'info';
 
-      <LeadDetail lead={lead} activities={activities} />
-    </div>
-  );
+  return <LeadDetail lead={lead} activities={activities} activeTab={activeTab} />;
 }

@@ -15,6 +15,8 @@ import { DeliverablesTab } from './deliverables-tab';
 import { InvoicesTab } from './invoices-tab';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { StatGrid } from '@/components/shared/stat-grid';
+import { StatCard } from '@/components/shared/stat-card';
 import {
   Select,
   SelectContent,
@@ -150,60 +152,22 @@ export function ProjectDetail({
     >
       {activeTab === 'overview' && (
         <div className="space-y-6">
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-            <Card>
-              <CardHeader className="pb-3">
-                <CardTitle className="text-sm font-medium text-muted-foreground">
-                  {t('projectType')}
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="text-2xl font-bold">
-                  {PROJECT_TYPE_LABELS[project.project_type]}
-                </div>
-              </CardContent>
-            </Card>
-
-            <Card>
-              <CardHeader className="pb-3">
-                <CardTitle className="text-sm font-medium text-muted-foreground">
-                  {t('projectStatus')}
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="text-2xl font-bold">{PROJECT_STATUS_LABELS[project.status]}</div>
-              </CardContent>
-            </Card>
-
-            <Card>
-              <CardHeader className="pb-3">
-                <CardTitle className="text-sm font-medium text-muted-foreground">
-                  {tc('priority')}
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="text-2xl font-bold">{PRIORITY_LABELS[project.priority]}</div>
-              </CardContent>
-            </Card>
-
-            <Card>
-              <CardHeader className="pb-3">
-                <CardTitle className="text-sm font-medium text-muted-foreground">
-                  {t('budget')}
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="text-2xl font-bold">
-                  {project.budget
-                    ? new Intl.NumberFormat('el-GR', {
-                        style: 'currency',
-                        currency: 'EUR',
-                      }).format(project.budget)
-                    : '-'}
-                </div>
-              </CardContent>
-            </Card>
-          </div>
+          <StatGrid columns={4}>
+            <StatCard label={t('projectType')} value={PROJECT_TYPE_LABELS[project.project_type]} />
+            <StatCard label={t('projectStatus')} value={PROJECT_STATUS_LABELS[project.status]} />
+            <StatCard label={tc('priority')} value={PRIORITY_LABELS[project.priority]} />
+            <StatCard
+              label={t('budget')}
+              value={
+                project.budget
+                  ? new Intl.NumberFormat('el-GR', {
+                      style: 'currency',
+                      currency: 'EUR',
+                    }).format(project.budget)
+                  : '-'
+              }
+            />
+          </StatGrid>
 
           {project.description && (
             <Card>

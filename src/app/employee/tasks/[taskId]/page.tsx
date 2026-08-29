@@ -1,6 +1,5 @@
 import { createClient } from '@/lib/supabase/server';
 import { redirect, notFound } from 'next/navigation';
-import { PageHeading } from '@/components/shared/page-heading';
 import { TaskDetail } from '@/components/employee/tasks/task-detail';
 
 export default async function EmployeeTaskDetailPage({
@@ -25,13 +24,5 @@ export default async function EmployeeTaskDetailPage({
 
   if (!task) notFound();
 
-  return (
-    <div className="space-y-6">
-      <PageHeading
-        title={task.title}
-        subtitle={`Project: ${(task.project as { title: string } | null)?.title ?? 'Unknown'}`}
-      />
-      <TaskDetail task={task} />
-    </div>
-  );
+  return <TaskDetail task={task} />;
 }
