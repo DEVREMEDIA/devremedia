@@ -3,7 +3,15 @@ import { getProject } from '@/lib/actions/projects';
 import { getDeliverablesByProject } from '@/lib/actions/deliverables';
 import { getContractsByProject } from '@/lib/actions/contracts';
 import { redirect, notFound } from 'next/navigation';
-import { ClientProjectDetail, CLIENT_PROJECT_TABS } from './client-project-detail';
+import { ClientProjectDetail } from './client-project-detail';
+
+/** Οι καρτέλες με τη σειρά τους. Ο server επικυρώνει εδώ το `?tab=`· από αρχείο 'use client' θα ερχόταν ως client reference. */
+const CLIENT_PROJECT_TABS: readonly string[] = [
+  'overview',
+  'deliverables',
+  'messages',
+  'contracts',
+];
 
 interface PageProps {
   params: Promise<{ projectId: string }>;

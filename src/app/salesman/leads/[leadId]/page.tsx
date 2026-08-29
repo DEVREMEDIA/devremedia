@@ -2,7 +2,10 @@ import { createClient } from '@/lib/supabase/server';
 import { redirect, notFound } from 'next/navigation';
 import { getLead } from '@/lib/actions/leads';
 import { getLeadActivities } from '@/lib/actions/lead-activities';
-import { LeadDetail, LEAD_TABS } from '@/components/salesman/leads/lead-detail';
+import { LeadDetail } from '@/components/salesman/leads/lead-detail';
+
+/** Οι καρτέλες με τη σειρά τους. Ο server επικυρώνει εδώ το `?tab=`· από αρχείο 'use client' θα ερχόταν ως client reference. */
+const LEAD_TABS: readonly string[] = ['info', 'activities'];
 
 type PageProps = {
   params: Promise<{ leadId: string }>;

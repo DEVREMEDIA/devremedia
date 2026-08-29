@@ -61,9 +61,6 @@ type AdminLeadDetailProps = {
   activeTab: string;
 };
 
-/** Οι καρτέλες με τη σειρά τους. Το `page.tsx` επικυρώνει το `?tab=` πάνω σε αυτή. */
-export const LEAD_TABS: readonly string[] = ['info', 'activities'];
-
 const ACTIVITY_ICONS: Record<string, LucideIcon> = {
   call: Phone,
   email: Mail,

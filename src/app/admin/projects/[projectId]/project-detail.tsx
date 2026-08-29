@@ -46,16 +46,6 @@ import { differenceInDays } from 'date-fns';
 import { PROJECT_TYPE_LABELS, PROJECT_STATUS_LABELS, PRIORITY_LABELS } from '@/lib/constants';
 import { useTranslations } from 'next-intl';
 
-/** Οι καρτέλες με τη σειρά τους. Το `page.tsx` επικυρώνει το `?tab=` πάνω σε αυτή. */
-export const PROJECT_TABS: readonly string[] = [
-  'overview',
-  'tasks',
-  'deliverables',
-  'messages',
-  'invoices',
-  'contracts',
-];
-
 interface ProjectDetailProps {
   project: ProjectWithClient;
   contracts: Contract[];

@@ -13,14 +13,6 @@ import { DeliverablesTab } from '@/components/client/projects/deliverables-tab';
 import { ContractsTab } from '@/components/client/projects/contracts-tab';
 import type { ProjectWithClient, Deliverable, ContractWithRelations } from '@/types';
 
-/** Οι καρτέλες με τη σειρά τους. Το `page.tsx` επικυρώνει το `?tab=` πάνω σε αυτή. */
-export const CLIENT_PROJECT_TABS: readonly string[] = [
-  'overview',
-  'deliverables',
-  'messages',
-  'contracts',
-];
-
 interface ClientProjectDetailProps {
   project: ProjectWithClient;
   deliverables: Deliverable[];
