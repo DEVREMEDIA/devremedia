@@ -17,15 +17,36 @@ type AuthErr = {
     | 'Forbidden: insufficient permissions';
 };
 
-// Κάθε ενέργεια αυτού του προϊόντος περνά από εδώ, και μια σελίδα του πελάτη
-// καλεί πέντε ενέργειες — δηλαδή πέντε ταξίδια στον Auth για την ίδια απάντηση,
-// μέσα στο ίδιο αίτημα. Το `cache()` τα κάνει ένα. Ο `getAdminRole` από κάτω
-// είναι ήδη έτσι· αυτό απλώς έλειπε.
-export const requireUser = cache(async (): Promise<AuthOk | AuthErr> => {
-  const supabase = await createClient();
+// Ο server και η βάση δεν είναι πια σε δύο ηπείρους, αλλά κάθε κλήση στον Auth
+// παραμένει ταξίδι στο δίκτυο. Οι τρεις παρακάτω είναι τα μοναδικά σημεία που
+// μιλούν στη Supabase για ταυτότητα και ρόλο· όλοι οι helpers από κάτω τις
+// μοιράζονται, οπότε ένα αίτημα ρωτά μία φορά όσες ενέργειες κι αν καλέσει.
+const getRequestClient = cache(createClient);
+
+const getRequestUser = cache(async (): Promise<User | null> => {
+  const supabase = await getRequestClient();
   const {
     data: { user },
   } = await supabase.auth.getUser();
+  return user;
+});
+
+const getRequestRole = cache(async (userId: string): Promise<string | null> => {
+  const supabase = await getRequestClient();
+  const { data, error } = await supabase
+    .from('user_profiles')
+    .select('role')
+    .eq('id', userId)
+    .maybeSingle();
+
+  if (error) console.error('[auth-helpers] role lookup', error);
+
+  return data?.role ?? null;
+});
+
+export const requireUser = cache(async (): Promise<AuthOk | AuthErr> => {
+  const supabase = await getRequestClient();
+  const user = await getRequestUser();
 
   if (!user) {
     return { supabase, user: null, error: 'Unauthorized' };
@@ -35,22 +56,15 @@ export const requireUser = cache(async (): Promise<AuthOk | AuthErr> => {
 });
 
 export async function requireAdmin(): Promise<AuthOk | AuthErr> {
-  const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  const supabase = await getRequestClient();
+  const user = await getRequestUser();
 
   if (!user) {
     return { supabase, user: null, error: 'Unauthorized' };
   }
 
-  const { data: profile } = await supabase
-    .from('user_profiles')
-    .select('role')
-    .eq('id', user.id)
-    .single();
-
-  if (!profile || !['super_admin', 'admin'].includes(profile.role)) {
+  const role = await getRequestRole(user.id);
+  if (!role || !['super_admin', 'admin'].includes(role)) {
     return { supabase, user: null, error: 'Forbidden: admin access required' };
   }
 
@@ -60,23 +74,16 @@ export async function requireAdmin(): Promise<AuthOk | AuthErr> {
 // Admins and super_admins pass every role check, so callers only list the extra
 // roles they want to allow (e.g. requireRole(['salesman'])).
 export async function requireRole(roles: readonly string[]): Promise<AuthOk | AuthErr> {
-  const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  const supabase = await getRequestClient();
+  const user = await getRequestUser();
 
   if (!user) {
     return { supabase, user: null, error: 'Unauthorized' };
   }
 
-  const { data: profile } = await supabase
-    .from('user_profiles')
-    .select('role')
-    .eq('id', user.id)
-    .single();
-
+  const role = await getRequestRole(user.id);
   const allowed = ['super_admin', 'admin', ...roles];
-  if (!profile || !allowed.includes(profile.role)) {
+  if (!role || !allowed.includes(role)) {
     return { supabase, user: null, error: 'Forbidden: insufficient permissions' };
   }
 
@@ -85,20 +92,10 @@ export async function requireRole(roles: readonly string[]): Promise<AuthOk | Au
 
 /** Ρόλος του τρέχοντος admin — για UI gating (super_admin βλέπει τα οικονομικά widgets). */
 export const getAdminRole = cache(async (): Promise<'super_admin' | 'admin' | null> => {
-  const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  const user = await getRequestUser();
   if (!user) return null;
 
-  const { data, error } = await supabase
-    .from('user_profiles')
-    .select('role')
-    .eq('id', user.id)
-    .maybeSingle();
-
-  if (error) console.error('[getAdminRole]', error);
-
-  if (data?.role === 'super_admin' || data?.role === 'admin') return data.role;
+  const role = await getRequestRole(user.id);
+  if (role === 'super_admin' || role === 'admin') return role;
   return null;
 });

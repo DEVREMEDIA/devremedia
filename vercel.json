@@ -3,7 +3,7 @@
   "framework": "nextjs",
   "buildCommand": "next build",
   "installCommand": "pnpm install --frozen-lockfile",
-  "regions": ["iad1"],
+  "regions": ["dub1"],
   "crons": [
     {
       "path": "/api/cron/google-calendar-renew",

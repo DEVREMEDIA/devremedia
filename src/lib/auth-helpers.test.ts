@@ -12,6 +12,7 @@ function makeChainable(finalValue: { data: unknown }) {
   chain['select'] = () => chain;
   chain['eq'] = () => chain;
   chain['single'] = () => Promise.resolve(finalValue);
+  chain['maybeSingle'] = () => Promise.resolve(finalValue);
   return chain;
 }
 
