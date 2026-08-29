@@ -2,11 +2,11 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { ArrowLeft, Pencil, Trash2, Eye, EyeOff, Calendar, FolderOpen, Hash } from 'lucide-react';
+import { Pencil, Trash2, Eye, EyeOff, Calendar, FolderOpen, Hash } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { PageHeading } from '@/components/shared/page-heading';
+import { DetailShell } from '@/components/shared/detail-shell';
 import { ConfirmDialog } from '@/components/shared/confirm-dialog';
 import { ArticleContent } from '@/components/shared/article-content';
 import { deleteKbArticle } from '@/lib/actions/kb-articles';
@@ -37,29 +37,31 @@ export function ArticlePreview({ article }: ArticlePreviewProps) {
     }
 
     toast.success(tToast('deleteSuccess'));
-    router.push('/admin/university');
+    router.push('/admin/knowledge?tab=team');
   };
 
   return (
-    <div className="flex flex-col gap-6">
-      <PageHeading title={article.title} subtitle={t('articlePreview')}>
-        <Button variant="outline" onClick={() => router.push('/admin/university')}>
-          <ArrowLeft className="mr-2 h-4 w-4" />
-          {tc('back')}
-        </Button>
-        <Button
-          variant="outline"
-          onClick={() => router.push(`/admin/university/articles/${article.id}/edit`)}
-        >
-          <Pencil className="mr-2 h-4 w-4" />
-          {tc('edit')}
-        </Button>
-        <Button variant="destructive" onClick={() => setDeleteDialogOpen(true)}>
-          <Trash2 className="mr-2 h-4 w-4" />
-          {tc('delete')}
-        </Button>
-      </PageHeading>
-
+    <DetailShell
+      backHref="/admin/knowledge?tab=team"
+      backLabel={tc('back')}
+      title={article.title}
+      meta={t('articlePreview')}
+      actions={
+        <>
+          <Button
+            variant="outline"
+            onClick={() => router.push(`/admin/university/articles/${article.id}/edit`)}
+          >
+            <Pencil className="mr-2 h-4 w-4" />
+            {tc('edit')}
+          </Button>
+          <Button variant="destructive" onClick={() => setDeleteDialogOpen(true)}>
+            <Trash2 className="mr-2 h-4 w-4" />
+            {tc('delete')}
+          </Button>
+        </>
+      }
+    >
       {/* Metadata */}
       <Card>
         <CardContent className="p-4">
@@ -103,6 +105,6 @@ export function ArticlePreview({ article }: ArticlePreviewProps) {
         destructive
         loading={isDeleting}
       />
-    </div>
+    </DetailShell>
   );
 }

@@ -40,6 +40,22 @@ export const updateInvoiceSchema = createInvoiceSchema.partial();
 export type UpdateInvoiceInput = z.infer<typeof updateInvoiceSchema>;
 
 /**
+ * Ο κωδικός πληρωμής RF. Ελεύθερο κείμενο χωρίς έλεγχο μορφής — ο κωδικός
+ * έρχεται από την τράπεζα και δεν είναι δουλειά μας να μαντεύουμε τη μορφή του.
+ * Το μόνο που εγγυόμαστε: κόβονται τα κενά, και το κενό γίνεται NULL.
+ */
+export const invoiceRfCodeSchema = z.object({
+  id: z.string().uuid('Invalid invoice ID'),
+  rf_code: z
+    .string()
+    .max(60, 'RF code must be at most 60 characters')
+    .transform((value) => value.trim())
+    .transform((value) => (value.length > 0 ? value : null)),
+});
+
+export type InvoiceRfCodeInput = z.infer<typeof invoiceRfCodeSchema>;
+
+/**
  * Invoice response schema (includes database fields)
  */
 export const invoiceResponseSchema = createInvoiceSchema.extend({

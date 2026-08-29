@@ -1,416 +1,239 @@
 import { test, expect } from '@playwright/test';
+import { fixtures, hasFixtures } from './fixtures/graph';
 import { loginAsAdmin, loginAsClient } from './helpers/auth';
 
 /**
  * Filming Requests E2E Tests
- * Tests booking wizard for clients and request management for admin
+ *
+ * Covers the public booking form (`/book`, unauthenticated), the client
+ * booking page (`/client/book` — a slot-availability calendar, not a form;
+ * the seeded client has no `client_agreements` row so it always renders the
+ * "no active plan" state, which is itself a real, assertable path) and the
+ * admin filming-requests surface, which now lives inside the productions hub
+ * at `/admin/productions?tab=requests` (the old `/admin/filming-requests` is
+ * a redirect stub).
+ *
+ * The booking wizard itself (choosing a date+slot as a client with an active
+ * agreement) and the Hold approve/reject flow are already covered by
+ * `booking-slot.spec.ts` and `hold-resolution.spec.ts` — this file does not
+ * duplicate them.
  */
 
-test.describe('Filming Requests - Client', () => {
-  test.beforeEach(async ({ page }) => {
-    // SKIP: Requires database with test client user
-    test.skip(!process.env.E2E_TEST_USERS_READY, 'Test users not configured in database');
+test.describe('Filming Requests - Public booking form', () => {
+  // Unauthenticated route, no fixtures required — same convention as the
+  // other unauthenticated smoke tests in the suite.
 
-    // Login as client before each test
-    await loginAsClient(page);
+  test('booking form renders all sections', async ({ page }) => {
+    await page.goto('/book');
+
+    await expect(page.getByRole('heading', { name: 'Κλείσε ένα Discovery Call' })).toBeVisible();
+    await expect(page.getByLabel('Ονοματεπώνυμο *')).toBeVisible();
+    await expect(page.getByLabel('Email *')).toBeVisible();
+    await expect(page.getByLabel('Τίτλος Project *')).toBeVisible();
+    await expect(page.getByRole('button', { name: 'Υποβολή Αιτήματος' })).toBeVisible();
   });
 
-  test('booking wizard page renders correctly', async ({ page }) => {
-    await page.goto('/client/book');
+  test('selecting a project type highlights it', async ({ page }) => {
+    await page.goto('/book');
 
-    // Check that we're on the booking page
-    await expect(page).toHaveURL(/\/client\/book/);
-
-    // Check for page heading
-    await expect(
-      page
-        .locator('h1, h2')
-        .filter({ hasText: /book|request|new project/i })
-        .first(),
-    ).toBeVisible();
-
-    // Check for form or wizard
-    const hasForm = await page
-      .locator('form')
-      .isVisible()
-      .catch(() => false);
-    const hasWizard = await page
-      .locator('[data-testid*="wizard"], [data-testid*="step"]')
-      .isVisible()
-      .catch(() => false);
-
-    expect(hasForm || hasWizard).toBeTruthy();
+    const option = page.getByRole('button', { name: /Εταιρικό Video/i }).first();
+    await option.click();
+    await expect(option).toHaveClass(/border-primary/);
   });
 
-  test('booking wizard shows multiple steps', async ({ page }) => {
-    await page.goto('/client/book');
+  test('submitting without required fields shows validation errors', async ({ page }) => {
+    await page.goto('/book');
 
-    // Look for step indicators
-    const stepIndicator = page
-      .locator('[data-testid*="step"], .step-indicator, [role="progressbar"]')
-      .first();
+    await page.getByRole('button', { name: 'Υποβολή Αιτήματος' }).click();
 
-    const hasSteps = await stepIndicator.isVisible().catch(() => false);
-
-    // Multi-step wizard is common but not required
-    if (hasSteps) {
-      await expect(stepIndicator).toBeVisible();
-    }
+    // zod messages render under the contact/title fields — assert at least
+    // one shows up rather than pinning exact copy.
+    await expect(page.locator('form p.text-destructive').first()).toBeVisible();
   });
 
-  test('booking form has event type selection', async ({ page }) => {
-    await page.goto('/client/book');
+  test('client can submit a filming request from the public form', async ({ page }) => {
+    // createPublicFilmingRequest() files this as a `leads` row (source
+    // 'website', stage 'new'), not a `filming_requests` row — it's outside
+    // the fixture graph either way (an anonymous public submission has no
+    // client/fixture owner to hang off), so it is gated on the write flag
+    // alone. The title and contact name are prefixed `E2E-` so
+    // `pnpm e2e:teardown -- --all` can sweep it.
+    test.skip(!process.env.E2E_WRITE_TESTS, 'Write tests not enabled (E2E_WRITE_TESTS)');
 
-    // Look for event type field (select, radio buttons, or cards)
-    const eventTypeField = page
-      .locator('select[name*="type"], [role="radiogroup"], [data-testid*="event-type"]')
-      .first();
+    const stamp = `E2E-public-${Date.now()}`;
 
-    const hasEventType = await eventTypeField.isVisible().catch(() => false);
+    await page.goto('/book');
+    await page.getByLabel('Ονοματεπώνυμο *').fill(stamp);
+    await page.getByLabel('Email *').fill(`${stamp}@devre.test`);
+    await page
+      .getByRole('button', { name: /Εταιρικό Video/i })
+      .first()
+      .click();
+    await page.getByLabel('Τίτλος Project *').fill(stamp);
 
-    expect(hasEventType).toBeTruthy();
-  });
+    await page.getByRole('button', { name: 'Υποβολή Αιτήματος' }).click();
 
-  test('booking form has date selection', async ({ page }) => {
-    await page.goto('/client/book');
-
-    // Look for date picker or date input
-    const dateField = page
-      .locator('input[type="date"], [data-testid*="date"], button:has-text("Select date")')
-      .first();
-
-    const hasDate = await dateField.isVisible().catch(() => false);
-
-    expect(hasDate).toBeTruthy();
-  });
-
-  test('booking form has location input', async ({ page }) => {
-    await page.goto('/client/book');
-
-    // Look for location/venue field
-    const locationField = page
-      .locator('input[name*="location"], input[name*="venue"], textarea[name*="location"]')
-      .first();
-
-    const hasLocation = await locationField.isVisible().catch(() => false);
-
-    expect(hasLocation).toBeTruthy();
-  });
-
-  test('booking form has description/details field', async ({ page }) => {
-    await page.goto('/client/book');
-
-    // Look for description or details textarea
-    const descriptionField = page
-      .locator('textarea[name*="description"], textarea[name*="details"]')
-      .first();
-
-    const hasDescription = await descriptionField.isVisible().catch(() => false);
-
-    expect(hasDescription).toBeTruthy();
-  });
-
-  test('client can submit filming request', async ({ page }) => {
-    // SKIP: Requires form submission implementation
-    test.skip(true, 'Requires booking form submission functionality');
-
-    await page.goto('/client/book');
-
-    // Fill in the form (adjust based on actual fields)
-    // Event type
-    const eventType = page.locator('select[name*="type"]').first();
-    if (await eventType.isVisible().catch(() => false)) {
-      await eventType.selectOption({ index: 1 });
-    }
-
-    // Date
-    const dateField = page.locator('input[type="date"]').first();
-    if (await dateField.isVisible().catch(() => false)) {
-      await dateField.fill('2026-12-31');
-    }
-
-    // Location
-    const locationField = page.locator('input[name*="location"]').first();
-    if (await locationField.isVisible().catch(() => false)) {
-      await locationField.fill('Test Venue E2E');
-    }
-
-    // Description
-    const descField = page.locator('textarea[name*="description"]').first();
-    if (await descField.isVisible().catch(() => false)) {
-      await descField.fill('This is a test filming request from E2E tests');
-    }
-
-    // Submit
-    const submitButton = page.locator('button[type="submit"]').last();
-    await submitButton.click();
-
-    // Should show success message or redirect
-    await expect(page.locator('text=/success|submitted|received/i').first()).toBeVisible({
+    await expect(page.getByRole('heading', { name: 'Το αίτημα υποβλήθηκε!' })).toBeVisible({
       timeout: 10000,
     });
   });
+});
 
-  test('booking wizard shows navigation buttons', async ({ page }) => {
-    await page.goto('/client/book');
-
-    // Look for next/continue button
-    const nextButton = page
-      .locator('button')
-      .filter({ hasText: /next|continue/i })
-      .first();
-
-    const hasNext = await nextButton.isVisible().catch(() => false);
-
-    // Navigation buttons are common for multi-step wizards
-    if (hasNext) {
-      await expect(nextButton).toBeVisible();
-    }
+test.describe('Filming Requests - Client booking page', () => {
+  test.beforeEach(async ({ page }) => {
+    test.skip(!process.env.E2E_TEST_USERS_READY, 'Test users not configured in database');
+    test.skip(!hasFixtures, 'E2E fixtures not seeded — set E2E_SUPABASE_URL');
+    await loginAsClient(page);
   });
 
-  test('booking form validates required fields', async ({ page }) => {
+  test('seeded client with no agreement sees the no-plan state', async ({ page }) => {
+    // `fixtures().client` has no `client_agreements` row, so `getMyAvailability`
+    // returns null and the page renders its no-agreement fallback instead of
+    // the slot calendar (booking-slot.spec.ts covers the calendar itself,
+    // which needs a client with an active agreement).
     await page.goto('/client/book');
+    await expect(page).toHaveURL(/\/client\/book/);
 
-    // Try to submit without filling required fields
-    const submitButton = page.locator('button[type="submit"]').last();
-    await submitButton.click();
-
-    // Should show validation errors or prevent submission
-    // This depends on form validation implementation
-    const hasError = await page
-      .locator('text=/required|error|fill/i')
-      .isVisible({ timeout: 2000 })
-      .catch(() => false);
-
-    // Validation is expected but implementation varies
-    if (hasError) {
-      await expect(page.locator('text=/required|error/i').first()).toBeVisible();
-    }
-  });
-
-  test('booking wizard has budget/pricing section', async ({ page }) => {
-    await page.goto('/client/book');
-
-    // Look for budget or pricing fields
-    const budgetField = page.locator('input[name*="budget"], select[name*="package"]').first();
-
-    const hasBudget = await budgetField.isVisible().catch(() => false);
-
-    // Budget/pricing is optional in booking
-    if (hasBudget) {
-      await expect(budgetField).toBeVisible();
-    }
-  });
-
-  test('client can save draft filming request', async ({ page }) => {
-    // SKIP: Requires draft save functionality
-    test.skip(true, 'Requires draft save implementation');
-
-    await page.goto('/client/book');
-
-    // Look for save draft button
-    const saveDraftButton = page
-      .locator('button')
-      .filter({ hasText: /save draft|save for later/i })
-      .first();
-
-    const hasSaveDraft = await saveDraftButton.isVisible().catch(() => false);
-
-    if (hasSaveDraft) {
-      await expect(saveDraftButton).toBeVisible();
-    }
+    await expect(page.getByText('Δεν υπάρχει ενεργό πλάνο κρατήσεων')).toBeVisible();
+    await expect(page.getByRole('link', { name: 'Επικοινωνήστε μαζί μας' })).toHaveAttribute(
+      'href',
+      'mailto:info@devremedia.com',
+    );
   });
 });
 
-test.describe('Filming Requests - Admin', () => {
+test.describe('Filming Requests - Admin list', () => {
   test.beforeEach(async ({ page }) => {
-    // SKIP: Requires database with test admin user
     test.skip(!process.env.E2E_TEST_USERS_READY, 'Test users not configured in database');
-
-    // Login as admin before each test
     await loginAsAdmin(page);
   });
 
-  test('admin can view filming requests list page', async ({ page }) => {
+  test('admin filming-requests stub redirects into the productions hub', async ({ page }) => {
     await page.goto('/admin/filming-requests');
-
-    // The old bare route is now a stub that redirects into the productions hub
     await expect(page).toHaveURL(/\/admin\/productions\?tab=requests/);
+    await expect(page.getByRole('heading', { name: 'Παραγωγές' })).toBeVisible();
+  });
 
-    // Check for page heading
+  test('requests tab lists the seeded filming request', async ({ page }) => {
+    test.skip(!hasFixtures, 'E2E fixtures not seeded — set E2E_SUPABASE_URL');
+    const request = fixtures().filmingRequest;
+
+    await page.goto('/admin/productions?tab=requests');
+
+    const row = page.getByRole('link', { name: request.title });
+    await expect(row).toBeVisible();
+    // Status label depends on which `statuses.*` namespace resolves first
+    // (see resolveStatusLabel in status-badge.tsx) — accept either.
     await expect(
       page
-        .locator('h1, h2')
-        .filter({ hasText: /filming request|booking|request/i })
-        .first(),
+        .locator('tr')
+        .filter({ has: row })
+        .getByText(/Σε Αναμονή|Εκκρεμεί/),
     ).toBeVisible();
   });
 
-  test('filming requests list shows requests table or cards', async ({ page }) => {
-    // SKIP: Requires filming requests in database
-    test.skip(true, 'Requires database with filming request records');
-
+  test('requests tab shows a status filter affordance', async ({ page }) => {
     await page.goto('/admin/productions?tab=requests');
 
-    // Look for table or cards
-    const hasTable = await page
-      .locator('table')
-      .isVisible()
-      .catch(() => false);
-    const hasCards = await page
-      .locator('[data-testid*="request"]')
-      .isVisible()
-      .catch(() => false);
-
-    expect(hasTable || hasCards).toBeTruthy();
-  });
-
-  test('admin can view filming request detail page', async ({ page }) => {
-    // SKIP: Requires filming request in database
-    test.skip(true, 'Requires database with filming request record');
-
-    await page.goto('/admin/productions?tab=requests');
-
-    // Click on first request
-    const firstRequest = page
-      .locator('tr td a, [data-testid*="request"] a, a[href*="/admin/filming-requests/"]')
-      .first();
-    await firstRequest.click();
-
-    // Should be on request detail page
-    await expect(page).toHaveURL(/\/admin\/filming-requests\/[\w-]+/);
-
-    // Check for request details
-    await expect(page.locator('h1, h2').first()).toBeVisible();
-  });
-
-  test('filming request detail shows client information', async ({ page }) => {
-    // SKIP: Requires filming request in database
-    test.skip(true, 'Requires database with filming request record');
-
-    await page.goto('/admin/filming-requests/test-request-id');
-
-    // Look for client info
-    await expect(page.locator('text=/client|requested by/i').first()).toBeVisible();
-  });
-
-  test('filming request detail shows event details', async ({ page }) => {
-    // SKIP: Requires filming request in database
-    test.skip(true, 'Requires database with filming request record');
-
-    await page.goto('/admin/filming-requests/test-request-id');
-
-    // Look for event details (type, date, location)
-    const details = [/event type|type/i, /date|when/i, /location|venue/i];
-
-    let foundDetails = 0;
-    for (const pattern of details) {
-      const hasDetail = await page
-        .locator(`text=${pattern}`)
-        .isVisible()
-        .catch(() => false);
-      if (hasDetail) foundDetails++;
-    }
-
-    expect(foundDetails).toBeGreaterThanOrEqual(2);
-  });
-
-  test('admin can approve filming request', async ({ page }) => {
-    // SKIP: Requires filming request and approval functionality
-    test.skip(true, 'Requires database with request and approval implementation');
-
-    await page.goto('/admin/filming-requests/test-request-id');
-
-    // Look for approve button
-    const approveButton = page
-      .locator('button')
-      .filter({ hasText: /approve|accept/i })
-      .first();
-    await expect(approveButton).toBeVisible();
-
-    await approveButton.click();
-
-    // Should show success message or status update
-    await expect(page.locator('text=/approved|accepted/i').first()).toBeVisible({ timeout: 5000 });
-  });
-
-  test('admin can convert request to project', async ({ page }) => {
-    // SKIP: Requires filming request and conversion functionality
-    test.skip(true, 'Requires database with request and conversion implementation');
-
-    await page.goto('/admin/filming-requests/test-request-id');
-
-    // Look for convert to project button
-    const convertButton = page
-      .locator('button, a')
-      .filter({ hasText: /convert|create project/i })
-      .first();
-
-    const hasConvert = await convertButton.isVisible().catch(() => false);
-
-    if (hasConvert) {
-      await expect(convertButton).toBeVisible();
-    }
-  });
-
-  test('filming requests list shows status filters', async ({ page }) => {
-    await page.goto('/admin/productions?tab=requests');
-
-    // Look for status filter
     const statusFilter = page
       .locator('[data-testid*="filter"], select[name*="status"], button:has-text("Filter")')
       .first();
 
-    const hasFilter = await statusFilter.isVisible().catch(() => false);
-
-    // Filters are common but not required
-    if (hasFilter) {
+    // A filter control is common but not guaranteed by this surface today.
+    if (await statusFilter.isVisible().catch(() => false)) {
       await expect(statusFilter).toBeVisible();
     }
   });
+});
 
-  test('filming requests show status badges', async ({ page }) => {
-    // SKIP: Requires filming requests in database
-    test.skip(true, 'Requires database with filming request records');
-
-    await page.goto('/admin/productions?tab=requests');
-
-    // Look for status badges
-    const statusBadge = page.locator('[data-testid*="status"], .badge, .status').first();
-
-    const hasBadges = await statusBadge.isVisible().catch(() => false);
-
-    if (hasBadges) {
-      await expect(statusBadge).toBeVisible();
-    }
+test.describe('Filming Requests - Admin detail', () => {
+  test.beforeEach(async ({ page }) => {
+    test.skip(!process.env.E2E_TEST_USERS_READY, 'Test users not configured in database');
+    test.skip(!hasFixtures, 'E2E fixtures not seeded — set E2E_SUPABASE_URL');
+    await loginAsAdmin(page);
   });
 
-  test('admin can add notes to filming request', async ({ page }) => {
-    // SKIP: Requires filming request and notes functionality
-    test.skip(true, 'Requires database with request and notes implementation');
-
-    await page.goto('/admin/filming-requests/test-request-id');
-
-    // Look for notes section or add note button
-    const notesSection = page.locator('text=/notes|comments/i, [data-testid*="notes"]').first();
-
-    const hasNotes = await notesSection.isVisible().catch(() => false);
-
-    // Notes are optional but common
-    if (hasNotes) {
-      await expect(notesSection).toBeVisible();
-    }
-  });
-
-  test('empty filming requests list shows appropriate message', async ({ page }) => {
-    // SKIP: Requires empty database or specific test state
-    test.skip(true, 'Requires database with no filming requests');
+  test('admin can open the seeded request from the list', async ({ page }) => {
+    const request = fixtures().filmingRequest;
 
     await page.goto('/admin/productions?tab=requests');
+    await page.getByRole('link', { name: request.title }).click();
 
-    // Look for empty state message
-    await expect(
-      page.locator('text=/no requests|empty|no filming requests/i').first(),
-    ).toBeVisible();
+    await expect(page).toHaveURL(new RegExp(`/admin/filming-requests/${request.id}`));
+    await expect(page.getByRole('heading', { name: request.title })).toBeVisible();
+  });
+
+  test('request detail shows contact info and event details', async ({ page }) => {
+    const request = fixtures().filmingRequest;
+
+    await page.goto(`/admin/filming-requests/${request.id}`);
+    await expect(page.getByRole('heading', { name: request.title })).toBeVisible();
+
+    // Contact info — seeded by seedFilmingRequest with the same contact
+    // name/company as fixtures().client.
+    await expect(page.getByText('Στοιχεία Επικοινωνίας')).toBeVisible();
+    await expect(page.getByText(fixtures().client.contactName)).toBeVisible();
+
+    // Event details — project type, location, and the seeded budget range
+    // ('2000-5000', which has no matching label so it renders raw).
+    await expect(page.getByText('Λεπτομέρειες Αιτήματος')).toBeVisible();
+    await expect(page.getByText('Επιπλέον Λεπτομέρειες')).toBeVisible();
+    await expect(page.getByText('Athens Studio')).toBeVisible();
+    await expect(page.getByText('2000-5000')).toBeVisible();
+
+    // Two preferred dates were seeded.
+    await expect(page.getByText('Προτιμώμενες Ημερομηνίες')).toBeVisible();
+    await expect(page.locator('text=/2\\d{3}/').first()).toBeVisible();
+  });
+
+  test('admin can open and cancel the accept dialog without mutating the request', async ({
+    page,
+  }) => {
+    // The seeded request is the only one in the graph — accepting it here
+    // would consume it for every other test in this file, so this path
+    // opens the affordance and backs out instead of submitting.
+    const request = fixtures().filmingRequest;
+
+    await page.goto(`/admin/filming-requests/${request.id}`);
+
+    const acceptButton = page.getByRole('button', { name: 'Αποδοχή' });
+    await expect(acceptButton).toBeVisible();
+    await acceptButton.click();
+
+    const dialog = page.getByRole('dialog', { name: 'Αποδοχή Αιτήματος' });
+    await expect(dialog).toBeVisible();
+    await dialog.getByRole('button', { name: 'Ακύρωση' }).click();
+    await expect(dialog).not.toBeVisible();
+
+    // Still pending — status badge unchanged.
+    await expect(page.getByText(/Σε Αναμονή|Εκκρεμεί/).first()).toBeVisible();
+  });
+
+  test('admin can accept and convert the request into a project', async ({ page }) => {
+    // The one mutation path that actually consumes the seeded request:
+    // accept -> convert -> redirected to the new project. Gated because it
+    // permanently changes the fixture's status for the rest of this run.
+    test.skip(!process.env.E2E_WRITE_TESTS, 'Write tests not enabled (E2E_WRITE_TESTS)');
+    const request = fixtures().filmingRequest;
+
+    await page.goto(`/admin/filming-requests/${request.id}`);
+
+    await page.getByRole('button', { name: 'Αποδοχή' }).click();
+    const reviewDialog = page.getByRole('dialog', { name: 'Αποδοχή Αιτήματος' });
+    await expect(reviewDialog).toBeVisible();
+    await reviewDialog.getByRole('button', { name: 'Αποδοχή' }).click();
+    await expect(reviewDialog).not.toBeVisible();
+
+    const convertButton = page.getByRole('button', { name: 'Μετατροπή σε Παραγωγή' });
+    await expect(convertButton).toBeVisible();
+    await convertButton.click();
+
+    const convertDialog = page.getByRole('alertdialog', { name: 'Μετατροπή σε Παραγωγή' });
+    await expect(convertDialog).toBeVisible();
+    await convertDialog.getByRole('button', { name: 'Μετατροπή σε Παραγωγή' }).click();
+
+    // convertToProject() copies the request's title onto the new project.
+    await expect(page).toHaveURL(/\/admin\/projects\/.+/, { timeout: 10000 });
+    await expect(page.getByRole('heading', { name: request.title })).toBeVisible();
   });
 });

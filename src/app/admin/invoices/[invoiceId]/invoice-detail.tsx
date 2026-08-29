@@ -17,13 +17,16 @@ import {
 } from '@/components/ui/table';
 import { Separator } from '@/components/ui/separator';
 import { PaymentActions } from '@/components/admin/invoices/payment-actions';
-import { deleteInvoice, updateInvoiceStatus } from '@/lib/actions/invoices';
+import { FormDialog } from '@/components/shared/form-dialog';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { deleteInvoice, updateInvoiceRfCode, updateInvoiceStatus } from '@/lib/actions/invoices';
 import { toast } from 'sonner';
 import { useRouter } from 'next/navigation';
 import { useTranslations } from 'next-intl';
 import Link from 'next/link';
 import { format } from 'date-fns';
-import { Trash2, Download, Eye } from 'lucide-react';
+import { Trash2, Download, Eye, Pencil } from 'lucide-react';
 import { formatCurrency } from '@/lib/format';
 
 interface LineItem {
@@ -45,6 +48,7 @@ interface Invoice {
   total: number;
   notes?: string;
   currency: string;
+  rf_code?: string | null;
   file_path?: string | null;
   client: { id: string; contact_name: string; company_name?: string; email: string };
   project?: { id: string; title: string };
@@ -64,7 +68,31 @@ export function InvoiceDetail({ invoice: initialInvoice }: InvoiceDetailProps) {
   const [previewUrl, setPreviewUrl] = React.useState<string | null>(null);
   const [isDeleting, setIsDeleting] = React.useState(false);
   const [isUpdatingStatus, setIsUpdatingStatus] = React.useState(false);
+  const [rfDialogOpen, setRfDialogOpen] = React.useState(false);
+  const [rfDraft, setRfDraft] = React.useState(invoice.rf_code ?? '');
+  const [isSavingRf, setIsSavingRf] = React.useState(false);
   const pdfUrl = invoice.file_path ? `/api/invoices/${invoice.id}/file` : null;
+
+  const openRfDialog = () => {
+    setRfDraft(invoice.rf_code ?? '');
+    setRfDialogOpen(true);
+  };
+
+  const handleSaveRfCode = async () => {
+    setIsSavingRf(true);
+    const result = await updateInvoiceRfCode(invoice.id, rfDraft);
+    setIsSavingRf(false);
+
+    if (result.error || !result.data) {
+      toast.error(t('rfCodeSaveError'), { description: result.error ?? undefined });
+      return;
+    }
+
+    toast.success(t('rfCodeSaved'));
+    setInvoice({ ...invoice, rf_code: result.data.rf_code });
+    setRfDialogOpen(false);
+    router.refresh();
+  };
 
   const handleDelete = async () => {
     setIsDeleting(true);
@@ -174,6 +202,27 @@ export function InvoiceDetail({ invoice: initialInvoice }: InvoiceDetailProps) {
               <div>
                 <p className="text-sm font-medium text-muted-foreground">{t('dueDate')}</p>
                 <p className="mt-1">{format(new Date(invoice.due_date), 'MMMM d, yyyy')}</p>
+              </div>
+              {/*
+               * Ο κωδικός RF είναι ό,τι βλέπει ο πελάτης για να πληρώσει. Μπαίνει
+               * εδώ, στην οθόνη του τιμολογίου, όχι στη φόρμα δημιουργίας: έρχεται
+               * από την τράπεζα μετά την έκδοση.
+               */}
+              <div>
+                <p className="text-sm font-medium text-muted-foreground">{t('rfCode')}</p>
+                <div className="mt-1 flex items-center gap-2">
+                  <p className={invoice.rf_code ? 'font-mono' : 'text-muted-foreground'}>
+                    {invoice.rf_code || '—'}
+                  </p>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={openRfDialog}
+                    aria-label={t('editRfCode')}
+                  >
+                    <Pencil className="h-3.5 w-3.5" />
+                  </Button>
+                </div>
               </div>
               {invoice.project && (
                 <div>
@@ -313,6 +362,28 @@ export function InvoiceDetail({ invoice: initialInvoice }: InvoiceDetailProps) {
           )}
         </DialogContent>
       </Dialog>
+
+      <FormDialog
+        open={rfDialogOpen}
+        onOpenChange={setRfDialogOpen}
+        title={t('editRfCode')}
+        description={t('rfCodeDescription')}
+        onSubmit={handleSaveRfCode}
+        submitLabel={tc('save')}
+        cancelLabel={tc('cancel')}
+        submitting={isSavingRf}
+      >
+        <div className="space-y-2">
+          <Label htmlFor="rf-code">{t('rfCode')}</Label>
+          <Input
+            id="rf-code"
+            value={rfDraft}
+            onChange={(e) => setRfDraft(e.target.value)}
+            className="font-mono"
+            placeholder="RF..."
+          />
+        </div>
+      </FormDialog>
 
       <ConfirmDialog
         open={deleteDialogOpen}

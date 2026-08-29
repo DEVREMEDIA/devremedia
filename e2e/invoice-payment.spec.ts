@@ -1,38 +1,41 @@
 import { test, expect } from '@playwright/test';
-import { loginAsAdmin } from './helpers/auth';
+import { loginAsAdmin, loginAsClient } from './helpers/auth';
+import { fixtures, hasFixtures } from './fixtures/graph';
 
 /**
  * Invoice and Payment E2E Tests
- * Tests invoice management and payment flows
+ *
+ * Card checkout was removed from the client invoice page (issue #93). There is
+ * no "Pay Now"/Stripe button any more — the client sees a payment-instructions
+ * panel driven by `src/lib/payment-instructions.ts`: an RF code when the
+ * invoice has one, bank details as a fallback, or a contact-us message when
+ * neither is configured. Admins set the RF code inline on the invoice detail
+ * page; the old "send payment link" action now just marks the invoice `sent`.
+ *
+ * Everything here is addressed against the seeded fixture graph
+ * (`e2e/fixtures/graph.ts`) — never against "the first row" of a list.
  */
 
-test.describe('Invoice Management', () => {
+test.describe('Invoice Management - Admin', () => {
   test.beforeEach(async ({ page }) => {
-    // SKIP: Requires database with test admin user
     test.skip(!process.env.E2E_TEST_USERS_READY, 'Test users not configured in database');
-
-    // Login as admin before each test
     await loginAsAdmin(page);
   });
 
   test('admin can view invoices list page', async ({ page }) => {
     await page.goto('/admin/invoices');
-
-    // Wait for the page to load
     await page.waitForLoadState('networkidle');
 
     // The old bare route is now a stub that redirects into the finance hub
     await expect(page).toHaveURL(/\/admin\/finance\?tab=invoices/);
 
-    // Check for page heading
     await expect(
       page
         .locator('h1, h2')
-        .filter({ hasText: /invoices/i })
+        .filter({ hasText: /invoices|τιμολόγια/i })
         .first(),
     ).toBeVisible();
 
-    // Check for table or list
     const hasTable = await page
       .locator('table')
       .isVisible()
@@ -45,219 +48,159 @@ test.describe('Invoice Management', () => {
     expect(hasTable || hasList).toBeTruthy();
   });
 
-  test('invoices list shows add new invoice button', async ({ page }) => {
+  test('invoices list groups the seeded client and shows both fixture invoices', async ({
+    page,
+  }) => {
+    test.skip(!hasFixtures, 'E2E fixtures not seeded — set E2E_SUPABASE_URL');
+    const { client, invoices } = fixtures();
+
     await page.goto('/admin/finance?tab=invoices');
 
-    // Look for "New Invoice" or "Create Invoice" button
-    const addButton = page
-      .locator('a, button')
-      .filter({ hasText: /new invoice|create invoice|add invoice/i })
-      .first();
-    await expect(addButton).toBeVisible();
+    // Narrow to the seeded client via the search box — the list can otherwise
+    // contain real production data.
+    await page.getByPlaceholder('Αναζήτηση πελάτη...').fill(client.companyName);
 
-    // Verify it links to the new invoice page
-    const href = await addButton.getAttribute('href');
-    if (href) {
-      expect(href).toContain('/admin/invoices/new');
-    }
+    const clientGroup = page.getByRole('button').filter({ hasText: client.companyName });
+    await expect(clientGroup).toBeVisible();
+    await clientGroup.click();
+
+    await expect(page.getByText(invoices.paid.number)).toBeVisible();
+    await expect(page.getByText(invoices.unpaid.number)).toBeVisible();
   });
 
-  test('admin can navigate to create new invoice page', async ({ page }) => {
-    await page.goto('/admin/finance?tab=invoices');
+  test('admin can open the invoice creation drawer from a project', async ({ page }) => {
+    test.skip(!hasFixtures, 'E2E fixtures not seeded — set E2E_SUPABASE_URL');
+    const project = fixtures().projects.active;
 
-    // Click the new invoice button
-    const addButton = page
-      .locator('a, button')
-      .filter({ hasText: /new invoice|create invoice/i })
-      .first();
-    await addButton.click();
+    await page.goto(`/admin/projects/${project.id}?tab=invoices`);
+    // The fixture project already has invoices (paid + unpaid), so the header
+    // "create invoice" button renders — not the EmptyState variant.
+    await page.getByRole('button', { name: 'Δημιουργία Τιμολογίου' }).click();
 
-    // Should navigate to new invoice page
-    await expect(page).toHaveURL(/\/admin\/invoices\/new/);
-
-    // Check for form presence
-    await expect(page.locator('form')).toBeVisible();
+    // Narrowed: invoice creation is now a PDF-upload-and-review flow
+    // (InvoiceUploadForm inside CreateInvoiceDrawer), not a standalone form
+    // with typed line items. We only assert the drawer opens — actually
+    // completing the flow needs a real PDF fixture and is out of scope here.
+    await expect(
+      page
+        .getByRole('dialog')
+        .locator('[data-slot="sheet-title"]')
+        .filter({ hasText: 'Δημιουργία Τιμολογίου' }),
+    ).toBeVisible();
   });
 
-  test('new invoice form renders with required fields', async ({ page }) => {
-    await page.goto('/admin/invoices/new');
+  test('admin can view invoice detail page for the unpaid fixture invoice', async ({ page }) => {
+    test.skip(!hasFixtures, 'E2E fixtures not seeded — set E2E_SUPABASE_URL');
+    const invoice = fixtures().invoices.unpaid;
 
-    // Wait for form to load
-    await expect(page.locator('form')).toBeVisible();
+    await page.goto(`/admin/invoices/${invoice.id}`);
 
-    // Check for common invoice form fields
-    // Client selection
-    const clientField = page.locator('select[name*="client"], [role="combobox"]').first();
-    const hasClientField = await clientField.isVisible().catch(() => false);
-    expect(hasClientField).toBeTruthy();
-
-    // Submit button
-    await expect(page.locator('button[type="submit"]')).toBeVisible();
-  });
-
-  test('admin can create a new invoice', async ({ page }) => {
-    // SKIP: Requires database with clients, projects, and form setup
-    test.skip(true, 'Requires database state and form submission implementation');
-
-    await page.goto('/admin/invoices/new');
-
-    // Select a client
-    await page.locator('select[name*="client"]').first().selectOption({ index: 1 });
-
-    // Add line items (implementation varies)
-    // Fill in amounts, descriptions, etc.
-
-    // Submit the form
-    await page.locator('button[type="submit"]').click();
-
-    // Should redirect to invoices list or invoice detail page
-    await page.waitForURL(/\/admin\/invoices(\/[\w-]+)?/, { timeout: 10000 });
-
-    // Verify success message
-    await expect(page.locator('text=/success|created|invoice created/i').first()).toBeVisible({
-      timeout: 5000,
-    });
-  });
-
-  test('admin can view invoice detail page', async ({ page }) => {
-    // SKIP: Requires existing invoice in database
-    test.skip(true, 'Requires database with at least one invoice record');
-
-    // Navigate to invoices list
-    await page.goto('/admin/finance?tab=invoices');
-
-    // Click on first invoice
-    const firstInvoice = page
-      .locator('tr td a, [data-testid*="invoice"] a, a[href*="/admin/invoices/"]')
-      .first();
-    await firstInvoice.click();
-
-    // Should be on invoice detail page
-    await expect(page).toHaveURL(/\/admin\/invoices\/[\w-]+$/);
-
-    // Check for invoice details
-    await expect(page.locator('h1, h2').first()).toBeVisible();
+    await expect(page).toHaveURL(new RegExp(`/admin/invoices/${invoice.id}$`));
+    await expect(page.getByRole('heading', { level: 1, name: invoice.number })).toBeVisible();
   });
 
   test('invoice detail page shows key information', async ({ page }) => {
-    // SKIP: Requires existing invoice in database
-    test.skip(true, 'Requires database with invoice record');
+    test.skip(!hasFixtures, 'E2E fixtures not seeded — set E2E_SUPABASE_URL');
+    const invoice = fixtures().invoices.unpaid;
 
-    await page.goto('/admin/invoices/test-invoice-id');
+    await page.goto(`/admin/invoices/${invoice.id}`);
 
-    // Check for invoice number or ID
-    await expect(page.locator('text=/invoice #|invoice number/i').first()).toBeVisible();
-
-    // Check for amount or total
-    await expect(page.locator('text=/total|amount|subtotal/i').first()).toBeVisible();
-
-    // Check for status
-    await expect(page.locator('text=/status|paid|unpaid|pending/i').first()).toBeVisible();
+    await expect(page.getByText(invoice.number)).toBeVisible();
+    // Status 'sent' renders through the shared StatusBadge, localized.
+    await expect(page.getByText('Εστάλη')).toBeVisible();
   });
 
   test('invoice detail page shows line items', async ({ page }) => {
-    // SKIP: Requires existing invoice in database
-    test.skip(true, 'Requires database with invoice record and line items');
+    test.skip(!hasFixtures, 'E2E fixtures not seeded — set E2E_SUPABASE_URL');
+    const invoice = fixtures().invoices.unpaid;
 
-    await page.goto('/admin/invoices/test-invoice-id');
+    await page.goto(`/admin/invoices/${invoice.id}`);
 
-    // Look for line items table or list
-    const lineItemsTable = page.locator('table, [data-testid*="line-item"]').first();
-    await expect(lineItemsTable).toBeVisible();
+    await expect(page.getByRole('table')).toBeVisible();
+    // The single seeded line item, from e2e/fixtures/records.ts.
+    await expect(page.getByText('Production day')).toBeVisible();
   });
 
-  test('admin can navigate to edit invoice page', async ({ page }) => {
-    // SKIP: Requires existing invoice in database
-    test.skip(true, 'Requires database with at least one invoice record');
+  test('admin can set and clear the RF code on an invoice', async ({ page }) => {
+    test.skip(!hasFixtures, 'E2E fixtures not seeded — set E2E_SUPABASE_URL');
+    test.skip(!process.env.E2E_WRITE_TESTS, 'Write tests not enabled (E2E_WRITE_TESTS)');
+    const invoice = fixtures().invoices.unpaid;
+    const rfCode = 'RF18000000000000000000000012';
 
-    await page.goto('/admin/invoices/test-invoice-id');
+    await page.goto(`/admin/invoices/${invoice.id}`);
 
-    // Look for edit button (may only be visible for draft/unpaid invoices)
-    const editButton = page.locator('a, button').filter({ hasText: /edit/i }).first();
+    await page.getByRole('button', { name: 'Κωδικός RF' }).click();
+    const dialog = page.getByRole('dialog');
+    await dialog.getByLabel('Κωδικός RF').fill(rfCode);
+    await dialog.getByRole('button', { name: 'Αποθήκευση' }).click();
 
-    const hasEditButton = await editButton.isVisible().catch(() => false);
+    await expect(page.getByText('Ο κωδικός RF αποθηκεύτηκε')).toBeVisible();
+    await expect(page.getByText(rfCode)).toBeVisible();
 
-    if (hasEditButton) {
-      await editButton.click();
-      await expect(page).toHaveURL(/\/admin\/invoices\/[\w-]+\/edit/);
-    }
+    // Restore the fixture invoice to its seeded (no RF) state so other specs
+    // that reuse `invoices.unpaid` are unaffected by this mutation.
+    await page.getByRole('button', { name: 'Κωδικός RF' }).click();
+    await dialog.getByLabel('Κωδικός RF').fill('');
+    await dialog.getByRole('button', { name: 'Αποθήκευση' }).click();
+    await expect(page.getByText('Ο κωδικός RF αποθηκεύτηκε')).toBeVisible();
   });
 
-  test('invoice detail shows payment history section', async ({ page }) => {
-    // SKIP: Requires existing invoice in database
-    test.skip(true, 'Requires database with invoice record');
+  test('invoice detail shows payment actions, not a card checkout button', async ({ page }) => {
+    test.skip(!hasFixtures, 'E2E fixtures not seeded — set E2E_SUPABASE_URL');
+    const invoice = fixtures().invoices.unpaid;
 
-    await page.goto('/admin/invoices/test-invoice-id');
+    await page.goto(`/admin/invoices/${invoice.id}`);
 
-    // Look for payment history or transactions
-    const paymentSection = page.locator('text=/payment|transaction|history/i').first();
-
-    const hasPaymentSection = await paymentSection.isVisible().catch(() => false);
-
-    // Payment history may only show for paid/partially paid invoices
-    if (hasPaymentSection) {
-      await expect(paymentSection).toBeVisible();
-    }
+    // Issue #93: in-app card payment is gone. The "send payment link" action
+    // is relabelled — it now just marks the invoice as sent.
+    await expect(page.getByRole('button', { name: 'Σήμανση ως απεσταλμένο' })).toBeVisible();
+    await expect(
+      page.getByRole('button', { name: 'Καταγραφή Χειροκίνητης Πληρωμής' }),
+    ).toBeVisible();
+    await expect(page.getByText(/pay now|stripe|πληρωμή με κάρτα/i)).toHaveCount(0);
   });
 
-  test('invoices list shows status filters', async ({ page }) => {
+  test('paid invoice shows payment received instead of payment actions', async ({ page }) => {
+    test.skip(!hasFixtures, 'E2E fixtures not seeded — set E2E_SUPABASE_URL');
+    const invoice = fixtures().invoices.paid;
+
+    await page.goto(`/admin/invoices/${invoice.id}`);
+
+    await expect(page.getByText('Η πληρωμή ελήφθη')).toBeVisible();
+    await expect(page.getByRole('button', { name: 'Σήμανση ως απεσταλμένο' })).toHaveCount(0);
+  });
+
+  test('invoices list displays localized status badges', async ({ page }) => {
+    test.skip(!hasFixtures, 'E2E fixtures not seeded — set E2E_SUPABASE_URL');
+    const { client } = fixtures();
+
     await page.goto('/admin/finance?tab=invoices');
+    await page.getByPlaceholder('Αναζήτηση πελάτη...').fill(client.companyName);
+    await page.getByRole('button').filter({ hasText: client.companyName }).click();
 
-    // Look for status filter controls
-    const statusFilter = page.locator('[data-testid*="filter"], button:has-text("Filter")').first();
-
-    const hasFilter = await statusFilter.isVisible().catch(() => false);
-
-    // Filters are common but not required for initial implementation
-    if (hasFilter) {
-      await expect(statusFilter).toBeVisible();
-    }
-  });
-
-  test('invoices list displays status badges', async ({ page }) => {
-    // SKIP: Requires invoices in database
-    test.skip(true, 'Requires database with invoice records');
-
-    await page.goto('/admin/finance?tab=invoices');
-
-    // Look for status indicators
-    const statusBadge = page.locator('[data-testid*="status"], .badge, .status').first();
-
-    const hasBadges = await statusBadge.isVisible().catch(() => false);
-
-    if (hasBadges) {
-      await expect(statusBadge).toBeVisible();
-    }
+    await expect(page.getByText('Πληρωμένο')).toBeVisible();
+    await expect(page.getByText('Εστάλη')).toBeVisible();
   });
 
   test('invoice detail has download/print option', async ({ page }) => {
-    // SKIP: Requires existing invoice in database
-    test.skip(true, 'Requires database with invoice record');
+    test.skip(!hasFixtures, 'E2E fixtures not seeded — set E2E_SUPABASE_URL');
+    const invoice = fixtures().invoices.paid;
 
-    await page.goto('/admin/invoices/test-invoice-id');
+    await page.goto(`/admin/invoices/${invoice.id}`);
 
-    // Look for download or print button
-    const downloadButton = page
-      .locator('a, button')
-      .filter({ hasText: /download|print|pdf/i })
-      .first();
-
-    const hasDownload = await downloadButton.isVisible().catch(() => false);
-
-    // Download/print is a common feature
-    if (hasDownload) {
-      await expect(downloadButton).toBeVisible();
-    }
+    await expect(page.getByRole('button', { name: 'Προεπισκόπηση' })).toBeVisible();
+    await expect(page.getByRole('button', { name: 'Λήψη' })).toBeVisible();
   });
 
   test('invoice detail shows client information', async ({ page }) => {
-    // SKIP: Requires existing invoice in database
-    test.skip(true, 'Requires database with invoice and client record');
+    test.skip(!hasFixtures, 'E2E fixtures not seeded — set E2E_SUPABASE_URL');
+    const invoice = fixtures().invoices.unpaid;
+    const { client } = fixtures();
 
-    await page.goto('/admin/invoices/test-invoice-id');
+    await page.goto(`/admin/invoices/${invoice.id}`);
 
-    // Look for client/bill to section
-    await expect(page.locator('text=/bill to|client|customer/i').first()).toBeVisible();
+    await expect(page.getByText(client.companyName)).toBeVisible();
+    await expect(page.getByText(client.email)).toBeVisible();
   });
 
   test('admin can access expenses page', async ({ page }) => {
@@ -266,22 +209,107 @@ test.describe('Invoice Management', () => {
     // The old bare route is now a stub that redirects into the finance hub
     await expect(page).toHaveURL(/\/admin\/finance\?tab=expenses/);
 
-    // Check for page heading
     await expect(
       page
         .locator('h1, h2')
-        .filter({ hasText: /expenses/i })
+        .filter({ hasText: /expenses|έξοδα/i })
         .first(),
     ).toBeVisible();
   });
 
-  test('empty invoices list shows appropriate message', async ({ page }) => {
-    // SKIP: Requires empty database or specific test state
-    test.skip(true, 'Requires database with no invoices (specific test state)');
+  test('searching for a client with no invoices shows the empty message', async ({ page }) => {
+    test.skip(!hasFixtures, 'E2E fixtures not seeded — set E2E_SUPABASE_URL');
+    const { emptyClient } = fixtures();
 
     await page.goto('/admin/finance?tab=invoices');
+    await page.getByPlaceholder('Αναζήτηση πελάτη...').fill(emptyClient.companyName);
 
-    // Look for empty state message
-    await expect(page.locator('text=/no invoices|empty|create your first/i').first()).toBeVisible();
+    // `emptyClient` has no invoices at all, so the search narrows the client
+    // list down to nothing — there is no genuinely empty invoices table to
+    // point at without a dedicated empty database (see e2e/SETUP.md #6).
+    await expect(page.getByText('Δεν βρέθηκαν πελάτες')).toBeVisible();
+  });
+});
+
+test.describe('Invoice Payment Instructions - Client', () => {
+  test.beforeEach(async ({ page }) => {
+    test.skip(!process.env.E2E_TEST_USERS_READY, 'Test users not configured in database');
+    test.skip(!hasFixtures, 'E2E fixtures not seeded — set E2E_SUPABASE_URL');
+    await loginAsClient(page);
+  });
+
+  test('unpaid invoice shows payment instructions, not a pay-now button', async ({ page }) => {
+    const invoice = fixtures().invoices.unpaid;
+
+    await page.goto(`/client/invoices/${invoice.id}`);
+
+    await expect(
+      page.locator('[data-slot="card-title"]').filter({ hasText: 'Οδηγίες πληρωμής' }),
+    ).toBeVisible();
+    await expect(page.getByRole('button', { name: /pay now|πληρωμή με κάρτα/i })).toHaveCount(0);
+
+    // The seeded invoice has no rf_code (see e2e/fixtures/records.ts), so what
+    // renders depends on whether the target project has bank details
+    // configured in admin settings — assert whichever branch is actually
+    // showing rather than assuming one.
+    const hasBankDetails = await page
+      .getByText('Τραπεζικό έμβασμα')
+      .isVisible()
+      .catch(() => false);
+
+    if (hasBankDetails) {
+      await expect(page.getByText('IBAN')).toBeVisible();
+    } else {
+      await expect(page.getByText('Δεν έχουν καταχωρηθεί ακόμα στοιχεία πληρωμής')).toBeVisible();
+    }
+  });
+
+  test('paid invoice hides the payment instructions panel', async ({ page }) => {
+    const invoice = fixtures().invoices.paid;
+
+    await page.goto(`/client/invoices/${invoice.id}`);
+
+    await expect(
+      page.locator('[data-slot="card-title"]').filter({ hasText: 'Οδηγίες πληρωμής' }),
+    ).toHaveCount(0);
+  });
+
+  test('admin-set RF code appears on the client payment instructions panel', async ({
+    page,
+    browser,
+  }) => {
+    test.skip(
+      !process.env.E2E_WRITE_TESTS,
+      'Write tests not enabled (E2E_WRITE_TESTS) — mutates the shared unpaid fixture invoice',
+    );
+    const invoice = fixtures().invoices.unpaid;
+    const rfCode = 'RF18111111111111111111111111';
+
+    // Set the RF code as admin, in a separate browser context so it does not
+    // disturb the client session this describe block already logged in.
+    const adminContext = await browser.newContext();
+    const adminPage = await adminContext.newPage();
+    try {
+      await loginAsAdmin(adminPage);
+      await adminPage.goto(`/admin/invoices/${invoice.id}`);
+      await adminPage.getByRole('button', { name: 'Κωδικός RF' }).click();
+      const dialog = adminPage.getByRole('dialog');
+      await dialog.getByLabel('Κωδικός RF').fill(rfCode);
+      await dialog.getByRole('button', { name: 'Αποθήκευση' }).click();
+      await expect(adminPage.getByText('Ο κωδικός RF αποθηκεύτηκε')).toBeVisible();
+
+      await page.goto(`/client/invoices/${invoice.id}`);
+      await expect(page.getByText(rfCode)).toBeVisible();
+      await expect(page.getByText('Κωδικός RF')).toBeVisible();
+
+      // Restore state — clear the RF code so the fixture invoice stays
+      // reusable for other specs that assume it has none.
+      await adminPage.getByRole('button', { name: 'Κωδικός RF' }).click();
+      await dialog.getByLabel('Κωδικός RF').fill('');
+      await dialog.getByRole('button', { name: 'Αποθήκευση' }).click();
+      await expect(adminPage.getByText('Ο κωδικός RF αποθηκεύτηκε')).toBeVisible();
+    } finally {
+      await adminContext.close();
+    }
   });
 });

@@ -2,14 +2,7 @@
 
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogFooter,
-  DialogDescription,
-} from '@/components/ui/dialog';
+import { FormDialog } from '@/components/shared/form-dialog';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { updateDeliverableStatus, requestRevisionWithNote } from '@/lib/actions/deliverables';
@@ -154,43 +147,29 @@ export function ApprovalActions({ deliverable, onStatusChange }: ApprovalActions
         )}
       </div>
 
-      <Dialog open={isRevisionDialogOpen} onOpenChange={setIsRevisionDialogOpen}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>{t('requestRevision')}</DialogTitle>
-            <DialogDescription>{t('provideRevisionFeedback')}</DialogDescription>
-          </DialogHeader>
-
-          <div className="space-y-2">
-            <Label htmlFor="revision-comment">{t('revisionComments')}</Label>
-            <Textarea
-              id="revision-comment"
-              value={revisionComment}
-              onChange={(e) => setRevisionComment(e.target.value)}
-              placeholder={t('describeChangesNeeded')}
-              rows={5}
-              disabled={isSubmitting}
-            />
-          </div>
-
-          <DialogFooter>
-            <Button
-              variant="outline"
-              onClick={() => setIsRevisionDialogOpen(false)}
-              disabled={isSubmitting}
-            >
-              {t('cancel')}
-            </Button>
-            <Button
-              variant="destructive"
-              onClick={handleRequestRevision}
-              disabled={isSubmitting || !revisionComment.trim()}
-            >
-              {isSubmitting ? t('requesting') : t('requestRevision')}
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+      <FormDialog
+        open={isRevisionDialogOpen}
+        onOpenChange={setIsRevisionDialogOpen}
+        title={t('requestRevision')}
+        description={t('provideRevisionFeedback')}
+        onSubmit={handleRequestRevision}
+        submitLabel={isSubmitting ? t('requesting') : t('requestRevision')}
+        cancelLabel={t('cancel')}
+        submitting={isSubmitting}
+        submitVariant="destructive"
+      >
+        <div className="space-y-2">
+          <Label htmlFor="revision-comment">{t('revisionComments')}</Label>
+          <Textarea
+            id="revision-comment"
+            value={revisionComment}
+            onChange={(e) => setRevisionComment(e.target.value)}
+            placeholder={t('describeChangesNeeded')}
+            rows={5}
+            disabled={isSubmitting}
+          />
+        </div>
+      </FormDialog>
     </div>
   );
 }

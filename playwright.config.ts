@@ -7,6 +7,12 @@ import { defineConfig, devices } from '@playwright/test';
 export default defineConfig({
   testDir: './e2e',
 
+  // Seed a disposable fixture graph before the suite and delete it afterwards
+  // (issue #119). Both are no-ops unless E2E_SUPABASE_URL is set, so the
+  // unauthenticated smoke tests still run with no configuration at all.
+  globalSetup: './e2e/global-setup.ts',
+  globalTeardown: './e2e/global-teardown.ts',
+
   // Maximum time one test can run.
   //
   // The suite runs against `pnpm dev` (see webServer below), and Turbopack

@@ -6,7 +6,7 @@ import { ToneChip } from '@/components/shared/tone-chip';
 import { ToneIcon } from '@/components/shared/tone-icon';
 import { statusTone } from '@/lib/status-tone';
 import { format } from 'date-fns';
-import { Receipt, CreditCard, ArrowRight, CheckCircle2, Clock, AlertTriangle } from 'lucide-react';
+import { Receipt, Landmark, ArrowRight, CheckCircle2, Clock, AlertTriangle } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { useTranslations } from 'next-intl';
 import { cn } from '@/lib/utils';
@@ -23,7 +23,6 @@ const STATUS_ICONS: Record<string, typeof CheckCircle2> = {
   overdue: AlertTriangle,
   cancelled: AlertTriangle,
 };
-
 
 export function InvoicesList({ invoices }: InvoicesListProps) {
   const router = useRouter();
@@ -103,8 +102,8 @@ export function InvoicesList({ invoices }: InvoicesListProps) {
                       router.push(`/client/invoices/${invoice.id}`);
                     }}
                   >
-                    <CreditCard className="h-4 w-4" />
-                    <span className="hidden sm:inline">{t('payNow')}</span>
+                    <Landmark className="h-4 w-4" />
+                    <span className="hidden sm:inline">{t('paymentInstructions.action')}</span>
                   </Button>
                 ) : (
                   <ArrowRight className="h-5 w-5 text-muted-foreground/40 group-hover:text-primary transition-colors" />

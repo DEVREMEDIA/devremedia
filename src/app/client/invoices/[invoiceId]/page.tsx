@@ -1,5 +1,6 @@
 import { requireUser } from '@/lib/auth-helpers';
 import { getInvoice } from '@/lib/actions/invoices';
+import { getBankDetails } from '@/lib/actions/settings';
 import { redirect, notFound } from 'next/navigation';
 import { InvoiceDetail } from '@/components/client/invoices/invoice-detail';
 
@@ -16,16 +17,16 @@ export default async function ClientInvoiceDetailPage({ params }: PageProps) {
     redirect('/login');
   }
 
-  const invoiceResult = await getInvoice(invoiceId);
+  // Τα δύο ταξίδια δεν εξαρτώνται μεταξύ τους — δεν μπαίνουν στη σειρά.
+  const [invoiceResult, bankResult] = await Promise.all([getInvoice(invoiceId), getBankDetails()]);
+
   if (invoiceResult.error || !invoiceResult.data) {
     notFound();
   }
 
-  const invoice = invoiceResult.data;
-
   return (
     <div>
-      <InvoiceDetail invoice={invoice} />
+      <InvoiceDetail invoice={invoiceResult.data} bankDetails={bankResult.data} />
     </div>
   );
 }

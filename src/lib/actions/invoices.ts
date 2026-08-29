@@ -3,7 +3,12 @@
 import { cache } from 'react';
 import { createClient } from '@/lib/supabase/server';
 import { requireAdmin, requireUser } from '@/lib/auth-helpers';
-import { createInvoiceSchema, updateInvoiceSchema, type LineItem } from '@/lib/schemas/invoice';
+import {
+  createInvoiceSchema,
+  invoiceRfCodeSchema,
+  updateInvoiceSchema,
+  type LineItem,
+} from '@/lib/schemas/invoice';
 import type { ActionResult, Invoice, InvoiceWithRelations } from '@/types/index';
 import type { InvoiceStatus } from '@/lib/constants';
 import { revalidatePath } from 'next/cache';
@@ -30,7 +35,7 @@ export async function getInvoices(
     let query = supabase
       .from('invoices')
       .select(
-        'id, project_id, client_id, invoice_number, issue_date, due_date, status, subtotal, tax_amount, total, currency, line_items, notes, tax_rate, sent_at, viewed_at, paid_at, created_by, created_at, updated_at, file_path, client:clients(id, contact_name, company_name, email, phone, address, vat_number, avatar_url, notes, status, user_id, created_at, updated_at), project:projects(id, title, client_id, description, project_type, status, priority, budget, deadline, start_date, created_at, updated_at)',
+        'id, project_id, client_id, invoice_number, issue_date, due_date, status, subtotal, tax_amount, total, currency, line_items, notes, tax_rate, sent_at, viewed_at, paid_at, rf_code, created_by, created_at, updated_at, file_path, client:clients(id, contact_name, company_name, email, phone, address, vat_number, avatar_url, notes, status, user_id, created_at, updated_at), project:projects(id, title, client_id, description, project_type, status, priority, budget, deadline, start_date, created_at, updated_at)',
       )
       .order('created_at', { ascending: false });
 
@@ -73,7 +78,7 @@ export const getInvoice = cache(async (id: string): Promise<ActionResult<Invoice
     const { data, error } = await supabase
       .from('invoices')
       .select(
-        'id, project_id, client_id, invoice_number, issue_date, due_date, status, subtotal, tax_amount, total, currency, line_items, notes, tax_rate, sent_at, viewed_at, paid_at, created_by, created_at, updated_at, file_path, client:clients(id, contact_name, company_name, email, phone, address, vat_number, avatar_url, notes, status, user_id, created_at, updated_at), project:projects(id, title, client_id, description, project_type, status, priority, budget, deadline, start_date, created_at, updated_at)',
+        'id, project_id, client_id, invoice_number, issue_date, due_date, status, subtotal, tax_amount, total, currency, line_items, notes, tax_rate, sent_at, viewed_at, paid_at, rf_code, created_by, created_at, updated_at, file_path, client:clients(id, contact_name, company_name, email, phone, address, vat_number, avatar_url, notes, status, user_id, created_at, updated_at), project:projects(id, title, client_id, description, project_type, status, priority, budget, deadline, start_date, created_at, updated_at)',
       )
       .eq('id', id)
       .single();
@@ -138,7 +143,7 @@ export async function createInvoice(input: unknown): Promise<ActionResult<Invoic
         created_by: user.id,
       })
       .select(
-        'id, project_id, client_id, invoice_number, issue_date, due_date, status, subtotal, tax_amount, total, currency, line_items, notes, tax_rate, sent_at, viewed_at, paid_at, created_by, created_at, updated_at, file_path, client:clients(id, contact_name, company_name, email, phone, address, vat_number, avatar_url, notes, status, user_id, created_at, updated_at), project:projects(id, title, client_id, description, project_type, status, priority, budget, deadline, start_date, created_at, updated_at)',
+        'id, project_id, client_id, invoice_number, issue_date, due_date, status, subtotal, tax_amount, total, currency, line_items, notes, tax_rate, sent_at, viewed_at, paid_at, rf_code, created_by, created_at, updated_at, file_path, client:clients(id, contact_name, company_name, email, phone, address, vat_number, avatar_url, notes, status, user_id, created_at, updated_at), project:projects(id, title, client_id, description, project_type, status, priority, budget, deadline, start_date, created_at, updated_at)',
       )
       .single();
 
@@ -202,7 +207,7 @@ export async function updateInvoice(
       .update(updateData)
       .eq('id', id)
       .select(
-        'id, project_id, client_id, invoice_number, issue_date, due_date, status, subtotal, tax_amount, total, currency, line_items, notes, tax_rate, sent_at, viewed_at, paid_at, created_by, created_at, updated_at, file_path, client:clients(id, contact_name, company_name, email, phone, address, vat_number, avatar_url, notes, status, user_id, created_at, updated_at), project:projects(id, title, client_id, description, project_type, status, priority, budget, deadline, start_date, created_at, updated_at)',
+        'id, project_id, client_id, invoice_number, issue_date, due_date, status, subtotal, tax_amount, total, currency, line_items, notes, tax_rate, sent_at, viewed_at, paid_at, rf_code, created_by, created_at, updated_at, file_path, client:clients(id, contact_name, company_name, email, phone, address, vat_number, avatar_url, notes, status, user_id, created_at, updated_at), project:projects(id, title, client_id, description, project_type, status, priority, budget, deadline, start_date, created_at, updated_at)',
       )
       .single();
 
@@ -250,7 +255,7 @@ export async function updateInvoiceStatus(
       .update(updateData)
       .eq('id', id)
       .select(
-        'id, project_id, client_id, invoice_number, issue_date, due_date, status, subtotal, tax_amount, total, currency, line_items, notes, tax_rate, sent_at, viewed_at, paid_at, payment_method, file_path, created_by, created_at, updated_at',
+        'id, project_id, client_id, invoice_number, issue_date, due_date, status, subtotal, tax_amount, total, currency, line_items, notes, tax_rate, sent_at, viewed_at, paid_at, payment_method, rf_code, file_path, created_by, created_at, updated_at',
       )
       .single();
 
@@ -274,6 +279,44 @@ export async function updateInvoiceStatus(
     return {
       data: null,
       error: err instanceof Error ? err.message : 'Failed to update invoice status',
+    };
+  }
+}
+
+/**
+ * Ο κωδικός RF μπαίνει από τον διαχειριστή, αφού τον δώσει η τράπεζα — γι' αυτό
+ * ζει σε δική του ενέργεια και όχι μέσα στη φόρμα δημιουργίας τιμολογίου.
+ */
+export async function updateInvoiceRfCode(
+  invoiceId: string,
+  rfCode: string,
+): Promise<ActionResult<Invoice>> {
+  try {
+    const validated = invoiceRfCodeSchema.parse({ id: invoiceId, rf_code: rfCode });
+    const { supabase, error: authError } = await requireAdmin();
+    if (authError) return { data: null, error: authError };
+
+    const { data, error } = await supabase
+      .from('invoices')
+      .update({ rf_code: validated.rf_code })
+      .eq('id', validated.id)
+      .select(
+        'id, project_id, client_id, invoice_number, issue_date, due_date, status, subtotal, tax_amount, total, currency, line_items, notes, tax_rate, sent_at, viewed_at, paid_at, payment_method, rf_code, file_path, created_by, created_at, updated_at',
+      )
+      .single();
+
+    if (error) return { data: null, error: error.message };
+
+    revalidatePath(`/admin/invoices/${validated.id}`);
+    revalidatePath('/admin/finance');
+    revalidatePath(`/client/invoices/${validated.id}`);
+    revalidatePath('/client/documents');
+
+    return { data, error: null };
+  } catch (err: unknown) {
+    return {
+      data: null,
+      error: err instanceof Error ? err.message : 'Failed to update RF code',
     };
   }
 }

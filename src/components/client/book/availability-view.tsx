@@ -4,21 +4,12 @@ import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useTranslations, useLocale } from 'next-intl';
 import { toast } from 'sonner';
-import { Loader2 } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from '@/components/ui/dialog';
+import { FormDialog } from '@/components/shared/form-dialog';
 import { cn } from '@/lib/utils';
 import { bookFilming } from '@/lib/actions/book-slot';
 import type { ClientAvailability } from '@/lib/actions/booking-availability';
@@ -79,6 +70,7 @@ function ConfirmDialog({
   loading,
 }: ConfirmDialogProps) {
   const t = useTranslations('booking');
+  const tc = useTranslations('common');
   const formatDate = useFormatDate();
   const [location, setLocation] = useState('');
   const [note, setNote] = useState('');
@@ -90,45 +82,36 @@ function ConfirmDialog({
   };
 
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent>
-        <DialogHeader>
-          <DialogTitle>
-            {formatDate(date)} — {startTime} ({formatDuration(durationMinutes)})
-          </DialogTitle>
-          <DialogDescription>{t('bookSlotDescription')}</DialogDescription>
-        </DialogHeader>
-
-        <div className="space-y-4">
-          <div className="space-y-2">
-            <Label htmlFor="book-location">{t('optionalLocation')}</Label>
-            <Input
-              id="book-location"
-              value={location}
-              onChange={(e) => setLocation(e.target.value)}
-              maxLength={500}
-            />
-          </div>
-          <div className="space-y-2">
-            <Label htmlFor="book-note">{t('optionalNote')}</Label>
-            <Textarea
-              id="book-note"
-              value={note}
-              onChange={(e) => setNote(e.target.value)}
-              maxLength={1000}
-              rows={3}
-            />
-          </div>
-        </div>
-
-        <DialogFooter>
-          <Button onClick={handleConfirm} disabled={loading} className="gap-2">
-            {loading && <Loader2 className="h-4 w-4 animate-spin" />}
-            {loading ? t('bookingInProgress') : t('confirm')}
-          </Button>
-        </DialogFooter>
-      </DialogContent>
-    </Dialog>
+    <FormDialog
+      open={open}
+      onOpenChange={onOpenChange}
+      title={`${formatDate(date)} — ${startTime} (${formatDuration(durationMinutes)})`}
+      description={t('bookSlotDescription')}
+      onSubmit={handleConfirm}
+      submitLabel={loading ? t('bookingInProgress') : t('confirm')}
+      cancelLabel={tc('cancel')}
+      submitting={loading}
+    >
+      <div className="space-y-2">
+        <Label htmlFor="book-location">{t('optionalLocation')}</Label>
+        <Input
+          id="book-location"
+          value={location}
+          onChange={(e) => setLocation(e.target.value)}
+          maxLength={500}
+        />
+      </div>
+      <div className="space-y-2">
+        <Label htmlFor="book-note">{t('optionalNote')}</Label>
+        <Textarea
+          id="book-note"
+          value={note}
+          onChange={(e) => setNote(e.target.value)}
+          maxLength={1000}
+          rows={3}
+        />
+      </div>
+    </FormDialog>
   );
 }
 

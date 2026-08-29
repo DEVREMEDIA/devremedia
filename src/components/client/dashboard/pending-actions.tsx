@@ -24,7 +24,7 @@ export function PendingActions({ invoices, unsignedContracts = [] }: PendingActi
       id: invoice.id,
       title: `${t('invoice')} ${invoice.invoice_number}`,
       description: `${INVOICE_STATUS_LABELS[invoice.status as keyof typeof INVOICE_STATUS_LABELS]} - ${formatCurrency(invoice.total || 0, invoice.currency)}`,
-      action: t('payNow'),
+      action: t('paymentInstructions'),
       icon: Receipt,
       onClick: () => router.push(`/client/invoices/${invoice.id}`),
     })),

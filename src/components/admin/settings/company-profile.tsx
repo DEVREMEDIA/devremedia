@@ -114,6 +114,39 @@ export function CompanyProfile({ settings }: CompanyProfileProps) {
             />
           </div>
 
+          {/*
+           * Τα τραπεζικά πεδία είναι το ΜΟΝΟ κομμάτι αυτής της φόρμας που φτάνει
+           * στον πελάτη — μέσω των οδηγιών πληρωμής στο τιμολόγιο. Ό,τι λείπει
+           * εδώ, λείπει κι εκεί.
+           */}
+          <div className="space-y-2">
+            <Label htmlFor="bank_beneficiary">{t('bankBeneficiary')}</Label>
+            <Input
+              id="bank_beneficiary"
+              value={formData.bank_beneficiary || ''}
+              onChange={(e) => setFormData({ ...formData, bank_beneficiary: e.target.value })}
+            />
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="bank_iban">{t('bankIban')}</Label>
+            <Input
+              id="bank_iban"
+              value={formData.bank_iban || ''}
+              onChange={(e) => setFormData({ ...formData, bank_iban: e.target.value })}
+              placeholder="GR00 0000 0000 0000 0000 0000 000"
+            />
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="bank_name">{t('bankName')}</Label>
+            <Input
+              id="bank_name"
+              value={formData.bank_name || ''}
+              onChange={(e) => setFormData({ ...formData, bank_name: e.target.value })}
+            />
+          </div>
+
           <div className="space-y-2">
             <Label htmlFor="logo_url">{t('logoUrl')}</Label>
             <Input
