@@ -6,6 +6,8 @@ import { LEAD_ACTIVITY_TYPE_LABELS } from '@/lib/constants';
 import type { LeadActivity, LeadActivityType } from '@/types';
 import { useTranslations } from 'next-intl';
 import { cn } from '@/lib/utils';
+import { statusTone } from '@/lib/status-tone';
+import { ToneIcon } from '@/components/shared/tone-icon';
 
 type LeadActivityFeedProps = {
   activities: Array<LeadActivity & { user?: { display_name: string } }>;
@@ -36,6 +38,7 @@ export function LeadActivityFeed({ activities }: LeadActivityFeedProps) {
     <div className="space-y-2">
       {activities.map((activity) => {
         const Icon = activityIcons[activity.activity_type];
+        const tone = statusTone(activity.activity_type);
 
         return (
           <div
@@ -45,9 +48,9 @@ export function LeadActivityFeed({ activities }: LeadActivityFeedProps) {
               'border border-border/50 hover:border-primary/30 hover:bg-primary/5',
             )}
           >
-            <div className="p-2 rounded-lg h-fit shrink-0 bg-muted">
-              <Icon className="h-4 w-4 text-muted-foreground" />
-            </div>
+            <ToneIcon tone={tone} className="h-fit">
+              <Icon className="h-4 w-4" />
+            </ToneIcon>
 
             <div className="flex-1 min-w-0">
               <div className="flex items-start justify-between gap-2 mb-1">

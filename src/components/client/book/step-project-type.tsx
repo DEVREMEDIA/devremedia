@@ -34,17 +34,6 @@ const PROJECT_TYPE_ICONS: Record<ProjectType, LucideIcon> = {
   other: MoreHorizontal,
 };
 
-const PROJECT_TYPE_DESCRIPTIONS: Record<ProjectType, string> = {
-  corporate_video: 'Εταιρικά profiles, testimonials, ετήσια video',
-  event_coverage: 'Content on the spot — εγκαίνια, συνέδρια, events',
-  social_media_content: 'Short-form content για social media',
-  commercial: 'Διαφημιστικά και promotional video',
-  documentary: 'Ντοκιμαντέρ και long-form storytelling',
-  music_video: 'Music videos και performance recordings',
-  podcast: 'Επαγγελματική παραγωγή podcast',
-  other: 'Custom request — θα σας στείλουμε προσφορά',
-};
-
 export function StepProjectType({ formData, updateFormData }: StepProjectTypeProps) {
   const t = useTranslations('booking');
 
@@ -90,7 +79,7 @@ export function StepProjectType({ formData, updateFormData }: StepProjectTypePro
               <div>
                 <h3 className="font-semibold text-sm">{PROJECT_TYPE_LABELS[type]}</h3>
                 <p className="text-xs text-muted-foreground mt-1.5 leading-relaxed">
-                  {PROJECT_TYPE_DESCRIPTIONS[type]}
+                  {t(`projectTypeDescriptions.${type}`)}
                 </p>
               </div>
             </div>

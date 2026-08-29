@@ -172,7 +172,7 @@ export function CategoryManage({ open, onOpenChange, categories, onSuccess }: Ca
         ),
       },
     ],
-    [t, tc],
+    [t, tc, handleEditCategory, handleDeleteClick],
   );
 
   return (

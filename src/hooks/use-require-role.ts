@@ -5,17 +5,18 @@ import { useRouter } from 'next/navigation';
 import { useAuth } from './use-auth';
 import type { UserRole } from '@/lib/constants';
 
+// Keep in sync with getDashboardForRole in src/middleware.ts (the source of truth for role → landing route).
 function getDashboardForRole(role: UserRole): string {
   switch (role) {
     case 'super_admin':
     case 'admin':
-      return '/admin/dashboard';
+      return '/admin/today';
     case 'employee':
-      return '/employee/dashboard';
+      return '/employee/today';
     case 'salesman':
-      return '/salesman/dashboard';
+      return '/salesman/today';
     default:
-      return '/client/dashboard';
+      return '/client/home';
   }
 }
 

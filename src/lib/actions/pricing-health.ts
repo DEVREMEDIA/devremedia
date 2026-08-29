@@ -37,7 +37,7 @@ export async function getPricingHealth(): Promise<ActionResult<PricingHealthSumm
     const { supabase, error: authErr } = await requireAdmin();
     if (authErr) return { data: null, error: authErr };
 
-    const [projectsRes, settingsRes] = await Promise.all([
+    const [projectsRes, settingsRes, costItemsRes] = await Promise.all([
       supabase
         .from('projects')
         .select(
@@ -53,16 +53,15 @@ export async function getPricingHealth(): Promise<ActionResult<PricingHealthSumm
         )
         .eq('id', 1)
         .single(),
+      supabase.from('cost_items').select('monthly_cost').eq('active', true),
     ]);
 
     if (projectsRes.error) return { data: null, error: projectsRes.error.message };
     if (settingsRes.error) return { data: null, error: settingsRes.error.message };
+    if (costItemsRes.error) return { data: null, error: costItemsRes.error.message };
 
     // Live cost/hour (for projects without snapshot)
-    const { data: items } = await supabase
-      .from('cost_items')
-      .select('monthly_cost')
-      .eq('active', true);
+    const { data: items } = costItemsRes;
 
     const totalMonthly = (items ?? []).reduce((sum, r) => sum + Number(r.monthly_cost || 0), 0);
     const expectedHours = Number(settingsRes.data.expected_monthly_hours) || 0;

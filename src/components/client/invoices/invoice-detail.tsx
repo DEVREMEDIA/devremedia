@@ -19,6 +19,7 @@ import {
 } from '@/components/ui/table';
 import { Separator } from '@/components/ui/separator';
 import { toast } from 'sonner';
+import { formatCurrency } from '@/lib/format';
 import type { InvoiceWithRelations, InvoiceLineItem } from '@/types';
 
 interface InvoiceDetailProps {
@@ -161,9 +162,11 @@ export function InvoiceDetail({ invoice }: InvoiceDetailProps) {
                       <div className="font-medium">{item.description}</div>
                     </TableCell>
                     <TableCell className="text-right">{item.quantity}</TableCell>
-                    <TableCell className="text-right">€{item.unit_price?.toFixed(2)}</TableCell>
+                    <TableCell className="text-right">
+                      {formatCurrency(item.unit_price, invoice.currency)}
+                    </TableCell>
                     <TableCell className="text-right font-medium">
-                      €{(item.quantity * item.unit_price)?.toFixed(2)}
+                      {formatCurrency(item.quantity * item.unit_price, invoice.currency)}
                     </TableCell>
                   </TableRow>
                 ))}
@@ -178,18 +181,18 @@ export function InvoiceDetail({ invoice }: InvoiceDetailProps) {
             <div className="w-full max-w-xs space-y-2">
               <div className="flex justify-between text-sm">
                 <span className="text-muted-foreground">{t('subtotal')}:</span>
-                <span>€{invoice.subtotal?.toFixed(2) || '0.00'}</span>
+                <span>{formatCurrency(invoice.subtotal || 0, invoice.currency)}</span>
               </div>
               <div className="flex justify-between text-sm">
                 <span className="text-muted-foreground">
                   {t('vat')} ({invoice.tax_rate || 24}%):
                 </span>
-                <span>€{invoice.tax_amount?.toFixed(2) || '0.00'}</span>
+                <span>{formatCurrency(invoice.tax_amount || 0, invoice.currency)}</span>
               </div>
               <Separator />
               <div className="flex justify-between font-bold text-lg">
                 <span>{t('totalDue')}:</span>
-                <span>€{invoice.total?.toFixed(2) || '0.00'}</span>
+                <span>{formatCurrency(invoice.total || 0, invoice.currency)}</span>
               </div>
             </div>
           </div>

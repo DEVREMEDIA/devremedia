@@ -6,6 +6,7 @@ import { useRouter } from 'next/navigation';
 import { INVOICE_STATUS_LABELS } from '@/lib/constants';
 import { useTranslations } from 'next-intl';
 import { cn } from '@/lib/utils';
+import { formatCurrency } from '@/lib/format';
 import type { InvoiceWithRelations, Contract } from '@/types';
 
 interface PendingActionsProps {
@@ -22,7 +23,7 @@ export function PendingActions({ invoices, unsignedContracts = [] }: PendingActi
       type: 'invoice' as const,
       id: invoice.id,
       title: `${t('invoice')} ${invoice.invoice_number}`,
-      description: `${INVOICE_STATUS_LABELS[invoice.status as keyof typeof INVOICE_STATUS_LABELS]} - €${invoice.total?.toFixed(2) || '0.00'}`,
+      description: `${INVOICE_STATUS_LABELS[invoice.status as keyof typeof INVOICE_STATUS_LABELS]} - ${formatCurrency(invoice.total || 0, invoice.currency)}`,
       action: t('payNow'),
       icon: Receipt,
       onClick: () => router.push(`/client/invoices/${invoice.id}`),

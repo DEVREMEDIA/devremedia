@@ -58,7 +58,7 @@ export function MessageThread({
 
       try {
         const timeoutPromise = new Promise<never>((_, reject) =>
-          setTimeout(() => reject(new Error('Request timed out')), 10000),
+          setTimeout(() => reject(new Error(t('requestTimedOut'))), 10000),
         );
 
         const result = await Promise.race([
@@ -72,14 +72,14 @@ export function MessageThread({
           setInitialMessages((result.data as unknown as Message[]) ?? []);
         }
       } catch (err) {
-        setError(err instanceof Error ? err.message : 'Failed to load messages');
+        setError(err instanceof Error ? err.message : t('failedToLoad'));
       }
 
       setIsLoading(false);
     };
 
     fetchMessages();
-  }, [projectId, channel]);
+  }, [projectId, channel, t]);
 
   // Mark messages as read when thread opens (fire and forget, don't block)
   useEffect(() => {

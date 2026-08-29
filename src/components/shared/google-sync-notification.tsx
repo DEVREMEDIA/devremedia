@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import { useTranslations } from 'next-intl';
 import { Button } from '@/components/ui/button';
 import { toast } from 'sonner';
 import {
@@ -24,6 +25,7 @@ export function GoogleSyncNotification({
   actionData,
   onAction,
 }: GoogleSyncNotificationProps) {
+  const t = useTranslations('toast');
   const [isLoading, setIsLoading] = useState(false);
 
   const handleAction = async (action: () => Promise<{ error: string | null }>) => {
@@ -33,11 +35,11 @@ export function GoogleSyncNotification({
       if (result.error) {
         toast.error(result.error);
       } else {
-        toast.success('Done');
+        toast.success(t('done'));
         onAction?.();
       }
     } catch {
-      toast.error('Action failed');
+      toast.error(t('actionFailed'));
     } finally {
       setIsLoading(false);
     }

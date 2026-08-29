@@ -4,6 +4,8 @@ import { useTranslations } from 'next-intl';
 import { Phone, Mail, MessageSquare, Calendar, CheckCircle, XCircle, FileText } from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
 import { cn } from '@/lib/utils';
+import { statusTone } from '@/lib/status-tone';
+import { ToneIcon } from '@/components/shared/tone-icon';
 
 interface Activity {
   id: string;
@@ -50,6 +52,7 @@ export function RecentActivity({ activities }: RecentActivityProps) {
           <div className="space-y-2">
             {activities.map((activity) => {
               const Icon = ACTIVITY_ICONS[activity.activity_type] || MessageSquare;
+              const tone = statusTone(activity.activity_type);
 
               return (
                 <div
@@ -59,9 +62,9 @@ export function RecentActivity({ activities }: RecentActivityProps) {
                     'border border-border/50 hover:border-primary/30 hover:bg-primary/5',
                   )}
                 >
-                  <div className="p-2 rounded-lg shrink-0 bg-muted">
-                    <Icon className="h-4 w-4 text-muted-foreground" />
-                  </div>
+                  <ToneIcon tone={tone}>
+                    <Icon className="h-4 w-4" />
+                  </ToneIcon>
                   <div className="flex-1 min-w-0">
                     <div className="flex items-start justify-between gap-2">
                       <p className="font-medium text-sm">{activity.title}</p>

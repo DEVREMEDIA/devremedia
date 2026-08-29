@@ -34,7 +34,7 @@ export default async function ConfirmPage() {
   // Already confirmed → no Confirmation needed.
   const isInvited = !!user.user_metadata?.invited_by;
   if (!isInvited) {
-    redirect(ROLE_DASHBOARDS[role] ?? '/client/dashboard');
+    redirect(ROLE_DASHBOARDS[role] ?? '/client/home');
   }
 
   // Read-only details: name from the profile (admin pre-filled) falling back to the linked

@@ -8,6 +8,7 @@ import { MessageThread } from '@/components/shared/message-thread';
 import { PROJECT_TYPE_LABELS, PROJECT_STATUS_LABELS } from '@/lib/constants';
 import { Calendar, MapPin } from 'lucide-react';
 import { useTranslations } from 'next-intl';
+import { formatEur } from '@/lib/format';
 import { DeliverablesTab } from '@/components/client/projects/deliverables-tab';
 import { ContractsTab } from '@/components/client/projects/contracts-tab';
 import type { ProjectWithClient, Deliverable, ContractWithRelations } from '@/types';
@@ -118,7 +119,7 @@ export function ClientProjectDetail({
               {project.budget && (
                 <div>
                   <h3 className="font-medium text-sm mb-2">{t('budget')}</h3>
-                  <p className="text-sm text-muted-foreground">{project.budget.toFixed(2)}</p>
+                  <p className="text-sm text-muted-foreground">{formatEur(project.budget)}</p>
                 </div>
               )}
             </div>

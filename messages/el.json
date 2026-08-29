@@ -842,6 +842,8 @@
     "expenseCategory": "Κατηγορία",
     "expenseAmount": "Ποσό",
     "expenseDate": "Ημερομηνία",
+    "expenseDateFrom": "Από ημερομηνία",
+    "expenseDateTo": "Έως ημερομηνία",
     "receipt": "Απόδειξη",
     "uploadReceipt": "Μεταφόρτωση Απόδειξης",
     "noExpenses": "Δεν υπάρχουν καταγεγραμμένα έξοδα",
@@ -886,6 +888,11 @@
     "pdfNotReady": "Το PDF δεν έχει φορτωθεί ακόμα",
     "previewTitle": "{number} — Προεπισκόπηση",
     "previewFrameTitle": "Προεπισκόπηση τιμολογίου",
+    "dateFormatHint": "Η μορφή πρέπει να είναι ΕΕΕΕ-ΜΜ-ΗΗ",
+    "descriptionRequired": "Η περιγραφή είναι υποχρεωτική",
+    "failedToParseInvoice": "Αποτυχία ανάλυσης τιμολογίου",
+    "uploadFailed": "Αποτυχία μεταφόρτωσης: {error}",
+    "failedToSaveInvoice": "Αποτυχία αποθήκευσης τιμολογίου",
     "clientInfo": "Στοιχεία Πελάτη",
     "clientName": "Όνομα Πελάτη",
     "contact": "Επαφή",
@@ -1129,6 +1136,8 @@
     "resolved": "Επιλύθηκε",
     "enterAnnotation": "Εισάγετε το σχόλιο ή την ανατροφοδότησή σας...",
     "pleaseEnterAnnotation": "Παρακαλώ εισάγετε περιεχόμενο σχολίου",
+    "failedToCreateAnnotation": "Αποτυχία δημιουργίας σχολίου",
+    "noVersionHistory": "Δεν υπάρχει ιστορικό εκδόσεων",
     "annotationAdded": "Το σχόλιο προστέθηκε επιτυχώς",
     "adding": "Προσθήκη...",
     "failedToLoadAnnotations": "Αποτυχία φόρτωσης σχολίων",
@@ -1665,6 +1674,8 @@
     "addArticle": "Νέο Άρθρο",
     "editArticle": "Επεξεργασία Άρθρου",
     "deleteArticle": "Διαγραφή Άρθρου",
+    "newArticleSubtitle": "Δημιουργήστε ένα νέο άρθρο βάσης γνώσης",
+    "editArticleSubtitle": "Ενημερώστε το άρθρο βάσης γνώσης",
     "categoryName": "Όνομα Κατηγορίας",
     "noCategoriesMatching": "Καμία κατηγορία δεν ταιριάζει με «{query}»",
     "articleTitle": "Τίτλος Άρθρου",
@@ -1701,6 +1712,12 @@
     "title": "AI Chatbot",
     "description": "Προβολή συνομιλιών chatbot και διαχείριση βάσης γνώσεων",
     "knowledgeBase": "Βάση Γνώσεων",
+    "knowledgeBaseSubtitle": "Διαχείριση της βάσης γνώσεων του chatbot για απαντήσεις RAG",
+    "conversationDetail": "Λεπτομέρειες Συνομιλίας",
+    "entryDeleted": "Η εγγραφή διαγράφηκε",
+    "seedFailed": "Αποτυχία δημιουργίας βάσης γνώσεων",
+    "closeChat": "Κλείσιμο συνομιλίας",
+    "openChat": "Ανοιχτή συνομιλία",
     "conversations": "Συνομιλίες",
     "totalConversations": "Συνολικές Συνομιλίες",
     "today": "Σήμερα",
@@ -1748,6 +1765,12 @@
     "deleteCategoryTitle": "Διαγραφή Κατηγορίας",
     "deleteCategoryConfirm": "Είστε σίγουροι ότι θέλετε να διαγράψετε αυτή την κατηγορία;",
     "selectCategoryPlaceholder": "Επιλέξτε κατηγορία",
+    "categoryRequired": "Παρακαλώ επιλέξτε κατηγορία",
+    "titleRequired": "Ο τίτλος είναι υποχρεωτικός",
+    "uploadFailedWithError": "Αποτυχία μεταφόρτωσης: {error}",
+    "unknownError": "Άγνωστο σφάλμα",
+    "uploadFailedUnexpectedly": "Απρόσμενο σφάλμα κατά τη μεταφόρτωση",
+    "uploadResourceDescription": "Μεταφορτώστε ένα νέο αρχείο πόρου πωλήσεων",
     "resourceDescriptionPlaceholder": "Σύντομη περιγραφή αυτού του πόρου",
     "categoryDescriptionPlaceholder": "Σύντομη περιγραφή αυτής της κατηγορίας",
     "noCategoriesCreateOne": "Δεν υπάρχουν κατηγορίες. Δημιουργήστε μία για να ξεκινήσετε.",
@@ -1780,7 +1803,8 @@
     "enterMessageOrAttach": "Εισάγετε ένα μήνυμα ή επισυνάψτε αρχείο",
     "attachment": "(συνημμένο)",
     "failedToSend": "Αποτυχία αποστολής μηνύματος",
-    "unknownUser": "Άγνωστος Χρήστης"
+    "unknownUser": "Άγνωστος Χρήστης",
+    "requestTimedOut": "Το αίτημα έληξε"
   },
 
   "booking": {
@@ -1905,7 +1929,17 @@
     "projectDescriptionHelper": "Όσο πιο αναλυτικοί είστε, τόσο καλύτερα θα κατανοήσουμε το όραμά σας",
     "referenceLinksLabel": "Σύνδεσμοι Αναφοράς (Προαιρετικό)",
     "referenceLinksHelper": "Μοιραστείτε links από video ή content που σας εμπνέουν",
-    "addReferenceLink": "Προσθήκη Συνδέσμου"
+    "addReferenceLink": "Προσθήκη Συνδέσμου",
+    "projectTypeDescriptions": {
+      "corporate_video": "Εταιρικά profiles, testimonials, ετήσια video",
+      "event_coverage": "Κάλυψη επί τόπου — εγκαίνια, συνέδρια, εκδηλώσεις",
+      "social_media_content": "Σύντομο περιεχόμενο για social media",
+      "commercial": "Διαφημιστικά και promotional video",
+      "documentary": "Ντοκιμαντέρ και αφηγηματικό περιεχόμενο μεγάλης διάρκειας",
+      "music_video": "Music videos και βιντεοσκόπηση εμφανίσεων",
+      "podcast": "Επαγγελματική παραγωγή podcast",
+      "other": "Ειδικό αίτημα — θα σας στείλουμε προσφορά"
+    }
   },
 
   "employee": {
@@ -2194,7 +2228,9 @@
     "networkError": "Σφάλμα δικτύου. Παρακαλώ δοκιμάστε ξανά.",
     "unauthorized": "Δεν έχετε δικαίωμα για αυτή την ενέργεια",
     "notFound": "Ο πόρος δεν βρέθηκε",
-    "validationError": "Παρακαλώ ελέγξτε τα στοιχεία σας"
+    "validationError": "Παρακαλώ ελέγξτε τα στοιχεία σας",
+    "done": "Έγινε",
+    "actionFailed": "Η ενέργεια απέτυχε"
   },
 
   "validation": {
@@ -2525,7 +2561,8 @@
         "namePlaceholder": "π.χ. Netflix, Adobe, Spotify",
         "nameRequired": "Συμπληρώστε όνομα",
         "parentLocked": "Το κόστος υπολογίζεται αυτόματα από τις γραμμές ανάλυσης.",
-        "deltaWarning": "Απόκλιση: {delta}"
+        "deltaWarning": "Απόκλιση: {delta}",
+        "remove": "Αφαίρεση"
       }
     },
     "category": {

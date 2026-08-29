@@ -120,15 +120,15 @@ export default function UpdatePasswordPage() {
         const role: string = profiles?.[0]?.role ?? 'client';
 
         const dashboards: Record<string, string> = {
-          super_admin: '/admin/dashboard',
-          admin: '/admin/dashboard',
-          employee: '/employee/dashboard',
-          salesman: '/salesman/dashboard',
-          client: '/client/dashboard',
+          super_admin: '/admin/today',
+          admin: '/admin/today',
+          employee: '/employee/today',
+          salesman: '/salesman/today',
+          client: '/client/home',
         };
-        router.replace(dashboards[role] ?? '/client/dashboard');
+        router.replace(dashboards[role] ?? '/client/home');
       } else {
-        router.replace('/client/dashboard');
+        router.replace('/client/home');
       }
     } catch {
       toast.error(t('unexpectedError'));

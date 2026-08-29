@@ -197,7 +197,7 @@ export function PackagesContent({ packages }: Props) {
                       variant="ghost"
                       size="icon"
                       onClick={() => openEdit(p)}
-                      aria-label="Edit"
+                      aria-label={tc('edit')}
                     >
                       <Pencil className="h-4 w-4" />
                     </Button>
@@ -205,7 +205,7 @@ export function PackagesContent({ packages }: Props) {
                       variant="ghost"
                       size="icon"
                       onClick={() => setConfirmDelete(p)}
-                      aria-label="Delete"
+                      aria-label={tc('delete')}
                     >
                       <Trash2 className="h-4 w-4 text-destructive" />
                     </Button>

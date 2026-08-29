@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
+import { useTranslations } from 'next-intl';
 import { Sparkles } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { toast } from 'sonner';
@@ -9,6 +10,7 @@ import { toast } from 'sonner';
 export function SeedKnowledgeButton() {
   const [loading, setLoading] = useState(false);
   const router = useRouter();
+  const t = useTranslations('chatbot');
 
   const handleSeed = async () => {
     setLoading(true);
@@ -26,7 +28,7 @@ export function SeedKnowledgeButton() {
       toast.success(`Knowledge base seeded: ${data.results?.length ?? 0} entries`);
       router.refresh();
     } catch {
-      toast.error('Failed to seed knowledge base');
+      toast.error(t('seedFailed'));
     } finally {
       setLoading(false);
     }
