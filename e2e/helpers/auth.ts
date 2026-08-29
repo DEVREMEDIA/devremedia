@@ -1,5 +1,6 @@
 import { Page } from '@playwright/test';
 import path from 'path';
+import { FIXTURE } from '../fixtures/graph';
 
 /**
  * Authentication helper utilities for E2E tests
@@ -22,14 +23,19 @@ export const CLIENT_STORAGE_STATE = path.join(__dirname, '../.auth/client.json')
  * Nothing here has a password fallback on purpose: with none set, the login
  * helper fails loudly rather than silently trying a known-public password.
  * The specs skip without `E2E_TEST_USERS_READY` anyway.
+ *
+ * When the fixture layer has seeded (issue #119), the seeded users win: their
+ * emails are namespaced per run (`e2e-<runId>-admin@devre.test`), so they cannot
+ * collide with anything real and teardown can find them. Passwords still come
+ * from the environment — the seed creates the accounts with exactly these.
  */
 export const TEST_USERS = {
   admin: {
-    email: process.env.E2E_ADMIN_EMAIL ?? 'admin@devre.test',
+    email: FIXTURE?.users.admin.email ?? process.env.E2E_ADMIN_EMAIL ?? 'admin@devre.test',
     password: process.env.E2E_ADMIN_PASSWORD ?? '',
   },
   client: {
-    email: process.env.E2E_CLIENT_EMAIL ?? 'client@devre.test',
+    email: FIXTURE?.users.client.email ?? process.env.E2E_CLIENT_EMAIL ?? 'client@devre.test',
     password: process.env.E2E_CLIENT_PASSWORD ?? '',
   },
 };

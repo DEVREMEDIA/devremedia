@@ -1,8 +1,21 @@
 // Φύλακας όψης: στις περιοχές που έχουν ήδη περάσει στη νέα γλώσσα,
 // κανένα component δεν γράφει χρώμα στο χέρι — όλα από τα σύμβολα.
+// Και, με την ίδια λογική, κανένα δεν ξαναγράφει στο χέρι ένα κοινό μέρος που
+// υπάρχει ήδη: τίτλο σελίδας (`PageHeading`), πίνακα (`DataTable`), κέλυφος
+// λεπτομέρειας (`DetailShell`), πλέγμα αριθμών (`StatGrid`), διάλογο φόρμας
+// (`FormDialog`). Οι τρεις τελευταίοι ζουν στο `scripts/check-design/`.
 // Τρέχει από τη ρίζα: node scripts/check-design.mjs
 import { readdirSync, readFileSync, statSync } from 'node:fs';
 import { dirname, join } from 'node:path';
+// Οι τρεις νεότεροι κανόνες — κοινό κέλυφος λεπτομέρειας, πλέγμα αριθμών,
+// διάλογος φόρμας — ζουν σε δικά τους αρθρώματα. Όχι επειδή είναι άλλου είδους
+// έλεγχοι, αλλά επειδή το αρχείο έφτανε τις χίλιες γραμμές και ο επόμενος που
+// θα ακουμπήσει τον κανόνα χρώματος δεν έχει λόγο να διαβάσει τη βαθμονόμηση
+// του ανιχνευτή στατιστικών. Το σημείο εισόδου και η συμπεριφορά του
+// `pnpm check:design` δεν αλλάζουν: μία εντολή, μία γραμμή αποτελέσματος.
+import { checkDetailShell } from './check-design/detail-shell.mjs';
+import { checkStatGrid } from './check-design/stat-grid.mjs';
+import { checkFormDialog } from './check-design/form-dialog.mjs';
 
 // Ο κανόνας χρώματος καλύπτει πλέον ΟΛΟΚΛΗΡΟ το src — όχι πια μια λίστα
 // περιοχών που μεγάλωνε φέτα τη φέτα (#104-#110). Η ιστορία ποιος φάκελος
@@ -88,65 +101,12 @@ const COLOUR_EXEMPT = [
 // αρχείο χωρίς να το ανοίξει, αντί για έναν αριθμό που δεν λέει τίποτα.
 // (Ο πρώτος αριθμός που γράφτηκε εδώ ως σχόλιο ήταν ήδη λάθος: έλεγε
 // δεκαπέντε για ένα αρχείο με δεκαεπτά γραμμές και είκοσι δύο χρώματα.)
-const PENDING = [
-  // Το εγχειρίδιο πωλήσεων κρατά ωμό χρώμα μέσα στην ΠΕΡΙΟΧΗ ΠΕΡΙΕΧΟΜΕΝΟΥ —
-  // τα εννέα σώματα καρτελών με το εμπορικό κείμενο της εταιρείας. Ήταν
-  // συνειδητή εξαίρεση στο issue που υλοποιεί αυτή η φέτα (#110), όχι
-  // παράλειψη: αυτό είναι κείμενο που έγραψε η εταιρεία, ρητά εκτός εμβέλειας
-  // εδώ. Το #111 πρέπει να αποφασίσει την τύχη του — είναι η μόνη εγγραφή
-  // αυτής της λίστας χωρίς φέτα που να την αναλαμβάνει αυτή τη στιγμή.
-  {
-    file: 'src/components/salesman/handbook/sales-handbook.tsx',
-    colours: [
-      'bg-amber-50',
-      'bg-amber-950',
-      'bg-orange-100',
-      'bg-orange-900',
-      'border-amber-200',
-      'border-amber-200',
-      'border-amber-900',
-      'border-amber-900',
-      'border-blue-200',
-      'border-blue-900',
-      'border-gray-300',
-      'border-green-200',
-      'border-green-900',
-      'text-amber-600',
-      'text-blue-600',
-      'text-blue-600',
-      'text-green-500',
-      'text-green-500',
-      'text-green-500',
-      'text-green-500',
-      'text-green-500',
-      'text-green-500',
-      'text-green-500',
-      'text-green-500',
-      'text-green-500',
-      'text-green-500',
-      'text-green-500',
-      'text-green-500',
-      'text-green-500',
-      'text-green-500',
-      'text-green-500',
-      'text-green-500',
-      'text-green-500',
-      'text-green-500',
-      'text-green-500',
-      'text-green-500',
-      'text-green-500',
-      'text-green-500',
-      'text-green-500',
-      'text-green-500',
-      'text-green-500',
-      'text-green-600',
-      'text-green-600',
-      'text-green-600',
-      'text-orange-300',
-      'text-orange-700',
-    ],
-  },
-];
+// Άδεια: το εγχειρίδιο πωλήσεων ήταν η τελευταία εγγραφή — τα σαράντα πέντε ωμά
+// χρώματα της περιοχής περιεχομένου του πέρασαν στα σύμβολα και ο ίδιος ο
+// φύλακας το ανακοίνωσε ως παλαιωμένη εγγραφή. Η λίστα μένει, όπως και το
+// `TABLE_PENDING`, ώστε το επόμενο αρχείο που θα καθυστερήσει να έχει πού να
+// γραφτεί — με τα ΟΝΟΜΑΤΑ των χρωμάτων που χρωστά, όχι με έναν αριθμό.
+const PENDING = [];
 
 // ΠΡΟΣΟΧΗ στα όρια λέξης. Το Tailwind γράφει τα κενά μιας αυθαίρετης τιμής ως
 // κάτω παύλα — `shadow-[0_8px_30px_-4px_rgba(234,179,8,.15)]` — και η κάτω
@@ -513,6 +473,30 @@ const TABLE_DETAIL_EXEMPT = [
   'src/components/admin/dashboard/production/crew-load-heatmap.tsx',
 ];
 
+// Ίδια απόφαση με το `TABLE_DETAIL_EXEMPT` («δεν πρόκειται ποτέ»), αλλά για
+// πίνακες που ο ανιχνευτής ΔΕΝ μπορεί να δει: φτιαγμένους από CSS grid, χωρίς
+// εισαγωγή των ωμών primitives και χωρίς σήμανση `<table>`. Γι' αυτούς ο
+// έλεγχος «παραβιάζει ακόμα;» είναι αδύνατος — θα έλεγε πάντα όχι. Ελέγχονται
+// για ύπαρξη, και για το αν έπαψαν να είναι αόρατοι (τότε ανήκουν στο
+// `TABLE_DETAIL_EXEMPT`, όπου ελέγχονται κανονικά). Ζουν σε δική τους λίστα
+// ώστε η αδυναμία να είναι γραμμένη, όχι υπονοούμενη — ακριβώς όπως και στα
+// εκκρεμή από κάτω.
+const TABLE_DETAIL_EXEMPT_UNDETECTABLE = [
+  // Ruling H — πλέγμα κόστους με επεξεργασία μέσα στα κελιά. Ήταν γραμμένο ως
+  // «αναβλήθηκε» (TABLE_PENDING_UNDETECTABLE), αλλά η ανάγνωση του αρχείου
+  // δείχνει ότι δεν είναι λίστα που περιμένει τη σειρά της: κάθε γραμμή είναι
+  // δώδεκα στήλες με `Input` που αποθηκεύουν στο `onBlur`, και μέσα σε
+  // ανοιγμένη γραμμή ξεδιπλώνονται ΑΛΛΕΣ επεξεργάσιμες γραμμές (ανάλυση
+  // κόστους) με δικό τους άθροισμα και προειδοποίηση απόκλισης. Οι γραμμές ΕΙΝΑΙ
+  // το περιεχόμενο — δεν αναζητούνται, δεν σελιδοποιούνται, δεν ταξινομούνται·
+  // αθροίζονται. Το μοντέλο γραμμής του `DataTable` (δεδομένα μέσα, κελιά μόνο
+  // για ανάγνωση, μπάρα αναζήτησης και σελιδοποίηση από πάνω) δεν ταιριάζει και
+  // δεν πρόκειται να ταιριάξει χωρίς να γίνει ο κοινός πίνακας κάτι άλλο για
+  // χάρη ενός καταναλωτή. Ίδια κλάση με το Ruling E (crew-load-heatmap):
+  // διαρθρωτική εξαίρεση, όχι χρέος.
+  'src/app/admin/cost-model/tabs/items-tab.tsx',
+];
+
 // Πίνακες της περιοχής που ΔΕΝ έχουν μεταναστεύσει ακόμα, με ρητό λόγο και
 // ρητό σημείο επιστροφής. Ξεχωριστά από το EXEMPT: το EXEMPT λέει «αυτό δεν
 // πρέπει ποτέ να γίνει DataTable», αυτό εδώ λέει «δεν έγινε ακόμα».
@@ -523,12 +507,12 @@ const TABLE_DETAIL_EXEMPT = [
 // παραβιάζει πια» είναι αδύνατος — θα έλεγε πάντα ότι ξεπεράστηκαν. Ελέγχονται
 // μόνο για ύπαρξη. Ζουν σε δική τους λίστα ώστε η αδυναμία να είναι γραμμένη,
 // όχι υπονοούμενη.
-const TABLE_PENDING_UNDETECTABLE = [
-  // Πλέγμα 12 στηλών με επεξεργασία μέσα στα κελιά, σε γραμμές μέσα σε
-  // γραμμές. Θέλει συμβόλαιο επεξεργάσιμου κελιού στον κοινό πίνακα, με έναν
-  // μόνο καταναλωτή — αναβλήθηκε συνειδητά.
-  'src/app/admin/cost-model/tabs/items-tab.tsx',
-];
+// Άδεια: η μόνη εγγραφή της (το πλέγμα κόστους) διαβάστηκε και αποδείχθηκε
+// διαρθρωτική εξαίρεση, όχι αναβολή — μετακόμισε στο
+// `TABLE_DETAIL_EXEMPT_UNDETECTABLE` με το Ruling H. Η λίστα μένει, όπως και το
+// `TABLE_PENDING` από κάτω, ώστε ο επόμενος αόρατος πίνακας που θα καθυστερήσει
+// να έχει πού να γραφτεί.
+const TABLE_PENDING_UNDETECTABLE = [];
 
 // Άδεια από το close-out της 2026-08-29: sales-report και knowledge-table
 // μετανάστευσαν στον κοινό DataTable. Η λίστα μένει ώστε ο επόμενος πίνακας
@@ -551,6 +535,9 @@ const tablePendingSet = new Set(TABLE_PENDING.map((p) => p.replaceAll('\\', '/')
 const tableUndetectableSet = new Set(
   TABLE_PENDING_UNDETECTABLE.map((p) => p.replaceAll('\\', '/')),
 );
+const tableExemptUndetectableSet = new Set(
+  TABLE_DETAIL_EXEMPT_UNDETECTABLE.map((p) => p.replaceAll('\\', '/')),
+);
 
 // Ένα αρχείο που μετανάστευσε στον κοινό πίνακα τον εισάγει. Είναι το μόνο
 // θετικό σημάδι μετανάστευσης που έχουμε για κάτι αόρατο στον ανιχνευτή.
@@ -569,7 +556,11 @@ for (const file of tableGuardedFiles) {
   // που επικαλείται η εγγραφή πρέπει να αποδεικνύεται — αλλιώς ανήκει αλλού:
   // αν ο ανιχνευτής ΤΗ ΒΛΕΠΕΙ, θέση της είναι το `TABLE_PENDING`, όπου θα
   // ελεγχθεί· αν εισάγει τον κοινό πίνακα, έχει ήδη μεταναστεύσει.
-  if (tableUndetectableSet.has(file)) {
+  if (tableUndetectableSet.has(file) || tableExemptUndetectableSet.has(file)) {
+    // Ίδιος έλεγχος και για τις δύο αόρατες λίστες: η ΑΟΡΑΤΟΤΗΤΑ είναι που
+    // επικαλούνται, και αυτή αποδεικνύεται. Αν ο ανιχνευτής άρχισε να τη
+    // βλέπει, θέση της είναι η αντίστοιχη ορατή λίστα (`TABLE_PENDING` ή
+    // `TABLE_DETAIL_EXEMPT`), όπου ελέγχεται κανονικά.
     if (ownTable || USES_SHARED_TABLE.test(source)) misfiledUndetectable.push(file);
     continue;
   }
@@ -602,6 +593,9 @@ for (const pending of tablePendingSet) {
 for (const pending of tableUndetectableSet) {
   if (!tableGuardedFileSet.has(pending)) staleTableExemptions.push(pending);
 }
+for (const exempt of tableExemptUndetectableSet) {
+  if (!tableGuardedFileSet.has(exempt)) staleTableExemptions.push(exempt);
+}
 
 // Ο αριθμός που τυπώνεται πρέπει να λέει τι ΕΛΕΓΧΘΗΚΕ για χειροποίητο πίνακα,
 // όχι τι σαρώθηκε. Και τα εκκρεμή και οι εξαιρέσεις βγαίνουν από τον βρόχο
@@ -611,9 +605,53 @@ const tableGuardedChecked =
   tableGuardedFiles.length -
   tablePendingSet.size -
   tableUndetectableSet.size -
+  tableExemptUndetectableSet.size -
   tableDetailExemptSet.size;
 
+// Οι τρεις κανόνες των κοινών μερών. Παίρνουν το ίδιο υλικό που έχει ήδη
+// διαβαστεί μία φορά (τα .tsx του src και το `strippedOf`) — κανένα δεύτερο
+// πέρασμα στον δίσκο, κανένα δεύτερο αντίγραφο των πηγών.
+const detailShell = checkDetailShell({ files: allTsxFiles, strippedOf });
+const statGrid = checkStatGrid({ files: allTsxFiles, strippedOf });
+const formDialog = checkFormDialog({ files: allTsxFiles, strippedOf });
+
+// Κάθε κανόνας δίνει δύο ειδών αστοχίες με το ίδιο σχήμα: παραβιάσεις, και
+// εγγραφές λίστας που δεν φυλάνε πια τίποτα. Ο έλεγχος παλαιότητας ΡΙΧΝΕΙ το
+// build ακριβώς όπως και η παραβίαση — μια λίστα που μόνο μεγαλώνει είναι
+// λωρίδα παράκαμψης.
+const SHARED_PART_RULES = [
+  {
+    name: 'DetailShell',
+    result: detailShell,
+    lists: 'DETAIL_SHELL_PENDING / DETAIL_SHELL_EXEMPT',
+    module: 'scripts/check-design/detail-shell.mjs',
+    hint: 'Use the shared DetailShell (src/components/shared/detail-shell.tsx) — it owns the back link, the title and the tabs of a detail screen.',
+    staleWhy: 'either wears the shell now, is no longer a detail screen, or no longer exists',
+  },
+  {
+    name: 'StatGrid',
+    result: statGrid,
+    lists: 'STAT_GRID_PENDING / STAT_GRID_EXEMPT',
+    module: 'scripts/check-design/stat-grid.mjs',
+    hint: 'Use the shared StatGrid + StatCard (src/components/shared/stat-grid.tsx, stat-card.tsx) for a row of number tiles.',
+    staleWhy: 'either has no hand-rolled row of number tiles any more, or no longer exists',
+  },
+  {
+    name: 'FormDialog',
+    result: formDialog,
+    lists: 'FORM_DIALOG_PENDING / FORM_DIALOG_EXEMPT',
+    module: 'scripts/check-design/form-dialog.mjs',
+    hint: 'Use the shared FormDialog (src/components/shared/form-dialog.tsx) — it owns the footer, the submit state and the aria description.',
+    staleWhy: 'either has no field-bearing raw <Dialog> any more, or no longer exists',
+  },
+];
+
+const sharedPartFailures = SHARED_PART_RULES.some(
+  (r) => r.result.violations.length > 0 || r.result.stale.length > 0,
+);
+
 if (
+  sharedPartFailures ||
   violations.length > 0 ||
   stalePendingColours.length > 0 ||
   changedPendingDebt.length > 0 ||
@@ -716,9 +754,23 @@ if (
   }
   if (misfiledUndetectable.length > 0) {
     console.error(
-      `\ncheck:design — ${misfiledUndetectable.length} TABLE_PENDING_UNDETECTABLE entr${misfiledUndetectable.length === 1 ? 'y is' : 'ies are'} misfiled. That list exists ONLY for tables the detector physically cannot see; ${misfiledUndetectable.length === 1 ? 'this one' : 'these'} either build${misfiledUndetectable.length === 1 ? 's' : ''} a visible table (move to TABLE_PENDING, where it gets checked) or already import${misfiledUndetectable.length === 1 ? 's' : ''} the shared DataTable (remove entirely):\n`,
+      `\ncheck:design — ${misfiledUndetectable.length} TABLE_PENDING_UNDETECTABLE / TABLE_DETAIL_EXEMPT_UNDETECTABLE entr${misfiledUndetectable.length === 1 ? 'y is' : 'ies are'} misfiled. Those lists exist ONLY for tables the detector physically cannot see; ${misfiledUndetectable.length === 1 ? 'this one' : 'these'} either build${misfiledUndetectable.length === 1 ? 's' : ''} a visible table (move to the matching visible list — TABLE_PENDING or TABLE_DETAIL_EXEMPT — where it gets checked) or already import${misfiledUndetectable.length === 1 ? 's' : ''} the shared DataTable (remove entirely):\n`,
     );
     for (const p of misfiledUndetectable) console.error(`  ${p}`);
+  }
+  for (const rule of SHARED_PART_RULES) {
+    const { violations: found, stale } = rule.result;
+    if (found.length > 0) {
+      console.error(`\ncheck:design — ${found.length} file(s) do the ${rule.name}'s job by hand:\n`);
+      for (const v of found) console.error(`  ${v}`);
+      console.error(`\n${rule.hint}`);
+    }
+    if (stale.length > 0) {
+      console.error(
+        `\ncheck:design — ${stale.length} stale ${rule.lists} entr${stale.length === 1 ? 'y' : 'ies'} — ${rule.staleWhy}. Remove from the list in ${rule.module}:\n`,
+      );
+      for (const p of stale) console.error(`  ${p}`);
+    }
   }
   process.exit(1);
 }
@@ -728,5 +780,14 @@ console.log(
     `(${headingPendingSet.size} pending, ${hubs.length} hubs checked for double titles), ` +
     `${tableGuardedChecked} table-guarded-area file(s) checked for hand-rolled tables ` +
     `(${tablePendingSet.size} pending, ${tableUndetectableSet.size} undetectable, ` +
-    `${tableDetailExemptSet.size} exempt)`,
+    `${tableDetailExemptSet.size + tableExemptUndetectableSet.size} exempt); ` +
+    // Οι τρεις νεότεροι κανόνες τυπώνουν ό,τι και οι παλιοί: τι ελέγχθηκε, και
+    // πόσο χρέος έμεινε γραμμένο δίπλα του. Ένας φύλακας που λέει μόνο «ok»
+    // κρύβει τις λίστες του.
+    `${detailShell.counts.checked} detail-route screen(s) checked for DetailShell ` +
+    `(${detailShell.counts.pending} pending, ${detailShell.counts.exempt} exempt), ` +
+    `${statGrid.counts.checked} file(s) checked for hand-rolled stat rows ` +
+    `(${statGrid.counts.pending} pending, ${statGrid.counts.exempt} exempt), ` +
+    `${formDialog.counts.checked} raw dialog(s) checked for hand-rolled forms ` +
+    `(${formDialog.counts.pending} pending, ${formDialog.counts.exempt} exempt)`,
 );

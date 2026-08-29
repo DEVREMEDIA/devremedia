@@ -1,7 +1,7 @@
 import { createClient } from '@/lib/supabase/server';
 import { redirect } from 'next/navigation';
 import { PageHeading } from '@/components/shared/page-heading';
-import { ProfileForm } from '@/components/client/settings/profile-form';
+import { ProfilePanel } from '@/components/client/settings/profile-panel';
 import { NotificationPreferences } from '@/components/client/settings/notification-preferences';
 import { ChangePassword } from '@/components/client/settings/change-password';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -18,13 +18,6 @@ export default async function ClientSettingsPage() {
   if (!user) {
     redirect('/login');
   }
-
-  // Fetch user profile
-  const { data: profile } = await supabase
-    .from('user_profiles')
-    .select('*')
-    .eq('id', user.id)
-    .single();
 
   return (
     <div className="space-y-6">
@@ -49,7 +42,7 @@ export default async function ClientSettingsPage() {
         </div>
 
         <TabsContent value="profile">
-          <ProfileForm user={user} profile={profile} />
+          <ProfilePanel />
         </TabsContent>
 
         <TabsContent value="notifications">

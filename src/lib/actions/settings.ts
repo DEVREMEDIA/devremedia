@@ -1,6 +1,10 @@
 'use server';
 
+import { z } from 'zod';
+
 import { requireAdmin, requireUser } from '@/lib/auth-helpers';
+import { createAdminClient } from '@/lib/supabase/admin';
+import type { BankDetails } from '@/lib/payment-instructions';
 import type { ActionResult } from '@/types';
 
 export type CompanySettings = {
@@ -13,6 +17,54 @@ export type CompanySettings = {
   tax_office: string | null;
   profession: string | null;
   primary_color: string | null;
+  bank_beneficiary: string | null;
+  bank_iban: string | null;
+  bank_name: string | null;
+};
+
+const EMPTY_BANK_DETAILS: BankDetails = { beneficiary: null, iban: null, bankName: null };
+
+const DEFAULT_COMPANY_SETTINGS: CompanySettings = {
+  company_name: 'ΝΤΕΒΡΕΝΤΛΗΣ ΑΓΓΕΛΟΣ ΝΙΚΟΛΑΟΣ',
+  logo_url: null,
+  address: 'ΣΟΦΟΥΛΗ ΘΕΜΙΣΤΟΚΛΗ 88, ΚΑΛΑΜΑΡΙΑ',
+  phone: null,
+  email: null,
+  vat_number: '160594763',
+  tax_office: 'ΚΑΛΑΜΑΡΙΑΣ',
+  profession: 'ΥΠΗΡΕΣΙΕΣ ΦΩΤΟΓΡΑΦΙΣΗΣ ΚΑΙ ΒΙΝΤΕΟΣΚΟΠΗΣΗΣ',
+  primary_color: null,
+  bank_beneficiary: null,
+  bank_iban: null,
+  bank_name: null,
+};
+
+/**
+ * Η αποθηκευμένη τιμή είναι jsonb — μπορεί να γράφτηκε πριν υπάρξουν τα τραπεζικά
+ * πεδία, ή να μην είναι καν αντικείμενο. Την περνάμε από σχήμα και τη στρώνουμε
+ * πάνω στις προεπιλογές, ώστε κάθε πεδίο να υπάρχει και μετά από παλιά εγγραφή.
+ */
+const storedCompanySettingsSchema = z
+  .object({
+    company_name: z.string(),
+    logo_url: z.string().nullable(),
+    address: z.string().nullable(),
+    phone: z.string().nullable(),
+    email: z.string().nullable(),
+    vat_number: z.string().nullable(),
+    tax_office: z.string().nullable(),
+    profession: z.string().nullable(),
+    primary_color: z.string().nullable(),
+    bank_beneficiary: z.string().nullable(),
+    bank_iban: z.string().nullable(),
+    bank_name: z.string().nullable(),
+  })
+  .partial();
+
+const toCompanySettings = (value: unknown): CompanySettings => {
+  const parsed = storedCompanySettingsSchema.safeParse(value);
+  if (!parsed.success) return DEFAULT_COMPANY_SETTINGS;
+  return { ...DEFAULT_COMPANY_SETTINGS, ...parsed.data };
 };
 
 export type NotificationSettings = {
@@ -40,19 +92,7 @@ export async function getCompanySettings(): Promise<ActionResult<CompanySettings
       return { data: null, error: error.message };
     }
 
-    const settings: CompanySettings = data?.value || {
-      company_name: 'ΝΤΕΒΡΕΝΤΛΗΣ ΑΓΓΕΛΟΣ ΝΙΚΟΛΑΟΣ',
-      logo_url: null,
-      address: 'ΣΟΦΟΥΛΗ ΘΕΜΙΣΤΟΚΛΗ 88, ΚΑΛΑΜΑΡΙΑ',
-      phone: null,
-      email: null,
-      vat_number: '160594763',
-      tax_office: 'ΚΑΛΑΜΑΡΙΑΣ',
-      profession: 'ΥΠΗΡΕΣΙΕΣ ΦΩΤΟΓΡΑΦΙΣΗΣ ΚΑΙ ΒΙΝΤΕΟΣΚΟΠΗΣΗΣ',
-      primary_color: null,
-    };
-
-    return { data: settings, error: null };
+    return { data: toCompanySettings(data?.value), error: null };
   } catch (err: unknown) {
     return {
       data: null,
@@ -83,6 +123,49 @@ export async function updateCompanySettings(
     return {
       data: null,
       error: err instanceof Error ? err.message : 'Failed to update company settings',
+    };
+  }
+}
+
+/**
+ * Τα τραπεζικά στοιχεία, όπως τα βλέπει ο πελάτης στις οδηγίες πληρωμής.
+ *
+ * Ο πίνακας `settings` είναι σκόπιμα κλειστός σε όλους πλην διαχειριστών: η
+ * γραμμή `company_settings` κουβαλά ΟΛΟ το προφίλ της εταιρείας (ΑΦΜ, ΔΟΥ,
+ * διεύθυνση), και μια πολιτική RLS «ο καθένας διαβάζει αυτή τη γραμμή» θα τα
+ * έδινε όλα. Γι' αυτό διαβάζουμε εδώ με τον admin client, ΑΦΟΥ βεβαιωθούμε ότι
+ * υπάρχει συνδεδεμένος χρήστης, και επιστρέφουμε ΜΟΝΟ τα τρία τραπεζικά πεδία.
+ * Το φίλτρο ζει σε μία συνάρτηση που διαβάζεται, όχι σε μια πολιτική που
+ * υπόσχεται λιγότερα απ' όσα δίνει.
+ */
+export async function getBankDetails(): Promise<ActionResult<BankDetails>> {
+  try {
+    const { error: authError } = await requireUser();
+    if (authError) return { data: null, error: authError };
+
+    const { data, error } = await createAdminClient()
+      .from('settings')
+      .select('value')
+      .eq('key', 'company_settings')
+      .maybeSingle();
+
+    if (error) return { data: null, error: error.message };
+    if (!data) return { data: EMPTY_BANK_DETAILS, error: null };
+
+    const settings = toCompanySettings(data.value);
+
+    return {
+      data: {
+        beneficiary: settings.bank_beneficiary,
+        iban: settings.bank_iban,
+        bankName: settings.bank_name,
+      },
+      error: null,
+    };
+  } catch (err: unknown) {
+    return {
+      data: null,
+      error: err instanceof Error ? err.message : 'Failed to fetch bank details',
     };
   }
 }

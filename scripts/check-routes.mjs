@@ -49,6 +49,11 @@ for (const [route, target] of stubs) {
 // να έρχεται από τα δεδομένα. Κάθε νέα εγγραφή εδώ θέλει την ίδια αιτιολογία.
 const DYNAMIC_BACKHREF_DECIDED = new Set([
   'src/app/admin/contracts/[contractId]/contract-view-page.tsx',
+  // Πίσω στον ΣΥΓΚΕΚΡΙΜΕΝΟ πελάτη/lead που μόλις επεξεργάστηκες
+  // (`/admin/clients/${clientId}`, `/salesman/leads/${leadId}`) — πραγματικές
+  // σελίδες λεπτομέρειας, όχι stub, με το id να έρχεται από τα δεδομένα.
+  'src/app/admin/clients/[clientId]/edit/page.tsx',
+  'src/app/salesman/leads/[leadId]/edit/page.tsx',
 ]);
 
 const files = walk('src').filter((p) => /\.(ts|tsx)$/.test(p));

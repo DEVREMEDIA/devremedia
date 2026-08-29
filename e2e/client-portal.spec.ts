@@ -1,5 +1,6 @@
 import { test, expect } from '@playwright/test';
 import { loginAsClient } from './helpers/auth';
+import { fixtures, hasFixtures } from './fixtures/graph';
 
 /**
  * Client Portal E2E Tests
@@ -41,15 +42,14 @@ test.describe('Client Portal', () => {
     }
   });
 
-  test('client dashboard displays project cards', async ({ page }) => {
-    // SKIP: Requires client with projects in database
-    test.skip(true, 'Requires database with client projects');
+  test('client dashboard displays the seeded active project', async ({ page }) => {
+    test.skip(!hasFixtures, 'E2E fixtures not seeded — set E2E_SUPABASE_URL');
+    const project = fixtures().projects.active;
 
     await page.goto('/client/home');
 
-    // Look for project cards or list
-    const projectCard = page.locator('[data-testid*="project"], .project-card').first();
-    await expect(projectCard).toBeVisible();
+    // The active-projects widget renders the seeded project's title as a heading.
+    await expect(page.getByRole('heading', { name: project.title })).toBeVisible();
   });
 
   test('client dashboard shows recent activity or updates', async ({ page }) => {
@@ -92,31 +92,27 @@ test.describe('Client Portal', () => {
   });
 
   test('client can view project detail page', async ({ page }) => {
-    // SKIP: Requires client with at least one project in database
-    test.skip(true, 'Requires database with client project');
+    test.skip(!hasFixtures, 'E2E fixtures not seeded — set E2E_SUPABASE_URL');
+    const project = fixtures().projects.active;
 
     await page.goto('/client/productions');
 
-    // Click on first project
-    const firstProject = page.locator('a[href*="/client/projects/"]').first();
-    await firstProject.click();
+    // Project cards navigate on click rather than exposing an <a href> —
+    // click the seeded project's title.
+    await page.getByRole('heading', { name: project.title }).click();
 
-    // Should be on project detail page
-    await expect(page).toHaveURL(/\/client\/projects\/[\w-]+/);
-
-    // Check for project details
-    await expect(page.locator('h1, h2').first()).toBeVisible();
+    // Should be on that project's detail page
+    await expect(page).toHaveURL(new RegExp(`/client/projects/${project.id}`));
   });
 
   test('client project detail shows deliverables section', async ({ page }) => {
-    // SKIP: Requires client with project in database
-    test.skip(true, 'Requires database with client project');
+    test.skip(!hasFixtures, 'E2E fixtures not seeded — set E2E_SUPABASE_URL');
+    const { projects, deliverable } = fixtures();
 
-    await page.goto('/client/projects/test-project-id');
+    await page.goto(`/client/projects/${projects.active.id}?tab=deliverables`);
 
-    // Look for deliverables or files section
-    const deliverablesSection = page.locator('text=/deliverables|files|downloads/i').first();
-    await expect(deliverablesSection).toBeVisible();
+    // The seeded deliverable is on the active project.
+    await expect(page.getByText(deliverable.title)).toBeVisible();
   });
 
   test('client can navigate to invoices list', async ({ page }) => {
@@ -143,53 +139,50 @@ test.describe('Client Portal', () => {
   });
 
   test('client can view invoice detail page', async ({ page }) => {
-    // SKIP: Requires client with at least one invoice in database
-    test.skip(true, 'Requires database with client invoice');
+    test.skip(!hasFixtures, 'E2E fixtures not seeded — set E2E_SUPABASE_URL');
+    const invoice = fixtures().invoices.unpaid;
 
     await page.goto('/client/documents?tab=invoices');
 
-    // Click on first invoice
-    const firstInvoice = page.locator('a[href*="/client/invoices/"]').first();
-    await firstInvoice.click();
+    // Address the seeded unpaid invoice by its number, never "the first row".
+    await page.getByText(invoice.number).click();
 
-    // Should be on invoice detail page
-    await expect(page).toHaveURL(/\/client\/invoices\/[\w-]+/);
-
-    // Check for invoice details
-    await expect(page.locator('h1, h2').first()).toBeVisible();
+    await expect(page).toHaveURL(new RegExp(`/client/invoices/${invoice.id}`));
   });
 
-  test('client invoice detail shows payment button for unpaid invoices', async ({ page }) => {
-    // SKIP: Requires client with unpaid invoice in database
-    test.skip(true, 'Requires database with unpaid client invoice');
+  test('unpaid invoice detail shows payment instructions', async ({ page }) => {
+    test.skip(!hasFixtures, 'E2E fixtures not seeded — set E2E_SUPABASE_URL');
+    const invoice = fixtures().invoices.unpaid;
 
-    await page.goto('/client/invoices/test-invoice-id');
+    await page.goto(`/client/invoices/${invoice.id}`);
 
-    // Look for payment button
-    const payButton = page
-      .locator('button, a')
-      .filter({ hasText: /pay|pay now|make payment/i })
-      .first();
-    await expect(payButton).toBeVisible();
+    // Issue #93: unpaid invoices show bank/RF payment instructions, not a pay
+    // button. The panel's card title is «Οδηγίες πληρωμής» / "Payment instructions".
+    await expect(
+      page.getByRole('heading', { name: /Οδηγίες πληρωμής|Payment instructions/i }),
+    ).toBeVisible();
+  });
+
+  test('paid invoice detail hides payment instructions', async ({ page }) => {
+    test.skip(!hasFixtures, 'E2E fixtures not seeded — set E2E_SUPABASE_URL');
+    const invoice = fixtures().invoices.paid;
+
+    await page.goto(`/client/invoices/${invoice.id}`);
+
+    // A paid invoice has nothing left to pay — the panel is hidden, not greyed out.
+    await expect(
+      page.getByRole('heading', { name: /Οδηγίες πληρωμής|Payment instructions/i }),
+    ).not.toBeVisible();
   });
 
   test('client invoice detail shows download option', async ({ page }) => {
-    // SKIP: Requires client with invoice in database
-    test.skip(true, 'Requires database with client invoice');
+    test.skip(!hasFixtures, 'E2E fixtures not seeded — set E2E_SUPABASE_URL');
+    const invoice = fixtures().invoices.paid;
 
-    await page.goto('/client/invoices/test-invoice-id');
+    await page.goto(`/client/invoices/${invoice.id}`);
 
-    // Look for download button
-    const downloadButton = page
-      .locator('a, button')
-      .filter({ hasText: /download|pdf/i })
-      .first();
-
-    const hasDownload = await downloadButton.isVisible().catch(() => false);
-
-    if (hasDownload) {
-      await expect(downloadButton).toBeVisible();
-    }
+    // The download action is always rendered on the invoice detail page.
+    await expect(page.getByRole('button', { name: /Λήψη|Download/i })).toBeVisible();
   });
 
   test('client can access booking wizard', async ({ page }) => {
@@ -213,19 +206,26 @@ test.describe('Client Portal', () => {
     }
   });
 
-  test('client settings page is accessible', async ({ page }) => {
+  test('client settings shows a read-only profile mirroring the client record', async ({
+    page,
+  }) => {
+    test.skip(!hasFixtures, 'E2E fixtures not seeded — set E2E_SUPABASE_URL');
+    const client = fixtures().client;
+
     await page.goto('/client/settings');
 
-    // Check that we're on the settings page
+    // Issue #89/#90: Settings → Profile is a read-only mirror of `clients`, not
+    // an editable form. Company/contact name show as <dl> values, and there is
+    // no input to change them.
     await expect(page).toHaveURL(/\/client\/settings/);
-
-    // Check for page heading
+    await expect(page.getByText(client.companyName)).toBeVisible();
+    await expect(page.getByText(client.contactName)).toBeVisible();
     await expect(
-      page
-        .locator('h1, h2')
-        .filter({ hasText: /settings|profile/i })
-        .first(),
+      page.getByText('Για αλλαγές στα στοιχεία σας επικοινωνήστε με τη διαχείριση'),
     ).toBeVisible();
+    await expect(page.locator('input[name="companyName"], input[name="contactName"]')).toHaveCount(
+      0,
+    );
   });
 
   test('client cannot access admin routes', async ({ page }) => {
@@ -236,24 +236,31 @@ test.describe('Client Portal', () => {
     await expect(page).not.toHaveURL(/\/admin\//);
   });
 
-  test('empty projects list shows appropriate message', async ({ page }) => {
-    // SKIP: Requires client with no projects in database
-    test.skip(true, 'Requires database with client having no projects');
+  test('productions page separates active from completed projects', async ({ page }) => {
+    test.skip(!hasFixtures, 'E2E fixtures not seeded — set E2E_SUPABASE_URL');
+    const { active, delivered } = fixtures().projects;
 
     await page.goto('/client/productions');
 
-    // Look for empty state message
-    await expect(page.locator('text=/no projects|empty|get started/i').first()).toBeVisible();
+    // No empty-projects database is available under the fixture layer (see
+    // e2e/SETUP.md §"What fixtures cannot give you"), so this narrows the old
+    // "empty list" assertion to what the seeded graph actually supports: the
+    // active and delivered seeded projects land in their respective sections.
+    await expect(page.getByRole('heading', { name: active.title })).toBeVisible();
+    await expect(page.getByRole('heading', { name: delivered.title })).toBeVisible();
   });
 
-  test('empty invoices list shows appropriate message', async ({ page }) => {
-    // SKIP: Requires client with no invoices in database
-    test.skip(true, 'Requires database with client having no invoices');
+  test('invoices list shows both the paid and unpaid seeded invoices', async ({ page }) => {
+    test.skip(!hasFixtures, 'E2E fixtures not seeded — set E2E_SUPABASE_URL');
+    const { paid, unpaid } = fixtures().invoices;
 
+    // Same narrowing as above: an empty invoices state needs a genuinely empty
+    // database, which the fixture layer cannot produce. Assert what it can:
+    // both seeded invoices are listed with their fixture-accurate numbers.
     await page.goto('/client/documents?tab=invoices');
 
-    // Look for empty state message
-    await expect(page.locator('text=/no invoices|empty/i').first()).toBeVisible();
+    await expect(page.getByText(paid.number)).toBeVisible();
+    await expect(page.getByText(unpaid.number)).toBeVisible();
   });
 
   test('client dashboard shows quick stats or summary', async ({ page }) => {
@@ -272,14 +279,13 @@ test.describe('Client Portal', () => {
     }
   });
 
-  test('client can view contracts', async ({ page }) => {
-    // SKIP: Requires client with contracts in database
-    test.skip(true, 'Requires database with client contracts');
+  test('client can view a signed contract', async ({ page }) => {
+    test.skip(!hasFixtures, 'E2E fixtures not seeded — set E2E_SUPABASE_URL');
+    const contract = fixtures().contracts.signed;
 
-    // Navigate to contract page
-    await page.goto('/client/contracts/test-contract-id');
+    await page.goto(`/client/contracts/${contract.id}`);
 
-    // Check for contract content
-    await expect(page.locator('h1, h2').first()).toBeVisible();
+    // Check for contract content, addressed by the seeded contract's own title.
+    await expect(page.getByRole('heading', { name: contract.title })).toBeVisible();
   });
 });

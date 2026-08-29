@@ -43,6 +43,9 @@ export default async function SettingsPage() {
     tax_office: 'ΚΑΛΑΜΑΡΙΑΣ',
     profession: 'ΥΠΗΡΕΣΙΕΣ ΦΩΤΟΓΡΑΦΙΣΗΣ ΚΑΙ ΒΙΝΤΕΟΣΚΟΠΗΣΗΣ',
     primary_color: null,
+    bank_beneficiary: null,
+    bank_iban: null,
+    bank_name: null,
   };
   const bookingConfig = bookingConfigResult.data ?? { durations: [], capacity: 1, interval: 30 };
   const weeklyTemplate = weeklyTemplateResult.data ?? [];

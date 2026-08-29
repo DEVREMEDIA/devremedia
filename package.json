@@ -22,6 +22,8 @@
     "test:e2e:headed": "playwright test --headed",
     "test:e2e:debug": "playwright test --debug",
     "test:e2e:report": "playwright show-report",
+    "e2e:seed": "tsx e2e/fixtures/seed.ts",
+    "e2e:teardown": "tsx e2e/fixtures/teardown.ts",
     "sandcastle": "tsx --env-file=.sandcastle/.env --env-file=.sandcastle/.vercel.env .sandcastle/main.mts"
   },
   "dependencies": {

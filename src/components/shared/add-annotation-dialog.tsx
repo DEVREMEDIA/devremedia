@@ -1,14 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogFooter,
-} from '@/components/ui/dialog';
-import { Button } from '@/components/ui/button';
+import { FormDialog } from '@/components/shared/form-dialog';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Badge } from '@/components/ui/badge';
@@ -84,43 +77,34 @@ export function AddAnnotationDialog({
   };
 
   return (
-    <Dialog open={open} onOpenChange={handleOpenChange}>
-      <DialogContent>
-        <DialogHeader>
-          <DialogTitle>{t('addAnnotation')}</DialogTitle>
-        </DialogHeader>
+    <FormDialog
+      open={open}
+      onOpenChange={handleOpenChange}
+      title={t('addAnnotation')}
+      onSubmit={handleSubmit}
+      submitLabel={isSubmitting ? t('adding') : t('addAnnotation')}
+      cancelLabel={tCommon('cancel')}
+      submitting={isSubmitting}
+    >
+      <div className="flex items-center gap-2">
+        <Label>{t('timestamp')}:</Label>
+        <Badge variant="outline">
+          <Clock className="h-3 w-3 mr-1" />
+          {formatTimestamp(timestamp)}
+        </Badge>
+      </div>
 
-        <div className="space-y-4">
-          <div className="flex items-center gap-2">
-            <Label>{t('timestamp')}:</Label>
-            <Badge variant="outline">
-              <Clock className="h-3 w-3 mr-1" />
-              {formatTimestamp(timestamp)}
-            </Badge>
-          </div>
-
-          <div className="space-y-2">
-            <Label htmlFor="content">{t('annotationText')}</Label>
-            <Textarea
-              id="content"
-              value={content}
-              onChange={(e) => setContent(e.target.value)}
-              placeholder={t('enterAnnotation')}
-              rows={4}
-              disabled={isSubmitting}
-            />
-          </div>
-        </div>
-
-        <DialogFooter>
-          <Button variant="outline" onClick={() => handleOpenChange(false)} disabled={isSubmitting}>
-            {tCommon('cancel')}
-          </Button>
-          <Button onClick={handleSubmit} disabled={isSubmitting || !content.trim()}>
-            {isSubmitting ? t('adding') : t('addAnnotation')}
-          </Button>
-        </DialogFooter>
-      </DialogContent>
-    </Dialog>
+      <div className="space-y-2">
+        <Label htmlFor="content">{t('annotationText')}</Label>
+        <Textarea
+          id="content"
+          value={content}
+          onChange={(e) => setContent(e.target.value)}
+          placeholder={t('enterAnnotation')}
+          rows={4}
+          disabled={isSubmitting}
+        />
+      </div>
+    </FormDialog>
   );
 }

@@ -1,230 +1,256 @@
-# E2E Test Setup Guide
+# E2E Test Setup
 
-This guide will help you set up and run the Playwright E2E tests for the Devre Media System.
+The Playwright suite runs against a **disposable, seeded database**. A fixture
+layer creates a known graph of records before the run, the specs address those
+records by name, and teardown deletes them again — pass or fail.
 
-## Prerequisites
+This replaces the old arrangement, where 79 tests were `test.skip(true, 'Requires
+database with …')` because nothing guaranteed a client, a draft contract or an
+unpaid invoice existed. See issue #119.
 
-- Node.js installed
-- Supabase running locally (`supabase start`)
-- Next.js development server running (`npm run dev`)
+---
 
-## Installation
+## 1. The one rule
 
-Playwright is already installed as a dev dependency. To install the browsers needed for testing:
+**Never point the fixture layer at the application database.**
 
-```bash
-npx playwright install
-```
+The seed creates rows and the teardown deletes them. Run either against a real
+customer system and you have created and then destroyed real records. The layer
+is built to make that hard:
 
-This will install Chromium, Firefox, and WebKit browsers.
+| Guard | Behaviour |
+|---|---|
+| Separate variables | Reads `E2E_SUPABASE_URL` / `E2E_SUPABASE_SERVICE_ROLE_KEY`. It never falls back to `NEXT_PUBLIC_SUPABASE_URL` / `SUPABASE_SERVICE_ROLE_KEY`. |
+| Same-project refusal | If `E2E_SUPABASE_URL` equals `NEXT_PUBLIC_SUPABASE_URL`, or the two service keys match, seeding throws. |
+| Explicit override | That refusal lifts only with `E2E_ALLOW_SAME_PROJECT=1`, typed deliberately. |
+| Namespacing | Every seeded value is prefixed `E2E-<runId>`. Teardown deletes by that prefix and by recorded id — never "everything in the table". |
+| No seed, no run | With `E2E_SUPABASE_URL` unset, seeding and teardown are no-ops and the credentialed specs skip. The unauthenticated smoke tests still run. |
 
-## Test Users Setup
+`.env.local` in this repo points at **production**. It is not a valid target.
 
-Before running authenticated tests, you need to create test users in the database the suite points at.
+---
 
-> **This repository is public.** Test passwords used to be string literals in `e2e/helpers/auth.ts`, which meant an account with the admin role had a password anyone could read — so it could never safely exist on a real system. Passwords now come from the environment and have **no defaults**. Generate them; do not invent a memorable one and do not write it down anywhere git can see.
+## 2. Prerequisites
 
-### Create the users
+- Node.js and `pnpm`
+- A disposable Supabase project — a local `supabase start` is the intended
+  target — with every migration in `supabase/migrations/` applied
+- `npx playwright install` (Chromium, Firefox, WebKit)
 
-1. In Supabase Studio, create two users with confirmed emails:
-   - `admin@devre.test` — then set their role in `user_profiles` to `admin` or `super_admin`
-   - `client@devre.test` — then set their role to `client`
-2. Use passwords you generate. Put them in `.env.local`, which is gitignored:
+## 3. Configure
+
+Create `.env.test` in the project root (gitignored). It is read automatically by
+the seed, the teardown and Playwright's global setup; existing `process.env`
+values always win, so CI can pass these as secrets instead.
 
 ```env
-E2E_ADMIN_EMAIL=admin@devre.test
+# Required — point at a DISPOSABLE project
+E2E_SUPABASE_URL=http://127.0.0.1:54321
+E2E_SUPABASE_SERVICE_ROLE_KEY=<service role key of that project>
+
+# Required — passwords for the two seeded auth users.
+# No defaults on purpose: this repo is public, and an admin account with a
+# readable password could never safely exist. Generate them.
 E2E_ADMIN_PASSWORD=<generated>
-E2E_CLIENT_EMAIL=client@devre.test
 E2E_CLIENT_PASSWORD=<generated>
+
+# Optional
+E2E_RUN_ID=local          # fixed run id instead of a generated one
+E2E_WRITE_TESTS=1         # allow specs that create/modify/delete records
 ```
 
-With no password set, `login()` throws with an explanation rather than silently trying a known-public one.
+> The committed `.env.test.example` still describes the pre-fixture setup, with
+> literal passwords in a comment. Those are dead. This section is the current
+> contract.
 
-### The two gates
+### The gates, and what changed
 
-```env
-E2E_TEST_USERS_READY=1   # may log in and read
-E2E_WRITE_TESTS=1        # may create, modify and delete records
-```
+| Variable | Meaning |
+|---|---|
+| `E2E_SUPABASE_URL` | Present ⇒ seed before the run, tear down after. Absent ⇒ neither. |
+| `E2E_TEST_USERS_READY` | **The seed now sets this itself.** If the seed ran, the users exist; there is nothing left to confirm. Set it by hand only when running against users you created manually, with no fixture database. |
+| `E2E_WRITE_TESTS` | Unchanged in meaning: the suite may create, modify and delete records. Still separate from seeding, because a spec that writes can write outside the fixture graph — `hold-resolution.spec.ts` approves or rejects the newest request in the admin list, which on a shared database is somebody's real booking, and approval has no undo. Leave it unset unless the target database is genuinely disposable. |
 
-They are separate deliberately. Four specs write: `booking-slot.spec.ts` creates Holds, and `hold-resolution.spec.ts` opens the **newest request in the admin list** and presses Approve or Reject. Against a real database that is a real customer's booking, and there is no undo for approving it.
+## 4. Run
 
-The suite has no fixtures and no teardown — see issue #119 — so leave `E2E_WRITE_TESTS` unset unless you are pointing at a database you are willing to lose.
-
-`.env.test.example` still lists the old literal passwords in a comment. They are dead defaults; ignore them.
-
-## Running Tests
-
-### Run all tests (headless)
 ```bash
-npm run test:e2e
+pnpm test:e2e            # seed → sessions → tests → teardown
+pnpm e2e:seed            # seed only (leaves the graph in place)
+pnpm e2e:teardown        # delete the recorded run
+pnpm e2e:teardown -- --all  # sweep every E2E- row, including crashed runs
 ```
 
-### Run tests with UI mode (interactive)
-```bash
-npm run test:e2e:ui
-```
+`pnpm e2e:seed` writes `e2e/.auth/fixture-run.json` — the manifest of everything
+it created. Teardown reads it. It is gitignored along with the rest of
+`e2e/.auth/`.
 
-### Run tests in headed mode (see browser)
-```bash
-npm run test:e2e:headed
-```
+Seeding is idempotent per run: seeding over an existing manifest tears that run
+down first, so re-running never leaves two half-graphs behind.
 
-### Debug tests
-```bash
-npm run test:e2e:debug
-```
+If a run crashes hard enough to skip teardown, `pnpm e2e:teardown -- --all` sweeps
+every `E2E-` prefixed row and every `e2e-…@devre.test` auth user, whichever run
+created them.
 
-### View test report
-```bash
-npm run test:e2e:report
-```
+---
 
-### Run specific test file
-```bash
-npx playwright test e2e/auth.spec.ts
-```
+## 5. What gets seeded
 
-### Run tests in specific browser
-```bash
-npx playwright test --project=chromium
-npx playwright test --project=firefox
-npx playwright test --project=webkit
-```
+One coherent graph, all of it namespaced `E2E-<runId>`:
 
-## Test Structure
+- **2 auth users** — `e2e-<runId>-admin@devre.test` (role `admin`) and
+  `e2e-<runId>-client@devre.test` (role `client`), both with confirmed emails.
+- **2 clients** — one linked to the client user via `clients.user_id` and
+  carrying the whole graph; one deliberately empty (no projects, no invoices, no
+  contracts, no portal login).
+- **2 projects** on the linked client — one `filming`, one `delivered`.
+- **1 task**, **1 deliverable** (a link, no storage object), **1 message** on the
+  active project.
+- **3 contracts** — `draft`, `sent` (unsigned and signable) and `signed`.
+- **2 invoices** — one `paid`, one `sent` and due in the future.
+- **1 filming request** with status `pending`.
+- **1 lead** at stage `new`, assigned to the admin user.
 
-```
-e2e/
-├── .auth/                    # Stored authentication states (gitignored)
-├── helpers/
-│   ├── auth.ts              # Authentication helpers
-│   └── test-utils.ts        # Common test utilities
-├── auth.spec.ts             # Authentication tests
-├── client-management.spec.ts # Client CRUD tests
-├── project-flow.spec.ts     # Project management tests
-├── invoice-payment.spec.ts  # Invoice tests
-├── client-portal.spec.ts    # Client portal tests
-├── messaging.spec.ts        # Messaging tests
-├── contracts.spec.ts        # Contract tests
-├── filming-requests.spec.ts # Filming request/booking tests
-├── example.spec.ts          # Basic smoke tests (no auth required)
-└── global-setup.ts          # Global setup (optional)
-```
+No storage objects are created, so nothing needs sweeping from buckets.
 
-## Test Categories
+Column values are taken from `supabase/migrations/` and
+`src/lib/constants/enums.ts`. One trap worth naming: the `CONTRACT_STATUSES`
+array in constants contains `pending_review`, but the database CHECK constraint
+from `00002_core_tables.sql` does not allow it.
 
-### Smoke Tests (No Authentication Required)
-- `example.spec.ts` - Basic application tests
+---
 
-These can run immediately without any setup.
+## 6. Using fixtures in a spec
 
-### Authenticated Tests
-Most test files require authenticated users and will skip if `E2E_TEST_USERS_READY` is not set:
-- `auth.spec.ts` - Login, logout, role-based access
-- `client-management.spec.ts` - Client CRUD operations
-- `project-flow.spec.ts` - Project management
-- `invoice-payment.spec.ts` - Invoice management
-- `client-portal.spec.ts` - Client dashboard and features
-- `messaging.spec.ts` - Project messaging
-- `contracts.spec.ts` - Contract management and signing
-- `filming-requests.spec.ts` - Booking wizard and request management
+Import the graph and name the record you mean. Never click "the first row" —
+that is whatever the database sorted first, not the thing under test.
 
-### Tests Requiring Database State
-Many tests are marked with `test.skip()` because they require specific database records:
-- Tests that create/edit/delete records
-- Tests that display lists of items
-- Tests that interact with relationships
-
-## Writing Tests
-
-### Test Structure
 ```typescript
 import { test, expect } from '@playwright/test';
+import { fixtures, hasFixtures } from './fixtures/graph';
 import { loginAsAdmin } from './helpers/auth';
 
-test.describe('Feature Name', () => {
+test.describe('Contracts - Admin', () => {
   test.beforeEach(async ({ page }) => {
-    // Setup - login, navigate, etc.
+    test.skip(!process.env.E2E_TEST_USERS_READY, 'Test users not configured');
+    test.skip(!hasFixtures, 'E2E fixtures not seeded — set E2E_SUPABASE_URL');
     await loginAsAdmin(page);
   });
 
-  test('should do something', async ({ page }) => {
-    // Arrange
-    await page.goto('/some/route');
+  test('admin can send a draft contract for signature', async ({ page }) => {
+    const contract = fixtures().contracts.draft;
 
-    // Act
-    await page.click('button');
-
-    // Assert
-    await expect(page.locator('h1')).toBeVisible();
+    await page.goto(`/admin/contracts/${contract.id}`);
+    await expect(page.getByRole('heading', { name: contract.title })).toBeVisible();
   });
 });
 ```
 
-### Using Test Utilities
-```typescript
-import { waitForSuccessMessage, clickButton } from './helpers/test-utils';
+`hasFixtures` is a boolean evaluated at import time, safe in `test.skip`.
+`fixtures()` throws if nothing was seeded, so guard with `hasFixtures` first.
 
-await clickButton(page, 'Save');
-await waitForSuccessMessage(page, 'Saved successfully');
+### The full API — `e2e/fixtures/graph.ts`
+
+Every entry names one record. IDs are real UUIDs from the seeded database, so
+they can go straight into a route.
+
+| Accessor | Names |
+|---|---|
+| `fixtures().runId` / `.namespace` | The run id, and `E2E-<runId>` — the prefix on every seeded string |
+| `fixtures().users.admin` | `.id`, `.email`, `.role` (`'admin'`), `.displayName` |
+| `fixtures().users.client` | Same shape, role `'client'` |
+| `fixtures().client` | The populated client: `.id`, `.companyName`, `.contactName`, `.email`, `.userId` |
+| `fixtures().emptyClient` | A client with no projects/invoices/contracts and no login; `.userId` is `null` |
+| `fixtures().projects.active` | Project in status `filming`: `.id`, `.title`, `.status`, `.projectType` |
+| `fixtures().projects.delivered` | Project in status `delivered`, same shape |
+| `fixtures().task` | `.id`, `.title`, `.status` (`'todo'`) — on the active project |
+| `fixtures().deliverable` | `.id`, `.title`, `.status` (`'pending_review'`) — on the active project |
+| `fixtures().message` | `.id`, `.content` — admin-authored, channel `client`, on the active project |
+| `fixtures().contracts.draft` | Never sent. `.id`, `.title`, `.status` (`'draft'`) |
+| `fixtures().contracts.sent` | Unsigned and signable by the client. `.status` is `'sent'` |
+| `fixtures().contracts.signed` | Signed, with `signed_at` and `signature_data`. `.status` is `'signed'` |
+| `fixtures().invoices.paid` | `.id`, `.number`, `.status` (`'paid'`), `.total` |
+| `fixtures().invoices.unpaid` | `.status` is `'sent'`, due in the future, no `paid_at` |
+| `fixtures().filmingRequest` | `.id`, `.title`, `.status` (`'pending'`) |
+| `fixtures().lead` | `.id`, `.contactName`, `.companyName`, `.email`, `.stage` (`'new'`) |
+
+Also exported: `FIXTURE` (the nullable raw manifest — use `hasFixtures` instead),
+`FIXTURE_PREFIX`, `MANIFEST_PATH`, and the `Fixture*` types.
+
+### What fixtures cannot give you
+
+A handful of the old skips ask for **absence** — "requires database with no
+clients", "with no projects", "with no invoices". Seeding cannot produce an empty
+table; those assertions need either a dedicated empty database or a scoped view.
+`fixtures().emptyClient` covers the scoped case (a client detail page with
+nothing on it). The genuinely global ones stay skipped, and should say so:
+`test.skip(true, 'Needs an empty database, not a fixture')`.
+
+---
+
+## 7. Layout
+
+```
+e2e/
+├── .auth/                    # sessions + fixture-run.json (gitignored)
+├── fixtures/
+│   ├── env.ts                # .env.test loader, no dependency
+│   ├── supabase-admin.ts     # service-role client + the safety guards
+│   ├── graph.ts              # types, manifest I/O, fixtures() / hasFixtures
+│   ├── seed.ts               # builds the graph, writes the manifest
+│   └── teardown.ts           # deletes it; --all sweeps the namespace
+├── helpers/
+│   ├── auth.ts               # login helpers; prefers seeded user emails
+│   └── test-utils.ts
+├── global-setup.ts           # seed → auth sessions
+├── global-teardown.ts        # runs pass or fail
+└── *.spec.ts
 ```
 
-## Troubleshooting
+Teardown deletes in reverse foreign-key order. Most children cascade with their
+project, but invoices, contracts and filming requests reference a project with
+`ON DELETE SET NULL` and would survive it, so they go first. `activity_log.user_id`
+is also `SET NULL`, so those rows are removed before the auth users they point
+at — otherwise a run leaves orphaned audit rows behind.
 
-### Tests timeout
-- Ensure Next.js dev server is running
-- Check that Supabase is running
-- Increase timeout in playwright.config.ts
+---
 
-### Authentication tests fail
-- Verify test users exist in Supabase
-- Check email/password match in e2e/helpers/auth.ts
-- Ensure E2E_TEST_USERS_READY=1 is set
+## 8. Troubleshooting
 
-### Cannot find elements
-- Use `page.pause()` to debug
-- Use Playwright Inspector: `npx playwright test --debug`
-- Check element selectors with browser DevTools
+**"E2E_SUPABASE_URL points at the same Supabase project as NEXT_PUBLIC_SUPABASE_URL"**
+Working as intended. Point it somewhere disposable.
 
-## CI/CD Integration
+**Tests skip with "E2E fixtures not seeded"**
+`e2e/.auth/fixture-run.json` is missing. Run `pnpm e2e:seed`, or set
+`E2E_SUPABASE_URL` and let `pnpm test:e2e` do it.
 
-To run tests in CI (GitHub Actions, etc.):
+**Login fails after seeding**
+`E2E_ADMIN_PASSWORD` / `E2E_CLIENT_PASSWORD` must be set *before* the seed — the
+seed creates the accounts with exactly those passwords. Changing them afterwards
+requires a re-seed.
+
+**Rows left behind**
+`pnpm e2e:teardown -- --all`.
+
+**Tests time out on first run**
+Turbopack compiles each route on first request. `E2E_TEST_TIMEOUT_MS`,
+`E2E_EXPECT_TIMEOUT_MS` and `E2E_LOGIN_TIMEOUT_MS` already carry generous
+defaults for exactly this.
+
+---
+
+## 9. CI
 
 ```yaml
-- name: Install Playwright Browsers
-  run: npx playwright install --with-deps
-
-- name: Start Supabase
-  run: npx supabase start
-
-- name: Run E2E tests
-  run: npm run test:e2e
+- run: npx playwright install --with-deps
+- run: npx supabase start
+- run: npx supabase db push
+- run: pnpm test:e2e
   env:
-    E2E_TEST_USERS_READY: 1
+    E2E_SUPABASE_URL: http://127.0.0.1:54321
+    E2E_SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.E2E_SERVICE_ROLE_KEY }}
+    E2E_ADMIN_PASSWORD: ${{ secrets.E2E_ADMIN_PASSWORD }}
+    E2E_CLIENT_PASSWORD: ${{ secrets.E2E_CLIENT_PASSWORD }}
+    E2E_WRITE_TESTS: '1'
 ```
 
-## Best Practices
-
-1. **Use data-testid attributes** for stable selectors
-2. **Keep tests independent** - don't rely on other tests
-3. **Clean up after tests** - delete created records
-4. **Use page objects** for complex pages
-5. **Mock external services** when possible
-6. **Use meaningful test names** that describe behavior
-7. **Avoid hardcoded waits** - use `waitForSelector` instead
-
-## Performance Tips
-
-1. Run tests in parallel (default)
-2. Use `storageState` to reuse authentication
-3. Skip unnecessary tests with `test.skip()`
-4. Use `test.only()` during development
-5. Run specific test files instead of entire suite
-
-## Resources
-
-- [Playwright Documentation](https://playwright.dev)
-- [Playwright Best Practices](https://playwright.dev/docs/best-practices)
-- [Playwright Test Selectors](https://playwright.dev/docs/selectors)
-- [Playwright Assertions](https://playwright.dev/docs/test-assertions)
+`E2E_TEST_USERS_READY` is absent deliberately — the seed sets it.

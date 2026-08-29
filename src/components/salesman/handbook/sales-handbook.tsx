@@ -23,8 +23,11 @@ import {
 } from 'lucide-react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { StatGrid } from '@/components/shared/stat-grid';
+import { StatCard } from '@/components/shared/stat-card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
+import { Checkbox } from '@/components/ui/checkbox';
 import {
   Accordion,
   AccordionContent,
@@ -268,25 +271,25 @@ function PackagesTab() {
               </Badge>
               <ul className="space-y-2 text-sm">
                 <li className="flex items-center gap-2">
-                  <CheckCircle2 className="h-4 w-4 text-green-500 shrink-0" /> 2 ημέρες γυρισμάτων
-                  (έως 6 ώρες)
+                  <CheckCircle2 className="h-4 w-4 text-tone-positive shrink-0" /> 2 ημέρες
+                  γυρισμάτων (έως 6 ώρες)
                 </li>
                 <li className="flex items-center gap-2">
-                  <CheckCircle2 className="h-4 w-4 text-green-500 shrink-0" /> Brief με προτεινόμενη
-                  θεματολογία
+                  <CheckCircle2 className="h-4 w-4 text-tone-positive shrink-0" /> Brief με
+                  προτεινόμενη θεματολογία
                 </li>
                 <li className="flex items-center gap-2">
-                  <CheckCircle2 className="h-4 w-4 text-green-500 shrink-0" /> Γύρισμα + μοντάζ
+                  <CheckCircle2 className="h-4 w-4 text-tone-positive shrink-0" /> Γύρισμα + μοντάζ
                 </li>
                 <li className="flex items-center gap-2">
-                  <CheckCircle2 className="h-4 w-4 text-green-500 shrink-0" /> Copyright-free
+                  <CheckCircle2 className="h-4 w-4 text-tone-positive shrink-0" /> Copyright-free
                   μουσική
                 </li>
                 <li className="flex items-center gap-2">
-                  <CheckCircle2 className="h-4 w-4 text-green-500 shrink-0" /> Υπότιτλοι
+                  <CheckCircle2 className="h-4 w-4 text-tone-positive shrink-0" /> Υπότιτλοι
                 </li>
                 <li className="flex items-center gap-2">
-                  <CheckCircle2 className="h-4 w-4 text-green-500 shrink-0" /> Drone
+                  <CheckCircle2 className="h-4 w-4 text-tone-positive shrink-0" /> Drone
                 </li>
               </ul>
               <p className="text-xs text-muted-foreground">~146,25&euro;/video</p>
@@ -309,25 +312,25 @@ function PackagesTab() {
               </Badge>
               <ul className="space-y-2 text-sm">
                 <li className="flex items-center gap-2">
-                  <CheckCircle2 className="h-4 w-4 text-green-500 shrink-0" /> 2 ημέρες γυρισμάτων
-                  (έως 6 ώρες/ημέρα)
+                  <CheckCircle2 className="h-4 w-4 text-tone-positive shrink-0" /> 2 ημέρες
+                  γυρισμάτων (έως 6 ώρες/ημέρα)
                 </li>
                 <li className="flex items-center gap-2">
-                  <CheckCircle2 className="h-4 w-4 text-green-500 shrink-0" /> Brief με προτεινόμενη
-                  θεματολογία
+                  <CheckCircle2 className="h-4 w-4 text-tone-positive shrink-0" /> Brief με
+                  προτεινόμενη θεματολογία
                 </li>
                 <li className="flex items-center gap-2">
-                  <CheckCircle2 className="h-4 w-4 text-green-500 shrink-0" /> Γύρισμα + μοντάζ
+                  <CheckCircle2 className="h-4 w-4 text-tone-positive shrink-0" /> Γύρισμα + μοντάζ
                 </li>
                 <li className="flex items-center gap-2">
-                  <CheckCircle2 className="h-4 w-4 text-green-500 shrink-0" /> Copyright-free
+                  <CheckCircle2 className="h-4 w-4 text-tone-positive shrink-0" /> Copyright-free
                   μουσική
                 </li>
                 <li className="flex items-center gap-2">
-                  <CheckCircle2 className="h-4 w-4 text-green-500 shrink-0" /> Υπότιτλοι
+                  <CheckCircle2 className="h-4 w-4 text-tone-positive shrink-0" /> Υπότιτλοι
                 </li>
                 <li className="flex items-center gap-2">
-                  <CheckCircle2 className="h-4 w-4 text-green-500 shrink-0" /> Drone
+                  <CheckCircle2 className="h-4 w-4 text-tone-positive shrink-0" /> Drone
                 </li>
               </ul>
               <p className="text-xs text-muted-foreground">~112,5&euro;/video</p>
@@ -347,25 +350,25 @@ function PackagesTab() {
               </Badge>
               <ul className="space-y-2 text-sm">
                 <li className="flex items-center gap-2">
-                  <CheckCircle2 className="h-4 w-4 text-green-500 shrink-0" /> 4 ημέρες γυρισμάτων
-                  (έως 6 ώρες/ημέρα)
+                  <CheckCircle2 className="h-4 w-4 text-tone-positive shrink-0" /> 4 ημέρες
+                  γυρισμάτων (έως 6 ώρες/ημέρα)
                 </li>
                 <li className="flex items-center gap-2">
-                  <CheckCircle2 className="h-4 w-4 text-green-500 shrink-0" /> Brief με προτεινόμενη
-                  θεματολογία
+                  <CheckCircle2 className="h-4 w-4 text-tone-positive shrink-0" /> Brief με
+                  προτεινόμενη θεματολογία
                 </li>
                 <li className="flex items-center gap-2">
-                  <CheckCircle2 className="h-4 w-4 text-green-500 shrink-0" /> Γύρισμα + μοντάζ
+                  <CheckCircle2 className="h-4 w-4 text-tone-positive shrink-0" /> Γύρισμα + μοντάζ
                 </li>
                 <li className="flex items-center gap-2">
-                  <CheckCircle2 className="h-4 w-4 text-green-500 shrink-0" /> Copyright-free
+                  <CheckCircle2 className="h-4 w-4 text-tone-positive shrink-0" /> Copyright-free
                   μουσική
                 </li>
                 <li className="flex items-center gap-2">
-                  <CheckCircle2 className="h-4 w-4 text-green-500 shrink-0" /> Υπότιτλοι
+                  <CheckCircle2 className="h-4 w-4 text-tone-positive shrink-0" /> Υπότιτλοι
                 </li>
                 <li className="flex items-center gap-2">
-                  <CheckCircle2 className="h-4 w-4 text-green-500 shrink-0" /> Drone
+                  <CheckCircle2 className="h-4 w-4 text-tone-positive shrink-0" /> Drone
                 </li>
               </ul>
               <p className="text-xs text-muted-foreground">~112&euro;/video</p>
@@ -397,10 +400,11 @@ function PackagesTab() {
               <p className="text-sm text-muted-foreground">400&euro;/episode</p>
               <ul className="space-y-2 text-sm">
                 <li className="flex items-center gap-2">
-                  <CheckCircle2 className="h-4 w-4 text-green-500 shrink-0" /> Γύρισμα με 3 κάμερες
+                  <CheckCircle2 className="h-4 w-4 text-tone-positive shrink-0" /> Γύρισμα με 3
+                  κάμερες
                 </li>
                 <li className="flex items-center gap-2">
-                  <CheckCircle2 className="h-4 w-4 text-green-500 shrink-0" /> Full μοντάζ
+                  <CheckCircle2 className="h-4 w-4 text-tone-positive shrink-0" /> Full μοντάζ
                   επεισοδίων
                 </li>
               </ul>
@@ -419,10 +423,11 @@ function PackagesTab() {
               <p className="text-sm text-muted-foreground">300&euro;/episode</p>
               <ul className="space-y-2 text-sm">
                 <li className="flex items-center gap-2">
-                  <CheckCircle2 className="h-4 w-4 text-green-500 shrink-0" /> Γύρισμα με 3 κάμερες
+                  <CheckCircle2 className="h-4 w-4 text-tone-positive shrink-0" /> Γύρισμα με 3
+                  κάμερες
                 </li>
                 <li className="flex items-center gap-2">
-                  <CheckCircle2 className="h-4 w-4 text-green-500 shrink-0" /> Full μοντάζ
+                  <CheckCircle2 className="h-4 w-4 text-tone-positive shrink-0" /> Full μοντάζ
                   επεισοδίων
                 </li>
               </ul>
@@ -441,10 +446,11 @@ function PackagesTab() {
               <p className="text-sm text-muted-foreground">250&euro;/episode</p>
               <ul className="space-y-2 text-sm">
                 <li className="flex items-center gap-2">
-                  <CheckCircle2 className="h-4 w-4 text-green-500 shrink-0" /> Γύρισμα με 3 κάμερες
+                  <CheckCircle2 className="h-4 w-4 text-tone-positive shrink-0" /> Γύρισμα με 3
+                  κάμερες
                 </li>
                 <li className="flex items-center gap-2">
-                  <CheckCircle2 className="h-4 w-4 text-green-500 shrink-0" /> Full μοντάζ
+                  <CheckCircle2 className="h-4 w-4 text-tone-positive shrink-0" /> Full μοντάζ
                   επεισοδίων
                 </li>
               </ul>
@@ -713,7 +719,7 @@ function ObjectionsTab() {
           <AccordionItem key={i} value={`item-${i}`}>
             <AccordionTrigger className="text-left">
               <span className="flex items-center gap-3">
-                <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-orange-100 text-orange-700 text-xs font-bold dark:bg-orange-900 dark:text-orange-300">
+                <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-tone-neutral-bg text-tone-neutral text-xs font-bold">
                   {i + 1}
                 </span>
                 <span>&laquo;{obj.question}&raquo;</span>
@@ -726,7 +732,7 @@ function ObjectionsTab() {
         ))}
       </Accordion>
 
-      <Card className="border-amber-200 bg-amber-50 dark:border-amber-900 dark:bg-amber-950">
+      <Card className="border-tone-caution/30 bg-tone-caution-bg">
         <CardContent className="pt-6">
           <h3 className="font-semibold mb-3 flex items-center gap-2">
             <Ban className="h-5 w-5 text-destructive" />
@@ -864,10 +870,10 @@ function PoliciesTab() {
       </div>
 
       {/* Cancellations */}
-      <Card className="border-amber-200 dark:border-amber-900">
+      <Card className="border-tone-caution/30">
         <CardHeader>
           <CardTitle className="text-base flex items-center gap-2">
-            <Ban className="h-5 w-5 text-amber-600" />
+            <Ban className="h-5 w-5 text-tone-caution" />
             Ακυρώσεις / Αλλαγές Ημερομηνιών
           </CardTitle>
         </CardHeader>
@@ -877,7 +883,7 @@ function PoliciesTab() {
             <ul className="space-y-1">
               <li>
                 Αλλαγή ημερομηνίας &gt; 7 ημέρες πριν:{' '}
-                <strong className="text-green-600">δωρεάν</strong>, ανάλογα με διαθεσιμότητα
+                <strong className="text-tone-positive">δωρεάν</strong>, ανάλογα με διαθεσιμότητα
               </li>
               <li>
                 Αλλαγή / ακύρωση &lt; 7 ημέρες πριν:{' '}
@@ -1178,21 +1184,16 @@ function CommissionTab() {
           </CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-            <div className="rounded-lg border p-4 text-center">
-              <p className="text-sm text-muted-foreground">1ος πελάτης / μήνα</p>
-              <p className="text-3xl font-bold mt-1">150&euro;</p>
-            </div>
-            <div className="rounded-lg border p-4 text-center">
-              <p className="text-sm text-muted-foreground">2ος πελάτης / μήνα</p>
-              <p className="text-3xl font-bold mt-1">200&euro;</p>
-            </div>
-            <div className="rounded-lg border p-4 text-center bg-primary/5">
-              <p className="text-sm text-muted-foreground">3ος+ πελάτης / μήνα</p>
-              <p className="text-3xl font-bold mt-1">250&euro;</p>
-              <p className="text-xs text-muted-foreground">ανά πελάτη</p>
-            </div>
-          </div>
+          <StatGrid columns={3}>
+            <StatCard label="1ος πελάτης / μήνα" value="150€" />
+            <StatCard label="2ος πελάτης / μήνα" value="200€" />
+            <StatCard
+              label="3ος+ πελάτης / μήνα"
+              value="250€"
+              caption="ανά πελάτη"
+              tone="positive"
+            />
+          </StatGrid>
           <p className="text-sm text-muted-foreground mt-4">
             Η προμήθεια καταβάλλεται όταν έχει υπογραφεί συμφωνία και έχει πληρωθεί η προκαταβολή.
           </p>
@@ -1201,30 +1202,30 @@ function CommissionTab() {
 
       {/* Bonuses */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        <Card className="border-green-200 dark:border-green-900">
+        <Card className="border-tone-positive/30">
           <CardHeader>
             <CardTitle className="text-base flex items-center gap-2">
-              <Trophy className="h-5 w-5 text-green-600" />
+              <Trophy className="h-5 w-5 text-tone-positive" />
               Bonus Επίδοσης
             </CardTitle>
           </CardHeader>
           <CardContent className="text-sm">
-            <p className="text-2xl font-bold text-green-600 mb-2">+250&euro;</p>
+            <p className="text-2xl font-bold text-tone-positive mb-2">+250&euro;</p>
             <p>
               Αν ο πωλητής φέρει <strong>5+ νέους πελάτες</strong> σε μηνιαία πακέτα μέσα στον ίδιο
               μήνα.
             </p>
           </CardContent>
         </Card>
-        <Card className="border-blue-200 dark:border-blue-900">
+        <Card className="border-tone-positive/30">
           <CardHeader>
             <CardTitle className="text-base flex items-center gap-2">
-              <Trophy className="h-5 w-5 text-blue-600" />
+              <Trophy className="h-5 w-5 text-tone-positive" />
               Bonus Ποιότητας
             </CardTitle>
           </CardHeader>
           <CardContent className="text-sm">
-            <p className="text-2xl font-bold text-blue-600 mb-2">+100&euro;</p>
+            <p className="text-2xl font-bold text-tone-positive mb-2">+100&euro;</p>
             <p>
               Αν ένας νέος πελάτης παραμείνει ενεργός για <strong>3 συνεχόμενους μήνες</strong> (ανά
               πελάτη, μία φορά).
@@ -1270,7 +1271,7 @@ function CommissionTab() {
             τιμές χωρίς έγκριση
           </p>
           <p className="flex items-start gap-2">
-            <CheckCircle2 className="h-4 w-4 text-green-500 mt-0.5 shrink-0" />
+            <CheckCircle2 className="h-4 w-4 text-tone-positive mt-0.5 shrink-0" />
             Αντί για έκπτωση, μπορεί (με έγκριση Άγγελου) να προσφέρει μικρό δώρο υπηρεσίας (π.χ.
             thumbnails τον 1ο μήνα)
           </p>
@@ -1376,11 +1377,10 @@ function ChecklistTab() {
                 return (
                   <li key={key}>
                     <label className="flex items-start gap-3 cursor-pointer group">
-                      <input
-                        type="checkbox"
+                      <Checkbox
                         checked={isChecked}
-                        onChange={() => toggle(key)}
-                        className="mt-1 h-4 w-4 rounded border-gray-300 text-primary focus:ring-primary"
+                        onCheckedChange={() => toggle(key)}
+                        className="mt-1"
                       />
                       <span
                         className={`text-sm transition-colors ${isChecked ? 'text-muted-foreground line-through' : 'text-foreground'}`}

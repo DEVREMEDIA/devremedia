@@ -56,3 +56,20 @@ Perf: **no real page-level waterfall remains** — #131's "52 pages" was a measu
 - `items-tab.tsx` editable grid (needs an editable-cell contract on `DataTable`).
 - Guard blind spots (StatGrid / DetailShell / FormDialog adoption not enforced) — worth a follow-up rule now that adoption is complete.
 - The five owner items listed above (#124 merge, #95 rebase, #119, visual sign-off, credentialed e2e).
+
+## Point zero — 2026-08-29, afternoon (`feat/point-zero`)
+Everything above that could be closed from the code side was closed the same day:
+- **Merged**: #124, #139, #141 (morning); #95 phase-0 security (rebased, one conflict in `auth-helpers.ts` — `requireRole` + `getAdminRole` both kept), #94 ADR-0008 docs.
+- **#93** RF / bank payment instructions: `resolvePaymentInstructions` (pure, 11 tests), `invoices.rf_code` + `public.settings` migration `20260829_invoice_rf_code.sql`, bank details in company settings, admin RF edit (FormDialog), client panel with copy-to-clipboard, Stripe left dormant, «Σήμανση ως απεσταλμένο».
+- **#89 / #90 / #91** read-only Profile: `buildProfileView` (pure, 28 tests), `getMyProfile()`, `ProfileForm` is a `<dl>` mirror; wired on client/employee/salesman settings. Fixed the latent bug (form wrote non-existent `user_profiles` columns).
+- **#119** e2e fixture layer: `e2e/fixtures/*` (seed/teardown/graph, namespaced `E2E-<runId>`, refuses to run against the app's own Supabase project), `globalSetup`/`globalTeardown` wired, `pnpm e2e:seed` / `e2e:teardown [--all]`, `SETUP.md` rewritten. **All 79 `test.skip(true)` removed** across the 7 specs — rewritten against the fixture graph. **Written, not executed** — there is no non-production database here.
+- Sales handbook: 45 raw colours → tokens; commission tiles → `StatGrid`. Colour `PENDING` is now empty.
+- `items-tab.tsx`: Ruling H — editable cost grid is content, not a list → `TABLE_DETAIL_EXEMPT_UNDETECTABLE`.
+- Guard now enforces **DetailShell** on `[id]` screens, **StatGrid** for hand-rolled stat rows, **FormDialog** for dialogs with form controls (`scripts/check-design/*.mjs`); the 8 violations it surfaced were migrated the same afternoon → 0 pending on all three.
+
+### What only the owner can do
+1. Apply to cloud, in this order: `00065`–`00069` (unverified), `20240209_…`, `20260211_…`, `20260729_phase0_security_rls.sql`, `20260829_invoice_rf_code.sql`. Keep the date names.
+2. Fill company **Bank Details** in Settings; set RF codes on open invoices.
+3. Point the e2e suite at a non-production Supabase project (`E2E_SUPABASE_URL` + service key) and run `pnpm e2e:seed && pnpm test:e2e` — first real run of the 79 rewritten tests; expect selector fixes.
+4. Visual sign-off of both editions (PRD #100 Ruling H) — then close #100.
+5. #125: cannot be measured here (authenticated routes, no test users). Templates tab = TipTap cold compile; health tab's serial `cost_items` fetch was folded into `Promise.all` in #139. Re-measure on `pnpm build && pnpm start` once (3) exists.

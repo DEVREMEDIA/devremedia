@@ -1,17 +1,31 @@
-import { test, expect } from '@playwright/test';
+import { test, expect, type Page } from '@playwright/test';
 import { loginAsAdmin, loginAsClient } from './helpers/auth';
+import { fixtures, hasFixtures } from './fixtures/graph';
 
 /**
  * Contracts E2E Tests
- * Tests contract management for admin and contract signing for clients
+ * Tests contract management for admin and contract signing for clients,
+ * against the seeded fixture graph (see e2e/SETUP.md). Records are addressed
+ * by their fixture identity — never "the first row".
  */
+
+/** Draws a short stroke across the signature canvas via real mouse events. */
+async function drawSignature(page: Page): Promise<void> {
+  const canvas = page.locator('canvas');
+  await expect(canvas).toBeVisible();
+  const box = await canvas.boundingBox();
+  if (!box) throw new Error('Signature canvas has no bounding box');
+
+  await page.mouse.move(box.x + 20, box.y + box.height / 2);
+  await page.mouse.down();
+  await page.mouse.move(box.x + box.width / 2, box.y + 20, { steps: 5 });
+  await page.mouse.move(box.x + box.width - 20, box.y + box.height / 2, { steps: 5 });
+  await page.mouse.up();
+}
 
 test.describe('Contracts - Admin', () => {
   test.beforeEach(async ({ page }) => {
-    // SKIP: Requires database with test admin user
     test.skip(!process.env.E2E_TEST_USERS_READY, 'Test users not configured in database');
-
-    // Login as admin before each test
     await loginAsAdmin(page);
   });
 
@@ -25,336 +39,243 @@ test.describe('Contracts - Admin', () => {
     await expect(
       page
         .locator('h1, h2')
-        .filter({ hasText: /contract|templates/i })
+        .filter({ hasText: /contract|templates|συμβόλαι|πρότυπ/i })
         .first(),
     ).toBeVisible();
   });
 
-  test('contract templates page shows list of templates', async ({ page }) => {
-    // SKIP: Requires contract templates in database
-    test.skip(true, 'Requires database with contract templates');
-
+  test('contract templates list renders the add-template control', async ({ page }) => {
+    // Narrowed: the fixture graph seeds no contract templates (they aren't part
+    // of the graph), so this asserts the list surface itself renders — the
+    // "new template" control is always present, regardless of how many
+    // templates exist.
     await page.goto('/admin/settings?tab=templates');
 
-    // Look for template list or cards
-    const templateList = page.locator('table, [data-testid*="template"], .template-card').first();
-    await expect(templateList).toBeVisible();
+    await expect(page.getByRole('button', { name: /Νέο Πρότυπο|New Template/i })).toBeVisible();
   });
 
-  test('admin can create new contract template', async ({ page }) => {
-    // SKIP: Requires template creation functionality
-    test.skip(true, 'Requires contract template creation implementation');
-
+  test('admin can open the contract template creation form', async ({ page }) => {
     await page.goto('/admin/settings?tab=templates');
 
-    // Look for new template button
-    const newButton = page
-      .locator('button, a')
-      .filter({ hasText: /new template|create template/i })
-      .first();
-    await expect(newButton).toBeVisible();
+    await page.getByRole('button', { name: /Νέο Πρότυπο|New Template/i }).click();
 
-    await newButton.click();
-
-    // Should navigate to template creation page or open modal
-    // Check for form
-    await expect(page.locator('form, [data-testid="template-form"]')).toBeVisible();
+    await expect(page.getByRole('dialog')).toBeVisible();
+    await expect(page.getByLabel(/Όνομα Προτύπου|Template Name/i)).toBeVisible();
   });
 
-  test('admin can view contract detail page', async ({ page }) => {
-    // SKIP: Requires contract in database
-    test.skip(true, 'Requires database with contract record');
+  test.describe('with a seeded contract', () => {
+    test.beforeEach(() => {
+      test.skip(!hasFixtures, 'E2E fixtures not seeded — set E2E_SUPABASE_URL');
+    });
 
-    await page.goto('/admin/contracts/test-contract-id');
+    test('admin can view a contract detail page', async ({ page }) => {
+      const draft = fixtures().contracts.draft;
 
-    // Check for contract content
-    await expect(page.locator('h1, h2').first()).toBeVisible();
+      await page.goto(`/admin/contracts/${draft.id}`);
 
-    // Check for contract body/content
-    const contractContent = page
-      .locator('[data-testid*="contract-content"], .contract-body')
-      .first();
+      await expect(page.getByRole('heading', { name: draft.title, exact: true })).toBeVisible();
+    });
 
-    const hasContent = await contractContent.isVisible().catch(() => false);
+    test('contract view page renders amount and metadata cards', async ({ page }) => {
+      const draft = fixtures().contracts.draft;
 
-    if (hasContent) {
-      await expect(contractContent).toBeVisible();
-    }
+      await page.goto(`/admin/contracts/${draft.id}`);
+
+      await expect(page.getByText(/Ποσό|Amount/i)).toBeVisible();
+      // agreed_amount is seeded as 2500 — assert the formatted total renders,
+      // tolerant of thousands-separator differences (2,500 vs 2.500).
+      await expect(page.getByText(/€\s?2[.,]500/)).toBeVisible();
+    });
+
+    test('admin can view contract status', async ({ page }) => {
+      const sent = fixtures().contracts.sent;
+
+      await page.goto(`/admin/contracts/${sent.id}`);
+
+      await expect(page.getByText(/Εστάλη|^Sent$/i).first()).toBeVisible();
+    });
+
+    test('admin can download contract as PDF', async ({ page }) => {
+      const draft = fixtures().contracts.draft;
+
+      await page.goto(`/admin/contracts/${draft.id}`);
+
+      await expect(page.getByRole('button', { name: /Λήψη PDF|Download PDF/i })).toBeVisible();
+    });
+
+    test('contract detail shows client information', async ({ page }) => {
+      const draft = fixtures().contracts.draft;
+      const client = fixtures().client;
+
+      await page.goto(`/admin/contracts/${draft.id}`);
+
+      await expect(page.getByText(/Πελάτης|Client/i).first()).toBeVisible();
+      await expect(page.getByText(client.contactName)).toBeVisible();
+    });
+
+    test('contract detail shows signature status for a signed contract', async ({ page }) => {
+      const signed = fixtures().contracts.signed;
+
+      await page.goto(`/admin/contracts/${signed.id}`);
+
+      await expect(page.getByText(/Υπογεγραμμένο|^Signed$/i).first()).toBeVisible();
+    });
   });
 
-  test('contract view page renders with proper formatting', async ({ page }) => {
-    // SKIP: Requires contract in database
-    test.skip(true, 'Requires database with contract record');
+  test.describe('write flows', () => {
+    test.beforeEach(() => {
+      test.skip(!hasFixtures, 'E2E fixtures not seeded — set E2E_SUPABASE_URL');
+      // Sending the draft contract permanently moves it to 'sent' for the rest
+      // of this run — keep mutations confined to the draft fixture, never the
+      // sent/signed ones other tests rely on.
+      test.skip(!process.env.E2E_WRITE_TESTS, 'Write tests not enabled (E2E_WRITE_TESTS)');
+    });
 
-    await page.goto('/admin/contracts/test-contract-id');
+    test('admin can send the draft contract for signature', async ({ page }) => {
+      const draft = fixtures().contracts.draft;
 
-    // Check for contract viewing area
-    const contractViewer = page.locator('[data-testid*="contract"], main, article').first();
-    await expect(contractViewer).toBeVisible();
-  });
+      await page.goto(`/admin/contracts/${draft.id}`);
 
-  test('admin can view contract status', async ({ page }) => {
-    // SKIP: Requires contract in database
-    test.skip(true, 'Requires database with contract record');
-
-    await page.goto('/admin/contracts/test-contract-id');
-
-    // Look for status indicator
-    const statusBadge = page
-      .locator('[data-testid*="status"], .status, text=/draft|pending|signed|executed/i')
-      .first();
-
-    const hasStatus = await statusBadge.isVisible().catch(() => false);
-
-    if (hasStatus) {
-      await expect(statusBadge).toBeVisible();
-    }
-  });
-
-  test('admin can download contract as PDF', async ({ page }) => {
-    // SKIP: Requires contract in database
-    test.skip(true, 'Requires database with contract record');
-
-    await page.goto('/admin/contracts/test-contract-id');
-
-    // Look for download button
-    const downloadButton = page
-      .locator('button, a')
-      .filter({ hasText: /download|pdf|export/i })
-      .first();
-
-    const hasDownload = await downloadButton.isVisible().catch(() => false);
-
-    if (hasDownload) {
-      await expect(downloadButton).toBeVisible();
-    }
-  });
-
-  test('admin can send contract for signature', async ({ page }) => {
-    // SKIP: Requires contract in database and send functionality
-    test.skip(true, 'Requires database with draft contract and send implementation');
-
-    await page.goto('/admin/contracts/test-contract-id');
-
-    // Look for send button
-    const sendButton = page
-      .locator('button, a')
-      .filter({ hasText: /send|send for signature/i })
-      .first();
-
-    const hasSend = await sendButton.isVisible().catch(() => false);
-
-    if (hasSend) {
+      const sendButton = page.getByRole('button', { name: /Αποστολή σε Πελάτη|Send to Client/i });
       await expect(sendButton).toBeVisible();
-    }
-  });
+      await sendButton.click();
 
-  test('contract detail shows client information', async ({ page }) => {
-    // SKIP: Requires contract in database
-    test.skip(true, 'Requires database with contract and client');
-
-    await page.goto('/admin/contracts/test-contract-id');
-
-    // Look for client info section
-    const clientInfo = page.locator('text=/client|recipient/i').first();
-
-    const hasClientInfo = await clientInfo.isVisible().catch(() => false);
-
-    if (hasClientInfo) {
-      await expect(clientInfo).toBeVisible();
-    }
-  });
-
-  test('contract detail shows signature status', async ({ page }) => {
-    // SKIP: Requires contract in database
-    test.skip(true, 'Requires database with contract record');
-
-    await page.goto('/admin/contracts/test-contract-id');
-
-    // Look for signature status or section
-    const signatureSection = page.locator('text=/signature|signed by/i').first();
-
-    const hasSignature = await signatureSection.isVisible().catch(() => false);
-
-    if (hasSignature) {
-      await expect(signatureSection).toBeVisible();
-    }
+      await expect(page.getByText(/Το συμβόλαιο στάλθηκε στον πελάτη|sent to client/i)).toBeVisible(
+        { timeout: 10000 },
+      );
+      await expect(sendButton).toBeHidden();
+    });
   });
 });
 
 test.describe('Contracts - Client', () => {
   test.beforeEach(async ({ page }) => {
-    // SKIP: Requires database with test client user
     test.skip(!process.env.E2E_TEST_USERS_READY, 'Test users not configured in database');
-
-    // Login as client before each test
+    test.skip(!hasFixtures, 'E2E fixtures not seeded — set E2E_SUPABASE_URL');
     await loginAsClient(page);
   });
 
-  test('client can view contract detail page', async ({ page }) => {
-    // SKIP: Requires client contract in database
-    test.skip(true, 'Requires database with client contract');
+  test('client can view a contract detail page', async ({ page }) => {
+    const sent = fixtures().contracts.sent;
 
-    await page.goto('/client/contracts/test-contract-id');
+    await page.goto(`/client/contracts/${sent.id}`);
 
-    // Check for contract content
-    await expect(page.locator('h1, h2').first()).toBeVisible();
+    await expect(page.getByRole('heading', { name: sent.title, exact: true })).toBeVisible();
   });
 
-  test('client contract page displays contract content', async ({ page }) => {
-    // SKIP: Requires client contract in database
-    test.skip(true, 'Requires database with client contract');
+  test('client contract page displays contract metadata', async ({ page }) => {
+    const sent = fixtures().contracts.sent;
 
-    await page.goto('/client/contracts/test-contract-id');
+    await page.goto(`/client/contracts/${sent.id}`);
 
-    // Check for contract viewing area
-    const contractViewer = page.locator('[data-testid*="contract"], main, article').first();
-    await expect(contractViewer).toBeVisible();
+    await expect(page.getByText(/Κατάσταση|Status/i).first()).toBeVisible();
+    await expect(page.getByText(/Ποσό|Amount/i)).toBeVisible();
   });
 
-  test('client can navigate to sign contract page', async ({ page }) => {
-    // SKIP: Requires unsigned client contract in database
-    test.skip(true, 'Requires database with unsigned client contract');
+  test('client can navigate to the sign contract page', async ({ page }) => {
+    const sent = fixtures().contracts.sent;
 
-    await page.goto('/client/contracts/test-contract-id');
+    await page.goto(`/client/contracts/${sent.id}`);
 
-    // Look for sign button
-    const signButton = page
-      .locator('button, a')
-      .filter({ hasText: /sign|sign contract/i })
-      .first();
+    const signButton = page.getByRole('button', { name: /Ψηφιακή Υπογραφή|Sign Digitally/i });
     await expect(signButton).toBeVisible();
-
     await signButton.click();
 
-    // Should navigate to signing page
-    await expect(page).toHaveURL(/\/client\/contracts\/[\w-]+\/sign/);
+    await expect(page).toHaveURL(new RegExp(`/client/contracts/${sent.id}/sign`));
   });
 
-  test('contract signing page renders correctly', async ({ page }) => {
-    // SKIP: Requires unsigned client contract in database
-    test.skip(true, 'Requires database with unsigned client contract');
+  test('contract signing page renders the signature pad', async ({ page }) => {
+    const sent = fixtures().contracts.sent;
 
-    await page.goto('/client/contracts/test-contract-id/sign');
+    await page.goto(`/client/contracts/${sent.id}/sign`);
 
-    // Check for signature canvas or input
-    const signatureArea = page.locator('canvas, [data-testid*="signature"]').first();
-    await expect(signatureArea).toBeVisible();
+    await expect(page.locator('canvas')).toBeVisible();
 
-    // Check for submit button
+    const submitButton = page.getByRole('button', { name: /Υπογραφή Συμβολαίου|Sign Contract/i });
+    await expect(submitButton).toBeVisible();
+    // Nothing has been drawn yet — the pad starts disabled.
+    await expect(submitButton).toBeDisabled();
+  });
+
+  test('contract signing page has a clear button', async ({ page }) => {
+    const sent = fixtures().contracts.sent;
+
+    await page.goto(`/client/contracts/${sent.id}/sign`);
+
+    await expect(page.getByRole('button', { name: /Καθαρισμός|^Clear$/i })).toBeVisible();
+  });
+
+  test('client can download a signed contract', async ({ page }) => {
+    const signed = fixtures().contracts.signed;
+
+    await page.goto(`/client/contracts/${signed.id}`);
+
+    await expect(page.getByRole('button', { name: /Λήψη PDF|Download PDF/i })).toBeVisible();
+  });
+
+  test('signed contract shows signed status', async ({ page }) => {
+    // Narrowed: neither the admin nor the client contract view renders an
+    // explicit "signed by / signed on" line — only the status badge reflects
+    // it — so this asserts the badge instead of a signature/date string.
+    const signed = fixtures().contracts.signed;
+
+    await page.goto(`/client/contracts/${signed.id}`);
+
+    await expect(page.getByText(/Υπογεγραμμένο|^Signed$/i).first()).toBeVisible();
+  });
+
+  test('client cannot sign an already signed contract', async ({ page }) => {
+    const signed = fixtures().contracts.signed;
+
+    await page.goto(`/client/contracts/${signed.id}`);
+
     await expect(
-      page.locator('button[type="submit"], button:has-text("Sign")').first(),
-    ).toBeVisible();
+      page.getByRole('button', { name: /Ψηφιακή Υπογραφή|Sign Digitally/i }),
+    ).not.toBeVisible();
   });
 
-  test('client can sign contract with signature pad', async ({ page }) => {
-    // SKIP: Requires unsigned contract and signature implementation
-    test.skip(true, 'Requires database and signature functionality');
-
-    await page.goto('/client/contracts/test-contract-id/sign');
-
-    // Look for signature canvas
-    const canvas = page.locator('canvas').first();
-    await expect(canvas).toBeVisible();
-
-    // Simulate drawing signature (this is simplified)
-    // Real implementation would need to use mouse events
-    await canvas.click();
-
-    // Submit signature
-    const submitButton = page.locator('button[type="submit"], button:has-text("Sign")').first();
-    await submitButton.click();
-
-    // Should redirect to contract view or success page
-    await page.waitForURL(/\/client\/contracts\/[\w-]+/, { timeout: 10000 });
-
-    // Verify success message
-    await expect(page.locator('text=/success|signed|completed/i').first()).toBeVisible({
-      timeout: 5000,
-    });
-  });
-
-  test('contract signing page has clear button', async ({ page }) => {
-    // SKIP: Requires unsigned client contract in database
-    test.skip(true, 'Requires database with unsigned client contract');
-
-    await page.goto('/client/contracts/test-contract-id/sign');
-
-    // Look for clear/reset button
-    const clearButton = page
-      .locator('button')
-      .filter({ hasText: /clear|reset/i })
-      .first();
-
-    const hasClear = await clearButton.isVisible().catch(() => false);
-
-    if (hasClear) {
-      await expect(clearButton).toBeVisible();
-    }
-  });
-
-  test('client can download signed contract', async ({ page }) => {
-    // SKIP: Requires signed client contract in database
-    test.skip(true, 'Requires database with signed client contract');
-
-    await page.goto('/client/contracts/test-contract-id');
-
-    // Look for download button
-    const downloadButton = page
-      .locator('button, a')
-      .filter({ hasText: /download|pdf/i })
-      .first();
-
-    const hasDownload = await downloadButton.isVisible().catch(() => false);
-
-    if (hasDownload) {
-      await expect(downloadButton).toBeVisible();
-    }
-  });
-
-  test('signed contract shows signature and date', async ({ page }) => {
-    // SKIP: Requires signed client contract in database
-    test.skip(true, 'Requires database with signed client contract');
-
-    await page.goto('/client/contracts/test-contract-id');
-
-    // Look for signature section
-    await expect(page.locator('text=/signed|signature|signed on/i').first()).toBeVisible();
-  });
-
-  test('client cannot sign already signed contract', async ({ page }) => {
-    // SKIP: Requires signed client contract in database
-    test.skip(true, 'Requires database with signed client contract');
-
-    await page.goto('/client/contracts/test-contract-id');
-
-    // Sign button should not be visible
-    const signButton = page
-      .locator('button, a')
-      .filter({ hasText: /sign|sign contract/i })
-      .first();
-
-    const hasSignButton = await signButton.isVisible().catch(() => false);
-
-    expect(hasSignButton).toBeFalsy();
-  });
-
-  test('client contract list shows pending contracts', async ({ page }) => {
-    // SKIP: Requires client with pending contracts
-    test.skip(true, 'Requires database with client contracts');
+  test('client home shows the sent contract as a pending action', async ({ page }) => {
+    const sent = fixtures().contracts.sent;
 
     await page.goto('/client/home');
 
-    // Look for contracts section or notification
-    const contractsNotice = page
-      .locator('text=/contract|pending signature|awaiting signature/i')
-      .first();
+    await expect(page.getByText(sent.title)).toBeVisible();
+  });
+});
 
-    const hasNotice = await contractsNotice.isVisible().catch(() => false);
+test.describe('Contracts - signing flow', () => {
+  test.beforeEach(() => {
+    test.skip(!process.env.E2E_TEST_USERS_READY, 'Test users not configured in database');
+    test.skip(!hasFixtures, 'E2E fixtures not seeded — set E2E_SUPABASE_URL');
+    // Signing moves the draft-turned-sent contract to 'signed' — confined to
+    // the draft fixture so the pre-seeded sent/signed fixtures stay intact
+    // for the read-only tests above.
+    test.skip(!process.env.E2E_WRITE_TESTS, 'Write tests not enabled (E2E_WRITE_TESTS)');
+  });
 
-    // Pending contracts notification is optional
-    if (hasNotice) {
-      await expect(contractsNotice).toBeVisible();
-    }
+  test('admin sends the draft, then the client signs it', async ({ page }) => {
+    const draft = fixtures().contracts.draft;
+
+    await loginAsAdmin(page);
+    await page.goto(`/admin/contracts/${draft.id}`);
+    const sendButton = page.getByRole('button', { name: /Αποστολή σε Πελάτη|Send to Client/i });
+    // Already sent by another run of this test, or by the admin write-flow
+    // test above — nothing left to send.
+    test.skip(!(await sendButton.isVisible().catch(() => false)), 'Draft already sent');
+    await sendButton.click();
+    await expect(sendButton).toBeHidden();
+
+    await loginAsClient(page);
+    await page.goto(`/client/contracts/${draft.id}/sign`);
+    await drawSignature(page);
+
+    const submitButton = page.getByRole('button', { name: /Υπογραφή Συμβολαίου|Sign Contract/i });
+    await expect(submitButton).toBeEnabled();
+    await submitButton.click();
+
+    await expect(page.getByText(/υπογράφηκε επιτυχώς|signed successfully/i)).toBeVisible({
+      timeout: 10000,
+    });
+    await page.waitForURL(new RegExp(`/client/contracts/${draft.id}$`), { timeout: 10000 });
   });
 });

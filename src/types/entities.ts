@@ -271,6 +271,8 @@ export type Invoice = {
   viewed_at: string | null;
   paid_at: string | null;
   payment_method: string | null;
+  /** Κωδικός πληρωμής RF, όπως τον δίνει η τράπεζα. NULL όσο δεν έχει εκδοθεί. */
+  rf_code: string | null;
   file_path: string | null;
   created_by: string;
   created_at: string;

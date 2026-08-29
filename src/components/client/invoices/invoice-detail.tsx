@@ -6,7 +6,7 @@ import { Button } from '@/components/ui/button';
 import { DetailShell } from '@/components/shared/detail-shell';
 import { StatusBadge } from '@/components/shared/status-badge';
 import { format } from 'date-fns';
-import { Download, CreditCard, Eye } from 'lucide-react';
+import { Download, Eye } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import {
@@ -18,38 +18,24 @@ import {
   TableRow,
 } from '@/components/ui/table';
 import { Separator } from '@/components/ui/separator';
-import { toast } from 'sonner';
 import { formatCurrency } from '@/lib/format';
+import { PaymentInstructionsPanel } from '@/components/client/invoices/payment-instructions-panel';
+import type { BankDetails } from '@/lib/payment-instructions';
 import type { InvoiceWithRelations, InvoiceLineItem } from '@/types';
 
 interface InvoiceDetailProps {
   invoice: InvoiceWithRelations;
+  bankDetails: BankDetails | null;
 }
 
-export function InvoiceDetail({ invoice }: InvoiceDetailProps) {
+export function InvoiceDetail({ invoice, bankDetails }: InvoiceDetailProps) {
   const t = useTranslations('invoices');
-  const [loading, setLoading] = useState(false);
   const [previewOpen, setPreviewOpen] = useState(false);
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
 
-  const handlePayment = async () => {
-    setLoading(true);
-    try {
-      const res = await fetch(`/api/invoices/${invoice.id}/pay`, { method: 'POST' });
-      const data = await res.json();
-
-      if (!res.ok || !data.url) {
-        toast.error(data.error || t('paymentError'));
-        setLoading(false);
-        return;
-      }
-
-      window.location.href = data.url;
-    } catch {
-      toast.error(t('paymentError'));
-      setLoading(false);
-    }
-  };
+  // Ένα εξοφλημένο ή ακυρωμένο τιμολόγιο δεν έχει τι να πληρωθεί — οι οδηγίες
+  // κρύβονται, δεν γκριζάρουν.
+  const isPayable = invoice.status !== 'paid' && invoice.status !== 'cancelled';
 
   const pdfUrl = invoice.file_path ? `/api/invoices/${invoice.id}/file` : null;
 
@@ -86,15 +72,11 @@ export function InvoiceDetail({ invoice }: InvoiceDetailProps) {
             <Download className="h-4 w-4" />
             {t('download')}
           </Button>
-          {invoice.status !== 'paid' && invoice.status !== 'cancelled' && (
-            <Button onClick={handlePayment} disabled={loading} className="gap-2">
-              <CreditCard className="h-4 w-4" />
-              {loading ? t('processing') : t('payNow')}
-            </Button>
-          )}
         </>
       }
     >
+      {isPayable && <PaymentInstructionsPanel rfCode={invoice.rf_code} bankDetails={bankDetails} />}
+
       {/* Invoice Details */}
       <Card>
         <CardHeader>

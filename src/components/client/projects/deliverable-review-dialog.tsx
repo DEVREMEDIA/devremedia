@@ -1,14 +1,6 @@
 'use client';
 
-import { Button } from '@/components/ui/button';
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from '@/components/ui/dialog';
+import { FormDialog } from '@/components/shared/form-dialog';
 import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
 import { useTranslations } from 'next-intl';
@@ -37,41 +29,32 @@ export function DeliverableReviewDialog({
   const t = useTranslations('deliverables');
 
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent>
-        <DialogHeader>
-          <DialogTitle>
-            {reviewType === 'approved' ? 'Approve Deliverable' : 'Request Revision'}
-          </DialogTitle>
-          <DialogDescription>
-            {reviewType === 'approved'
-              ? 'Confirm that you approve this deliverable.'
-              : 'Provide details about the revisions needed.'}
-          </DialogDescription>
-        </DialogHeader>
-
-        {reviewType === 'revision_requested' && (
-          <div className="space-y-2">
-            <Label htmlFor={notesId}>Revision Notes *</Label>
-            <Textarea
-              id={notesId}
-              value={revisionNotes}
-              onChange={(e) => onRevisionNotesChange(e.target.value)}
-              placeholder={t('describeChanges')}
-              rows={4}
-            />
-          </div>
-        )}
-
-        <DialogFooter>
-          <Button variant="outline" onClick={() => onOpenChange(false)} disabled={loading}>
-            Cancel
-          </Button>
-          <Button onClick={onSubmit} disabled={loading}>
-            {loading ? 'Submitting...' : reviewType === 'approved' ? 'Approve' : 'Submit'}
-          </Button>
-        </DialogFooter>
-      </DialogContent>
-    </Dialog>
+    <FormDialog
+      open={open}
+      onOpenChange={onOpenChange}
+      title={reviewType === 'approved' ? 'Approve Deliverable' : 'Request Revision'}
+      description={
+        reviewType === 'approved'
+          ? 'Confirm that you approve this deliverable.'
+          : 'Provide details about the revisions needed.'
+      }
+      onSubmit={onSubmit}
+      submitLabel={loading ? 'Submitting...' : reviewType === 'approved' ? 'Approve' : 'Submit'}
+      cancelLabel="Cancel"
+      submitting={loading}
+    >
+      {reviewType === 'revision_requested' && (
+        <div className="space-y-2">
+          <Label htmlFor={notesId}>Revision Notes *</Label>
+          <Textarea
+            id={notesId}
+            value={revisionNotes}
+            onChange={(e) => onRevisionNotesChange(e.target.value)}
+            placeholder={t('describeChanges')}
+            rows={4}
+          />
+        </div>
+      )}
+    </FormDialog>
   );
 }

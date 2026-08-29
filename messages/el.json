@@ -153,7 +153,6 @@
     "viewAll": "Προβολή όλων",
     "enterUrl": "Εισάγετε URL:"
   },
-
   "nav": {
     "dashboard": "Πίνακας Ελέγχου",
     "clients": "Πελάτες",
@@ -184,7 +183,6 @@
     "proposals": "Προσφορές",
     "availability": "Διαθεσιμότητα"
   },
-
   "breadcrumb": {
     "clients": "Πελάτης",
     "projects": "Παραγωγή",
@@ -200,7 +198,6 @@
     "articles": "Άρθρο",
     "chatbot": "Συνομιλία"
   },
-
   "users": {
     "title": "Διαχείριση Χρηστών",
     "description": "Διαχειριστείτε όλους τους χρήστες και τους ρόλους τους",
@@ -238,7 +235,6 @@
     "noUsersFound": "Δεν βρέθηκαν χρήστες",
     "unnamedUser": "Χωρίς Όνομα"
   },
-
   "auth": {
     "login": "Σύνδεση",
     "signup": "Εγγραφή",
@@ -314,7 +310,6 @@
     "resendGenericSuccess": "Αν αυτό το email έχει εκκρεμή πρόσκληση, ένας νέος σύνδεσμος είναι καθ' οδόν.",
     "resendError": "Κάτι πήγε στραβά. Δοκιμάστε ξανά."
   },
-
   "statuses": {
     "clientStatus": {
       "active": "Ενεργός",
@@ -441,7 +436,6 @@
       "published": "Δημοσιευμένο"
     }
   },
-
   "dashboard": {
     "title": "Πίνακας Ελέγχου",
     "description": "Επισκόπηση των έργων και της δραστηριότητάς σας",
@@ -579,7 +573,6 @@
       "activeProjectsWarn": "Όριο ενεργών projects"
     }
   },
-
   "clients": {
     "title": "Πελάτες",
     "description": "Διαχείριση πελατειακών σχέσεων",
@@ -710,7 +703,6 @@
       "notInvited": "Μη Προσκεκλημένος"
     }
   },
-
   "projects": {
     "title": "Παραγωγές",
     "description": "Παρακολούθηση και διαχείριση παραγωγών βίντεο",
@@ -761,7 +753,6 @@
     "createInvoice": "Δημιουργία Τιμολογίου",
     "noClientForInvoice": "Αυτή η παραγωγή δεν έχει συνδεδεμένο πελάτη"
   },
-
   "tasks": {
     "title": "Εργασίες",
     "addTask": "Νέα Εργασία",
@@ -801,7 +792,6 @@
     "filterReview": "Σε Αξιολόγηση",
     "filterDone": "Ολοκληρωμένα"
   },
-
   "invoices": {
     "title": "Τιμολόγια",
     "description": "Διαχείριση τιμολογίων και πληρωμών",
@@ -823,13 +813,12 @@
     "invoiceNotes": "Σημειώσεις",
     "noInvoices": "Δεν υπάρχουν τιμολόγια",
     "noInvoicesDescription": "Δημιουργήστε το πρώτο σας τιμολόγιο.",
-    "paid": "Πληρωμένο",
+    "paid": "Πληρωμένα",
     "overdue": "Εκπρόθεσμο",
     "pending": "Εκκρεμεί",
     "sendInvoice": "Αποστολή Τιμολογίου",
     "markAsPaid": "Σήμανση ως Πληρωμένο",
     "downloadPdf": "Λήψη PDF",
-    "payNow": "Πληρωμή",
     "paymentReceived": "Η πληρωμή ελήφθη",
     "invoiceCreated": "Το τιμολόγιο δημιουργήθηκε",
     "invoiceUpdated": "Το τιμολόγιο ενημερώθηκε",
@@ -881,8 +870,7 @@
     "selectPaymentMethod": "Επιλέξτε μέθοδο πληρωμής",
     "itemDescriptionPlaceholder": "Περιγραφή αντικειμένου",
     "stripeComingSoon": "Η ενσωμάτωση Stripe έρχεται σύντομα",
-    "paymentError": "Σφάλμα κατά την πληρωμή. Δοκιμάστε ξανά.",
-    "paymentLinkSent": "Ο σύνδεσμος πληρωμής στάλθηκε στον πελάτη",
+    "paymentLinkSent": "Το τιμολόγιο σημάνθηκε ως απεσταλμένο",
     "preview": "Προεπισκόπηση",
     "download": "Λήψη",
     "pdfNotReady": "Το PDF δεν έχει φορτωθεί ακόμα",
@@ -900,7 +888,7 @@
     "vat": "ΦΠΑ",
     "markAsSent": "Σήμανση ως Εσταλμένο",
     "deleteConfirmation": "Είστε σίγουροι ότι θέλετε να διαγράψετε αυτό το τιμολόγιο; Η ενέργεια δεν μπορεί να αναιρεθεί.",
-    "sendPaymentLink": "Αποστολή Συνδέσμου Πληρωμής",
+    "sendPaymentLink": "Σήμανση ως απεσταλμένο",
     "recordManualPayment": "Καταγραφή Χειροκίνητης Πληρωμής",
     "paymentMethod": "Μέθοδος Πληρωμής",
     "bankTransfer": "Τραπεζικό Έμβασμα",
@@ -941,7 +929,6 @@
     "markedAsUnpaid": "Σημειώθηκε ως μη πληρωμένο",
     "markAsUnpaid": "Σήμανση ως Μη Πληρωμένο",
     "total": "Σύνολο",
-    "paid": "Πληρωμένα",
     "outstanding": "Εκκρεμή",
     "searchInvoice": "Αναζήτηση τιμολογίου...",
     "selectedCount": "{count} επιλεγμένα",
@@ -953,9 +940,27 @@
     "delete": "Διαγραφή",
     "status": "Κατάσταση",
     "client": "Πελάτης",
-    "showing": "Εμφάνιση {from}-{to} από {total}"
+    "showing": "Εμφάνιση {from}-{to} από {total}",
+    "rfCode": "Κωδικός RF",
+    "editRfCode": "Κωδικός RF",
+    "rfCodeDescription": "Ο κωδικός πληρωμής που δίνει η τράπεζα. Αφήστε το κενό αν δεν έχει εκδοθεί ακόμα.",
+    "rfCodeSaved": "Ο κωδικός RF αποθηκεύτηκε",
+    "rfCodeSaveError": "Δεν αποθηκεύτηκε ο κωδικός RF",
+    "paymentInstructions": {
+      "title": "Οδηγίες πληρωμής",
+      "action": "Οδηγίες πληρωμής",
+      "rfCode": "Κωδικός RF",
+      "rfHint": "Καταχωρήστε τον κωδικό στο e-banking σας, στις πληρωμές με κωδικό RF.",
+      "bankTransfer": "Τραπεζικό έμβασμα",
+      "beneficiary": "Δικαιούχος",
+      "iban": "IBAN",
+      "bankName": "Τράπεζα",
+      "copy": "Αντιγραφή",
+      "copied": "{field}: αντιγράφηκε",
+      "copyFailed": "Η αντιγραφή δεν έγινε. Αντιγράψτε το χειροκίνητα.",
+      "contactUs": "Δεν έχουν καταχωρηθεί ακόμα στοιχεία πληρωμής. Επικοινωνήστε μαζί μας και θα σας τα στείλουμε."
+    }
   },
-
   "contracts": {
     "contractPreview": "Προεπισκόπηση Συμβολαίου",
     "reviewBeforeSending": "Ελέγξτε πριν την αποστολή στον πελάτη",
@@ -1088,7 +1093,6 @@
     "notFoundTitle": "Το συμβόλαιο δεν βρέθηκε",
     "defaultTitle": "Συμβόλαιο"
   },
-
   "deliverables": {
     "title": "Παραδοτέα",
     "description": "Διαχείριση παραδοτέων βίντεο",
@@ -1178,7 +1182,6 @@
     "uploading": "Μεταφόρτωση...",
     "uploadVideo": "Μεταφόρτωση Video"
   },
-
   "filmingPrep": {
     "title": "Προετοιμασία Γυρισμάτων",
     "description": "Προετοιμασία για τα επερχόμενα γυρίσματα",
@@ -1278,7 +1281,6 @@
     "unassigned": "Χωρίς ανάθεση",
     "assignedSuccessfully": "Η ανάθεση ενημερώθηκε"
   },
-
   "filmingRequests": {
     "title": "Αιτήματα Γυρισμάτων",
     "description": "Αιτήματα κρατήσεων πελατών",
@@ -1340,7 +1342,6 @@
     "contactPhone": "Τηλέφωνο",
     "contactCompany": "Εταιρεία"
   },
-
   "publicBooking": {
     "pageTitle": "Κλείσε ένα Discovery Call",
     "pageDescription": "Πες μας για το project σου και θα επικοινωνήσουμε μαζί σου εντός 24 ωρών.",
@@ -1386,7 +1387,6 @@
     "noPackages": "Η τιμολόγηση γίνεται κατά περίπτωση. Περίγραψε τις ανάγκες σου και θα στείλουμε προσφορά.",
     "submitError": "Κάτι πήγε στραβά. Παρακαλώ δοκιμάστε ξανά."
   },
-
   "calendar": {
     "title": "Ημερολόγιο",
     "description": "Προγραμματισμός γυρισμάτων",
@@ -1443,7 +1443,6 @@
     "creating": "Δημιουργία...",
     "saving": "Αποθήκευση..."
   },
-
   "reports": {
     "title": "Αναφορές",
     "description": "Αναλυτικά στοιχεία και insights",
@@ -1468,7 +1467,6 @@
     "expensesByCategory": "Έξοδα ανά Κατηγορία",
     "selectPeriod": "Επιλέξτε περίοδο"
   },
-
   "settings": {
     "title": "Ρυθμίσεις",
     "description": "Διαχείριση λογαριασμού και προτιμήσεων",
@@ -1577,9 +1575,11 @@
     "closed": "Κλειστά",
     "from": "Από",
     "to": "Έως",
-    "save": "Αποθήκευση"
+    "save": "Αποθήκευση",
+    "bankBeneficiary": "Δικαιούχος λογαριασμού",
+    "bankIban": "IBAN",
+    "bankName": "Τράπεζα"
   },
-
   "leads": {
     "title": "Leads",
     "description": "Διαχείριση pipeline πωλήσεων",
@@ -1661,7 +1661,6 @@
     "active": "Ενεργά",
     "winRate": "Ποσοστό Νίκης"
   },
-
   "university": {
     "category": "Κατηγορία",
     "sortOrder": "Σειρά Ταξινόμησης",
@@ -1729,7 +1728,6 @@
     "editCategoryDescription": "Ενημερώστε τα στοιχεία της κατηγορίας",
     "newCategoryDescription": "Δημιουργήστε μια νέα κατηγορία βάσης γνώσεων"
   },
-
   "chatbot": {
     "title": "AI Chatbot",
     "description": "Προβολή συνομιλιών chatbot και διαχείριση βάσης γνώσεων",
@@ -1761,7 +1759,6 @@
     "languageGreek": "Ελληνικά",
     "languageEnglish": "Αγγλικά"
   },
-
   "salesResources": {
     "manageCategoriesDescription": "Δημιουργία, επεξεργασία και διαγραφή κατηγοριών πόρων πωλήσεων",
     "newCategory": "Νέα Κατηγορία",
@@ -1806,7 +1803,6 @@
     "createFirstCategoryDescription": "Δημιουργήστε την πρώτη κατηγορία για να οργανώσετε τους πόρους πωλήσεων",
     "uploadFirstResourceDescription": "Μεταφορτώστε τον πρώτο πόρο πωλήσεων για να ξεκινήσετε"
   },
-
   "messages": {
     "title": "Μηνύματα",
     "description": "Επικοινωνία παραγωγήυ",
@@ -1833,7 +1829,6 @@
     "unknownUser": "Άγνωστος Χρήστης",
     "requestTimedOut": "Το αίτημα έληξε"
   },
-
   "booking": {
     "title": "Κράτηση Γυρίσματος",
     "description": "Οι διαθέσιμες ημερομηνίες γυρισμάτων σας για αυτόν τον μήνα",
@@ -1968,7 +1963,6 @@
       "other": "Ειδικό αίτημα — θα σας στείλουμε προσφορά"
     }
   },
-
   "employee": {
     "dashboard": {
       "title": "Πίνακας Ελέγχου Υπαλλήλου",
@@ -2034,7 +2028,6 @@
       "emptyDescription": "Η βάση γνώσεων βρίσκεται υπό διαμόρφωση. Ελέγξτε ξανά σύντομα!"
     }
   },
-
   "salesman": {
     "dashboard": {
       "title": "Πίνακας Πωλήσεων",
@@ -2065,7 +2058,6 @@
       "description": "Οδηγίες και βέλτιστες πρακτικές"
     }
   },
-
   "client": {
     "dashboard": {
       "title": "Ο Πίνακάς Μου",
@@ -2079,7 +2071,6 @@
       "bookFilming": "Κράτηση γυρίσματος",
       "noPendingActions": "Δεν υπάρχουν εκκρεμείς ενέργειες αυτή τη στιγμή.",
       "invoice": "Τιμολόγιο",
-      "payNow": "Πληρωμή Τώρα",
       "signatureRequired": "Απαιτείται υπογραφή",
       "signContract": "Υπογραφή Συμβολαίου",
       "uploadSigned": "Ανέβασμα Υπογεγραμμένου",
@@ -2099,7 +2090,8 @@
       "overdue": "Εκπρόθεσμο",
       "pending": "Εκκρεμεί",
       "viewAll": "Προβολή όλων",
-      "completedProjectsTitle": "Ολοκληρωμένες Παραγωγές"
+      "completedProjectsTitle": "Ολοκληρωμένες Παραγωγές",
+      "paymentInstructions": "Οδηγίες πληρωμής"
     },
     "agreement": {
       "title": "Η Συμφωνία Μου",
@@ -2118,7 +2110,7 @@
     },
     "projects": {
       "title": "Οι Παραγωγές Μου",
-      "description": "Τα παραγωγές παραγωγής βίντεο σας",
+      "description": "Περιγραφή",
       "noProjects": "Δεν υπάρχουν παραγωγές",
       "noProjectsDescription": "Δεν έχετε κάποιο παραγωγή αυτή τη στιγμή",
       "bookFilming": "Κράτηση Γυρίσματος",
@@ -2148,7 +2140,6 @@
       "messages": "Μηνύματα",
       "contracts": "Συμβόλαια",
       "projectDetails": "Στοιχεία Παραγωγής",
-      "description": "Περιγραφή",
       "status": "Κατάσταση",
       "filmingDate": "Ημερομηνία Γυρίσματος",
       "location": "Τοποθεσία",
@@ -2198,7 +2189,6 @@
       "avatarUploadFailed": "Αποτυχία μεταφόρτωσης φωτογραφίας",
       "avatarUpdateSuccess": "Η φωτογραφία ενημερώθηκε επιτυχώς",
       "profileTitle": "Στοιχεία Προφίλ",
-      "profileDescription": "Ενημερώστε τα προσωπικά σας στοιχεία και τη φωτογραφία προφίλ",
       "uploadPhoto": "Μεταφόρτωση νέας φωτογραφίας",
       "photoFormats": "JPG, PNG ή GIF. Μέγιστο 5MB",
       "email": "Email",
@@ -2233,10 +2223,16 @@
       "passwordRequirements": "Τουλάχιστον 8 χαρακτήρες",
       "confirmNewPassword": "Επιβεβαίωση Νέου Κωδικού",
       "changingPassword": "Αλλαγή κωδικού...",
-      "changePasswordButton": "Αλλαγή Κωδικού"
+      "changePasswordButton": "Αλλαγή Κωδικού",
+      "profileReadOnlyDescription": "Τα στοιχεία σας όπως τα έχει καταχωρήσει η διαχείριση",
+      "identityReadOnlyNote": "Για αλλαγές στα στοιχεία σας επικοινωνήστε με τη διαχείριση",
+      "profileLoadError": "Δεν ήταν δυνατή η φόρτωση των στοιχείων σας. Δοκιμάστε ξανά.",
+      "contactName": "Υπεύθυνος επικοινωνίας",
+      "address": "Διεύθυνση",
+      "vatNumber": "ΑΦΜ",
+      "displayName": "Ονοματεπώνυμο"
     }
   },
-
   "toast": {
     "saveSuccess": "Αποθηκεύτηκε επιτυχώς",
     "saveError": "Αποτυχία αποθήκευσης",
@@ -2259,7 +2255,6 @@
     "done": "Έγινε",
     "actionFailed": "Η ενέργεια απέτυχε"
   },
-
   "validation": {
     "required": "Αυτό το πεδίο είναι υποχρεωτικό",
     "email": "Εισάγετε ένα έγκυρο email",
@@ -2278,7 +2273,6 @@
     "fileSize": "Το αρχείο πρέπει να είναι μικρότερο από {max}",
     "fileType": "Μη έγκυρος τύπος αρχείου"
   },
-
   "table": {
     "noResults": "Κανένα αποτέλεσμα.",
     "loading": "Φόρτωση...",
@@ -2295,7 +2289,6 @@
     "hide": "Απόκρυψη",
     "rowsSelected": "{count} από {total} γραμμή(-ές) επιλεγμένη(-ες)."
   },
-
   "fileUpload": {
     "dragAndDrop": "Σύρετε και αφήστε αρχεία εδώ",
     "or": "ή",
@@ -2307,7 +2300,6 @@
     "fileSizeExceeded": "Το μέγεθος αρχείου υπερβαίνει το όριο {size}MB",
     "invalidFileType": "Μη έγκυρος τύπος αρχείου"
   },
-
   "landing": {
     "nav": {
       "about": "Σχετικά",
@@ -2545,7 +2537,6 @@
     },
     "skipToContent": "Μετάβαση στο κύριο περιεχόμενο"
   },
-
   "costModel": {
     "title": "Μοντέλο Κόστους",
     "description": "Ορίστε εργαζόμενους, πάγια κόστη και συντελεστές. Όλα δυναμικά.",
@@ -2618,7 +2609,6 @@
       "saveError": "Αποτυχία αποθήκευσης"
     }
   },
-
   "proposals": {
     "title": "Προσφορές",
     "description": "Δημιουργήστε και διαχειριστείτε προσφορές για leads και πελάτες.",
@@ -2674,7 +2664,6 @@
       "deleteConfirm": "Σίγουρα θέλετε να διαγράψετε αυτή την προσφορά;"
     }
   },
-
   "proposalPackages": {
     "title": "Πακέτα Προσφορών",
     "description": "Διαχείριση των πακέτων (Pack A/B/C...) που χρησιμοποιούνται στις προσφορές.",
@@ -2706,7 +2695,6 @@
       "computedPrice": "Υπολογιζόμενη Τιμή"
     }
   },
-
   "pricingHealth": {
     "chart": {
       "costLabel": "Κόστος",
@@ -2760,7 +2748,6 @@
       "saveError": "Αποτυχία αποθήκευσης"
     }
   },
-
   "notificationsPage": {
     "title": "Ειδοποιήσεις",
     "tabAll": "Όλες",
@@ -2774,7 +2761,6 @@
     "emptyUnread": "Δεν υπάρχουν μη αναγνωσμένες ειδοποιήσεις",
     "seeAll": "Δείτε όλες"
   },
-
   "availability": {
     "title": "Διαθεσιμότητα",
     "description": "Ποιες μέρες & ώρες είναι ανοιχτές για κρατήσεις",
@@ -2783,7 +2769,6 @@
     "applyTemplate": "Εφαρμογή template στον μήνα",
     "templateApplied": "Template εφαρμόστηκε ({count} μέρες)"
   },
-
   "shellV2": {
     "mainMenu": "Κύριο μενού",
     "mobileMenu": "Μενού κινητού",
@@ -2791,29 +2776,46 @@
       "settings": "Ρυθμίσεις",
       "settingsShort": "Ρυθμ.",
       "admin": {
-        "today": "Σήμερα", "todayShort": "Σήμερα",
-        "clients": "Πελάτες", "clientsShort": "Πελάτες",
-        "productions": "Παραγωγές", "productionsShort": "Έργα",
-        "calendar": "Ημερολόγιο", "calendarShort": "Ημερ.",
-        "finance": "Οικονομικά", "financeShort": "Οικον.",
-        "knowledge": "Γνώση", "knowledgeShort": "Γνώση"
+        "today": "Σήμερα",
+        "todayShort": "Σήμερα",
+        "clients": "Πελάτες",
+        "clientsShort": "Πελάτες",
+        "productions": "Παραγωγές",
+        "productionsShort": "Έργα",
+        "calendar": "Ημερολόγιο",
+        "calendarShort": "Ημερ.",
+        "finance": "Οικονομικά",
+        "financeShort": "Οικον.",
+        "knowledge": "Γνώση",
+        "knowledgeShort": "Γνώση"
       },
       "client": {
-        "home": "Αρχική", "homeShort": "Αρχική",
-        "productions": "Οι παραγωγές μου", "productionsShort": "Έργα",
-        "documents": "Τα χαρτιά μου", "documentsShort": "Χαρτιά",
-        "book": "Κλείσε γύρισμα", "bookShort": "Κράτηση"
+        "home": "Αρχική",
+        "homeShort": "Αρχική",
+        "productions": "Οι παραγωγές μου",
+        "productionsShort": "Έργα",
+        "documents": "Τα χαρτιά μου",
+        "documentsShort": "Χαρτιά",
+        "book": "Κλείσε γύρισμα",
+        "bookShort": "Κράτηση"
       },
       "employee": {
-        "today": "Σήμερα", "todayShort": "Σήμερα",
-        "work": "Η δουλειά μου", "workShort": "Δουλειά",
-        "productions": "Παραγωγές", "productionsShort": "Έργα",
-        "knowledge": "Γνώση", "knowledgeShort": "Γνώση"
+        "today": "Σήμερα",
+        "todayShort": "Σήμερα",
+        "work": "Η δουλειά μου",
+        "workShort": "Δουλειά",
+        "productions": "Παραγωγές",
+        "productionsShort": "Έργα",
+        "knowledge": "Γνώση",
+        "knowledgeShort": "Γνώση"
       },
       "salesman": {
-        "today": "Σήμερα", "todayShort": "Σήμερα",
-        "leads": "Ευκαιρίες", "leadsShort": "Ευκαιρ.",
-        "library": "Υλικό", "libraryShort": "Υλικό"
+        "today": "Σήμερα",
+        "todayShort": "Σήμερα",
+        "leads": "Ευκαιρίες",
+        "leadsShort": "Ευκαιρ.",
+        "library": "Υλικό",
+        "libraryShort": "Υλικό"
       }
     },
     "pages": {
@@ -2834,16 +2836,23 @@
       "adminClients": {
         "title": "Πελάτες",
         "subtitle": "Από το πρώτο ενδιαφέρον μέχρι την ενεργή συνεργασία — μία λίστα, όχι δύο",
-        "tabList": "Πελάτες", "tabInterest": "Ενδιαφέρον", "tabProposals": "Προτάσεις",
-        "tabContracts": "Συμφωνητικά", "tabChat": "Συνομιλίες",
-        "linkChatKnowledge": "Γνωσιακή βάση", "linkNewContract": "Νέο συμφωνητικό"
+        "tabList": "Πελάτες",
+        "tabInterest": "Ενδιαφέρον",
+        "tabProposals": "Προτάσεις",
+        "tabContracts": "Συμφωνητικά",
+        "tabChat": "Συνομιλίες",
+        "linkChatKnowledge": "Γνωσιακή βάση",
+        "linkNewContract": "Νέο συμφωνητικό"
       },
       "adminProductions": {
         "title": "Παραγωγές",
         "subtitle": "Όλα τα έργα όλων των πελατών · η προετοιμασία γυρίσματος ζει μέσα στο κάθε έργο",
-        "tabAll": "Όλες", "tabRequests": "Αιτήματα & κρατήσεις", "tabOverview": "Φόρτος & προθεσμίες",
+        "tabAll": "Όλες",
+        "tabRequests": "Αιτήματα & κρατήσεις",
+        "tabOverview": "Φόρτος & προθεσμίες",
         "error": "Σφάλμα: {message}",
-        "linkAvailability": "Διαθεσιμότητα", "linkFilmingPrep": "Προετοιμασία γυρισμάτων"
+        "linkAvailability": "Διαθεσιμότητα",
+        "linkFilmingPrep": "Προετοιμασία γυρισμάτων"
       },
       "adminCalendar": {
         "title": "Ημερολόγιο",
@@ -2852,22 +2861,30 @@
       "adminFinance": {
         "title": "Οικονομικά",
         "subtitle": "Τιμολόγια, έξοδα, αναφορές, κοστολόγηση και υγεία τιμολόγησης — ένα μέρος",
-        "tabInvoices": "Τιμολόγια", "tabExpenses": "Έξοδα", "tabReports": "Αναφορές",
-        "tabCost": "Κοστολόγηση", "tabHealth": "Υγεία τιμολόγησης",
+        "tabInvoices": "Τιμολόγια",
+        "tabExpenses": "Έξοδα",
+        "tabReports": "Αναφορές",
+        "tabCost": "Κοστολόγηση",
+        "tabHealth": "Υγεία τιμολόγησης",
         "error": "Σφάλμα: {message}",
-        "sectionRevenue": "Έσοδα", "sectionProjects": "Παραγωγές",
-        "sectionClients": "Πελάτες", "sectionExpenses": "Έξοδα & περιθώριο"
+        "sectionRevenue": "Έσοδα",
+        "sectionProjects": "Παραγωγές",
+        "sectionClients": "Πελάτες",
+        "sectionExpenses": "Έξοδα & περιθώριο"
       },
       "adminKnowledge": {
         "title": "Γνώση",
         "subtitle": "Ένα σύστημα περιεχομένου με ετικέτα κοινού, αντί για τρία ξεχωριστά",
-        "tabTeam": "Ομάδα παραγωγής", "tabSales": "Πωλητές"
+        "tabTeam": "Ομάδα παραγωγής",
+        "tabSales": "Πωλητές"
       },
       "adminSettings": {
         "title": "Ρυθμίσεις",
         "subtitle": "Ό,τι ρυθμίζεται μία φορά και μετά δουλεύει μόνο του",
-        "tabGeneral": "Γενικές", "tabUsers": "Χρήστες & ρόλοι",
-        "tabPackages": "Πακέτα & τιμές", "tabTemplates": "Πρότυπα"
+        "tabGeneral": "Γενικές",
+        "tabUsers": "Χρήστες & ρόλοι",
+        "tabPackages": "Πακέτα & τιμές",
+        "tabTemplates": "Πρότυπα"
       },
       "clientHome": {
         "title": "Αρχική"
@@ -2878,7 +2895,8 @@
       "clientDocuments": {
         "title": "Τα χαρτιά μου",
         "subtitle": "Ό,τι έχεις υπογράψει και ό,τι έχεις πληρώσει — ένα μέρος",
-        "tabContracts": "Συμφωνητικά", "tabInvoices": "Τιμολόγια"
+        "tabContracts": "Συμφωνητικά",
+        "tabInvoices": "Τιμολόγια"
       },
       "clientBook": {
         "title": "Κλείσε γύρισμα"
@@ -2892,7 +2910,8 @@
       "employeeWork": {
         "title": "Η δουλειά μου",
         "subtitle": "Ό,τι σου έχει ανατεθεί και ό,τι έχεις να ανεβάσεις",
-        "tabTasks": "Εργασίες", "tabDeliverables": "Παραδοτέα",
+        "tabTasks": "Εργασίες",
+        "tabDeliverables": "Παραδοτέα",
         "emptyTitle": "Καμία παραγωγή ακόμα",
         "emptyDescription": "Μόλις σου ανατεθεί εργασία σε μια παραγωγή, τα παραδοτέα της θα εμφανιστούν εδώ.",
         "deliverableCount": "{count, plural, =0 {Κανένα παραδοτέο ακόμα} one {# παραδοτέο} other {# παραδοτέα}}",
@@ -2916,7 +2935,8 @@
       "salesmanLibrary": {
         "title": "Υλικό",
         "subtitle": "Ό,τι στέλνεις στον υποψήφιο και ό,τι χρειάζεσαι για να το πεις σωστά",
-        "tabResources": "Αρχεία", "tabHandbook": "Εγχειρίδιο"
+        "tabResources": "Αρχεία",
+        "tabHandbook": "Εγχειρίδιο"
       },
       "salesmanSettings": {
         "title": "Ρυθμίσεις"

@@ -1,30 +1,32 @@
 import { test, expect } from '@playwright/test';
 import { loginAsAdmin } from './helpers/auth';
+import { fixtures, hasFixtures, FIXTURE_PREFIX } from './fixtures/graph';
 
 /**
  * Project Flow E2E Tests
- * Tests admin project management including CRUD operations and status changes
+ *
+ * Tests admin project management: the productions hub list, the new-project
+ * form, and the project detail screen (`DetailShell`, tabs `overview | tasks |
+ * deliverables | messages | invoices | contracts`).
+ *
+ * Records are addressed by identity — `fixtures().projects.active` — never by
+ * "the first row". The old bare `/admin/projects` route is a redirect stub
+ * into `/admin/productions?tab=all`; tests use the canonical destination.
  */
 
 test.describe('Project Management', () => {
   test.beforeEach(async ({ page }) => {
-    // SKIP: Requires database with test admin user
     test.skip(!process.env.E2E_TEST_USERS_READY, 'Test users not configured in database');
-
-    // Login as admin before each test
     await loginAsAdmin(page);
   });
 
   test('admin can view projects list page', async ({ page }) => {
     await page.goto('/admin/projects');
-
-    // Wait for the page to load
     await page.waitForLoadState('networkidle');
 
-    // The old bare route is now a stub that redirects into the productions hub
+    // The old bare route is now a stub that redirects into the productions hub.
     await expect(page).toHaveURL(/\/admin\/productions\?tab=all/);
 
-    // Check for page heading
     await expect(
       page
         .locator('h1, h2')
@@ -32,7 +34,6 @@ test.describe('Project Management', () => {
         .first(),
     ).toBeVisible();
 
-    // Check for common elements: table, grid, or cards
     const hasTable = await page
       .locator('table')
       .isVisible()
@@ -48,14 +49,12 @@ test.describe('Project Management', () => {
   test('projects list shows add new project button', async ({ page }) => {
     await page.goto('/admin/productions?tab=all');
 
-    // Look for "New Project" or "Add Project" button
     const addButton = page
       .locator('a, button')
-      .filter({ hasText: /new project|add project|create project/i })
+      .filter({ hasText: /new project|add project|create project|νέα παραγωγή/i })
       .first();
     await expect(addButton).toBeVisible();
 
-    // Verify it links to the new project page
     const href = await addButton.getAttribute('href');
     if (href) {
       expect(href).toContain('/admin/projects/new');
@@ -65,173 +64,172 @@ test.describe('Project Management', () => {
   test('admin can navigate to create new project page', async ({ page }) => {
     await page.goto('/admin/productions?tab=all');
 
-    // Click the new project button
     const addButton = page
       .locator('a, button')
-      .filter({ hasText: /new project|add project|create project/i })
+      .filter({ hasText: /new project|add project|create project|νέα παραγωγή/i })
       .first();
     await addButton.click();
 
-    // Should navigate to new project page
     await expect(page).toHaveURL(/\/admin\/projects\/new/);
-
-    // Check for form presence
     await expect(page.locator('form')).toBeVisible();
   });
 
   test('new project form renders with required fields', async ({ page }) => {
     await page.goto('/admin/projects/new');
 
-    // Wait for form to load
     await expect(page.locator('form')).toBeVisible();
 
-    // Check for common project form fields
-    // Project name
     const nameField = page.locator('input[name*="name"], input[name*="title"]').first();
     await expect(nameField).toBeVisible();
 
-    // Client selection (could be select or combobox)
     const clientField = page.locator('select[name*="client"], [role="combobox"]').first();
     const hasClientField = await clientField.isVisible().catch(() => false);
     expect(hasClientField).toBeTruthy();
 
-    // Submit button
     await expect(page.locator('button[type="submit"]')).toBeVisible();
   });
 
   test('admin can create a new project', async ({ page }) => {
-    // SKIP: Requires database with clients and proper form setup
-    test.skip(true, 'Requires database state with clients and form submission');
+    // Writes a real row — gated on both the fixture graph (so teardown can
+    // sweep it via FIXTURE_PREFIX on projects.title) and the write flag.
+    test.skip(!hasFixtures, 'E2E fixtures not seeded — set E2E_SUPABASE_URL');
+    test.skip(!process.env.E2E_WRITE_TESTS, 'Write tests not enabled (E2E_WRITE_TESTS)');
+
+    const graph = fixtures();
+    const title = `${FIXTURE_PREFIX}${graph.runId} project-flow create`;
 
     await page.goto('/admin/projects/new');
+    await expect(page.locator('form')).toBeVisible();
 
-    // Fill in the form
-    await page.locator('input[name*="name"]').fill('Test Project E2E');
+    // Select the client BEFORE filling the title: choosing a client
+    // auto-prefills the title with "{Client} — ", and that effect only
+    // overwrites an empty/still-auto-prefixed field — filling title first
+    // would just get clobbered.
+    await page.getByRole('combobox').first().click();
+    await page.getByRole('option', { name: graph.client.companyName }).click();
 
-    // Select a client (adjust based on your client selector implementation)
-    await page.locator('select[name*="client"]').first().selectOption({ index: 1 });
+    await page.locator('input[name="title"]').fill(title);
 
-    // Submit the form
-    await page.locator('button[type="submit"]').click();
+    await page.locator('form').getByRole('button', { name: 'Νέα Παραγωγή' }).click();
 
-    // Should redirect to projects list or project detail page
-    await page.waitForURL(/\/admin\/projects(\/[\w-]+)?/, { timeout: 10000 });
+    // onSuccess is unset here, so the form pushes to the old bare route,
+    // which redirects into the productions hub.
+    await page.waitForURL(/\/admin\/productions\?tab=all/, { timeout: 10000 });
 
-    // Verify success message
-    await expect(page.locator('text=/success|created|added/i').first()).toBeVisible({
-      timeout: 5000,
-    });
+    // The kanban board has no links — switch to the list view to find the row.
+    await page.getByRole('button', { name: 'Λίστα' }).click();
+    await expect(page.locator('table tbody tr').filter({ hasText: title })).toBeVisible();
   });
 
   test('admin can view project detail page', async ({ page }) => {
-    // SKIP: Requires existing project in database
-    test.skip(true, 'Requires database with at least one project record');
+    test.skip(!hasFixtures, 'E2E fixtures not seeded — set E2E_SUPABASE_URL');
+    const project = fixtures().projects.active;
 
-    // Navigate to projects list
-    await page.goto('/admin/productions?tab=all');
+    await page.goto(`/admin/projects/${project.id}`);
+    await expect(page).toHaveURL(new RegExp(`/admin/projects/${project.id}$`));
 
-    // Click on first project
-    const firstProject = page
-      .locator('tr td a, [data-testid*="project"] a, a[href*="/admin/projects/"]')
-      .first();
-    await firstProject.click();
-
-    // Should be on project detail page
-    await expect(page).toHaveURL(/\/admin\/projects\/[\w-]+$/);
-
-    // Check for project details
-    await expect(page.locator('h1, h2').first()).toBeVisible();
+    await expect(page.locator('[data-slot="page-heading-title"]')).toHaveCount(1);
+    await expect(page.getByRole('heading', { name: project.title })).toBeVisible();
   });
 
   test('project detail page shows key sections', async ({ page }) => {
-    // SKIP: Requires existing project in database
-    test.skip(true, 'Requires database with project record');
+    test.skip(!hasFixtures, 'E2E fixtures not seeded — set E2E_SUPABASE_URL');
+    const project = fixtures().projects.active;
 
-    await page.goto('/admin/projects/test-project-id');
+    await page.goto(`/admin/projects/${project.id}`);
+    await expect(page).toHaveURL(new RegExp(`/admin/projects/${project.id}$`));
 
-    // Check for common sections
-    const sections = [
-      /overview|details/i,
-      /tasks|to-?do/i,
-      /deliverables|files/i,
-      /timeline|schedule/i,
-    ];
-
-    let foundSections = 0;
-    for (const pattern of sections) {
-      const hasSection = await page
-        .locator(`text=${pattern}`)
-        .isVisible()
-        .catch(() => false);
-      if (hasSection) foundSections++;
+    // DetailShell renders one URL-driven tablist covering every section this
+    // screen has: overview, tasks, deliverables, messages, invoices, contracts.
+    const tabKeys = ['overview', 'tasks', 'deliverables', 'messages', 'invoices', 'contracts'];
+    for (const key of tabKeys) {
+      await expect(
+        page.locator(`a[role="tab"][href*="tab=${key}"]`),
+        `missing tab: ${key}`,
+      ).toBeVisible();
     }
 
-    // Expect at least 2 sections to be present
-    expect(foundSections).toBeGreaterThanOrEqual(2);
+    // No `tab` query param falls back to the first tab, exactly like the hubs.
+    await expect(page.locator('a[role="tab"][href*="tab=overview"]')).toHaveAttribute(
+      'aria-selected',
+      'true',
+    );
   });
 
   test('admin can navigate to edit project page', async ({ page }) => {
-    // SKIP: Requires existing project in database
-    test.skip(true, 'Requires database with at least one project record');
+    test.skip(!hasFixtures, 'E2E fixtures not seeded — set E2E_SUPABASE_URL');
+    const project = fixtures().projects.active;
 
-    await page.goto('/admin/projects/test-project-id');
+    await page.goto(`/admin/projects/${project.id}`);
 
-    // Look for edit button
-    const editButton = page.locator('a, button').filter({ hasText: /edit/i }).first();
+    const editButton = page
+      .locator('a, button')
+      .filter({ hasText: /edit|επεξεργασία/i })
+      .first();
     await editButton.click();
 
-    // Should navigate to edit page
-    await expect(page).toHaveURL(/\/admin\/projects\/[\w-]+\/edit/);
+    await expect(page).toHaveURL(new RegExp(`/admin/projects/${project.id}/edit`));
 
-    // Check for form
     await expect(page.locator('form')).toBeVisible();
+    // Confirms the edit form actually loaded the record we navigated from,
+    // not just any form on any project.
+    await expect(page.locator('input[name="title"]')).toHaveValue(project.title);
   });
 
   test('admin can change project status', async ({ page }) => {
-    // SKIP: Requires database with project and status update functionality
-    test.skip(true, 'Requires database with project and status change implementation');
+    // There is no status dropdown anywhere in this app — the kanban board
+    // (dnd-kit drag-and-drop) is the only status-change UI, and there is no
+    // reversible click-only path through it. Per the write-gate guidance,
+    // this asserts placement instead of performing (or faking) a drag: the
+    // active fixture project's card renders inside its own status column.
+    test.skip(!hasFixtures, 'E2E fixtures not seeded — set E2E_SUPABASE_URL');
+    const project = fixtures().projects.active;
 
-    await page.goto('/admin/projects/test-project-id');
+    await page.goto('/admin/productions?tab=all');
+    await expect(page).toHaveURL(/\/admin\/productions\?tab=all/);
 
-    // Look for status dropdown or buttons
-    const statusControl = page.locator('select[name*="status"], [data-testid*="status"]').first();
-    await expect(statusControl).toBeVisible();
+    const card = page.getByRole('heading', { name: project.title, level: 4 });
+    await expect(card).toBeVisible();
 
-    // Change status (implementation depends on UI pattern)
-    // Could be dropdown, button group, or modal
+    // "Filming" is the kanban column label from PROJECT_STATUS_LABELS — a
+    // plain constant, not localized — matching the seeded status `filming`.
+    // Structural selector (the column's own class) is deliberate: the column
+    // header has no accessible landmark tying it to its card list.
+    const column = page
+      .locator('div.rounded-lg.border')
+      .filter({ has: page.getByRole('heading', { level: 3, name: 'Filming' }) });
+    await expect(
+      column.first().getByRole('heading', { level: 4, name: project.title }),
+    ).toBeVisible();
   });
 
   test('project detail shows tasks section', async ({ page }) => {
-    // SKIP: Requires existing project in database
-    test.skip(true, 'Requires database with project record');
+    test.skip(!hasFixtures, 'E2E fixtures not seeded — set E2E_SUPABASE_URL');
+    const graph = fixtures();
 
-    await page.goto('/admin/projects/test-project-id');
+    await page.goto(`/admin/projects/${graph.projects.active.id}?tab=tasks`);
+    await expect(page).toHaveURL(/tab=tasks/);
 
-    // Look for tasks section
-    const tasksSection = page.locator('text=/tasks|to-?do|checklist/i').first();
-    await expect(tasksSection).toBeVisible();
+    await expect(page.getByText(graph.task.title)).toBeVisible();
   });
 
   test('project detail shows deliverables section', async ({ page }) => {
-    // SKIP: Requires existing project in database
-    test.skip(true, 'Requires database with project record');
+    test.skip(!hasFixtures, 'E2E fixtures not seeded — set E2E_SUPABASE_URL');
+    const graph = fixtures();
 
-    await page.goto('/admin/projects/test-project-id');
+    await page.goto(`/admin/projects/${graph.projects.active.id}?tab=deliverables`);
+    await expect(page).toHaveURL(/tab=deliverables/);
 
-    // Look for deliverables section
-    const deliverablesSection = page.locator('text=/deliverables|files|uploads/i').first();
-    await expect(deliverablesSection).toBeVisible();
+    await expect(page.getByText(graph.deliverable.title)).toBeVisible();
   });
 
   test('projects list has filter by status functionality', async ({ page }) => {
     await page.goto('/admin/productions?tab=all');
 
-    // Look for status filter controls
     const statusFilter = page
       .locator('[data-testid*="filter"], select[name*="status"], button:has-text("Filter")')
       .first();
 
-    // Check if filter exists (optional feature)
     const hasFilter = await statusFilter.isVisible().catch(() => false);
 
     if (hasFilter) {
@@ -240,52 +238,49 @@ test.describe('Project Management', () => {
   });
 
   test('projects list shows project status badges', async ({ page }) => {
-    // SKIP: Requires projects in database
-    test.skip(true, 'Requires database with project records');
+    test.skip(!hasFixtures, 'E2E fixtures not seeded — set E2E_SUPABASE_URL');
+    const project = fixtures().projects.active;
 
     await page.goto('/admin/productions?tab=all');
+    await page.getByRole('button', { name: 'Λίστα' }).click();
 
-    // Look for status indicators (badges, labels, etc.)
-    const statusBadge = page.locator('[data-testid*="status"], .badge, .status').first();
-
-    // Check if status badges are displayed
-    const hasBadges = await statusBadge.isVisible().catch(() => false);
-
-    // Status badges are common but not required
-    if (hasBadges) {
-      await expect(statusBadge).toBeVisible();
-    }
+    const row = page.locator('table tbody tr').filter({ hasText: project.title });
+    await expect(row).toBeVisible();
+    // StatusBadge renders the status through PROJECT_STATUS_LABELS, a plain
+    // (non-localized) constant — "Filming" for the seeded status `filming`.
+    await expect(row.getByText('Filming', { exact: true })).toBeVisible();
   });
 
-  test('admin can access filming prep from project detail', async ({ page }) => {
-    // SKIP: Requires existing project in database
-    test.skip(true, 'Requires database with project record');
+  test('admin can access filming prep from the productions hub', async ({ page }) => {
+    // Project detail has no filming-prep link — that link lives on the
+    // productions hub's page heading, next to the "all" tab this suite
+    // otherwise uses to reach a project.
+    await page.goto('/admin/productions?tab=all');
 
-    await page.goto('/admin/projects/test-project-id');
+    const filmingPrepLink = page.getByRole('link', { name: /Προετοιμασία|Filming prep/i });
+    await expect(filmingPrepLink).toBeVisible();
 
-    // Look for filming prep link or button
-    const filmingPrepLink = page
-      .locator('a, button')
-      .filter({ hasText: /filming prep|preparation/i })
-      .first();
-
-    const hasFilmingPrep = await filmingPrepLink.isVisible().catch(() => false);
-
-    if (hasFilmingPrep) {
-      await filmingPrepLink.click();
-      await expect(page).toHaveURL(/\/admin\/filming-prep\/[\w-]+/);
-    }
+    await filmingPrepLink.click();
+    await expect(page).toHaveURL(/\/admin\/filming-prep/);
   });
 
   test('empty projects list shows appropriate message', async ({ page }) => {
-    // SKIP: Requires empty database or specific test state
-    test.skip(true, 'Requires database with no projects (specific test state)');
+    // Seeding cannot produce a genuinely empty table (fixtures always insert
+    // 2 projects) and there is no scoped empty view for the productions list,
+    // so this exercises the same empty state through the DataTable's
+    // no-results path: filtering the list view down to zero rows.
+    test.skip(!hasFixtures, 'E2E fixtures not seeded — set E2E_SUPABASE_URL');
 
     await page.goto('/admin/productions?tab=all');
+    await page.getByRole('button', { name: 'Λίστα' }).click();
 
-    // Look for empty state message
+    const rows = page.locator('table tbody tr[data-state]');
+    await expect(rows.first()).toBeVisible();
+
+    await page.getByPlaceholder(/Αναζήτηση/i).fill('zzzzzznonexistentzzzzzz');
+
     await expect(
-      page.locator('text=/no projects|empty|get started|create your first/i').first(),
+      page.getByText(/no projects|empty|get started|create your first|δεν βρέθηκαν/i).first(),
     ).toBeVisible();
   });
 });
