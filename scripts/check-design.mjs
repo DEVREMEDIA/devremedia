@@ -43,7 +43,6 @@ const COLOUR_EXEMPT = [
   'src/components/shared/landing-contact-form.tsx',
   'src/components/shared/landing-mobile-nav.tsx',
   'src/components/shared/chatbot/',
-  'src/app/page.tsx',
 
   // Ruling C — email και PDF templates αποδίδουν ΕΞΩ από τον browser: το
   // @react-pdf/renderer και το HTML που στέλνει το Resend δεν βλέπουν
