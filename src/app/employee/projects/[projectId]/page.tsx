@@ -1,6 +1,9 @@
 import { createClient } from '@/lib/supabase/server';
 import { redirect, notFound } from 'next/navigation';
-import { ProjectDetail, PROJECT_TABS } from '@/components/employee/projects/project-detail';
+import { ProjectDetail } from '@/components/employee/projects/project-detail';
+
+/** Οι καρτέλες με τη σειρά τους. Ο server επικυρώνει εδώ το `?tab=`· από αρχείο 'use client' θα ερχόταν ως client reference. */
+const PROJECT_TABS: readonly string[] = ['tasks', 'deliverables', 'messages'];
 
 export default async function EmployeeProjectDetailPage({
   params,

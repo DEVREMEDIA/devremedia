@@ -1,9 +1,12 @@
 import { notFound } from 'next/navigation';
-import { AdminLeadDetail, LEAD_TABS } from '@/components/admin/leads/lead-detail';
+import { AdminLeadDetail } from '@/components/admin/leads/lead-detail';
 import { getLead } from '@/lib/actions/leads';
 import { getLeadActivities } from '@/lib/actions/lead-activities';
 import { createClient } from '@/lib/supabase/server';
 import type { ComponentProps } from 'react';
+
+/** Οι καρτέλες με τη σειρά τους. Ο server επικυρώνει εδώ το `?tab=`· από αρχείο 'use client' θα ερχόταν ως client reference. */
+const LEAD_TABS: readonly string[] = ['info', 'activities'];
 
 export default async function AdminLeadDetailPage({
   params,

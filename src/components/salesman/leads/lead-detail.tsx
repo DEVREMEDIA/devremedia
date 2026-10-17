@@ -15,9 +15,6 @@ import { LeadConvertDialog } from './lead-convert-dialog';
 import { LEAD_SOURCE_LABELS } from '@/lib/constants';
 import type { Lead, LeadActivity } from '@/types';
 
-/** Οι καρτέλες με τη σειρά τους. Το `page.tsx` επικυρώνει το `?tab=` πάνω σε αυτή. */
-export const LEAD_TABS: readonly string[] = ['info', 'activities'];
-
 type LeadDetailProps = {
   lead: Lead & { assigned_user?: { display_name: string } };
   activities: Array<LeadActivity & { user?: { display_name: string } }>;
